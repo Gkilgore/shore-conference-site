@@ -21,6 +21,15 @@
   font-family: Jost, Futura, 'Century Gothic', 'Avenir Next', system-ui, sans-serif;
 }
 * { box-sizing: border-box; }
+/* Hidden on screen but still read by screen readers. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 [hidden] { display: none !important; }
 body { margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
 main { flex: 1; }
@@ -128,15 +137,30 @@ h2 { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.1; }
   mask-image: radial-gradient(ellipse 55% 60% at 50% 50%, transparent 45%, #000 95%);
 }
 
-/* Page intro band: solid navy. */
+/* Conference page bands: navy with the Shore Conference logo repeated behind a centered logo and title,
+   the same idea as the school heroes. */
 .intro {
   background: var(--navy);
   color: white;
   border-bottom: var(--frame);
-  padding-block: clamp(1.75rem, 5vw, 3.25rem);
+  padding-block: clamp(1.5rem, 4vw, 2.5rem);
 }
-.intro h1 { font-size: clamp(2.1rem, 6vw, 3.8rem); }
-.intro p { margin-top: 0.75rem; max-width: 46ch; color: #dfe6f0; }
+.intro .wrap { display: grid; justify-items: center; text-align: center; }
+.intro-logo {
+  width: clamp(6.5rem, 16vw, 10rem);
+  height: auto;
+  margin-bottom: 0.75rem;
+  filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff);
+}
+.intro h1 { font-size: clamp(2rem, 5.5vw, 3.4rem); }
+.intro p { margin-top: 0.6rem; max-width: 46ch; color: #dfe6f0; }
+.intro .logo-wall {
+  --wall-cell: 6.5rem;
+  --wall-height: 3.8rem;
+  opacity: 0.16;
+  -webkit-mask-image: radial-gradient(ellipse 55% 60% at 50% 50%, transparent 40%, #000 95%);
+  mask-image: radial-gradient(ellipse 55% 60% at 50% 50%, transparent 40%, #000 95%);
+}
 
 /* School hero: same centered layout as Home, filled with the school's color.
    A thin white outline keeps a logo visible even when it shares the background color. */
@@ -267,6 +291,24 @@ input, select, textarea {
 select:hover, input:hover, textarea:hover { background: #fff8e0; }
 textarea { display: block; resize: vertical; }
 .filter-count { color: var(--muted); font-size: 0.92rem; margin-block: 0.75rem; }
+
+#calendar-filters { margin-bottom: 1rem; }
+
+/* Under each calendar: the status key and the game count, so the calendar's own month title comes first. */
+.calendar-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.4rem 1rem;
+  margin-top: 0.6rem;
+}
+.calendar-footer .filter-count { margin: 0 0 0 auto; font-size: 0.85rem; }
+.status-key, .staff-legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin: 0; padding: 0; list-style: none; font-size: 0.85rem; font-weight: 500; }
+.status-key li, .staff-legend li { display: flex; align-items: center; gap: 0.4rem; }
+.status-key li::before, .staff-legend li::before { content: ''; width: 0.85rem; aspect-ratio: 1; border: 2px solid var(--ink); background: var(--school-color); }
+.status-key .is-postponed::before, .staff-legend .is-postponed::before { background: var(--yellow); }
+.status-key .is-canceled::before, .staff-legend .is-canceled::before { background: var(--red); }
 
 /* Calendar: one full frame, ink header row, school-color game blocks. */
 /* Holds space until the calendar library renders (it adds .fc), so the footer does not jump. */

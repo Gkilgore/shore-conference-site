@@ -85,7 +85,7 @@ function renderCalendar(events) {
         (!fields.level.value || game.level === fields.level.value) &&
         (game.title + ' ' + game.location).toLowerCase().includes(query));
       document.getElementById('filter-count').textContent =
-        results.length + (results.length === 1 ? ' game in this view' : ' games in this view');
+        results.length + (results.length === 1 ? ' game in this view.' : ' games in this view.');
       showEvents(results);
     },
     eventContent({ event, timeText, view }) {

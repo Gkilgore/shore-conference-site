@@ -60,9 +60,13 @@
         <label>Search<input name="search" type="search" placeholder="Team or venue"></label>
         <button type="reset" class="button secondary">Reset filters</button>
       </form>
-      <p id="filter-count" class="filter-count" role="status"></p>
-      <p class="filter-count">Select a game for details.</p>
       <div id="calendar" aria-label="School schedule"></div>
+      <div class="calendar-footer">
+        <ul class="status-key" aria-label="Game status colors">
+          <li class="is-scheduled">Scheduled</li><li class="is-postponed">Postponed</li><li class="is-canceled">Canceled</li>
+        </ul>
+        <p class="filter-count"><span id="filter-count" role="status"></span> Select a game for details.</p>
+      </div>
       </section>
     </div>
   </main>

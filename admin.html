@@ -131,15 +131,17 @@
             </section>
           </section>
           <section id="staff-schedule-panel" class="staff-panel" aria-labelledby="schedule-title">
-            <h3 id="schedule-title" tabindex="-1">School calendar</h3>
-            <p id="schedule-status" role="status"></p>
+            <h3 id="schedule-title" class="visually-hidden" tabindex="-1">School calendar</h3>
             <p id="schedule-feedback" role="status"></p>
             <button id="preview-transportation-email" class="button secondary" type="button" hidden>Preview transportation email</button>
-            <ul class="staff-legend" aria-label="Game status colors">
-              <li class="is-scheduled">Scheduled</li><li class="is-postponed">Postponed</li><li class="is-canceled">Canceled</li>
-            </ul>
             <div id="calendar" aria-label="Staff schedule calendar" hidden></div>
             <div id="schedule-games"></div>
+            <div class="calendar-footer">
+              <ul class="staff-legend" aria-label="Game status colors">
+                <li class="is-scheduled">Scheduled</li><li class="is-postponed">Postponed</li><li class="is-canceled">Canceled</li>
+              </ul>
+              <p id="schedule-status" role="status"></p>
+            </div>
           </section>
           <section id="staff-transportation-panel" class="staff-panel prose" aria-labelledby="transportation-title" hidden>
             <h3 id="transportation-title" tabindex="-1">Transportation</h3>
