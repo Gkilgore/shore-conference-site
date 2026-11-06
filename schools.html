@@ -1,0 +1,39 @@
+<!-- Lists the prototype schools and links to their calendars. -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Schools | The Shore Conference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700;800&display=swap">
+  <link rel="stylesheet" href="css/site.css">
+  <script defer src="data/sample-data.js"></script>
+  <script defer src="js/site.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="masthead">
+    <div class="site-header wrap">
+      <a class="brand" href="index.html">The Shore Conference</a>
+      <nav aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="schools.html" aria-current="page">Schools</a>
+        <a href="calendar.html">Calendar</a>
+        <a href="about.html">About</a>
+      </nav>
+      <a class="staff-link" href="admin.html">Staff sign-in</a>
+    </div>
+  </header>
+  <main id="main">
+    <section class="intro"><div class="wrap"><h1>Schools</h1><p>Find a school and open its athletics schedule.</p></div></section>
+    <section class="wrap section" aria-label="School directory">
+      <label class="directory-search">Search schools<input type="search" id="school-search" placeholder="Enter a school name"></label>
+      <p id="directory-count" class="filter-count" role="status"></p>
+      <ul class="school-grid" id="school-directory"></ul>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="wrap">The Shore Conference <span>New Jersey Athletics</span></div></footer>
+</body>
+</html>

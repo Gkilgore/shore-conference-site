@@ -1,0 +1,65 @@
+<!-- Shows a selected school’s branding, upcoming games, and filterable calendar. -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>School Calendar | The Shore Conference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700;800&display=swap">
+  <link rel="stylesheet" href="css/site.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.22/index.global.min.js"></script>
+  <script defer src="data/sample-data.js"></script>
+  <script defer src="js/site.js"></script>
+  <script defer src="js/calendar.js"></script>
+  <script defer src="js/school.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="masthead">
+    <div class="site-header wrap">
+      <a class="brand" href="index.html">The Shore Conference</a>
+      <nav aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="schools.html" class="section-active">Schools</a>
+        <a href="calendar.html">Calendar</a>
+        <a href="about.html">About</a>
+      </nav>
+      <a class="staff-link" href="admin.html">Staff sign-in</a>
+    </div>
+  </header>
+  <main id="main">
+    <section class="hero school-hero">
+      <div class="wrap hero-inner">
+        <img id="school-logo" alt="" width="350" height="350" hidden>
+        <h1 id="page-title">School Calendar</h1>
+        <p class="hero-copy" id="school-welcome">Find upcoming games, venues, and bus times for this school.</p>
+        <div class="actions">
+          <a id="calendar-link" class="button primary" href="#school-calendar">View schedule</a>
+          <a class="button secondary" href="schools.html">All schools</a>
+        </div>
+      </div>
+    </section>
+    <div id="school-content" class="wrap section">
+      <section aria-labelledby="upcoming-title">
+        <div class="section-heading"><div><p class="eyebrow">Sample schedule · Eastern Time</p><h2 id="upcoming-title">Upcoming games</h2></div></div>
+        <ul class="game-list" id="upcoming"></ul>
+      </section>
+      <section class="school-calendar" id="school-calendar" aria-labelledby="calendar-title">
+        <h2 id="calendar-title">School calendar</h2>
+      <form id="calendar-filters" class="filters" role="search" aria-label="Filter games">
+        <label>Sport<select name="sport"><option value="">All sports</option></select></label>
+        <label>Level<select name="level"><option value="">All levels</option></select></label>
+        <label>Search<input name="search" type="search" placeholder="Team or venue"></label>
+        <button type="reset" class="button secondary">Reset filters</button>
+      </form>
+      <p id="filter-count" class="filter-count" role="status"></p>
+      <p class="filter-count">Select a game for details.</p>
+      <div id="calendar" aria-label="School schedule"></div>
+      </section>
+    </div>
+  </main>
+  <footer class="site-footer"><div class="wrap">The Shore Conference <span>New Jersey Athletics</span></div></footer>
+</body>
+</html>

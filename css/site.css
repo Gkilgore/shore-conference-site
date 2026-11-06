@@ -1,0 +1,424 @@
+/* Shared styles for the public pages and calendar: modern Bauhaus — flat color, full frames, clear type. */
+/* Jost loads from Google Fonts in each page's head. */
+
+:root {
+  scrollbar-gutter: stable;
+  --navy: #002857;
+  --red: #a12641;
+  --yellow: #f2b600;
+  --ink: #111418;
+  --muted: #4a5560;
+  --rule: #c9c3b6;
+  --paper: #f3efe6;
+  --frame: 2px solid var(--ink);
+  --ease-out: cubic-bezier(0.2, 0.75, 0.25, 1);
+  --school-color: var(--navy);
+  --school-ink: #fff;
+  --school-accent: var(--yellow);
+  --accent-ink: var(--ink);
+  color: var(--ink);
+  background: var(--paper);
+  font-family: Jost, Futura, 'Century Gothic', 'Avenir Next', system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
+main { flex: 1; }
+a { color: var(--navy); text-underline-offset: 0.2em; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: 3px;
+}
+h1, h2, p { margin: 0; }
+h1, h2 { font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.1; }
+.wrap { width: min(100% - 2rem, 70rem); margin-inline: auto; }
+.section { padding-block: clamp(1.5rem, 4vw, 3rem); }
+.skip-link { position: absolute; left: 1rem; top: -10rem; }
+.skip-link:focus { top: 1rem; z-index: 5; background: var(--yellow); color: var(--ink); padding: 0.75rem; border: var(--frame); }
+
+/* Masthead: brand, main navigation, and the staff sign-in link. */
+.masthead { background: white; border-bottom: var(--frame); view-transition-name: masthead; }
+.site-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.6rem 1.25rem;
+  padding-block: 0.6rem;
+}
+.site-header a { text-decoration: none; }
+.site-header nav { display: flex; justify-content: flex-end; gap: 0.25rem; }
+.site-header nav a, .staff-link {
+  display: grid;
+  place-items: center;
+  min-height: 2.6rem;
+  padding: 0.4rem 0.75rem;
+  color: var(--ink);
+  font-weight: 500;
+  border: 2px solid transparent;
+}
+.site-header nav a:is(:hover, :focus-visible) { background: var(--yellow); border-color: var(--ink); }
+.site-header :is(nav a, .staff-link):is([aria-current], .section-active) { background: var(--navy); border-color: var(--navy); color: white; }
+.site-header :is(nav a, .staff-link):is([aria-current], .section-active):is(:hover, :focus-visible) { background: var(--red); border-color: var(--red); }
+.staff-link { border-color: var(--ink); font-size: 0.9rem; font-weight: 700; }
+.staff-link:is(:hover, :focus-visible) { background: var(--ink); color: white; }
+.brand { color: var(--ink); font-weight: 800; font-size: 1.1rem; letter-spacing: -0.01em; padding: 0.3rem 0; }
+.brand:is(:hover, :focus-visible) { color: var(--red); }
+
+/* Phones: brand and staff link on top, then four equal tabs across the full width. */
+@media (max-width: 640px) {
+  .site-header { grid-template-columns: 1fr auto; gap: 0.5rem; padding-block: 0.5rem 0; }
+  .site-header nav {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin-inline: -1rem;
+    border-top: var(--frame);
+  }
+  .site-header nav a { min-height: 3rem; padding-inline: 0.25rem; border: 0; font-size: 0.95rem; }
+  .site-header nav a + a { box-shadow: inset 2px 0 var(--ink); }
+  .site-header nav a:is(:hover, :focus-visible) { outline-offset: -3px; }
+  .staff-link { grid-row: 1; grid-column: 2; min-height: 2.25rem; padding-inline: 0.6rem; font-size: 0.85rem; }
+  .site-header nav { grid-row: 2; }
+}
+
+.hero { background: var(--paper); color: var(--ink); border-bottom: var(--frame); }
+.hero-inner { padding-block: clamp(2rem, 7vw, 5rem); }
+.hero h1, .intro h1 { font-size: clamp(2.3rem, 7vw, 5rem); line-height: 0.95; }
+.hero-copy { max-width: 40ch; margin-block: 1rem 1.4rem; line-height: 1.55; font-size: 1.05rem; }
+.eyebrow { text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.76rem; font-weight: 700; margin-bottom: 0.55rem; }
+
+/* Home hero: centered conference logo with the title and actions beneath it. */
+.home-hero .hero-inner { display: grid; justify-items: center; text-align: center; }
+.home-hero h1 { display: grid; justify-items: center; gap: clamp(1rem, 3vw, 1.75rem); }
+.conference-logo { display: block; width: min(24rem, 78vw); height: auto; }
+.home-title { font-size: clamp(2.2rem, 6.5vw, 4.5rem); }
+.home-title em { font-style: normal; color: var(--red); }
+.home-hero .actions { justify-content: center; }
+
+/* Step-and-repeat logo backdrop, like a signing-day banner. Built by buildLogoWall() in site.js. */
+.has-logo-wall { position: relative; overflow: hidden; isolation: isolate; }
+.logo-wall {
+  --wall-gap: 2.25rem;
+  position: absolute;
+  inset: -1.5rem;
+  z-index: -1;
+  display: grid;
+  align-content: start;
+  gap: 1.5rem;
+  opacity: 0.1;
+  pointer-events: none;
+}
+.logo-wall-row { display: flex; gap: var(--wall-gap); }
+.logo-wall-row:nth-child(even) { margin-left: calc((var(--wall-cell) + var(--wall-gap)) / -2); }
+.logo-wall img { flex: none; width: var(--wall-cell); height: var(--wall-height); object-fit: contain; }
+.home-hero .logo-wall {
+  --wall-cell: 6.5rem;
+  --wall-height: 3.8rem;
+  -webkit-mask-image: radial-gradient(ellipse 55% 60% at 50% 50%, transparent 45%, #000 95%);
+  mask-image: radial-gradient(ellipse 55% 60% at 50% 50%, transparent 45%, #000 95%);
+  opacity: 0.12;
+}
+.school-hero .logo-wall {
+  --wall-cell: 4rem;
+  --wall-height: 4rem;
+  opacity: 0.2;
+  -webkit-mask-image: radial-gradient(ellipse 55% 60% at 50% 50%, transparent 45%, #000 95%);
+  mask-image: radial-gradient(ellipse 55% 60% at 50% 50%, transparent 45%, #000 95%);
+}
+
+/* Page intro band: solid navy. */
+.intro {
+  background: var(--navy);
+  color: white;
+  border-bottom: var(--frame);
+  padding-block: clamp(1.75rem, 5vw, 3.25rem);
+}
+.intro h1 { font-size: clamp(2.1rem, 6vw, 3.8rem); }
+.intro p { margin-top: 0.75rem; max-width: 46ch; color: #dfe6f0; }
+
+/* School hero: same centered layout as Home, filled with the school's color.
+   A thin white outline keeps a logo visible even when it shares the background color. */
+.school-hero { background: var(--school-color); color: var(--school-ink); }
+.school-hero .hero-inner { display: grid; justify-items: center; text-align: center; padding-block: clamp(1.25rem, 3.5vw, 2.25rem); }
+.school-hero h1 { margin-top: 0.6rem; font-size: clamp(1.9rem, 5vw, 3.25rem); }
+.school-hero .hero-copy { margin-block: 0.5rem 1rem; font-size: 1rem; }
+.school-hero h1 em { font-style: normal; color: var(--school-accent); }
+.school-hero .actions { justify-content: center; }
+#school-logo {
+  width: clamp(5rem, 13vw, 7.5rem);
+  height: auto;
+  filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff);
+}
+.school-hero .primary { background: var(--school-accent); border-color: var(--school-accent); color: var(--accent-ink); }
+.school-hero .primary:is(:hover, :focus-visible) { background: var(--paper); border-color: var(--paper); color: var(--ink); }
+.school-hero .secondary { border-color: white; }
+.school-calendar { margin-top: 2.5rem; }
+.school-calendar h2 { margin-bottom: 0.9rem; }
+
+/* Buttons: solid fills; hover swaps to a different solid color. */
+.actions { display: flex; flex-wrap: wrap; gap: 0.65rem; }
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.55rem 1rem;
+  border: var(--frame);
+  border-radius: 0;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+.primary { background: var(--red); border-color: var(--red); color: white; }
+.primary:is(:hover, :focus-visible) { background: var(--navy); border-color: var(--navy); }
+.dark { background: var(--navy); border-color: var(--navy); color: white; }
+.dark:is(:hover, :focus-visible) { background: var(--red); border-color: var(--red); }
+.secondary { background: white; color: var(--ink); }
+.secondary:is(:hover, :focus-visible) { background: var(--yellow); }
+
+/* Section headings and the upcoming-game list. */
+.section-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 0.65rem; margin-bottom: 1rem; }
+.section-heading .eyebrow { color: var(--red); }
+.section-heading > a {
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+  padding: 0.4rem 0.7rem;
+  border: var(--frame);
+  background: white;
+}
+.section-heading > a:is(:hover, :focus-visible) { background: var(--yellow); }
+
+.game-list, .school-grid { list-style: none; margin: 0; padding: 0; display: grid; }
+.game-list { gap: 2px; padding: 2px; background: var(--ink); }
+.game-list li {
+  display: grid;
+  grid-template-columns: 4.75rem 1fr;
+  gap: 0.15rem 0.9rem;
+  align-items: center;
+  background: white;
+  padding-right: 0.85rem;
+}
+.game-list time {
+  grid-row: span 2;
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  padding: 0.7rem 0.3rem;
+  background: var(--school-color);
+  color: var(--school-ink);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+.game-list strong { padding-top: 0.75rem; font-weight: 700; }
+.game-list span { padding-bottom: 0.75rem; font-size: 0.92rem; color: var(--muted); }
+.game-list li:only-child { padding: 0.85rem; }
+
+/* School directory cards fill with the school's color on hover. */
+.school-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 0.75rem; }
+.school-grid a {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem;
+  background: white;
+  border: var(--frame);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-decoration: none;
+}
+.school-grid small { display: block; color: var(--muted); font-weight: 500; font-size: 0.88rem; }
+.school-grid img { flex: none; width: 3.5rem; height: 3.5rem; object-fit: contain; padding: 0.2rem; background: white; outline: 2px solid transparent; }
+.school-grid a:is(:hover, :focus-visible) { background: var(--card-color, var(--navy)); border-color: var(--card-color, var(--navy)); color: var(--card-ink, white); }
+.school-grid a:is(:hover, :focus-visible) small { color: inherit; }
+.school-grid a:is(:hover, :focus-visible) img { outline-color: white; }
+
+/* Filters and form controls. */
+.filters { display: flex; flex-wrap: wrap; align-items: end; gap: 0.65rem; }
+.filters label, .directory-search {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.filters label { flex: 1 1 9rem; }
+.directory-search { max-width: 24rem; }
+input, select {
+  width: 100%;
+  min-height: 2.75rem;
+  border: var(--frame);
+  border-radius: 0;
+  padding: 0.45rem 0.6rem;
+  background: white;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem;
+  letter-spacing: normal;
+  text-transform: none;
+}
+select:hover, input:hover { background: #fff8e0; }
+.filter-count { color: var(--muted); font-size: 0.92rem; margin-block: 0.75rem; }
+
+/* Calendar: one full frame, ink header row, school-color game blocks. */
+/* Holds space until the calendar library renders (it adds .fc), so the footer does not jump. */
+#calendar:not(.fc) { min-height: 32rem; }
+#calendar {
+
+  background: white;
+  border: var(--frame);
+  --fc-border-color: var(--rule);
+  --fc-neutral-bg-color: var(--paper);
+  --fc-today-bg-color: #f2b60026;
+  --fc-list-event-hover-bg-color: #fff1c2;
+  --fc-button-bg-color: white;
+  --fc-button-text-color: var(--ink);
+  --fc-button-border-color: var(--ink);
+  --fc-button-hover-bg-color: var(--yellow);
+  --fc-button-hover-border-color: var(--ink);
+  --fc-button-active-bg-color: var(--school-color);
+  --fc-button-active-border-color: var(--ink);
+  --fc-event-bg-color: var(--school-color);
+  --fc-event-border-color: var(--school-color);
+  --fc-event-text-color: var(--school-ink);
+}
+#calendar .fc-header-toolbar {
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  padding: 0.85rem 0.75rem;
+  margin: 0;
+  border-bottom: var(--frame);
+}
+#calendar .fc-toolbar-title { color: var(--ink); font-size: clamp(1.25rem, 4vw, 1.9rem); font-weight: 800; line-height: 1.15; }
+#calendar .fc-button {
+  border-width: 2px;
+  border-radius: 0;
+  box-shadow: none;
+  font-family: inherit;
+  font-weight: 700;
+  min-height: 2.5rem;
+}
+#calendar .fc-button-group > .fc-button:not(:first-child) { margin-left: -2px; }
+#calendar .fc-button:hover { color: var(--ink); }
+#calendar .fc-button-active, #calendar .fc-button-active:hover { color: var(--school-ink); background: var(--school-color); }
+#calendar .fc-button:focus { box-shadow: none; }
+#calendar .fc-scrollgrid { border: 0; }
+#calendar .fc-scrollgrid-section-header > *, #calendar .fc-col-header-cell { background: var(--ink); border-color: var(--ink); }
+#calendar .fc-col-header-cell-cushion {
+  color: white;
+  padding-block: 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+}
+#calendar a.fc-daygrid-day-number, #calendar a.fc-col-header-cell-cushion { text-decoration: none; }
+#calendar .fc-daygrid-day-number {
+  display: grid;
+  place-items: center;
+  min-width: 1.9rem;
+  height: 1.9rem;
+  margin: 0.15rem;
+  padding: 0 0.3rem;
+  color: var(--ink);
+  font-weight: 700;
+}
+#calendar a.fc-daygrid-day-number:is(:hover, :focus-visible) { background: var(--yellow); }
+#calendar .fc-day-today .fc-daygrid-day-number { background: var(--red); color: white; border-radius: 50%; }
+#calendar .fc-daygrid-event-dot { display: none; }
+#calendar .fc-daygrid-event {
+  border-radius: 0;
+  margin-inline: 0.2rem;
+  background: var(--school-color);
+  color: var(--school-ink);
+  padding: 0.2rem 0.3rem;
+}
+#calendar .fc-daygrid-event .game { display: grid; min-width: 0; font-size: 0.76rem; line-height: 1.25; }
+#calendar .fc-daygrid-event .game-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+#calendar .fc-daygrid-event .game-time { color: inherit; font-weight: 800; }
+#calendar .fc-timegrid-event { border-radius: 0; }
+#calendar .fc-more-link {
+  display: inline-block;
+  margin: 0.15rem 0.2rem;
+  padding: 0.1rem 0.35rem;
+  color: var(--red);
+  font-weight: 800;
+  text-decoration: none;
+  border: 2px solid var(--red);
+}
+#calendar .fc-more-link:is(:hover, :focus-visible) { background: var(--red); color: white; }
+#calendar .fc-list { border: 0; }
+#calendar .fc-list-day-cushion { background: var(--ink); color: white; }
+#calendar .fc-list-day-cushion a { color: inherit; text-decoration: none; font-weight: 700; }
+#calendar .fc-list-day-cushion a:is(:hover, :focus-visible) { background: var(--yellow); color: var(--ink); outline: 0.2rem solid var(--yellow); }
+#calendar .fc-list-event-time { color: var(--red); font-weight: 700; font-variant-numeric: tabular-nums; }
+#calendar .fc-list-event-graphic { display: none; }
+.game { overflow-wrap: anywhere; white-space: normal; }
+.game-title { font-weight: 700; }
+.game-time { display: block; }
+.game small { display: block; margin-top: 0.15rem; color: var(--muted); }
+
+@media (max-width: 640px) {
+  #calendar .fc-toolbar-chunk:nth-child(2) { order: 1; flex-basis: 100%; }
+  #calendar .fc-daygrid-event { margin-inline: 0.1rem; padding-inline: 0.15rem; }
+  #calendar .fc-daygrid-more-link { font-size: 0.72rem; }
+}
+
+/* About page and footer. */
+.prose { display: grid; gap: 1.5rem; }
+.prose p { max-width: 65ch; margin-top: 0.4rem; line-height: 1.6; }
+.site-footer { padding-block: 1.1rem; background: var(--ink); color: white; font-size: 0.9rem; }
+.site-footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem; }
+
+/* Motion follows the system setting and never gates access to content. */
+@media (prefers-reduced-motion: no-preference) {
+  .site-header nav a, .brand, .button, .school-grid a, .section-heading > a,
+  #calendar .fc-button, #calendar .fc-more-link, #calendar a.fc-daygrid-day-number {
+    transition: background-color 140ms var(--ease-out), border-color 140ms var(--ease-out), color 140ms var(--ease-out);
+  }
+  /* Page-to-page crossfade in browsers that support it; the masthead stays put. */
+  @view-transition { navigation: auto; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 160ms; }
+}
+
+/* Game details shared by the school and conference calendars. */
+#calendar .fc-event[aria-haspopup="dialog"] { cursor: pointer; }
+#calendar .fc-event[aria-haspopup="dialog"]:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: -2px;
+}
+.game-details {
+  width: min(30rem, calc(100% - 2rem));
+  max-height: calc(100% - 2rem);
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--school-color);
+  border-radius: var(--radius-panel, 0.75rem);
+  background: white;
+  color: var(--ink);
+  box-shadow: 0 12px 40px #00285735;
+}
+.game-details::backdrop { background: #142b4270; }
+.game-details dl {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, max-content) minmax(0, 1fr);
+  gap: 0.5rem 0.8rem;
+  margin-block: 1rem;
+}
+.game-details dt { font-weight: 700; }
+.game-details dd { margin: 0; overflow-wrap: anywhere; }
+
+/* Staff calendar controls and schedule status. */
+#workspace #calendar { margin-block: 0.9rem 1.25rem; }
+#workspace #schedule-status { margin-block: 0.55rem; }
+#workspace #calendar .staff-game { cursor: pointer; }
+#workspace #calendar .staff-game-postponed,
+#workspace #calendar .staff-game-canceled { border-left-color: var(--red); }

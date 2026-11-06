@@ -1,0 +1,64 @@
+/* Layout and controls for the signed-in staff dashboard. */
+.staff-session, .staff-heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+.staff-heading {
+  display: block;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid var(--red);
+  background: var(--navy);
+  color: white;
+  border-radius: var(--radius-panel, 0.75rem);
+}
+.staff-heading .eyebrow { margin-bottom: 0.35rem; color: inherit; }
+#workspace-account { margin-top: 0.3rem; overflow-wrap: anywhere; }
+.staff-layout { display: grid; gap: 1rem; align-items: start; }
+.staff-content { min-width: 0; }
+.staff-sidebar, .staff-panel {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel, 0.75rem);
+  box-shadow: var(--shadow-rest, 0 2px 8px #00285712);
+  padding: clamp(0.65rem, 2vw, 1rem);
+}
+.staff-sidebar { display: grid; gap: 0.9rem; }
+.staff-sidebar label { display: block; margin-bottom: 0.25rem; font-weight: 650; }
+.staff-nav { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.staff-nav .button[aria-current] { box-shadow: inset 0 -3px var(--red); }
+#preview-status { margin-top: 0.4rem; font-size: 0.9rem; }
+#preview-status:empty, #schedule-feedback:empty { display: none; }
+#schedule-feedback { margin-bottom: 0.65rem; color: #21553d; font-weight: 650; }
+#game-form fieldset {
+  min-width: 0;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control, 0.45rem);
+  padding: 0.75rem;
+}
+#game-form legend { padding-inline: 0.3rem; font-weight: 750; }
+#game-form textarea {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.5rem;
+  border: 1px solid #acbbc9;
+  border-radius: var(--radius-control, 0.45rem);
+  font: inherit;
+}
+#game-form textarea:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+@media (min-width: 840px) {
+  .staff-layout { grid-template-columns: 13rem minmax(0, 1fr); }
+  .staff-nav .button { width: 100%; justify-content: start; }
+}
+
+#transportation-draft-body {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+}

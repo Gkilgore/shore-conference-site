@@ -1,0 +1,145 @@
+<!-- Staff sign-in and role-aware workspace entry. -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Staff Sign-in | The Shore Conference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700;800&display=swap">
+  <link rel="stylesheet" href="css/site.css">
+  <link rel="stylesheet" href="css/staff.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js"></script>
+  <script defer src="js/supabase-config.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.22/index.global.min.js"></script>
+  <script defer src="js/calendar.js"></script>
+  <script defer src="js/staff-transportation.js"></script>
+  <script defer src="js/staff-schedule.js"></script>
+  <script defer src="js/admin.js"></script>
+</head>
+<body>
+  <header class="masthead">
+    <div class="site-header wrap">
+      <a class="brand" href="index.html">The Shore Conference</a>
+      <nav aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="schools.html">Schools</a>
+        <a href="calendar.html">Calendar</a>
+        <a href="about.html">About</a>
+      </nav>
+      <a class="staff-link" href="admin.html" aria-current="page">Staff sign-in</a>
+    </div>
+  </header>
+  <main class="wrap section prose">
+    <div class="staff-session">
+      <div><h1 id="staff-sign-in-title">Staff sign-in</h1><p id="auth-status" role="status">Checking sign-in setup…</p></div>
+      <button class="button secondary" id="sign-out" type="button" hidden>Sign out</button>
+    </div>
+    <section id="sign-in" hidden aria-label="Sign-in options">
+      <div class="actions"><button class="button primary" id="google-sign-in" type="button">Continue with Google</button></div>
+      <form id="email-sign-in">
+        <p><label for="staff-email">Or use an email link</label></p>
+        <p><input id="staff-email" type="email" autocomplete="email" required></p>
+        <p><button class="button secondary" type="submit">Send sign-in link</button></p>
+      </form>
+    </section>
+    <section id="workspace" hidden aria-labelledby="workspace-title">
+      <header class="staff-heading">
+        <p class="eyebrow">Staff dashboard</p>
+        <h2 id="workspace-title"></h2>
+        <p id="workspace-account"></p>
+      </header>
+      <div class="staff-layout">
+        <aside class="staff-sidebar" aria-label="Dashboard controls">
+          <nav class="staff-nav" aria-label="Staff dashboard">
+            <button id="staff-schedule-tab" class="button secondary" type="button" aria-current="true">Schedule</button>
+            <button id="add-calendar-game" class="button primary" type="button" hidden>Add game</button>
+            <button id="staff-transportation-tab" class="button secondary" type="button" hidden>Transportation</button>
+          </nav>
+          <div id="role-preview" hidden>
+            <label for="view-as">View as</label>
+            <select id="view-as"><option value="">Site admin (my workspace)</option></select>
+            <p id="preview-status" role="status"></p>
+          </div>
+          <div>
+            <label for="schedule-school">School</label>
+            <select id="schedule-school"></select>
+          </div>
+        </aside>
+        <div class="staff-content">
+          <section id="staff-schedule-panel" class="staff-panel" aria-labelledby="schedule-title">
+            <h3 id="schedule-title" tabindex="-1">School schedule</h3>
+            <p id="schedule-status" role="status"></p>
+            <p id="schedule-feedback" role="status"></p>
+            <button id="preview-transportation-email" class="button secondary" type="button" hidden>Preview transportation email</button>
+            <div id="calendar" aria-label="Staff schedule calendar" hidden></div>
+            <div id="schedule-games"></div>
+          </section>
+          <section id="staff-transportation-panel" class="staff-panel prose" aria-labelledby="transportation-title" hidden>
+            <h3 id="transportation-title" tabindex="-1">Transportation contact</h3>
+            <p id="transportation-school"></p>
+            <form id="transportation-contact-form" class="prose">
+              <label for="transportation-email">Coordinator email</label>
+              <input id="transportation-email" type="email" maxlength="254" autocomplete="off">
+              <p>Leave this blank to clear the contact.</p>
+              <div><button class="button primary" type="submit">Save contact</button></div>
+              <p id="transportation-contact-status" role="status"></p>
+            </form>
+          </section>
+          <form id="game-form" class="staff-panel prose" aria-labelledby="game-form-title" hidden>
+            <h3 id="game-form-title">Add a game</h3>
+            <fieldset class="prose">
+              <legend>Team and game</legend>
+              <div class="filters">
+                <label>Sport <input name="sport" required maxlength="60" placeholder="e.g. Soccer"></label>
+                <label>Gender <select name="gender"><option>Boys</option><option>Girls</option><option>Coed</option></select></label>
+                <label>Level <select name="level"><option>Varsity</option><option>JV</option><option>Freshman</option></select></label>
+                <label>Season <select name="season"><option>Fall</option><option>Winter</option><option>Spring</option></select></label>
+              </div>
+              <div class="filters">
+                <label>Date <input name="game_date" type="date" required></label>
+                <label>Start time <input name="start_time" type="time" required></label>
+                <label>Home or away <select name="home_away"><option>Home</option><option>Away</option></select></label>
+                <label>Status <select name="status"><option>Scheduled</option><option>Postponed</option><option>Canceled</option></select></label>
+              </div>
+              <div class="filters">
+                <label>Opponent <select name="opponent_school_id"></select></label>
+                <label id="opponent-other">Opponent name <input name="opponent_name" maxlength="100"></label>
+                <label>Venue <input name="location" required maxlength="160"></label>
+              </div>
+              <label>Game notes <textarea name="notes" maxlength="1000" rows="2"></textarea></label>
+            </fieldset>
+            <fieldset class="prose">
+              <legend>Transportation</legend>
+              <div class="filters">
+                <label>Bus departure <input name="bus_departure" type="time"></label>
+                <label>Pickup location <input name="pickup_location" maxlength="160"></label>
+                <label>Return time <input name="return_time" type="time"></label>
+              </div>
+              <label>Transportation notes <textarea name="transport_notes" maxlength="1000" rows="2"></textarea></label>
+            </fieldset>
+            <p id="game-form-status" role="status"></p>
+            <div class="actions">
+              <button class="button primary" type="submit">Save game</button>
+              <button class="button secondary" id="preview-editor-transportation-email" type="button" hidden>Preview saved transportation email</button>
+              <button class="button secondary" id="close-game-editor" type="button">Back to schedule</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+    <dialog id="transportation-draft" class="game-details" aria-labelledby="transportation-draft-title">
+      <h2 id="transportation-draft-title">Transportation email preview</h2>
+      <p>Email sending is not connected yet.</p>
+      <dl>
+        <dt>To</dt><dd id="transportation-draft-to"></dd>
+        <dt>Cc</dt><dd id="transportation-draft-cc"></dd>
+        <dt>Subject</dt><dd id="transportation-draft-subject"></dd>
+      </dl>
+      <pre id="transportation-draft-body"></pre>
+      <form method="dialog"><button class="button secondary" autofocus>Close</button></form>
+    </dialog>
+  </main>
+</body>
+</html>

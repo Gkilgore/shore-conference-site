@@ -1,0 +1,135 @@
+// Configures the shared calendar and updates its events when filters change.
+function renderCalendar(events) {
+  const target = document.getElementById('calendar');
+  const filters = document.getElementById('calendar-filters');
+  if (!window.FullCalendar) {
+    filters.hidden = true;
+    target.textContent = 'The calendar could not load. Check your connection and refresh.';
+    return;
+  }
+
+  const fields = filters.elements;
+  if (fields.school) {
+    for (const [slug, school] of Object.entries(sampleSchools)) {
+      fields.school.add(new Option(school.name, slug));
+    }
+  }
+  for (const name of ['sport', 'level']) {
+    const values = [...new Set(events.map(game => game[name]))].sort();
+    for (const value of values) fields[name].add(new Option(value, value));
+  }
+
+  const showGameDetails = createGameDetails(target);
+  const calendar = new FullCalendar.Calendar(target, {
+    initialView: matchMedia('(max-width: 640px)').matches ? 'listMonth' : 'dayGridMonth',
+    initialDate: sampleGames[0].start,
+    headerToolbar: {
+      start: 'title',
+      center: 'dayGridMonth,timeGridWeek,listMonth,listDay',
+      end: 'prev,next',
+    },
+    views: {
+      dayGridMonth: { buttonText: 'Month', dayMaxEvents: 2 },
+      timeGridWeek: { buttonText: 'Week', eventMaxStack: 2 },
+      listMonth: { buttonText: 'List' },
+      listDay: { buttonText: 'Day' },
+    },
+    moreLinkClick: 'listDay',
+    moreLinkText: count => '+' + count + ' more',
+    navLinks: true,
+    navLinkDayClick: 'listDay',
+    eventOrder: 'start,title',
+    eventInteractive: true,
+    eventClick({ event }) {
+      showGameDetails(event);
+    },
+    eventDidMount({ el }) {
+      el.tabIndex = 0;
+      el.setAttribute('role', 'button');
+      el.setAttribute('aria-haspopup', 'dialog');
+      el.addEventListener('keydown', key => {
+        if (key.key !== 'Enter' && key.key !== ' ') return;
+        key.preventDefault();
+        key.stopPropagation();
+        el.click();
+      });
+    },
+    lazyFetching: false,
+    height: 'auto',
+    noEventsText: 'No games in this view.',
+    events(range, showEvents) {
+      const query = fields.search.value.trim().toLowerCase();
+      const firstDay = range.startStr.slice(0, 10);
+      const afterLastDay = range.endStr.slice(0, 10);
+      const results = events.filter(game =>
+        game.start.slice(0, 10) >= firstDay && game.start.slice(0, 10) < afterLastDay &&
+        (!fields.school?.value || game.schools.includes(fields.school.value)) &&
+        (!fields.sport.value || game.sport === fields.sport.value) &&
+        (!fields.level.value || game.level === fields.level.value) &&
+        (game.title + ' ' + game.location).toLowerCase().includes(query));
+      document.getElementById('filter-count').textContent =
+        results.length + (results.length === 1 ? ' game in this view' : ' games in this view');
+      showEvents(results);
+    },
+    eventContent({ event, timeText, view }) {
+      const content = document.createElement('div');
+      const inList = view.type.startsWith('list');
+      content.className = 'game';
+      const title = document.createElement('span');
+      title.className = 'game-title';
+      title.textContent = event.title;
+      if (!inList && timeText) {
+        const time = document.createElement('span');
+        time.className = 'game-time';
+        time.textContent = timeText;
+        content.append(time);
+      }
+      content.append(title);
+      const details = [event.extendedProps.location, event.extendedProps.bus].filter(Boolean);
+      content.title = 'View details: ' + event.title;
+      if (inList && details.length) {
+        const line = document.createElement('small');
+        line.textContent = details.join(' · ');
+        content.append(line);
+      }
+      return { domNodes: [content] };
+    },
+  });
+  filters.addEventListener('submit', event => event.preventDefault());
+  filters.addEventListener('input', () => calendar.refetchEvents());
+  filters.addEventListener('reset', () => setTimeout(() => calendar.refetchEvents(), 0));
+  calendar.render();
+}
+
+function createGameDetails(calendar) {
+  const dialog = document.createElement('dialog');
+  dialog.className = 'game-details';
+  dialog.setAttribute('aria-labelledby', 'game-details-title');
+  dialog.innerHTML = `
+    <p class="eyebrow">Game details</p>
+    <h2 id="game-details-title"></h2>
+    <dl></dl>
+    <form method="dialog"><button class="button secondary" autofocus>Close</button></form>
+  `;
+  calendar.after(dialog);
+
+  const dateFormat = new Intl.DateTimeFormat('en-US', { dateStyle: 'full', timeStyle: 'short' });
+  return event => {
+    const details = event.extendedProps;
+    const rows = [
+      ['When', event.start ? dateFormat.format(event.start) + ' ET' : 'Time to be announced'],
+      ['Venue', details.location || 'To be announced'],
+      ['Status', details.status || 'Scheduled'],
+    ];
+    if (details.bus) rows.push(['Transportation', details.bus]);
+    dialog.querySelector('h2').textContent = event.title;
+    dialog.querySelector('dl').replaceChildren(...rows.flatMap(([label, value]) => {
+      const term = document.createElement('dt');
+      const description = document.createElement('dd');
+      term.textContent = label;
+      description.textContent = value;
+      return [term, description];
+    }));
+    dialog.showModal();
+  };
+}

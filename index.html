@@ -1,0 +1,54 @@
+<!-- Introduces the site and previews upcoming conference games. -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Athletics | The Shore Conference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700;800&display=swap">
+  <link rel="stylesheet" href="css/site.css">
+  <script defer src="data/sample-data.js"></script>
+  <script defer src="js/site.js"></script>
+  <script defer src="js/conference.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="masthead">
+    <div class="site-header wrap">
+      <a class="brand" href="index.html">The Shore Conference</a>
+      <nav aria-label="Main navigation">
+        <a href="index.html" aria-current="page">Home</a>
+        <a href="schools.html">Schools</a>
+        <a href="calendar.html">Calendar</a>
+        <a href="about.html">About</a>
+      </nav>
+      <a class="staff-link" href="admin.html">Staff sign-in</a>
+    </div>
+  </header>
+  <main id="main">
+    <section class="hero home-hero" data-logo-wall="assets/logos/shore-conference.svg">
+      <div class="wrap hero-inner">
+        <h1>
+          <img class="conference-logo" src="assets/logos/shore-conference.svg" alt="The Shore Conference" width="380" height="224">
+          <span class="home-title"><em>Athletics</em> Schedules</span>
+        </h1>
+        <p class="hero-copy">Find your school’s schedule or see which games are coming up across the Shore Conference.</p>
+        <div class="actions">
+          <a class="button primary" href="schools.html">Find your school</a>
+          <a class="button secondary" href="calendar.html">View calendar</a>
+        </div>
+      </div>
+    </section>
+    <section class="wrap section" aria-labelledby="upcoming-title">
+      <div class="section-heading">
+        <div><p class="eyebrow">Sample schedule</p><h2 id="upcoming-title">Upcoming conference games</h2></div>
+        <a href="calendar.html">Full calendar →</a>
+      </div>
+      <ul class="game-list" id="upcoming"></ul>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="wrap">The Shore Conference <span>New Jersey Athletics</span></div></footer>
+</body>
+</html>

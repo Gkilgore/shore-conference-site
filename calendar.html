@@ -1,0 +1,49 @@
+<!-- Displays and filters matched conference games. -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conference Calendar | The Shore Conference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700;800&display=swap">
+  <link rel="stylesheet" href="css/site.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.22/index.global.min.js"></script>
+  <script defer src="data/sample-data.js"></script>
+  <script defer src="js/site.js"></script>
+  <script defer src="js/calendar.js"></script>
+  <script defer src="js/conference.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="masthead">
+    <div class="site-header wrap">
+      <a class="brand" href="index.html">The Shore Conference</a>
+      <nav aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="schools.html">Schools</a>
+        <a href="calendar.html" aria-current="page">Calendar</a>
+        <a href="about.html">About</a>
+      </nav>
+      <a class="staff-link" href="admin.html">Staff sign-in</a>
+    </div>
+  </header>
+  <main id="main">
+    <section class="intro"><div class="wrap"><h1>Conference Calendar</h1><p>Browse games confirmed by both schools. Sample schedule · Eastern Time</p></div></section>
+    <section class="wrap section" aria-label="Conference calendar">
+      <form id="calendar-filters" class="filters" role="search" aria-label="Filter games">
+        <label>School<select name="school"><option value="">All schools</option></select></label>
+        <label>Sport<select name="sport"><option value="">All sports</option></select></label>
+        <label>Level<select name="level"><option value="">All levels</option></select></label>
+        <label>Search<input name="search" type="search" placeholder="Team or venue"></label>
+        <button type="reset" class="button secondary">Reset filters</button>
+      </form>
+      <p id="filter-count" class="filter-count" role="status"></p>
+      <p class="filter-count">Select a game for details.</p>
+      <div id="calendar" aria-label="Conference schedule"></div>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="wrap">The Shore Conference <span>New Jersey Athletics</span></div></footer>
+</body>
+</html>
