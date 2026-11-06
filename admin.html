@@ -19,6 +19,7 @@
   <script defer src="js/admin.js"></script>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
   <header class="masthead">
     <div class="site-header wrap">
       <a class="brand" href="index.html">The Shore Conference</a>
@@ -31,37 +32,42 @@
       <a class="staff-link" href="admin.html" aria-current="page">Staff sign-in</a>
     </div>
   </header>
-  <main class="wrap section prose">
+  <main id="main" class="wrap section staff-main">
+    <div class="staff-auth">
     <div class="staff-session">
       <div><h1 id="staff-sign-in-title">Staff sign-in</h1><p id="auth-status" role="status">Checking sign-in setup…</p></div>
       <button class="button secondary" id="sign-out" type="button" hidden>Sign out</button>
     </div>
-    <section id="sign-in" hidden aria-label="Sign-in options">
-      <div class="actions"><button class="button primary" id="google-sign-in" type="button">Continue with Google</button></div>
-      <form id="email-sign-in">
-        <p><label for="staff-email">Or use an email link</label></p>
-        <p><input id="staff-email" type="email" autocomplete="email" required></p>
-        <p><button class="button secondary" type="submit">Send sign-in link</button></p>
+    <section id="sign-in" class="staff-sign-in" hidden aria-label="Sign-in options">
+      <button class="button primary" id="google-sign-in" type="button">Continue with Google</button>
+      <p class="staff-divider"><span>or</span></p>
+      <form id="email-sign-in" class="staff-email">
+        <label for="staff-email">Email me a sign-in link</label>
+        <input id="staff-email" type="email" autocomplete="email" required>
+        <button class="button secondary" type="submit">Send sign-in link</button>
       </form>
     </section>
+    </div>
     <section id="workspace" hidden aria-labelledby="workspace-title">
+      <div id="role-preview" class="staff-preview-bar" hidden>
+        <div class="staff-preview-control">
+          <label for="view-as">View as</label>
+          <select id="view-as"><option value="">Site admin (my workspace)</option></select>
+        </div>
+        <p id="preview-status" role="status"></p>
+      </div>
       <header class="staff-heading">
         <p class="eyebrow">Staff dashboard</p>
-        <h2 id="workspace-title"></h2>
+        <h1 id="workspace-title"></h1>
         <p id="workspace-account"></p>
       </header>
       <div class="staff-layout">
         <aside class="staff-sidebar" aria-label="Dashboard controls">
           <nav class="staff-nav" aria-label="Staff dashboard">
-            <button id="staff-schedule-tab" class="button secondary" type="button" aria-current="true">Schedule</button>
-            <button id="add-calendar-game" class="button primary" type="button" hidden>Add game</button>
-            <button id="staff-transportation-tab" class="button secondary" type="button" hidden>Transportation</button>
+            <button id="staff-schedule-tab" class="staff-tab" type="button" aria-current="true">Schedule</button>
+            <button id="staff-transportation-tab" class="staff-tab" type="button" hidden>Transportation</button>
           </nav>
-          <div id="role-preview" hidden>
-            <label for="view-as">View as</label>
-            <select id="view-as"><option value="">Site admin (my workspace)</option></select>
-            <p id="preview-status" role="status"></p>
-          </div>
+          <button id="add-calendar-game" class="button primary" type="button" hidden>Add game</button>
           <div>
             <label for="schedule-school">School</label>
             <select id="schedule-school"></select>
@@ -73,6 +79,9 @@
             <p id="schedule-status" role="status"></p>
             <p id="schedule-feedback" role="status"></p>
             <button id="preview-transportation-email" class="button secondary" type="button" hidden>Preview transportation email</button>
+            <ul class="staff-legend" aria-label="Game status colors">
+              <li class="is-scheduled">Scheduled</li><li class="is-postponed">Postponed</li><li class="is-canceled">Canceled</li>
+            </ul>
             <div id="calendar" aria-label="Staff schedule calendar" hidden></div>
             <div id="schedule-games"></div>
           </section>
@@ -141,5 +150,6 @@
       <form method="dialog"><button class="button secondary" autofocus>Close</button></form>
     </dialog>
   </main>
+  <footer class="site-footer"><div class="wrap">The Shore Conference <span>New Jersey Athletics</span></div></footer>
 </body>
 </html>

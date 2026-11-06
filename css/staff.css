@@ -1,64 +1,180 @@
-/* Layout and controls for the signed-in staff dashboard. */
-.staff-session, .staff-heading {
+/* Staff sign-in and dashboard: same flat frames, full-color hovers, and color-as-status as the public site. */
+.staff-main { display: grid; align-content: start; gap: 1rem; }
+
+/* Sign-in: one framed card. Once signed in, the same area becomes a slim account bar. */
+.staff-auth {
+  display: grid;
+  gap: 1.25rem;
+  width: min(100%, 28rem);
+  margin-inline: auto;
+  align-content: start;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  background: white;
+  border: var(--frame);
+}
+.staff-auth h1 { font-size: clamp(2rem, 6vw, 2.75rem); line-height: 1; }
+#auth-status { margin-top: 0.5rem; color: var(--muted); }
+.staff-sign-in { display: grid; align-content: start; gap: 1rem; }
+.staff-sign-in .button { width: 100%; }
+.staff-divider {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+.staff-divider::before, .staff-divider::after { content: ''; height: 2px; background: var(--rule); }
+.staff-email { display: grid; gap: 0.5rem; }
+.staff-email label, .staff-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.staff-auth:has(#sign-out:not([hidden])) { width: 100%; padding: 0.5rem 0.5rem 0.5rem 1rem; }
+.staff-session { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem 1rem; }
+.staff-auth:has(#sign-out:not([hidden])) #auth-status { margin: 0; font-weight: 500; color: var(--ink); }
+/* Inside the dashboard the account bar shrinks to a quiet line above the workspace. */
+.staff-main:has(#workspace:not([hidden])) .staff-auth { padding: 0; background: none; border: 0; }
+.staff-main:has(#workspace:not([hidden])) .staff-session { justify-content: flex-end; }
+.staff-main:has(#workspace:not([hidden])) #auth-status { font-size: 0.9rem; color: var(--muted); }
+.staff-main:has(#workspace:not([hidden])) #sign-out { min-height: 2.25rem; padding-block: 0.3rem; }
+#sign-out:is(:hover, :focus-visible) { background: var(--red); border-color: var(--red); color: white; }
+
+/* "View as" bar for site admins. It turns yellow while previewing someone else's view. */
+.staff-preview-bar {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
   align-items: center;
-  gap: 0.75rem 1rem;
-}
-.staff-heading {
-  display: block;
-  padding: 1rem 1.2rem;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
   margin-bottom: 1rem;
-  border-left: 4px solid var(--red);
-  background: var(--navy);
-  color: white;
-  border-radius: var(--radius-panel, 0.75rem);
+  padding: 0.5rem 0.75rem;
+  background: white;
+  border: var(--frame);
 }
-.staff-heading .eyebrow { margin-bottom: 0.35rem; color: inherit; }
-#workspace-account { margin-top: 0.3rem; overflow-wrap: anywhere; }
+.staff-preview-bar:has(#preview-status:not(:empty)) { background: var(--yellow); }
+.staff-preview-control { display: flex; align-items: center; gap: 0.6rem; max-width: 100%; }
+.staff-preview-control label { flex-shrink: 0; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+.staff-preview-control select { width: auto; max-width: 100%; min-width: 0; min-height: 2.4rem; }
+#preview-status { flex: 1 1 16rem; font-size: 0.92rem; font-weight: 500; }
+#preview-status:empty { display: none; }
+
+/* Workspace heading: a solid navy block, like the public page intros. */
+.staff-heading { padding: clamp(1rem, 3vw, 1.5rem); margin-bottom: 1rem; background: var(--navy); color: white; }
+.staff-heading .eyebrow { color: var(--yellow); }
+.staff-heading h1 { font-size: clamp(1.8rem, 5vw, 2.75rem); line-height: 1; }
+#workspace-account { margin-top: 0.5rem; color: #dfe6f0; overflow-wrap: anywhere; }
+#workspace-account:empty { display: none; }
+
+/* Sidebar tabs and the main panel. */
 .staff-layout { display: grid; gap: 1rem; align-items: start; }
 .staff-content { min-width: 0; }
-.staff-sidebar, .staff-panel {
+.staff-sidebar, .staff-panel { background: white; border: var(--frame); }
+.staff-panel { padding: clamp(0.85rem, 2.5vw, 1.25rem); }
+.staff-panel.prose { display: block; }
+.staff-panel h3 { margin: 0; font-size: clamp(1.25rem, 3vw, 1.6rem); font-weight: 800; letter-spacing: -0.01em; }
+.staff-panel h3:focus { outline: none; } /* Focus moves here when switching tabs; no ring needed. */
+.staff-sidebar { display: grid; }
+.staff-nav { display: grid; }
+.staff-tab {
+  min-height: 3rem;
+  padding: 0.5rem 1rem;
+  border: 0;
+  border-bottom: var(--frame);
   background: white;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-panel, 0.75rem);
-  box-shadow: var(--shadow-rest, 0 2px 8px #00285712);
-  padding: clamp(0.65rem, 2vw, 1rem);
-}
-.staff-sidebar { display: grid; gap: 0.9rem; }
-.staff-sidebar label { display: block; margin-bottom: 0.25rem; font-weight: 650; }
-.staff-nav { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.staff-nav .button[aria-current] { box-shadow: inset 0 -3px var(--red); }
-#preview-status { margin-top: 0.4rem; font-size: 0.9rem; }
-#preview-status:empty, #schedule-feedback:empty { display: none; }
-#schedule-feedback { margin-bottom: 0.65rem; color: #21553d; font-weight: 650; }
-#game-form fieldset {
-  min-width: 0;
-  margin: 0;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-control, 0.45rem);
-  padding: 0.75rem;
-}
-#game-form legend { padding-inline: 0.3rem; font-weight: 750; }
-#game-form textarea {
-  display: block;
-  width: 100%;
-  margin-top: 0.25rem;
-  padding: 0.5rem;
-  border: 1px solid #acbbc9;
-  border-radius: var(--radius-control, 0.45rem);
+  color: var(--ink);
   font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
 }
-#game-form textarea:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+.staff-tab:is(:hover, :focus-visible) { background: var(--yellow); }
+.staff-tab[aria-current] { background: var(--navy); color: white; }
+.staff-tab[aria-current]:is(:hover, :focus-visible) { background: var(--red); }
+.staff-tab:focus-visible { outline-offset: -5px; outline-color: white; }
+#add-calendar-game { margin: 0.75rem; }
+.staff-sidebar > div { order: -1; display: grid; gap: 0.3rem; padding: 0.75rem; border-bottom: var(--frame); }
+.staff-sidebar > div label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+.staff-tab:disabled, .staff-panel .button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-@media (min-width: 840px) {
-  .staff-layout { grid-template-columns: 13rem minmax(0, 1fr); }
-  .staff-nav .button { width: 100%; justify-content: start; }
+#schedule-status { margin-block: 0.4rem; color: var(--muted); }
+#schedule-feedback { display: inline-block; margin-block: 0.5rem; padding: 0.35rem 0.7rem; background: var(--navy); color: white; font-weight: 700; }
+#schedule-feedback:empty { display: none; }
+#preview-transportation-email { margin-block: 0.25rem 0.5rem; }
+
+/* Status colors: scheduled = school color, postponed = yellow, canceled = red. */
+.staff-legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin: 0.5rem 0 0; padding: 0; list-style: none; font-size: 0.85rem; font-weight: 500; }
+.staff-legend li { display: flex; align-items: center; gap: 0.4rem; }
+.staff-legend li::before { content: ''; width: 0.85rem; aspect-ratio: 1; border: 2px solid var(--ink); background: var(--school-color); }
+.staff-legend .is-postponed::before { background: var(--yellow); }
+.staff-legend .is-canceled::before { background: var(--red); }
+#workspace #calendar { margin-block: 0.75rem 0; }
+#workspace #calendar .staff-game { cursor: pointer; }
+#workspace #calendar .fc-daygrid-event.staff-game { display: flex; gap: 0.25rem; overflow: hidden; font-size: 0.76rem; }
+#workspace #calendar .fc-daygrid-event.staff-game .fc-event-time { font-weight: 800; flex: none; }
+#workspace #calendar .fc-daygrid-event.staff-game .fc-event-title { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#workspace #calendar .fc-daygrid-event.staff-game-postponed { background: var(--yellow); color: var(--ink); }
+#workspace #calendar .fc-daygrid-event.staff-game-canceled { background: var(--red); color: white; }
+#workspace #calendar .staff-game-canceled .fc-event-title,
+#workspace #calendar .staff-game-canceled .fc-list-event-title { text-decoration: line-through; }
+#workspace #calendar .fc-list-event.staff-game-postponed td { background: #fff1c2; }
+#workspace #calendar .fc-list-event.staff-game-canceled td { background: #f6dde3; }
+#workspace #calendar .fc-daygrid-event.staff-game:is(:hover, :focus-visible) { background: var(--ink); color: white; }
+#workspace #calendar .fc-list-event.staff-game:is(:hover, :focus-visible) td { background: var(--yellow); }
+
+/* Game editor. */
+#game-form { display: grid; gap: 1rem; }
+#game-form h3 { margin-bottom: 0.25rem; }
+#game-form fieldset { display: grid; gap: 0.85rem; min-width: 0; margin: 0; padding: 1rem; border: var(--frame); }
+#game-form legend {
+  padding: 0.3rem 0.6rem;
+  background: var(--ink);
+  color: white;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
 }
+#game-form fieldset > label, #transportation-contact-form > label {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+#game-form .filters label { flex-basis: 8rem; }
+#game-form-status:empty, #transportation-contact-status:empty { display: none; }
+#game-form-status, #transportation-contact-status { font-weight: 700; }
 
+/* Transportation contact. */
+#transportation-contact-form { display: grid; gap: 0.6rem; max-width: 30rem; margin-top: 0.75rem; }
+#transportation-contact-form p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+#transportation-school { margin-top: 0.25rem; font-weight: 700; }
+
+/* Transportation email preview. */
 #transportation-draft-body {
+  margin: 0 0 1rem;
+  padding: 0.85rem;
+  background: var(--paper);
+  border: var(--frame);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   font: inherit;
+  font-size: 0.92rem;
+}
+
+@media (min-width: 840px) {
+  .staff-layout { grid-template-columns: 14rem minmax(0, 1fr); }
+}
+@media (max-width: 839px) {
+  .staff-nav { grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); }
+  .staff-tab { text-align: center; }
+  .staff-tab + .staff-tab { box-shadow: inset 2px 0 var(--ink); }
 }

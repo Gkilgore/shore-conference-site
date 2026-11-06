@@ -8,6 +8,7 @@ Read [the rebuild plan](docs/rebuild-plan.md) before making changes. Greg and Al
 - Start on GitHub Pages and move to Hostinger later. Use relative links so pages work under the GitHub repository path.
 - Use one school template at `school.html?school=marlboro`. Keep a hostname check for school subdomains on the future custom domain. Do not create a separate HTML file for each school.
 - Design for phones first. Keep layouts compact and reuse existing spacing and colors. Use short, practical copy. Keep files small and put a short purpose comment at the top of each site source file.
+- Follow [the design guide](docs/design-guide.md) for every page, including staff pages: square corners, full frames, no partial borders or decorative shapes, full-color hovers, and color only where it means something.
 - Use Colts Neck, Marlboro, and Shore Regional as test schools. Use fictional game data for the static prototype. The prototype comes before the production sequence in the rebuild plan.
 
 ## Schedules and access

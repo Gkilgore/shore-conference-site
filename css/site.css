@@ -25,7 +25,7 @@
 body { margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
 main { flex: 1; }
 a { color: var(--navy); text-underline-offset: 0.2em; }
-a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: 3px solid var(--red);
   outline-offset: 3px;
 }
@@ -251,7 +251,7 @@ h2 { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.1; }
 }
 .filters label { flex: 1 1 9rem; }
 .directory-search { max-width: 24rem; }
-input, select {
+input, select, textarea {
   width: 100%;
   min-height: 2.75rem;
   border: var(--frame);
@@ -264,7 +264,8 @@ input, select {
   letter-spacing: normal;
   text-transform: none;
 }
-select:hover, input:hover { background: #fff8e0; }
+select:hover, input:hover, textarea:hover { background: #fff8e0; }
+textarea { display: block; resize: vertical; }
 .filter-count { color: var(--muted); font-size: 0.92rem; margin-block: 0.75rem; }
 
 /* Calendar: one full frame, ink header row, school-color game blocks. */
@@ -399,26 +400,19 @@ select:hover, input:hover { background: #fff8e0; }
   width: min(30rem, calc(100% - 2rem));
   max-height: calc(100% - 2rem);
   padding: 1.25rem;
-  border: 1px solid var(--line);
-  border-top: 4px solid var(--school-color);
-  border-radius: var(--radius-panel, 0.75rem);
+  border: var(--frame);
   background: white;
   color: var(--ink);
-  box-shadow: 0 12px 40px #00285735;
 }
-.game-details::backdrop { background: #142b4270; }
+.game-details h2 { font-size: clamp(1.3rem, 4vw, 1.7rem); }
+.game-details .eyebrow { color: var(--red); }
+.game-details::backdrop { background: #111418b3; }
 .game-details dl {
   display: grid;
   grid-template-columns: minmax(5.5rem, max-content) minmax(0, 1fr);
   gap: 0.5rem 0.8rem;
   margin-block: 1rem;
 }
-.game-details dt { font-weight: 700; }
+.game-details dt { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding-top: 0.15rem; }
 .game-details dd { margin: 0; overflow-wrap: anywhere; }
 
-/* Staff calendar controls and schedule status. */
-#workspace #calendar { margin-block: 0.9rem 1.25rem; }
-#workspace #schedule-status { margin-block: 0.55rem; }
-#workspace #calendar .staff-game { cursor: pointer; }
-#workspace #calendar .staff-game-postponed,
-#workspace #calendar .staff-game-canceled { border-left-color: var(--red); }

@@ -5,6 +5,8 @@ function startStaffSchedule(client, invite) {
   const previewPanel = document.getElementById('role-preview');
   const previewStatus = document.getElementById('preview-status');
   const title = document.getElementById('workspace-title');
+  const account = document.getElementById('workspace-account');
+  const signedInAccount = account.textContent;
   const isSiteAdmin = invite.role === 'site_admin';
   const status = document.getElementById('schedule-status');
   const list = document.getElementById('schedule-games');
@@ -73,6 +75,7 @@ function startStaffSchedule(client, invite) {
     const school = schools.find(item => item.slug === schoolId);
     canEdit = role !== 'conference_office';
     title.textContent = workspaceTitles[role];
+    account.textContent = choice ? school?.name ?? '' : signedInAccount;
     previewStatus.textContent = choice === 'office'
       ? 'Previewing the read-only conference office view. You are still signed in as a site admin.'
       : choice && school
