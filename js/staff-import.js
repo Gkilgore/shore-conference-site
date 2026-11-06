@@ -68,6 +68,29 @@ function pickValue(value, choices) {
   return null;
 }
 
+// Combines file previews before any saves, with one duplicate set and accurate file/row labels.
+async function previewScheduleFiles(files, check) {
+  const rows = [], errors = [], seen = new Set();
+  if (files.length > 20) return { rows, errors: ['Choose up to 20 CSV files at a time.'] };
+  for (const file of files) {
+    if (file.size > 1048576) { errors.push(file.name + ': over 1 MB. Split this file into smaller files.'); continue; }
+    if (!/\.csv$/i.test(file.name)) { errors.push(file.name + ': choose a CSV file.'); continue; }
+    let text;
+    try { text = await file.text(); } catch { errors.push(file.name + ': could not be read. Choose it again.'); continue; }
+    const [headerRow = [], ...dataRows] = parseCsv(text);
+    const header = headerRow.map(name => {
+      const key = name.trim().toLowerCase();
+      return importAliases[key] ?? importAliases[key.replace(/ /g, '_')] ?? key.replace(/ /g, '_');
+    });
+    const missing = ['date','start_time','sport','gender','level','home_away','opponent','location'].filter(name => !header.includes(name));
+    if (missing.length) { errors.push(file.name + ': missing columns: ' + missing.join(', ') + '. Start from the template.'); continue; }
+    if (!dataRows.length) { errors.push(file.name + ': has a header row but no games.'); continue; }
+    if (rows.length + dataRows.length > 500) return { rows: [], errors: [...errors, 'Import up to 500 games at a time across all selected files.'] };
+    rows.push(...dataRows.map((cells,index) => ({ ...check(cells,header,seen), source: { file: file.name, row: index+2 } })));
+  }
+  return { rows, errors };
+}
+
 function startStaffImport(client, { currentSchool, schools, existingGames, onImported }) {
   const fileInput = document.getElementById('import-file');
   const template = document.getElementById('import-template');
@@ -75,7 +98,9 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
   const table = document.getElementById('import-preview');
   const save = document.getElementById('import-save');
   const clear = document.getElementById('import-clear');
+  const errorList = document.getElementById('import-file-errors');
   let rows = [];
+  let fileErrors = [], requestNumber = 0;
   let active = true;
 
   function check(cells, header, seen) {
@@ -133,24 +158,26 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
       state = 'duplicate';
       problems.push('Repeats an earlier row');
     }
-    seen.add(key);
+    if (state === 'ready') seen.add(key);
     return { game, state, problems, raw };
   }
 
   function show() {
+    errorList.hidden = !fileErrors.length;
+    errorList.replaceChildren(...fileErrors.map(text => { const item=document.createElement('li'); item.textContent=text; return item; }));
     const counts = { ready: 0, problem: 0, duplicate: 0, imported: 0, failed: 0 };
     rows.forEach(row => counts[row.state]++);
     table.hidden = !rows.length;
-    clear.hidden = !rows.length;
+    clear.hidden = !rows.length && !fileErrors.length;
     save.hidden = !counts.ready;
-    save.textContent = 'Import ' + counts.ready + (counts.ready === 1 ? ' game' : ' games');
-    const labels = { ready: 'Ready', problem: 'Needs a fix', duplicate: 'Skipped', imported: 'Imported', failed: 'Failed' };
+    save.textContent = 'Save ' + counts.ready + (counts.ready === 1 ? ' game as draft' : ' games as drafts');
+    const labels = { ready: 'Ready', problem: 'Needs a fix', duplicate: 'Skipped', imported: 'Draft saved', failed: 'Failed' };
     table.tBodies[0].replaceChildren(...rows.map((row, index) => {
       const line = document.createElement('tr');
       line.className = 'is-' + row.state;
       // Show each value the way it will be saved when it could be read, otherwise as typed.
       const { game, raw } = row;
-      const cells = [String(index + 2), labels[row.state], game.game_date || raw.date,
+      const cells = [row.source.file, String(row.source.row), labels[row.state], game.game_date || raw.date,
         game.start_time ? timeLabel(game.start_time) : raw.start_time,
         [game.gender || raw.gender, game.level || raw.level, game.sport || raw.sport].filter(Boolean).join(' '),
         [game.home_away === 'Home' ? 'vs.' : game.home_away === 'Away' ? 'at' : raw.home_away, raw.opponent]
@@ -173,8 +200,11 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
   }
 
   function reset() {
+    requestNumber++;
     rows = [];
+    fileErrors = [];
     fileInput.value = '';
+    fileInput.disabled = clear.disabled = false;
     summary.textContent = '';
     save.disabled = false;
     show();
@@ -192,50 +222,35 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
   };
 
   fileInput.onchange = async () => {
-    const file = fileInput.files[0];
+    const request = ++requestNumber;
+    const files = Array.from(fileInput.files);
     rows = [];
-    if (!file) return show();
-    if (file.size > 1048576) {
-      summary.textContent = 'This file is over 1 MB. Split it into smaller files.';
-      return show();
-    }
-    const [headerRow = [], ...dataRows] = parseCsv(await file.text());
-    if (!active) return;
-    const header = headerRow.map(name => {
-      const key = name.trim().toLowerCase();
-      return importAliases[key] ?? importAliases[key.replace(/ /g, '_')] ?? key.replace(/ /g, '_');
-    });
-    const missing = ['date', 'start_time', 'sport', 'gender', 'level', 'home_away', 'opponent', 'location']
-      .filter(name => !header.includes(name));
-    if (missing.length) {
-      summary.textContent = 'This file is missing columns: ' + missing.join(', ') + '. Start from the template.';
-      return show();
-    }
-    if (!dataRows.length) {
-      summary.textContent = 'This file has a header row but no games.';
-      return show();
-    }
-    if (dataRows.length > 500) {
-      summary.textContent = 'Import up to 500 games at a time.';
-      return show();
-    }
-    const seen = new Set();
-    rows = dataRows.map(cells => check(cells, header, seen));
+    fileErrors = [];
+    summary.textContent = files.length ? 'Reading selected CSV files…' : '';
+    if (!files.length) return show();
+    const preview = await previewScheduleFiles(files, check);
+    if (!active || request !== requestNumber) return;
+    rows = preview.rows.sort((a,b) => [a.game.sport,a.game.gender,a.game.level,a.game.season].join('|')
+      .localeCompare([b.game.sport,b.game.gender,b.game.level,b.game.season].join('|')));
+    fileErrors = preview.errors;
+    summary.textContent = '';
     show();
   };
 
   save.onclick = async () => {
+    const request = requestNumber;
     const ready = rows.filter(row => row.state === 'ready');
-    // One batch per import, so each coach gets one summary email instead of one per game.
+    // One draft batch across all files. Publication is a separate reviewed action.
     const batch = crypto.randomUUID();
     ready.forEach(row => { row.game.import_batch = batch; });
     save.disabled = true;
     fileInput.disabled = true;
     clear.disabled = true;
     for (const [index, row] of ready.entries()) {
+      if (!active || request !== requestNumber) return;
       summary.textContent = 'Importing ' + (index + 1) + ' of ' + ready.length + '…';
       const { error } = await client.rpc('save_staff_game', { input: row.game });
-      if (!active) return;
+      if (!active || request !== requestNumber) return;
       row.state = error ? 'failed' : 'imported';
       if (error) row.problems.push('Could not be saved. Check this row and try again.');
     }
@@ -253,6 +268,7 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
     reset,
     stop() {
       active = false;
+      requestNumber++;
       fileInput.onchange = template.onclick = save.onclick = clear.onclick = null;
     },
   };

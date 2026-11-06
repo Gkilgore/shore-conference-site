@@ -19,6 +19,7 @@
   <script defer src="data/sample-data.js"></script>
   <script defer src="js/staff-branding.js"></script>
   <script defer src="js/staff-publication.js"></script>
+  <script defer src="js/publication-review.js"></script>
   <script defer src="js/seasons.js"></script>
   <script defer src="js/staff-overview.js"></script>
   <script defer src="js/staff-import.js"></script>
@@ -101,17 +102,31 @@
           <section id="staff-overview-panel" class="staff-panel" aria-labelledby="overview-title" hidden>
             <h3 id="overview-title" tabindex="-1">Schedule</h3>
             <ul id="overview-stats" class="staff-stats" aria-label="Schedule totals"></ul>
+            <section id="publication-section" class="staff-section" aria-labelledby="publication-title" hidden>
+              <h4 id="publication-title">Review and publish team schedules</h4>
+              <p class="staff-hint">Add or import games as drafts. Select each team schedule when it is ready, then review and publish. Later edits stay private until you publish them.</p>
+              <form id="publication-form">
+                <button id="publication-select-all" class="button secondary" type="button" disabled>Select or clear all shown</button>
+                <ul id="publication-teams" class="publication-teams"></ul>
+                <div class="actions">
+                  <button id="publication-review" class="button primary" type="submit" disabled>Review selected schedules</button>
+                  <button id="publication-unpublish" class="button secondary" type="button" disabled>Review schedules to unpublish</button>
+                </div>
+                <p id="publication-status" role="status"></p>
+              </form>
+            </section>
             <section id="import-section" class="staff-section" aria-labelledby="import-title" hidden>
-              <h4 id="import-title">Import games</h4>
-              <p class="staff-hint">Add many games at once from a spreadsheet saved as a CSV file. Check the preview, then import the rows that are ready.</p>
+              <h4 id="import-title">Import draft schedules</h4>
+              <p class="staff-hint">Choose one or more CSV files. Each file can include several teams. Check the rows, then save the ready games as drafts. Review and publish each team above when it is ready.</p>
               <div class="import-controls">
-                <label>CSV file <input id="import-file" type="file" accept=".csv,text/csv"></label>
+                <label>CSV files <input id="import-file" type="file" accept=".csv,text/csv" multiple></label>
                 <button id="import-template" class="button secondary" type="button">Download template</button>
               </div>
               <p id="import-summary" role="status"></p>
+              <ul id="import-file-errors" class="staff-hint" hidden></ul>
               <div class="import-table-wrap">
                 <table id="import-preview" class="import-preview" hidden>
-                  <thead><tr><th>Row</th><th>Result</th><th>Date</th><th>Time</th><th>Team</th><th>Opponent</th><th>Location</th><th>Problems</th></tr></thead>
+                  <thead><tr><th>File</th><th>Row</th><th>Result</th><th>Date</th><th>Time</th><th>Team</th><th>Opponent</th><th>Location</th><th>Problems</th></tr></thead>
                   <tbody></tbody>
                 </table>
               </div>
@@ -122,7 +137,7 @@
             </section>
             <section class="staff-section" aria-labelledby="link-title">
               <h4 id="link-title">Not linked with a conference school</h4>
-              <p class="staff-hint">Upcoming games against conference schools that aren’t on the conference calendar yet, and why. The other school’s details stay private.</p>
+              <p class="staff-hint">Match checks for working games. Public conference games use the last published schedules from both schools. The other school’s details stay private.</p>
               <ul id="link-list" class="game-list staff-attention"></ul>
             </section>
             <section class="staff-section" aria-labelledby="tournament-title">
@@ -228,16 +243,6 @@
           <section id="staff-settings-panel" class="staff-panel" aria-labelledby="settings-title" hidden>
             <h3 id="settings-title" tabindex="-1">School settings</h3>
             <p id="settings-school" class="staff-subhead"></p>
-            <section class="staff-section" aria-labelledby="publication-title">
-              <h4 id="publication-title">Public schedule</h4>
-              <form id="publication-form" class="prose">
-                <label class="staff-check"><input name="published" type="checkbox" disabled> Publish schedule</label>
-                <p class="staff-hint">When published, families can see your games and subscribe for updates. Saved changes become public automatically. Turning this off clears subscribed games when calendar apps refresh; downloaded copies stay on their devices.</p>
-                <div><button class="button primary" type="submit" disabled>Save publication setting</button></div>
-                <p id="publication-status" role="status"></p>
-                <a id="publication-link" class="button secondary" target="_blank" rel="noopener">View public calendar</a>
-              </form>
-            </section>
             <div class="branding-layout">
               <form id="branding-form" class="branding-form">
                 <fieldset>
@@ -322,7 +327,9 @@
             </fieldset>
             <p id="game-form-status" role="status"></p>
             <div class="actions">
-              <button class="button primary" type="submit">Save game</button>
+              <button class="button primary" type="submit">Save draft</button>
+              <button id="save-and-review-publication" class="button secondary" type="submit">Save and review publishing</button>
+              <p class="staff-hint">Saving a draft keeps the posted game unchanged, including cancellations. Review and publish when you are ready to update families.</p>
               <button class="button secondary" id="preview-editor-transportation-email" type="button" hidden>Preview saved transportation email</button>
               <button class="button secondary" id="close-game-editor" type="button">Back to calendar</button>
             </div>
@@ -330,6 +337,16 @@
         </div>
       </div>
     </section>
+    <dialog id="publication-dialog" class="game-details" aria-labelledby="publication-dialog-title">
+      <h2 id="publication-dialog-title">Review selected schedules</h2>
+      <p id="publication-dialog-summary"></p>
+      <div id="publication-dialog-games"></div>
+      <p id="publication-dialog-status" role="status"></p>
+      <div class="actions">
+        <button id="publication-confirm" class="button primary" type="button">Publish selected schedules</button>
+        <form method="dialog"><button class="button secondary" autofocus>Keep working</button></form>
+      </div>
+    </dialog>
     <dialog id="coach-draft" class="game-details" aria-labelledby="coach-draft-title">
       <p class="eyebrow">Not sent yet</p>
       <h2 id="coach-draft-title">Coach email preview</h2>

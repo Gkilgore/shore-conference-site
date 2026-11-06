@@ -45,7 +45,10 @@ function startStaffSchedule(client, invite) {
     onImported: date => loadGames(date),
   });
   const settings = startStaffSettings(client, currentSchool, school => applySchoolTheme(client, school));
-  const publication = startStaffPublication(client, currentSchool);
+  const publication = startStaffPublication(client, currentSchool, {
+    canEdit: () => canEdit, schools: () => schools,
+    filterValues: () => Object.fromEntries(new FormData(filterForm)),
+  });
   const transportation = startStaffTransportation(client, invite,
     () => schools.find(school => school.slug === selector.value), gameTitle);
   const form = document.getElementById('game-form');
@@ -213,6 +216,8 @@ function startStaffSchedule(client, invite) {
     const visible = visibleGames();
     showCount(visible);
     overview.load(visible);
+    if (canEdit) await publication.load();
+    if (stopped || request !== loadNumber) return;
     showCalendar(visible, focusDate ?? (newSchool ? new Date() : null));
     if (!calendar) showList(visible);
   }
@@ -240,6 +245,7 @@ function startStaffSchedule(client, invite) {
     const visible = visibleGames();
     showCount(visible);
     overview.render(visible);
+    publication.render();
     if (calendar) showCalendar(visible);
     else showList(visible);
   }
@@ -365,6 +371,7 @@ function startStaffSchedule(client, invite) {
     overviewTab.setAttribute('aria-current', 'true');
     filterForm.hidden = false;
     overview.render(visibleGames());
+    publication.load();
     if (focus) overviewTitle.focus();
   }
 
@@ -404,7 +411,6 @@ function startStaffSchedule(client, invite) {
     settingsPanel.hidden = false;
     settingsTab.setAttribute('aria-current', 'true');
     settings.load();
-    publication.load();
     venues.showSettings();
     if (focus) settingsTitle.focus();
   }
@@ -430,12 +436,14 @@ function startStaffSchedule(client, invite) {
   scheduleTab.onclick = () => showSchedule(true);
   form.onsubmit = async event => {
     event.preventDefault();
+    const reviewAfterSave = event.submitter?.id === 'save-and-review-publication';
     const input = Object.fromEntries(new FormData(form));
     for (const name of Object.keys(input)) input[name] = input[name].trim() || null;
     input.school_id = selector.value;
     input.id = activeGame?.id ?? null;
     input.revision = activeGame?.revision ?? null;
     saveButton.disabled = true;
+    document.getElementById('save-and-review-publication').disabled = true;
     const fieldsets = form.querySelectorAll('fieldset');
     fieldsets.forEach(fieldset => fieldset.disabled = true);
     closeEditor.disabled = true;
@@ -452,6 +460,7 @@ function startStaffSchedule(client, invite) {
     const { data: savedId, error } = await client.rpc('save_staff_game', { input });
     if (stopped) return;
     saveButton.disabled = false;
+    document.getElementById('save-and-review-publication').disabled = false;
     fieldsets.forEach(fieldset => fieldset.disabled = false);
     closeEditor.disabled = false;
     scheduleTab.disabled = false;
@@ -472,9 +481,10 @@ function startStaffSchedule(client, invite) {
     }
     edit(null);
     showSchedule(true);
-    scheduleFeedback.textContent = 'Game saved.';
+    scheduleFeedback.textContent = 'Draft saved. Posted calendars stay unchanged until you review and publish.';
     list.replaceChildren();
     await loadGames(input.game_date, false, savedId);
+    if (reviewAfterSave && !stopped) await publication.reviewGame(savedId);
   };
 
   return () => {
@@ -501,6 +511,7 @@ function startStaffSchedule(client, invite) {
     preview.onchange = null;
     saveButton.disabled = false;
     form.querySelectorAll('fieldset').forEach(fieldset => fieldset.disabled = false);
+    document.getElementById('save-and-review-publication').disabled = false;
     closeEditor.disabled = false;
     scheduleTab.disabled = false;
     addGame.disabled = false;

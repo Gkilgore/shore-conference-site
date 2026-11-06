@@ -10,14 +10,13 @@ select set_config('request.jwt.claims', '{"sub":"fc6b419a-8476-40fd-a995-b7431eb
 set local role authenticated;
 
 do $$
-declare changed integer; target uuid; before_revision integer; after_revision integer;
+declare changed integer; target uuid; before_revision integer; after_revision integer; denied boolean := false;
 begin
-  update public.schools set schedule_published = true where slug = 'marlboro';
-  get diagnostics changed = row_count;
-  if changed <> 1 then raise exception 'FAIL: AD cannot publish their own school'; end if;
-  update public.schools set schedule_published = true where slug = 'colts-neck';
-  get diagnostics changed = row_count;
-  if changed <> 0 then raise exception 'FAIL: AD can publish another school'; end if;
+  if not shore_private.can_publish_school('marlboro') then raise exception 'FAIL: AD cannot publish their own school'; end if;
+  if shore_private.can_publish_school('colts-neck') then raise exception 'FAIL: AD can publish another school'; end if;
+  begin update public.schools set schedule_published=true where slug='marlboro';
+  exception when insufficient_privilege then denied:=true; end;
+  if not denied then raise exception 'FAIL: legacy auto-publication can be re-enabled'; end if;
   update public.games set notes = 'Cross-school write must fail' where school_id = 'colts-neck';
   get diagnostics changed = row_count;
   if changed <> 0 then raise exception 'FAIL: AD can edit another school game'; end if;

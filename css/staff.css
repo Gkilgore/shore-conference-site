@@ -135,6 +135,13 @@
 #schedule-feedback:empty { display: none; }
 #preview-transportation-email { margin-block: 0.25rem 0.5rem; }
 
+/* Team publication selection and review use the same full frames as the rest of the workspace. */
+.publication-teams, .publication-games { display: grid; gap: 0.65rem; padding: 0; list-style: none; }
+.publication-teams > li, .publication-games > li { border: var(--frame); padding: 0.75rem; overflow-wrap: anywhere; }
+.publication-teams p, .publication-games p { margin: 0.4rem 0; }
+.publication-games ul { margin: 0.5rem 0 0; padding-left: 1.25rem; }
+#publication-dialog-games { display: grid; gap: 1rem; }
+
 /* Status colors: scheduled = school color, postponed = yellow, canceled = red. */
 #workspace #calendar { margin-block: 0; }
 #workspace #calendar .staff-game { cursor: pointer; }
