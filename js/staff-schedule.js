@@ -371,6 +371,8 @@ function startStaffSchedule(client, invite) {
     hidePanels();
     transportationPanel.hidden = false;
     transportationTab.setAttribute('aria-current', 'true');
+    filterForm.hidden = false;
+    overview.render(visibleGames());
     document.getElementById('transportation-school').textContent = selector.selectedOptions[0].text;
     transportation.load();
     if (focus) transportationTitle.focus();

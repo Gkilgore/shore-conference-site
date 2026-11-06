@@ -1,4 +1,4 @@
-// Schedule tab: totals, games not linked with a conference school, and away games whose bus isn't confirmed.
+// Schedule totals and unlinked games, plus unconfirmed buses for the Transportation tab.
 function startStaffOverview(client, { currentSchool, gameTitle, canEdit, openEditor }) {
   const stats = document.getElementById('overview-stats');
   const linkList = document.getElementById('link-list');
@@ -75,7 +75,6 @@ function startStaffOverview(client, { currentSchool, gameTitle, canEdit, openEdi
       stat('Upcoming games', upcoming.length),
       stat('On the conference calendar', linked, 'linked'),
       stat('Not linked', checked ? unlinked.length : null, 'problem'),
-      ...(canEdit() ? [stat('Bus not confirmed', needsBus.length, 'attention')] : []),
     );
 
     if (links === null) linkList.replaceChildren(note('Checking which games are linked…'));
