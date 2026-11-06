@@ -128,18 +128,15 @@
 .staff-sidebar > div label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
 .staff-tab:disabled, .staff-panel .button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-#schedule-status { margin-block: 0.4rem; color: var(--muted); }
-#schedule-feedback { display: inline-block; margin-block: 0.5rem; padding: 0.35rem 0.7rem; background: var(--school-color); color: var(--school-ink); font-weight: 700; }
+/* Calendar tab: the calendar's own month title and buttons come first; the key and count sit underneath. */
+#staff-schedule-panel { padding: 0; background: none; border: 0; }
+#schedule-status { margin: 0; color: var(--muted); font-size: 0.85rem; }
+#schedule-feedback { display: inline-block; margin: 0 0 0.6rem; padding: 0.35rem 0.7rem; background: var(--school-color); color: var(--school-ink); font-weight: 700; }
 #schedule-feedback:empty { display: none; }
 #preview-transportation-email { margin-block: 0.25rem 0.5rem; }
 
 /* Status colors: scheduled = school color, postponed = yellow, canceled = red. */
-.staff-legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin: 0.5rem 0 0; padding: 0; list-style: none; font-size: 0.85rem; font-weight: 500; }
-.staff-legend li { display: flex; align-items: center; gap: 0.4rem; }
-.staff-legend li::before { content: ''; width: 0.85rem; aspect-ratio: 1; border: 2px solid var(--ink); background: var(--school-color); }
-.staff-legend .is-postponed::before { background: var(--yellow); }
-.staff-legend .is-canceled::before { background: var(--red); }
-#workspace #calendar { margin-block: 0.75rem 0; }
+#workspace #calendar { margin-block: 0; }
 #workspace #calendar .staff-game { cursor: pointer; }
 #workspace #calendar .fc-daygrid-event.staff-game { display: flex; gap: 0.25rem; overflow: hidden; font-size: 0.76rem; }
 #workspace #calendar .fc-daygrid-event.staff-game .fc-event-time { font-weight: 800; flex: none; }

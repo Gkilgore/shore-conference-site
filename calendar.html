@@ -31,7 +31,7 @@
     </div>
   </header>
   <main id="main">
-    <section class="intro"><div class="wrap"><h1>Conference Calendar</h1><p>Browse games confirmed by both schools. Sample schedule · Eastern Time</p></div></section>
+    <section class="intro" data-logo-wall="assets/logos/shore-conference.svg"><div class="wrap"><img class="intro-logo" src="assets/logos/shore-conference.svg" alt="" width="190" height="112"><h1>Conference Calendar</h1><p>Browse games confirmed by both schools. Sample schedule · Eastern Time</p></div></section>
     <section class="wrap section" aria-label="Conference calendar">
       <form id="calendar-filters" class="filters" role="search" aria-label="Filter games">
         <label>School<select name="school"><option value="">All schools</option></select></label>
@@ -41,9 +41,10 @@
         <label>Search<input name="search" type="search" placeholder="Team or venue"></label>
         <button type="reset" class="button secondary">Reset filters</button>
       </form>
-      <p id="filter-count" class="filter-count" role="status"></p>
-      <p class="filter-count">Select a game for details.</p>
       <div id="calendar" aria-label="Conference schedule"></div>
+      <div class="calendar-footer">
+        <p class="filter-count"><span id="filter-count" role="status"></span> Select a game for details.</p>
+      </div>
     </section>
   </main>
   <footer class="site-footer"><div class="wrap">The Shore Conference <span>New Jersey Athletics</span></div></footer>
