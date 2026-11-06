@@ -1,7 +1,8 @@
 // Checks the public endpoint at its data boundary without contacting a live database.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHandler, readRows } from '../supabase/functions/public-calendar/handler.mjs';
+import { createHandler, databaseLoader } from '../supabase/functions/public-calendar/handler.mjs';
+import { publicSchedule } from '../supabase/functions/public-calendar/calendar.mjs';
 
 const schools = [{ slug: 'marlboro', name: 'Marlboro', schedule_published: false, is_conference_member: true }];
 const request = query => new Request('https://example.org/public-calendar?' + query);
@@ -36,20 +37,44 @@ test('download responses use an ICS attachment; unknown school returns 404', asy
   assert.equal((await handle(request('school=missing'))).status, 404);
 });
 
-test('database reads paginate rather than silently truncating a calendar at 1000 rows', async () => {
-  const pages = [];
-  const fetchPage = async url => {
-    pages.push(url.searchParams.get('offset'));
-    return new Response(JSON.stringify(url.searchParams.get('offset') === '0'
-      ? Array.from({ length: 1000 }, (_, id) => ({ id })) : url.searchParams.get('offset') === '1000' ? [{ id: 1000 }] : []));
-  };
-  const rows = await readRows('https://example.org', 'server-only', 'games', 'id', {}, fetchPage);
-  assert.equal(rows.length, 1001);
-  assert.deepEqual(pages, ['0', '1000', '1001']);
+test('the complete publication is read once without a 1000-row truncation', async t => {
+  let calls=0;
+  t.mock.method(globalThis,'fetch',async (url,request) => {
+    calls++;
+    assert.equal(url.pathname,'/rest/v1/rpc/read_published_schedule');
+    assert.equal(request.method,'POST');
+    assert.deepEqual(JSON.parse(request.body),{p_school:null});
+    return Response.json({schools:[],games:Array.from({length:1500},(_,id)=>({id}))});
+  });
+  const data=await databaseLoader('https://example.org','server-only')({scope:'conference'});
+  assert.equal(data.games.length,1500);
+  assert.equal(calls,1);
 });
 
-test('a project row limit below 1000 does not truncate subscriptions', async () => {
-  const fetchPage = async url => new Response(JSON.stringify(Number(url.searchParams.get('offset')) < 600
-    ? Array.from({ length: 300 }, (_, id) => ({ id })) : []));
-  assert.equal((await readRows('https://example.org', 'server-only', 'games', 'id', {}, fetchPage)).length, 600);
+test('public calendars use approved copies even when the working game is changed', async t => {
+  const payload = { id: 'game-1', school_id: 'marlboro', team_id: 'team-1', game_date: '2031-09-01',
+    start_time: '15:00:00', home_away: 'Home', opponent_name: 'Visitor', location: 'Main field',
+    status: 'Scheduled', teams: { sport: 'Soccer', gender: 'Girls', level: 'Varsity', season: 'Fall' } };
+  t.mock.method(globalThis, 'fetch', async url => {
+    if (url.pathname.endsWith('/rpc/read_published_schedule')) return Response.json({
+      schools:[{slug:'marlboro',name:'Marlboro',is_conference_member:true,schedule_published:true}],
+      games:[{...payload,revision:2,updated_at:'2031-08-01T12:00:00Z'}],
+    });
+    if (Number(url.searchParams.get('offset'))) return Response.json([]);
+    const table = url.pathname.split('/').at(-1);
+    return Response.json({
+      schools: [{ slug: 'marlboro', name: 'Marlboro', is_conference_member: true, schedule_published: false }],
+      team_publications: [{ id: 'pub-1', school_id: 'marlboro', team_id: 'team-1', season_year: 2031 }],
+      published_games: [{ id: 'game-1', school_id: 'marlboro', team_id: 'team-1', season_year: 2031,
+        payload, revision: 2, updated_at: '2031-08-01T12:00:00Z' }],
+      games: [{ ...payload, start_time: '18:00:00', revision: 3 }],
+    }[table]);
+  });
+  const options = { scope: 'school', school: 'marlboro' };
+  const data = await databaseLoader('https://example.org', 'server-only')(options);
+  const calendar = publicSchedule(data.schools, data.games, options);
+  assert.equal(calendar.published, true);
+  assert.equal(calendar.events.length, 1);
+  assert.equal(calendar.events[0].start, '2031-09-01T15:00:00');
+  assert.equal(calendar.events[0].revision, 2);
 });

@@ -1,6 +1,15 @@
 # Schedule tools
 
-The staff dashboard has a **Calendar** tab (the month view where games are added and edited) and a **Schedule** tab. The Schedule tab has the totals, CSV import, games not linked with a conference school, away games whose bus isn't confirmed, and a spot for tournaments. The Season, Sport, Level, and Gender filters apply to both tabs.
+The staff dashboard opens its editing tools under **Calendar** and its review/import tools under **Schedule**. Schedule includes team publication status, CSV import, draft match checks and tournaments. Unconfirmed buses are under **Transportation**. The Season, Sport, Level and Gender filters also narrow the team schedules shown for publication.
+
+## Save, review and publish
+
+1. Add or edit games and choose **Save draft**, or import one or more CSV files as drafts.
+2. Open **Schedule**, select the team schedules that are ready, and choose **Review selected schedules**.
+3. Check the games and before/after changes. Choose **Publish selected schedules** to post them together.
+4. For a later individual game update, choose **Save and review publishing** in the editor, check the changes, then **Publish this update**. The first publication must review the whole team.
+
+Draft changes never alter a posted calendar. Each sport/gender/level and season year is separate. Moving a game between teams or seasons requires reviewing both schedules. Unpublishing keeps master games saved. Existing ICS links remain valid; apps refresh published updates on their own schedule.
 
 ## For Greg to review
 
@@ -27,7 +36,8 @@ Use **Download template** on the Schedule tab. The columns are:
 - **Times:** 3:45 PM or 15:45.
 - **Season:** if blank, the season comes from the sport.
 - **Opponent:** an opponent that matches a conference school's name becomes a linked conference opponent. Any other name is saved as written.
-- **Preview:** every row is checked before anything is saved. Rows with problems are marked "Needs a fix". Rows that match a game already on the schedule, or an earlier row in the file, are skipped. Only the ready rows are imported.
+- **Files:** choose up to 20 CSVs, up to 1 MB each and 500 games total. Each file may contain several teams.
+- **Preview:** rows are grouped by team with the source file and row number. Missing columns and invalid rows are flagged. Games already saved, or repeated across selected files, are skipped. Ready rows save only as drafts; publication is a separate review step.
 
 ## Venues
 

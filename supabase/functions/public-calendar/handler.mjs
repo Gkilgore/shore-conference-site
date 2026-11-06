@@ -1,4 +1,4 @@
-// Handles read-only public calendar requests and paginated server-side data access.
+// Handles read-only public calendar requests and one consistent server-side data projection.
 import { parseOptions, publicSchedule, buildCalendar } from './calendar.mjs';
 
 const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
@@ -26,37 +26,21 @@ export function createHandler(load) {
           ...(!json ? { 'Content-Disposition': (options.download ? 'attachment' : 'inline') + '; filename="shore-calendar.ics"' } : {}) },
       });
     } catch {
-      // Never return an empty success feed on failure: apps could delete their saved events.
       return new Response('The schedule could not be loaded. Please try again later.', { status: 503, headers: cors });
     }
   };
 }
 
-export async function readRows(base, key, table, select, filters = {}, fetchPage = fetch) {
-  const rows = [];
-  for (let offset = 0; ;) {
-    const url = new URL('/rest/v1/' + table, base);
-    url.search = new URLSearchParams({ select, order: table === 'schools' ? 'slug' : 'id', limit: '1000', offset: String(offset), ...filters }).toString();
-    const response = await fetchPage(url, { headers: { apikey: key, Authorization: 'Bearer ' + key }, signal: AbortSignal.timeout(15000) });
-    if (!response.ok) throw new Error('Calendar data unavailable.');
-    const page = await response.json();
-    rows.push(...page);
-    if (!page.length) return rows;
-    offset += page.length;
-  }
-}
-
 export function databaseLoader(base, key) {
   return async options => {
-    const schools = await readRows(base, key, 'schools', 'slug,name,is_conference_member,schedule_published');
-    const published = schools.filter(school => school.schedule_published &&
-      (options.scope === 'conference' || school.slug === options.school)).map(school => school.slug);
-    if (!published.length) return { schools, games: [] };
-    const games = await readRows(base, key, 'games',
-      'id,school_id,game_date,start_time,opponent_school_id,opponent_name,home_away,location,status,notes,revision,updated_at,' +
-      'teams!inner(sport,gender,level,season)' +
-      (options.scope === 'school' ? ',transportation(bus_departure,pickup_location,return_time)' : ''),
-      { school_id: 'in.(' + published.map(slug => JSON.stringify(slug)).join(',') + ')' });
-    return { schools, games };
+    const url = new URL('/rest/v1/rpc/read_published_schedule', base);
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { apikey: key, Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_school: options.scope === 'school' ? options.school : null }),
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!response.ok) throw new Error('Calendar data unavailable.');
+    return response.json();
   };
 }

@@ -2,7 +2,7 @@
 
 Families choose a school, a team (sport, gender and level), or the conference. “Subscribe for updates” opens an app chooser with Apple Calendar, Google Calendar, and a copyable URL for Outlook or other apps. A separate download is labeled as a one-time copy. Subscriptions include every date, not just the displayed month.
 
-Each school must enable **Publish schedule** in School settings first. It is off by default. Once enabled, saved games and later AD edits are public. Turning it off returns an empty subscribed calendar; it cannot recall copies already downloaded. Conference games require both schools to be published and their active entries to match every field in the rebuild plan. Transportation appears only in the owning school's feeds. Coach information, contact emails, transportation notes and bus confirmation stay private.
+ADs use **Schedule → Review and publish team schedules**. Saves and imports stay private until each team/season schedule is reviewed and published. Several teams can be published together. Later individual game changes can be reviewed and published separately. Unpublishing removes that team's events on the next subscription refresh; it cannot recall copies already downloaded. Conference games require matching approved copies from both schools. Transportation appears only in the owning school's feeds. Coach information, contact emails, transportation notes and bus confirmation stay private.
 
 ## Implementation
 
@@ -15,9 +15,9 @@ Each school must enable **Publish schedule** in School settings first. It is off
 
 ## Deployment and verification
 
-Use only test project `jrtcyihpdrcnhxgproyw`. Apply the publication migration, verify an AD can change only their school's publication flag, deploy `public-calendar` with JWT verification off, then enable the three test schools through School settings to test. Do not enable schools in SQL by default. Never deploy to the live project from an agent session.
+Use only test project `jrtcyihpdrcnhxgproyw`. Apply the team publication and reviewed-publication migrations, run `supabase/tests/team-schedule-publication.sql`, and deploy `public-calendar` with JWT verification off. Verify publication through the Schedule review controls. Never deploy to the live project from an agent session.
 
-Run `node --test tests/*.test.mjs` locally. Test on the actual service before publishing the frontend: an unpublished school returns zero games; a published school's feed changes after editing a saved game without changing its UID; cancellation preserves UID; unpublishing empties the feed; conference responses contain no transportation. Add a test subscription in Apple, Google and Outlook and confirm the next refresh applies edits without duplicates. Phone (390px) and desktop visual checks are required.
+Run `node --test tests/*.test.mjs` locally. A saved draft must not change any public response. A reviewed published update must retain its UID, advance its revision, and update matching; withdrawn schedules must disappear. Add a test subscription in Apple, Google and Outlook and confirm the next refresh applies published edits without duplicates. Phone (390px) and desktop visual checks are required.
 
 The migration and `public-calendar` function were deployed to test project `jrtcyihpdrcnhxgproyw` on November 6, 2026. Database checks passed for own-school publication, rejection of cross-school publication and game edits, anonymous access restrictions, and bus edits advancing feed revisions. All public tables still have RLS enabled.
 

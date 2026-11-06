@@ -6,7 +6,8 @@ November 5, 2026 · Greg Kilgore and Alexa
 
 - **One database of games.** Every calendar is built from it: each school's page, the conference calendar, and the subscribe links parents add to their phones. Nobody edits a calendar file by hand.
 - **Each school owns its schedule.** Only that school's Athletic Director (AD) can add, import or edit its games. Nothing one school enters appears on another school's calendar.
-- **The conference calendar is built by matching.** When two member schools both enter the same game and the details agree, it appears on the conference calendar automatically.
+- **Review before publishing (Greg's November 6 update).** Saves and imports are working drafts. Publish each sport/gender/level/season-year schedule separately, or select several to review and publish together. Later edits can be reviewed and published per game or per selected team. Posted calendars and subscriptions keep the last approved version until publication. Existing subscription URLs stay the same.
+- **The conference calendar is built by matching.** When two member schools publish the same game and the details agree, it appears on the conference calendar automatically.
 - **Tournaments are the one exception** (later phase). The conference office imports them and they go onto both schools' calendars, because the conference owns those games.
 
 ## 2. Who can do what
@@ -24,9 +25,9 @@ November 5, 2026 · Greg Kilgore and Alexa
 
 ## 3. Matching rules
 
-A game goes on the conference calendar only when both schools have entered it and all of these match: sport, gender and level; date; start time; location; home and away mirrored; each school lists the other as its opponent. Transportation is ignored for matching.
+A game goes on the public conference calendar only when both schools have published it and all of these match: sport, gender and level; date; start time; location; home and away mirrored; each school lists the other as its opponent. Transportation is ignored for matching.
 
-If anything stops matching, or either school postpones or cancels, the game comes off the conference calendar until both entries agree again. The site checks every time a game is saved or imported.
+If a published update stops matching, or either school publishes a postponement or cancellation, the game comes off the conference calendar until both published entries agree again. Draft checks may run on save or import, but draft edits never change posted calendars. Public matching is checked against approved copies on each calendar/feed read.
 
 **AD status line.** Each game against a member school shows its status in the AD's admin screen:
 
@@ -46,6 +47,8 @@ It names the field that differs but never shows the other school's values.
 | teams            | School, sport, gender, level (Varsity, JV, Freshman), season                                     |
 | games            | Owning school, team, date, start time, opponent, home/away, location, status, notes              |
 | transportation   | Game, bus departure, pickup location, return time, notes                                         |
+| team_publications | Which team/season-year schedules have been published and when                                   |
+| published_games  | Last approved public game values, kept separate from working drafts, with stable calendar IDs    |
 | users            | Name, email, role (AD, conference office, site admin), school                                    |
 | conference_links | The two matched games and when they linked (created by the site)                                 |
 | tournament_games | Later phase: tournament, round, date, time, location, two slots (a school or "Winner of Game 3") |

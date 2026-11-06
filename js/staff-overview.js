@@ -73,8 +73,8 @@ function startStaffOverview(client, { currentSchool, gameTitle, canEdit, openEdi
     busSection.hidden = !canEdit();
     stats.replaceChildren(
       stat('Upcoming games', upcoming.length),
-      stat('On the conference calendar', linked, 'linked'),
-      stat('Not linked', checked ? unlinked.length : null, 'problem'),
+      stat('Draft games matching', linked, 'linked'),
+      stat('Draft games not linked', checked ? unlinked.length : null, 'problem'),
     );
 
     if (links === null) linkList.replaceChildren(note('Checking which games are linked…'));

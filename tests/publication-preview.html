@@ -1,4 +1,4 @@
-<!-- Local-only rendering of the actual School settings markup; it never signs in or writes data. -->
+<!-- Local-only rendering of the actual team publication markup; it never signs in or writes data. -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -11,10 +11,18 @@
   <script>
     fetch('../admin.html').then(response => response.text()).then(html => {
       const page = new DOMParser().parseFromString(html, 'text/html');
-      const panel = page.getElementById('staff-settings-panel');
+      const panel = page.getElementById('staff-overview-panel');
       panel.hidden = false;
-      panel.querySelector('#settings-school').textContent = 'Marlboro';
-      panel.querySelector('#publication-status').textContent = 'Private. Families cannot see or subscribe to this schedule yet.';
+      panel.querySelector('#publication-section').hidden = false;
+      panel.querySelector('#publication-status').textContent = 'Select a team schedule to review and publish.';
+      const list = panel.querySelector('#publication-teams');
+      for (const label of ['Girls Varsity Soccer · Fall 2031','Girls JV Soccer · Fall 2031']) {
+        const row=document.createElement('li');
+        const name=document.createElement('label'); name.className='staff-check';
+        const check=document.createElement('input'); check.type='checkbox'; name.append(check,label);
+        const state=document.createElement('p'); state.textContent='Not published · 12 draft games · 12 to review';
+        row.append(name,state); list.append(row);
+      }
       panel.querySelectorAll('input,button').forEach(field => field.disabled = true);
       document.querySelector('.staff-content').append(panel);
     });
