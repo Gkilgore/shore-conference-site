@@ -2,6 +2,17 @@
 const brandingDefaults = { primary_color: '#002857', accent_color: '#f2b600' };
 const logoTypes = ['image/png', 'image/jpeg', 'image/webp'];
 
+// Saved colors win. Until the branding migration is applied, the demo schools use their
+// logo-matched colors from data/sample-data.js, and anything else uses the conference colors.
+function schoolColors(school) {
+  // sampleSchools is a top-level const, so it is not a window property.
+  const demo = school && typeof sampleSchools !== 'undefined' ? sampleSchools[school.slug] : null;
+  return {
+    primary: school?.primary_color || demo?.color || brandingDefaults.primary_color,
+    accent: school?.accent_color || demo?.accent || brandingDefaults.accent_color,
+  };
+}
+
 function schoolLogoUrl(client, school) {
   if (!school) return '';
   if (school.logo_path) return client.storage.from('school-logos').getPublicUrl(school.logo_path).data.publicUrl;
@@ -19,8 +30,8 @@ function applySchoolTheme(client, school) {
   const workspace = document.getElementById('workspace');
   const heading = workspace.querySelector('.staff-heading');
   const logo = document.getElementById('workspace-logo');
-  setSchoolColors(workspace, school?.primary_color || brandingDefaults.primary_color,
-    school?.accent_color || brandingDefaults.accent_color);
+  const colors = schoolColors(school);
+  setSchoolColors(workspace, colors.primary, colors.accent);
   const url = schoolLogoUrl(client, school);
   heading.querySelector('.logo-wall')?.remove();
   logo.hidden = !url;
@@ -143,8 +154,9 @@ function startStaffSettings(client, currentSchool, onSaved) {
     fileUrl = '';
     form.reset();
     document.getElementById('settings-school').textContent = school.name;
-    fields.primary_color.value = school.primary_color || brandingDefaults.primary_color;
-    fields.accent_color.value = school.accent_color || brandingDefaults.accent_color;
+    const colors = schoolColors(school);
+    fields.primary_color.value = colors.primary;
+    fields.accent_color.value = colors.accent;
     currentLogo.hidden = false;
     currentLogo.onerror = () => { currentLogo.hidden = true; };
     currentLogo.src = schoolLogoUrl(client, school);

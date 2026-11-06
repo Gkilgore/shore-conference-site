@@ -1,0 +1,46 @@
+# Schedule tools
+
+The staff dashboard has a **Calendar** tab (the month view where games are added and edited) and a **Schedule** tab. The Schedule tab has the totals, CSV import, games not linked with a conference school, away games whose bus isn't confirmed, and a spot for tournaments. The Season, Sport, Level, and Gender filters apply to both tabs.
+
+## For Greg to review
+
+`supabase/migrations/20261107000100_schedule_tools.sql` is a draft. Review it before applying it to the test project.
+
+- **Bus confirmed:** adds `transportation.bus_confirmed`, and `save_staff_game` now saves it. For now the AD ticks the box. Letting the coordinator confirm from the transportation email is a later step.
+- **Link check:** `game_link_status(school)` gives each game against a member school Linked or Not linked, with a reason such as "Time doesn't match" or "Colts Neck has no matching game on this date". It never returns the other school's values. It runs as the database owner so it can read both schools' games, so it checks the caller's invitation itself instead of using `can_manage_schedule`. That helper depends on row-level security, which an owner-run function skips.
+- **Not done yet:** the link check doesn't build the conference calendar or the `conference_links` table. That's still the matching step.
+
+Tests on the test project:
+
+1. As a test AD, call `game_link_status` for your own school. It should return your games.
+2. Call it for another school. It should return nothing.
+3. Enter a game at both test schools with one field different. The reason should name that field.
+
+## CSV import
+
+Use **Download template** on the Schedule tab. The columns are:
+
+`date, start_time, sport, gender, level, season, home_away, opponent, location, status, bus_departure, pickup_location, return_time, transport_notes, notes`
+
+- **Required:** date, start time, sport, gender, level, home or away, opponent, and location.
+- **Dates:** 2026-11-09 or 11/9/2026.
+- **Times:** 3:45 PM or 15:45.
+- **Season:** if blank, the season comes from the sport.
+- **Opponent:** an opponent that matches a conference school's name becomes a linked conference opponent. Any other name is saved as written.
+- **Preview:** every row is checked before anything is saved. Rows with problems are marked "Needs a fix". Rows that match a game already on the schedule, or an earlier row in the file, are skipped. Only the ready rows are imported.
+
+## Venues
+
+Each school keeps a venue list under **School settings**. In the game editor, Venue is a dropdown:
+
+- **Home game:** the school's own venues.
+- **Away game against a conference school:** that school's venues. The list switches when the opponent changes.
+- **Away game against anyone else:** a typed venue.
+
+"Other venue…" is always there for one-off locations. Picking from the home school's list keeps both schools' locations spelled the same, which the match check needs.
+
+`supabase/migrations/20261109000100_school_venues.sql` is a draft for Greg:
+
+- **Who can read and change lists:** anyone can read every school's list (venue names are already public on the calendars). Only the school's AD and site admins can change it.
+- **What games store:** games still store the venue name as text, so renaming or deleting a venue doesn't change saved games.
+- **Before the migration is applied:** the dropdowns use the sample venues in `data/sample-data.js`.

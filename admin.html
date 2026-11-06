@@ -16,7 +16,14 @@
   <script defer src="js/site.js"></script>
   <script defer src="js/calendar.js"></script>
   <script defer src="js/staff-transportation.js"></script>
+  <script defer src="data/sample-data.js"></script>
   <script defer src="js/staff-branding.js"></script>
+  <script defer src="js/seasons.js"></script>
+  <script defer src="js/staff-overview.js"></script>
+  <script defer src="js/staff-import.js"></script>
+  <script defer src="js/staff-coaches.js"></script>
+  <script defer src="js/staff-venues.js"></script>
+  <script defer src="js/staff-coach-import.js"></script>
   <script defer src="js/staff-schedule.js"></script>
   <script defer src="js/admin.js"></script>
 </head>
@@ -69,8 +76,10 @@
       <div class="staff-layout">
         <aside class="staff-sidebar" aria-label="Dashboard controls">
           <nav class="staff-nav" aria-label="Staff dashboard">
-            <button id="staff-schedule-tab" class="staff-tab" type="button" aria-current="true">Schedule</button>
+            <button id="staff-schedule-tab" class="staff-tab" type="button" aria-current="true">Calendar</button>
+            <button id="staff-overview-tab" class="staff-tab" type="button">Schedule</button>
             <button id="staff-transportation-tab" class="staff-tab" type="button" hidden>Transportation</button>
+            <button id="staff-coaches-tab" class="staff-tab" type="button" hidden>Coaches</button>
             <button id="staff-settings-tab" class="staff-tab" type="button" hidden>School settings</button>
           </nav>
           <button id="add-calendar-game" class="button primary" type="button" hidden>Add game</button>
@@ -80,8 +89,53 @@
           </div>
         </aside>
         <div class="staff-content">
+          <form id="staff-filters" class="filters staff-filters" role="search" aria-label="Filter games">
+            <label>Season<select name="season"><option value="">All seasons</option></select></label>
+            <label>Sport<select name="sport"><option value="">All sports</option></select></label>
+            <label>Level<select name="level"><option value="">All levels</option><option>Varsity</option><option>JV</option><option>Freshman</option></select></label>
+            <label>Gender<select name="gender"><option value="">All teams</option><option>Boys</option><option>Girls</option><option>Coed</option></select></label>
+            <button type="reset" class="button secondary">Reset</button>
+            <p id="staff-filter-count" role="status"></p>
+          </form>
+          <section id="staff-overview-panel" class="staff-panel" aria-labelledby="overview-title" hidden>
+            <h3 id="overview-title" tabindex="-1">Schedule</h3>
+            <ul id="overview-stats" class="staff-stats" aria-label="Schedule totals"></ul>
+            <section id="import-section" class="staff-section" aria-labelledby="import-title" hidden>
+              <h4 id="import-title">Import games</h4>
+              <p class="staff-hint">Add many games at once from a spreadsheet saved as a CSV file. Check the preview, then import the rows that are ready.</p>
+              <div class="import-controls">
+                <label>CSV file <input id="import-file" type="file" accept=".csv,text/csv"></label>
+                <button id="import-template" class="button secondary" type="button">Download template</button>
+              </div>
+              <p id="import-summary" role="status"></p>
+              <div class="import-table-wrap">
+                <table id="import-preview" class="import-preview" hidden>
+                  <thead><tr><th>Row</th><th>Result</th><th>Date</th><th>Time</th><th>Team</th><th>Opponent</th><th>Location</th><th>Problems</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+              <div class="actions">
+                <button id="import-save" class="button primary" type="button" hidden>Import games</button>
+                <button id="import-clear" class="button secondary" type="button" hidden>Clear</button>
+              </div>
+            </section>
+            <section class="staff-section" aria-labelledby="link-title">
+              <h4 id="link-title">Not linked with a conference school</h4>
+              <p class="staff-hint">Upcoming games against conference schools that aren’t on the conference calendar yet, and why. The other school’s details stay private.</p>
+              <ul id="link-list" class="game-list staff-attention"></ul>
+            </section>
+            <section id="bus-section" class="staff-section" aria-labelledby="bus-title">
+              <h4 id="bus-title">Bus not confirmed</h4>
+              <p class="staff-hint">Upcoming away games whose bus hasn’t been confirmed by transportation. Open a game and tick “Bus confirmed” once it is.</p>
+              <ul id="bus-list" class="game-list staff-attention"></ul>
+            </section>
+            <section class="staff-section" aria-labelledby="tournament-title">
+              <h4 id="tournament-title">Tournaments</h4>
+              <p class="staff-hint">Conference tournament games will appear here once the conference office imports them.</p>
+            </section>
+          </section>
           <section id="staff-schedule-panel" class="staff-panel" aria-labelledby="schedule-title">
-            <h3 id="schedule-title" tabindex="-1">School schedule</h3>
+            <h3 id="schedule-title" tabindex="-1">School calendar</h3>
             <p id="schedule-status" role="status"></p>
             <p id="schedule-feedback" role="status"></p>
             <button id="preview-transportation-email" class="button secondary" type="button" hidden>Preview transportation email</button>
@@ -101,6 +155,71 @@
               <div><button class="button primary" type="submit">Save contact</button></div>
               <p id="transportation-contact-status" role="status"></p>
             </form>
+          </section>
+          <section id="staff-coaches-panel" class="staff-panel" aria-labelledby="coaches-title" hidden>
+            <h3 id="coaches-title" tabindex="-1">Coaches</h3>
+            <p class="staff-hint">Coaches get an email when a game for one of their teams is scheduled, changed, postponed or canceled. Email sending isn’t connected yet, so emails wait in the outbox below.</p>
+            <p id="coaches-status" role="status"></p>
+            <section class="staff-section" aria-labelledby="coach-form-title">
+              <h4 id="coach-form-title">Add a coach</h4>
+              <form id="coach-form" class="coach-form">
+                <div class="filters">
+                  <label>Name <input name="name" maxlength="100" autocomplete="off" placeholder="Optional"></label>
+                  <label>Email <input name="email" type="email" required maxlength="254" autocomplete="off"></label>
+                </div>
+                <fieldset class="coach-teams">
+                  <legend>Teams</legend>
+                  <ul id="coach-team-chips" class="coach-chips" aria-label="Teams for this coach"></ul>
+                  <div class="coach-team-add">
+                    <label>Sport <input name="team_sport" list="coach-sports" maxlength="60" placeholder="e.g. Soccer" autocomplete="off"></label>
+                    <label>Gender <select name="team_gender"><option>Boys</option><option>Girls</option><option>Coed</option></select></label>
+                    <div class="coach-levels" role="group" aria-label="Levels">
+                      <label><input type="checkbox" name="team_level" value="Varsity"> Varsity</label>
+                      <label><input type="checkbox" name="team_level" value="JV"> JV</label>
+                      <label><input type="checkbox" name="team_level" value="Freshman"> Freshman</label>
+                    </div>
+                    <button id="coach-team-add" class="button secondary" type="button">Add team</button>
+                  </div>
+                  <datalist id="coach-sports"></datalist>
+                </fieldset>
+                <label class="coach-check"><input name="invite" type="checkbox" checked> Send an invite email</label>
+                <p id="coach-form-status" role="status"></p>
+                <div class="actions">
+                  <button class="button primary" type="submit">Save coach</button>
+                  <button id="coach-form-cancel" class="button secondary" type="button" hidden>Cancel edit</button>
+                </div>
+              </form>
+            </section>
+            <section class="staff-section" aria-labelledby="coach-list-title">
+              <h4 id="coach-list-title">Coach list</h4>
+              <p id="coach-uncovered" class="coach-uncovered"></p>
+              <ul id="coach-list" class="coach-list"></ul>
+            </section>
+            <section class="staff-section" aria-labelledby="coach-import-title">
+              <h4 id="coach-import-title">Import coaches</h4>
+              <p class="staff-hint">One row per coach and sport. List several levels in one row, like “Varsity; JV”, or “All”. Rows with the same email become one coach.</p>
+              <div class="import-controls">
+                <label>CSV file <input id="coach-import-file" type="file" accept=".csv,text/csv"></label>
+                <button id="coach-import-template" class="button secondary" type="button">Download template</button>
+              </div>
+              <p id="coach-import-summary" class="import-summary" role="status"></p>
+              <div class="import-table-wrap">
+                <table id="coach-import-preview" class="import-preview" hidden>
+                  <thead><tr><th>Rows</th><th>Result</th><th>Email</th><th>Name</th><th>Teams</th><th>Problems</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+              <label class="coach-check" hidden><input id="coach-import-invite" type="checkbox" checked> Send invite emails to new coaches</label>
+              <div class="actions">
+                <button id="coach-import-save" class="button primary" type="button" hidden>Save coaches</button>
+                <button id="coach-import-clear" class="button secondary" type="button" hidden>Clear</button>
+              </div>
+            </section>
+            <section class="staff-section" aria-labelledby="coach-outbox-title">
+              <h4 id="coach-outbox-title">Email outbox</h4>
+              <p class="staff-hint">Emails waiting to go to coaches. Games added in one import go out as one summary per coach.</p>
+              <ul id="coach-outbox" class="coach-outbox"></ul>
+            </section>
           </section>
           <section id="staff-settings-panel" class="staff-panel" aria-labelledby="settings-title" hidden>
             <h3 id="settings-title" tabindex="-1">School settings</h3>
@@ -141,6 +260,17 @@
                 </div>
               </div>
             </div>
+            <section class="staff-section" aria-labelledby="venues-title">
+              <h4 id="venues-title">Venues</h4>
+              <p class="staff-hint">Your fields, gyms and courts. ADs pick from this list for home games here, and visiting schools pick from it for away games at your school, so both entries match.</p>
+              <p id="venue-status" class="venue-status" role="status"></p>
+              <ul id="venue-list" class="venue-list"></ul>
+              <form id="venue-add" class="filters venue-add">
+                <label>New venue <input name="venue_name" required maxlength="160" placeholder="e.g. Main Gym" autocomplete="off"></label>
+                <label>Address <input name="venue_address" maxlength="200" placeholder="Optional" autocomplete="off"></label>
+                <button class="button primary" type="submit">Add venue</button>
+              </form>
+            </section>
           </section>
           <form id="game-form" class="staff-panel prose" aria-labelledby="game-form-title" hidden>
             <h3 id="game-form-title">Add a game</h3>
@@ -161,7 +291,8 @@
               <div class="filters">
                 <label>Opponent <select name="opponent_school_id"></select></label>
                 <label id="opponent-other">Opponent name <input name="opponent_name" maxlength="100"></label>
-                <label>Venue <input name="location" required maxlength="160"></label>
+                <label id="venue-pick" hidden>Venue <select id="venue-select"></select></label>
+                <label id="venue-typed">Venue <input name="location" required maxlength="160" autocomplete="off"></label>
               </div>
               <label>Game notes <textarea name="notes" maxlength="1000" rows="2"></textarea></label>
             </fieldset>
@@ -173,17 +304,28 @@
                 <label>Return time <input name="return_time" type="time"></label>
               </div>
               <label>Transportation notes <textarea name="transport_notes" maxlength="1000" rows="2"></textarea></label>
+              <label class="staff-check"><input name="bus_confirmed" type="checkbox" value="true"> Bus confirmed by transportation</label>
             </fieldset>
             <p id="game-form-status" role="status"></p>
             <div class="actions">
               <button class="button primary" type="submit">Save game</button>
               <button class="button secondary" id="preview-editor-transportation-email" type="button" hidden>Preview saved transportation email</button>
-              <button class="button secondary" id="close-game-editor" type="button">Back to schedule</button>
+              <button class="button secondary" id="close-game-editor" type="button">Back to calendar</button>
             </div>
           </form>
         </div>
       </div>
     </section>
+    <dialog id="coach-draft" class="game-details" aria-labelledby="coach-draft-title">
+      <p class="eyebrow">Not sent yet</p>
+      <h2 id="coach-draft-title">Coach email preview</h2>
+      <dl>
+        <dt>To</dt><dd id="coach-draft-to"></dd>
+        <dt>Subject</dt><dd id="coach-draft-subject"></dd>
+      </dl>
+      <pre id="coach-draft-body" class="email-body"></pre>
+      <form method="dialog"><button class="button secondary" autofocus>Close</button></form>
+    </dialog>
     <dialog id="transportation-draft" class="game-details" aria-labelledby="transportation-draft-title">
       <h2 id="transportation-draft-title">Transportation email preview</h2>
       <p>Email sending is not connected yet.</p>

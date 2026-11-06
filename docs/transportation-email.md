@@ -8,3 +8,5 @@ The dashboard stores each school's coordinator contact and previews an email fro
 4. Test delivery with approved test inboxes, then test that an AD cannot send another school's game and that a double click sends one message. Enable the send button only after those checks.
 
 A Confirmed bus checkbox and email updates for reschedules or cancellations are open decisions.
+
+Coach emails wait on the same Resend setup. When sending is connected, finish them too: see `docs/coach-emails.md`.
