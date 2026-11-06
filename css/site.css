@@ -424,6 +424,11 @@ textarea { display: block; resize: vertical; }
 }
 
 /* About page and footer. */
+.public-postings { background: white; border: var(--frame); padding: 1rem; margin-block: 1rem; }
+.public-postings article + article { margin-top: 1rem; }
+.public-update-list { display: grid; gap: 0.75rem; list-style: none; padding: 0; }
+.public-update-list > li { border: var(--frame); padding: 0.75rem; overflow-wrap: anywhere; }
+.public-update-list p { margin-block: 0.4rem; }
 .prose { display: grid; gap: 1.5rem; }
 .prose p { max-width: 65ch; margin-top: 0.4rem; line-height: 1.6; }
 .site-footer { padding-block: 1.1rem; background: var(--ink); color: white; font-size: 0.9rem; }

@@ -136,6 +136,7 @@
 #preview-transportation-email { margin-block: 0.25rem 0.5rem; }
 
 /* Team publication selection and review use the same full frames as the rest of the workspace. */
+.staff-actions { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-block: 0.65rem; }
 .publication-teams, .publication-games { display: grid; gap: 0.65rem; padding: 0; list-style: none; }
 .publication-teams > li, .publication-games > li { border: var(--frame); padding: 0.75rem; overflow-wrap: anywhere; }
 .publication-teams p, .publication-games p { margin: 0.4rem 0; }

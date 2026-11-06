@@ -68,7 +68,7 @@ function renderUpcoming(events) {
 const directory = document.getElementById('school-directory');
 if (directory) {
   const search = document.getElementById('school-search');
-  const schools = Object.entries(sampleSchools).sort(([, first], [, second]) =>
+  const schools = Object.entries(typeof shoreSchools !== 'undefined' ? shoreSchools : sampleSchools).sort(([, first], [, second]) =>
     first.name.localeCompare(second.name));
   search.addEventListener('input', showSchools);
   showSchools();
@@ -84,10 +84,10 @@ if (directory) {
       const logo = document.createElement('img');
       const label = document.createElement('span');
       const hint = document.createElement('small');
-      link.href = 'school.html?school=' + slug;
+      link.href = 'school.html?school=' + encodeURIComponent(slug);
       link.style.setProperty('--card-color', school.color);
       link.style.setProperty('--card-ink', readableInk(school.color));
-      logo.src = 'assets/logos/' + slug + '.png';
+      logo.src = school.logo || 'assets/logos/' + slug + '.png';
       logo.alt = '';
       logo.width = logo.height = 48;
       label.textContent = school.name;

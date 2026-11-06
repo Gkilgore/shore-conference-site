@@ -7,7 +7,7 @@ const googleButton = document.getElementById('google-sign-in');
 const emailForm = document.getElementById('email-sign-in');
 const workspaceTitles = {
   ad: 'Athletic Director workspace',
-  conference_office: 'Conference office workspace',
+  conference_office: 'Conference admin workspace',
   site_admin: 'Site admin workspace',
 };
 
@@ -29,12 +29,20 @@ function startStaffSignIn() {
   let latestCheck = 0;
   let stopSchedule;
   let workspaceUserId;
+  let inviteKey;
 
   client.auth.onAuthStateChange((event, session) => {
     if (session?.user.id === workspaceUserId && stopSchedule &&
-        (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN')) return;
+        (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN')) {
+      const check = ++latestCheck;
+      setTimeout(() => {
+        if (check === latestCheck && session.user.id === workspaceUserId) checkAccess(check);
+      }, 0);
+      return;
+    }
     stopSchedule?.();
     stopSchedule = undefined;
+    inviteKey = undefined;
     workspaceUserId = session?.user.id;
     const check = ++latestCheck;
     workspace.hidden = true;
@@ -54,9 +62,17 @@ function startStaffSignIn() {
       return;
     }
     if (!invite || !Object.hasOwn(workspaceTitles, invite.role)) {
+      stopSchedule?.();
+      stopSchedule = undefined;
+      inviteKey = undefined;
+      workspace.hidden = true;
       authStatus.textContent = 'This account has no staff invitation. Sign out and use your invited address.';
       return;
     }
+    const key = [invite.email,invite.name,invite.role,invite.school_id].join('|');
+    if (key === inviteKey && stopSchedule) return;
+    stopSchedule?.();
+    inviteKey = key;
     document.getElementById('workspace-title').textContent = workspaceTitles[invite.role];
     document.getElementById('workspace-account').textContent =
       [invite.name, invite.email, invite.schools?.name].filter(Boolean).join(' · ');
@@ -64,6 +80,10 @@ function startStaffSignIn() {
     workspace.hidden = false;
     stopSchedule = startStaffSchedule(client, invite);
   }
+
+  window.addEventListener('focus', () => {
+    if (workspaceUserId) checkAccess(++latestCheck);
+  });
 
   googleButton.addEventListener('click', async () => {
     googleButton.disabled = true;

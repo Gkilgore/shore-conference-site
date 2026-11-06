@@ -8,6 +8,11 @@ function calendarFeedUrl(options = {}, format = 'ics') {
 
 async function loadPublicCalendar(options) {
   const response = await fetch(calendarFeedUrl(options, 'json'), { cache: 'no-store', signal: AbortSignal.timeout(20000) });
+  if (response.status === 404) {
+    const error = new Error('School not found. Choose a school from the directory.');
+    error.status = 404;
+    throw error;
+  }
   if (!response.ok) throw new Error('The schedule could not be loaded. Please refresh to try again.');
   return response.json();
 }
@@ -38,5 +43,6 @@ function setSubscriptionLink(options) {
   };
   filters?.addEventListener('input', update);
   filters?.addEventListener('reset', () => setTimeout(update, 0));
+  window.addEventListener('shore:season-selected', update);
   update();
 }

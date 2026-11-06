@@ -37,6 +37,16 @@ test('download responses use an ICS attachment; unknown school returns 404', asy
   assert.equal((await handle(request('school=missing'))).status, 404);
 });
 
+test('published season and update metadata reach school JSON without entering ICS content', async () => {
+  const seasons=[{season:'Spring',season_year:2034,teams:[{team_id:'v',sport:'Soccer',gender:'Girls',level:'Varsity'}]}];
+  const updates=[{id:1,kind:'team_posted',season:'Spring',season_year:2034,occurred_at:'2034-03-01T12:00:00Z'}];
+  const handle=createHandler(async()=>({schools,games:[],seasons,updates}));
+  const data=await (await handle(request('school=marlboro&format=json'))).json();
+  assert.deepEqual(data.seasons,seasons);
+  assert.deepEqual(data.updates,updates);
+  assert.doesNotMatch(await (await handle(request('school=marlboro'))).text(),/team_posted/);
+});
+
 test('the complete publication is read once without a 1000-row truncation', async t => {
   let calls=0;
   t.mock.method(globalThis,'fetch',async (url,request) => {
