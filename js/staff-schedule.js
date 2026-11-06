@@ -1,4 +1,4 @@
-// Loads school-owned schedules and saves a game and its bus details together.
+// Runs the staff dashboard tabs: Calendar, Schedule, Transportation, Coaches, School settings, and the game editor.
 function startStaffSchedule(client, invite) {
   const selector = document.getElementById('schedule-school');
   const preview = document.getElementById('view-as');
@@ -23,7 +23,27 @@ function startStaffSchedule(client, invite) {
   const settingsTab = document.getElementById('staff-settings-tab');
   const settingsPanel = document.getElementById('staff-settings-panel');
   const settingsTitle = document.getElementById('settings-title');
+  const overviewTab = document.getElementById('staff-overview-tab');
+  const overviewPanel = document.getElementById('staff-overview-panel');
+  const overviewTitle = document.getElementById('overview-title');
+  const filterForm = document.getElementById('staff-filters');
+  const filterFields = filterForm.elements;
+  const filterCount = document.getElementById('staff-filter-count');
   const currentSchool = () => schools.find(school => school.slug === selector.value);
+  const overview = startStaffOverview(client, {
+    currentSchool, gameTitle, canEdit: () => canEdit, openEditor: game => openEditor(game),
+  });
+  const coachesTab = document.getElementById('staff-coaches-tab');
+  const coachesPanel = document.getElementById('staff-coaches-panel');
+  const coachesTitle = document.getElementById('coaches-title');
+  const coachList = startStaffCoaches(client, { currentSchool, schools: () => schools, existingGames: () => allGames });
+  const coachImport = startCoachImport(client, {
+    currentSchool, coaches: () => coachList.coaches(), onImported: () => coachList.load(),
+  });
+  const importer = startStaffImport(client, {
+    currentSchool, schools: () => schools, existingGames: () => allGames,
+    onImported: date => loadGames(date),
+  });
   const settings = startStaffSettings(client, currentSchool, school => applySchoolTheme(client, school));
   const transportation = startStaffTransportation(client, invite,
     () => schools.find(school => school.slug === selector.value), gameTitle);
@@ -31,12 +51,14 @@ function startStaffSchedule(client, invite) {
   const formStatus = document.getElementById('game-form-status');
   const fields = form.elements;
   const saveButton = form.querySelector('[type="submit"]');
+  const venues = startStaffVenues(client, { currentSchool, schools: () => schools, fields });
   let canEdit = invite.role !== 'conference_office';
   const options = (schools) => schools.map(school => new Option(school.name, school.slug));
   const dateFormat = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const timeFormat = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' });
   let calendar;
   let schools = [];
+  let allGames = [];
   let activeGame = null;
   let loadNumber = 0;
   let stopped = false;
@@ -52,6 +74,7 @@ function startStaffSchedule(client, invite) {
   addGame.hidden = true;
   transportationTab.hidden = true;
   settingsTab.hidden = true;
+  coachesTab.hidden = true;
   selector.disabled = true;
   form.hidden = true;
   showSchedule();
@@ -69,6 +92,7 @@ function startStaffSchedule(client, invite) {
       return;
     }
     schools = data;
+    venues.load();
     if (isSiteAdmin) {
       preview.add(new Option('Conference office', 'office'));
       for (const school of schools) preview.add(new Option(school.name + ' AD', 'ad:' + school.slug));
@@ -113,17 +137,28 @@ function startStaffSchedule(client, invite) {
       const bus = game.transportation;
       const values = { ...game, ...game.teams, ...bus, notes: game.notes, transport_notes: bus?.notes };
       for (const field of fields) {
-        if (field.name && Object.hasOwn(values, field.name)) field.value = values[field.name] ?? '';
+        if (!field.name || !Object.hasOwn(values, field.name)) continue;
+        if (field.type === 'checkbox') field.checked = Boolean(values[field.name]);
+        else field.value = values[field.name] ?? '';
       }
     }
     syncOpponent();
+    venues.sync(game?.location ?? '');
     transportation.setPreview(game, true);
   }
 
   function selectSchool() {
     const showContact = canEdit && !transportationPanel.hidden;
     const showSettings = canEdit && !settingsPanel.hidden;
+    const showOverview = !overviewPanel.hidden;
+    const showCoaches = canEdit && !coachesPanel.hidden;
     transportation.reset();
+    coachList.reset();
+    coachImport.reset();
+    overview.reset();
+    importer.reset();
+    allGames = [];
+    filterForm.reset();
     applySchoolTheme(client, currentSchool());
     list.replaceChildren();
     calendar?.removeAllEvents();
@@ -137,8 +172,12 @@ function startStaffSchedule(client, invite) {
     addGame.hidden = !canEdit;
     transportationTab.hidden = !canEdit;
     settingsTab.hidden = !canEdit;
+    coachesTab.hidden = !canEdit;
     if (showContact) openTransportation(false);
+    if (showCoaches) openCoaches(false);
     if (showSettings) openSettings(false);
+    if (showOverview) openOverview(false);
+    document.getElementById('import-section').hidden = !canEdit;
     loadGames(null, true);
   }
 
@@ -156,6 +195,8 @@ function startStaffSchedule(client, invite) {
       status.textContent = 'The schedule could not load. Refresh to try again.';
       return;
     }
+    allGames = data;
+    fillSeasonFilters(filterFields.season, filterFields.sport, filterOptions());
     status.textContent = data.length
       ? data.length + (data.length === 1 ? ' saved game.' : ' saved games.') + (canEdit ? ' Select a game to edit it.' : '')
       : 'No games saved for this school.' + (canEdit ? ' Use Add game to enter the first one.' : '');
@@ -166,9 +207,42 @@ function startStaffSchedule(client, invite) {
       focusDate = (data.find(game => game.game_date >= dateKey) ?? data.at(-1)).game_date;
     }
     if (savedId) transportation.setPreview(data.find(game => game.id === savedId));
-    showCalendar(data, focusDate ?? (newSchool ? new Date() : null));
-    if (calendar) return;
-    const rows = data.map(game => {
+    const visible = visibleGames();
+    showCount(visible);
+    overview.load(visible);
+    showCalendar(visible, focusDate ?? (newSchool ? new Date() : null));
+    if (!calendar) showList(visible);
+  }
+
+  // Season, Sport, Level and Gender filters shared by the Calendar and Schedule tabs.
+  function filterOptions() {
+    return allGames.map(game => ({ season: game.teams.season, sport: game.teams.sport }));
+  }
+
+  function visibleGames() {
+    const { season, sport, level, gender } = filterFields;
+    return allGames.filter(game =>
+      (!season.value || game.teams.season === season.value) &&
+      (!sport.value || game.teams.sport === sport.value) &&
+      (!level.value || game.teams.level === level.value) &&
+      (!gender.value || game.teams.gender === gender.value));
+  }
+
+  function showCount(visible) {
+    filterCount.textContent = visible.length === allGames.length
+      ? '' : 'Showing ' + visible.length + ' of ' + allGames.length + ' games';
+  }
+
+  function applyFilters() {
+    const visible = visibleGames();
+    showCount(visible);
+    overview.render(visible);
+    if (calendar) showCalendar(visible);
+    else showList(visible);
+  }
+
+  function showList(games) {
+    const rows = games.map(game => {
       const row = document.createElement('li');
       const date = document.createElement('time');
       const title = document.createElement('strong');
@@ -192,10 +266,10 @@ function startStaffSchedule(client, invite) {
       }
       return row;
     });
-    const games = document.createElement('ul');
-    games.className = 'game-list';
-    games.append(...rows);
-    list.replaceChildren(games);
+    const gameList = document.createElement('ul');
+    gameList.className = 'game-list';
+    gameList.append(...rows);
+    list.replaceChildren(gameList);
   }
 
   function showCalendar(entries, focusDate) {
@@ -260,26 +334,40 @@ function startStaffSchedule(client, invite) {
       game.home_away === 'Home' ? 'vs.' : 'at', opponent].join(' ');
   }
 
-  function showSchedule(focus = false) {
+  // Hides every panel and clears the selected tab; each opener then shows its own panel.
+  function hidePanels() {
+    for (const [panel, tab] of [[schedulePanel, scheduleTab], [overviewPanel, overviewTab],
+      [transportationPanel, transportationTab], [coachesPanel, coachesTab], [settingsPanel, settingsTab]]) {
+      panel.hidden = true;
+      tab.removeAttribute('aria-current');
+    }
     form.hidden = true;
+    filterForm.hidden = true;
+  }
+
+  // The Calendar tab. Its elements keep their original "schedule" ids.
+  function showSchedule(focus = false) {
+    hidePanels();
     schedulePanel.hidden = false;
     scheduleTab.setAttribute('aria-current', 'true');
-    transportationPanel.hidden = true;
-    transportationTab.removeAttribute('aria-current');
-    settingsPanel.hidden = true;
-    settingsTab.removeAttribute('aria-current');
+    filterForm.hidden = false;
     calendar?.updateSize();
     if (focus) scheduleTitle.focus();
   }
 
+  function openOverview(focus = true) {
+    hidePanels();
+    overviewPanel.hidden = false;
+    overviewTab.setAttribute('aria-current', 'true');
+    filterForm.hidden = false;
+    overview.render(visibleGames());
+    if (focus) overviewTitle.focus();
+  }
+
   function openTransportation(focus = true) {
     if (!canEdit || !selector.value) return;
-    schedulePanel.hidden = true;
-    form.hidden = true;
+    hidePanels();
     transportationPanel.hidden = false;
-    settingsPanel.hidden = true;
-    scheduleTab.removeAttribute('aria-current');
-    settingsTab.removeAttribute('aria-current');
     transportationTab.setAttribute('aria-current', 'true');
     document.getElementById('transportation-school').textContent = selector.selectedOptions[0].text;
     transportation.load();
@@ -290,30 +378,42 @@ function startStaffSchedule(client, invite) {
     if (!canEdit || saveButton.disabled) return;
     edit(game);
     if (date) fields.game_date.value = date;
-    schedulePanel.hidden = true;
+    hidePanels();
     form.hidden = false;
-    transportationPanel.hidden = true;
-    settingsPanel.hidden = true;
-    transportationTab.removeAttribute('aria-current');
-    settingsTab.removeAttribute('aria-current');
-    scheduleTab.removeAttribute('aria-current');
     fields.sport.focus();
+  }
+
+  function openCoaches(focus = true) {
+    if (!canEdit || !selector.value) return;
+    hidePanels();
+    coachesPanel.hidden = false;
+    coachesTab.setAttribute('aria-current', 'true');
+    coachList.load();
+    if (focus) coachesTitle.focus();
   }
 
   function openSettings(focus = true) {
     if (!canEdit || !selector.value) return;
-    schedulePanel.hidden = true;
-    form.hidden = true;
-    transportationPanel.hidden = true;
+    hidePanels();
     settingsPanel.hidden = false;
-    scheduleTab.removeAttribute('aria-current');
-    transportationTab.removeAttribute('aria-current');
     settingsTab.setAttribute('aria-current', 'true');
     settings.load();
+    venues.showSettings();
     if (focus) settingsTitle.focus();
   }
 
   transportationTab.onclick = () => openTransportation();
+  overviewTab.onclick = () => openOverview();
+  coachesTab.onclick = () => openCoaches();
+  filterForm.onsubmit = event => event.preventDefault();
+  filterForm.oninput = event => {
+    if (event.target === filterFields.season) fillSportOptions(filterFields.season, filterFields.sport, filterOptions());
+    applyFilters();
+  };
+  filterForm.onreset = () => setTimeout(() => {
+    fillSportOptions(filterFields.season, filterFields.sport, filterOptions());
+    applyFilters();
+  }, 0);
   settingsTab.onclick = () => openSettings();
   addGame.onclick = () => openEditor(null);
   preview.onchange = selectView;
@@ -333,6 +433,8 @@ function startStaffSchedule(client, invite) {
     fieldsets.forEach(fieldset => fieldset.disabled = true);
     closeEditor.disabled = true;
     scheduleTab.disabled = true;
+    overviewTab.disabled = true;
+    coachesTab.disabled = true;
     addGame.disabled = true;
     transportationTab.disabled = true;
     settingsTab.disabled = true;
@@ -346,6 +448,8 @@ function startStaffSchedule(client, invite) {
     fieldsets.forEach(fieldset => fieldset.disabled = false);
     closeEditor.disabled = false;
     scheduleTab.disabled = false;
+    overviewTab.disabled = false;
+    coachesTab.disabled = false;
     addGame.disabled = false;
     transportationTab.disabled = false;
     settingsTab.disabled = false;
@@ -370,6 +474,16 @@ function startStaffSchedule(client, invite) {
     stopped = true;
     transportation.stop();
     settings.stop();
+    overview.stop();
+    importer.stop();
+    coachList.stop();
+    venues.stop();
+    coachImport.stop();
+    coachesTab.onclick = null;
+    coachesTab.disabled = false;
+    overviewTab.onclick = null;
+    overviewTab.disabled = false;
+    filterForm.oninput = filterForm.onreset = filterForm.onsubmit = null;
     transportationTab.onclick = null;
     settingsTab.onclick = null;
     settingsTab.disabled = false;

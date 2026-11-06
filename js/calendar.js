@@ -14,10 +14,12 @@ function renderCalendar(events) {
       fields.school.add(new Option(school.name, slug));
     }
   }
-  for (const name of ['sport', 'level']) {
-    const values = [...new Set(events.map(game => game[name]))].sort();
-    for (const value of values) fields[name].add(new Option(value, value));
-  }
+  const levels = [...new Set(events.map(game => game.level))].sort();
+  for (const level of levels) fields.level.add(new Option(level, level));
+  // Open to the sports in season when there are games for it; "All seasons" shows the rest.
+  fillSeasonFilters(fields.season, fields.sport, events);
+  if (events.some(game => game.season === currentSeason())) fields.season.value = currentSeason();
+  fillSportOptions(fields.season, fields.sport, events);
 
   const showGameDetails = createGameDetails(target);
   const calendar = new FullCalendar.Calendar(target, {
@@ -64,6 +66,7 @@ function renderCalendar(events) {
       const results = events.filter(game =>
         game.start.slice(0, 10) >= firstDay && game.start.slice(0, 10) < afterLastDay &&
         (!fields.school?.value || game.schools.includes(fields.school.value)) &&
+        (!fields.season.value || game.season === fields.season.value) &&
         (!fields.sport.value || game.sport === fields.sport.value) &&
         (!fields.level.value || game.level === fields.level.value) &&
         (game.title + ' ' + game.location).toLowerCase().includes(query));
@@ -96,8 +99,14 @@ function renderCalendar(events) {
     },
   });
   filters.addEventListener('submit', event => event.preventDefault());
-  filters.addEventListener('input', () => calendar.refetchEvents());
-  filters.addEventListener('reset', () => setTimeout(() => calendar.refetchEvents(), 0));
+  filters.addEventListener('input', event => {
+    if (event.target === fields.season) fillSportOptions(fields.season, fields.sport, events);
+    calendar.refetchEvents();
+  });
+  filters.addEventListener('reset', () => setTimeout(() => {
+    fillSportOptions(fields.season, fields.sport, events);
+    calendar.refetchEvents();
+  }, 0));
   calendar.render();
 }
 

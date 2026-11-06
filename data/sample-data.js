@@ -1,8 +1,11 @@
 // Fictional schools and game entries for the two prototype calendars.
 const sampleSchools = {
-  'colts-neck': { name: 'Colts Neck', color: '#2f4a29', accent: '#dad8d9' },
-  marlboro: { name: 'Marlboro', color: '#183366', accent: '#ffcc00' },
-  'shore-regional': { name: 'Shore Regional', color: '#004990', accent: '#d4e0ec' },
+  'colts-neck': { name: 'Colts Neck', color: '#2f4a29', accent: '#dad8d9',
+    venues: ['Colts Neck Courts', 'Colts Neck Field 2', 'Colts Neck Gym'] },
+  marlboro: { name: 'Marlboro', color: '#183366', accent: '#ffcc00',
+    venues: ['Marlboro Gym', 'Marlboro Turf Field'] },
+  'shore-regional': { name: 'Shore Regional', color: '#004990', accent: '#d4e0ec',
+    venues: ['Shore Regional East Field', 'Shore Regional Gym', 'Shore Regional Turf Field'] },
 };
 
 const sampleGames = [

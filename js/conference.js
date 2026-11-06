@@ -20,6 +20,7 @@ function conferenceEvents(games) {
       location: game.location,
       schools: [game.school, game.opponent],
       sport: game.sport,
+      season: seasonOf(game.sport, game.gender),
       level: game.level,
     }));
 }

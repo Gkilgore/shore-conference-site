@@ -31,6 +31,7 @@ if (Object.hasOwn(sampleSchools, schoolSlug)) {
     start: game.start,
     location: game.location,
     sport: game.sport,
+    season: seasonOf(game.sport, game.gender),
     level: game.level,
     status: game.status,
     bus: game.busTime ? 'Bus ' + formatBusTime(game.busTime) : '',
