@@ -13,8 +13,10 @@
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js"></script>
   <script defer src="js/supabase-config.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.22/index.global.min.js"></script>
+  <script defer src="js/site.js"></script>
   <script defer src="js/calendar.js"></script>
   <script defer src="js/staff-transportation.js"></script>
+  <script defer src="js/staff-branding.js"></script>
   <script defer src="js/staff-schedule.js"></script>
   <script defer src="js/admin.js"></script>
 </head>
@@ -57,15 +59,19 @@
         <p id="preview-status" role="status"></p>
       </div>
       <header class="staff-heading">
-        <p class="eyebrow">Staff dashboard</p>
-        <h1 id="workspace-title"></h1>
-        <p id="workspace-account"></p>
+        <img id="workspace-logo" alt="" width="350" height="350" hidden>
+        <div>
+          <p class="eyebrow">Staff dashboard</p>
+          <h1 id="workspace-title"></h1>
+          <p id="workspace-account"></p>
+        </div>
       </header>
       <div class="staff-layout">
         <aside class="staff-sidebar" aria-label="Dashboard controls">
           <nav class="staff-nav" aria-label="Staff dashboard">
             <button id="staff-schedule-tab" class="staff-tab" type="button" aria-current="true">Schedule</button>
             <button id="staff-transportation-tab" class="staff-tab" type="button" hidden>Transportation</button>
+            <button id="staff-settings-tab" class="staff-tab" type="button" hidden>School settings</button>
           </nav>
           <button id="add-calendar-game" class="button primary" type="button" hidden>Add game</button>
           <div>
@@ -95,6 +101,46 @@
               <div><button class="button primary" type="submit">Save contact</button></div>
               <p id="transportation-contact-status" role="status"></p>
             </form>
+          </section>
+          <section id="staff-settings-panel" class="staff-panel" aria-labelledby="settings-title" hidden>
+            <h3 id="settings-title" tabindex="-1">School settings</h3>
+            <p id="settings-school" class="staff-subhead"></p>
+            <div class="branding-layout">
+              <form id="branding-form" class="branding-form">
+                <fieldset>
+                  <legend>Logo</legend>
+                  <div class="branding-current"><img id="branding-logo-current" alt="Current logo" width="96" height="96"></div>
+                  <label>Upload a new logo <input id="branding-logo-file" type="file" accept="image/png,image/jpeg,image/webp"></label>
+                  <p class="staff-hint">A PNG with a transparent background works best. Up to 1 MB. Colors are picked from a new logo automatically.</p>
+                </fieldset>
+                <fieldset>
+                  <legend>Colors</legend>
+                  <div class="filters">
+                    <label>Main color <input name="primary_color" type="color"></label>
+                    <label>Accent color <input name="accent_color" type="color"></label>
+                  </div>
+                  <button id="branding-suggest" class="button secondary" type="button">Suggest colors from logo</button>
+                  <ul id="branding-schemes" class="branding-schemes" aria-label="Suggested color schemes"></ul>
+                  <p id="branding-contrast" role="status"></p>
+                </fieldset>
+                <p id="branding-status" role="status"></p>
+                <div class="actions">
+                  <button class="button primary" type="submit">Save branding</button>
+                  <button id="branding-undo" class="button secondary" type="button">Undo changes</button>
+                </div>
+              </form>
+              <div class="branding-preview-area">
+                <p class="staff-label">Preview of your school page</p>
+                <div id="branding-preview" class="branding-preview">
+                  <img class="branding-preview-logo" alt="" width="350" height="350">
+                  <p class="branding-preview-title"><span class="branding-preview-name"></span> <em>Athletics</em></p>
+                  <div class="actions"><span class="button primary">View schedule</span><span class="button secondary">All schools</span></div>
+                  <ul class="game-list" aria-hidden="true">
+                    <li><time>Nov 9</time><strong>Girls Varsity Soccer vs. Rival</strong><span>3:45 PM · Home Field</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </section>
           <form id="game-form" class="staff-panel prose" aria-labelledby="game-form-title" hidden>
             <h3 id="game-form-title">Add a game</h3>

@@ -20,6 +20,11 @@ function startStaffSchedule(client, invite) {
   const transportationTab = document.getElementById('staff-transportation-tab');
   const transportationPanel = document.getElementById('staff-transportation-panel');
   const transportationTitle = document.getElementById('transportation-title');
+  const settingsTab = document.getElementById('staff-settings-tab');
+  const settingsPanel = document.getElementById('staff-settings-panel');
+  const settingsTitle = document.getElementById('settings-title');
+  const currentSchool = () => schools.find(school => school.slug === selector.value);
+  const settings = startStaffSettings(client, currentSchool, school => applySchoolTheme(client, school));
   const transportation = startStaffTransportation(client, invite,
     () => schools.find(school => school.slug === selector.value), gameTitle);
   const form = document.getElementById('game-form');
@@ -46,6 +51,7 @@ function startStaffSchedule(client, invite) {
   calendarTarget.hidden = true;
   addGame.hidden = true;
   transportationTab.hidden = true;
+  settingsTab.hidden = true;
   selector.disabled = true;
   form.hidden = true;
   showSchedule();
@@ -53,7 +59,10 @@ function startStaffSchedule(client, invite) {
   loadSchools();
 
   async function loadSchools() {
-    const { data, error } = await client.from('schools').select('slug,name').order('name');
+    // Branding columns arrive with the school branding migration; fall back until it is applied.
+    let { data, error } = await client.from('schools')
+      .select('slug,name,primary_color,accent_color,logo_path').order('name');
+    if (error) ({ data, error } = await client.from('schools').select('slug,name').order('name'));
     if (stopped) return;
     if (error) {
       status.textContent = 'The school list could not load. Refresh to try again.';
@@ -113,7 +122,9 @@ function startStaffSchedule(client, invite) {
 
   function selectSchool() {
     const showContact = canEdit && !transportationPanel.hidden;
+    const showSettings = canEdit && !settingsPanel.hidden;
     transportation.reset();
+    applySchoolTheme(client, currentSchool());
     list.replaceChildren();
     calendar?.removeAllEvents();
     fields.opponent_school_id.replaceChildren(
@@ -125,7 +136,9 @@ function startStaffSchedule(client, invite) {
     scheduleFeedback.textContent = '';
     addGame.hidden = !canEdit;
     transportationTab.hidden = !canEdit;
+    settingsTab.hidden = !canEdit;
     if (showContact) openTransportation(false);
+    if (showSettings) openSettings(false);
     loadGames(null, true);
   }
 
@@ -253,6 +266,8 @@ function startStaffSchedule(client, invite) {
     scheduleTab.setAttribute('aria-current', 'true');
     transportationPanel.hidden = true;
     transportationTab.removeAttribute('aria-current');
+    settingsPanel.hidden = true;
+    settingsTab.removeAttribute('aria-current');
     calendar?.updateSize();
     if (focus) scheduleTitle.focus();
   }
@@ -262,7 +277,9 @@ function startStaffSchedule(client, invite) {
     schedulePanel.hidden = true;
     form.hidden = true;
     transportationPanel.hidden = false;
+    settingsPanel.hidden = true;
     scheduleTab.removeAttribute('aria-current');
+    settingsTab.removeAttribute('aria-current');
     transportationTab.setAttribute('aria-current', 'true');
     document.getElementById('transportation-school').textContent = selector.selectedOptions[0].text;
     transportation.load();
@@ -276,12 +293,28 @@ function startStaffSchedule(client, invite) {
     schedulePanel.hidden = true;
     form.hidden = false;
     transportationPanel.hidden = true;
+    settingsPanel.hidden = true;
     transportationTab.removeAttribute('aria-current');
+    settingsTab.removeAttribute('aria-current');
     scheduleTab.removeAttribute('aria-current');
     fields.sport.focus();
   }
 
+  function openSettings(focus = true) {
+    if (!canEdit || !selector.value) return;
+    schedulePanel.hidden = true;
+    form.hidden = true;
+    transportationPanel.hidden = true;
+    settingsPanel.hidden = false;
+    scheduleTab.removeAttribute('aria-current');
+    transportationTab.removeAttribute('aria-current');
+    settingsTab.setAttribute('aria-current', 'true');
+    settings.load();
+    if (focus) settingsTitle.focus();
+  }
+
   transportationTab.onclick = () => openTransportation();
+  settingsTab.onclick = () => openSettings();
   addGame.onclick = () => openEditor(null);
   preview.onchange = selectView;
   selector.onchange = selectSchool;
@@ -302,6 +335,7 @@ function startStaffSchedule(client, invite) {
     scheduleTab.disabled = true;
     addGame.disabled = true;
     transportationTab.disabled = true;
+    settingsTab.disabled = true;
     preview.disabled = true;
     selector.disabled = true;
     list.querySelectorAll('button').forEach(button => button.disabled = true);
@@ -314,6 +348,7 @@ function startStaffSchedule(client, invite) {
     scheduleTab.disabled = false;
     addGame.disabled = false;
     transportationTab.disabled = false;
+    settingsTab.disabled = false;
     preview.disabled = !isSiteAdmin;
     selector.disabled = selector.options.length < 2;
     if (error) {
@@ -334,7 +369,10 @@ function startStaffSchedule(client, invite) {
   return () => {
     stopped = true;
     transportation.stop();
+    settings.stop();
     transportationTab.onclick = null;
+    settingsTab.onclick = null;
+    settingsTab.disabled = false;
     calendar?.destroy();
     calendarTarget.parentElement.querySelector('.game-details')?.remove();
     preview.onchange = null;
