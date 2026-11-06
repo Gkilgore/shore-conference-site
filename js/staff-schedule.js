@@ -57,6 +57,7 @@ function startStaffSchedule(client, invite) {
   const dateFormat = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const timeFormat = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' });
   let calendar;
+  let stopFollowingView = () => {};
   let schools = [];
   let allGames = [];
   let activeGame = null;
@@ -284,7 +285,7 @@ function startStaffSchedule(client, invite) {
     if (!calendar) {
       const showDetails = createGameDetails(calendarTarget);
       calendar = new FullCalendar.Calendar(calendarTarget, {
-        initialView: matchMedia('(max-width: 640px)').matches ? 'listMonth' : 'dayGridMonth',
+        initialView: preferredCalendarView(),
         headerToolbar: {
           start: 'title', center: 'dayGridMonth,listMonth,listDay', end: 'prev,next',
         },
@@ -320,6 +321,7 @@ function startStaffSchedule(client, invite) {
       calendarTarget.hidden = false;
       list.hidden = true;
       calendar.render();
+      stopFollowingView = followPreferredView(calendar);
     }
     calendar.batchRendering(() => {
       calendar.getEventSources().forEach(source => source.remove());
@@ -487,6 +489,7 @@ function startStaffSchedule(client, invite) {
     transportationTab.onclick = null;
     settingsTab.onclick = null;
     settingsTab.disabled = false;
+    stopFollowingView();
     calendar?.destroy();
     calendarTarget.parentElement.querySelector('.game-details')?.remove();
     preview.onchange = null;

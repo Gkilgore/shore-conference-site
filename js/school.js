@@ -25,16 +25,18 @@ if (Object.hasOwn(sampleSchools, schoolSlug)) {
   document.documentElement.style.setProperty('--accent-ink', readableInk(school.accent));
 
   const games = sampleGames.filter(game => game.school === schoolSlug).map(game => ({
-    title: teamLabel(game) + (game.home ? ' vs. ' : ' at ') +
-      (sampleSchools[game.opponent]?.name ?? game.opponent) +
+    title: teamLabel(game) + (game.home_away === 'Home' ? ' vs. ' : ' at ') +
+      (sampleSchools[game.opponent_school_id]?.name ?? game.opponent_name) +
       (game.status === 'Scheduled' ? '' : ' · ' + game.status),
-    start: game.start,
+    start: game.game_date + 'T' + game.start_time,
     location: game.location,
     sport: game.sport,
-    season: seasonOf(game.sport, game.gender),
+    season: game.season,
     level: game.level,
     status: game.status,
-    bus: game.busTime ? 'Bus ' + formatBusTime(game.busTime) : '',
+    classNames: game.status === 'Scheduled' ? [] : ['is-' + game.status.toLowerCase()],
+    // Bus times show only on the owning school's calendar. Whether the bus is confirmed stays staff-only.
+    bus: game.transportation?.bus_departure ? 'Bus ' + formatBusTime(game.transportation.bus_departure) : '',
   }));
   renderUpcoming(games);
   renderCalendar(games);

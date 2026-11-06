@@ -44,3 +44,22 @@ Each school keeps a venue list under **School settings**. In the game editor, Ve
 - **Who can read and change lists:** anyone can read every school's list (venue names are already public on the calendars). Only the school's AD and site admins can change it.
 - **What games store:** games still store the venue name as text, so renaming or deleting a venue doesn't change saved games.
 - **Before the migration is applied:** the dropdowns use the sample venues in `data/sample-data.js`.
+
+## Sample games for testing
+
+`data/sample-data.js` holds the prototype's sample games in the same shape an AD saves: home or away, season, game notes, bus departure, pickup, return time, and bus confirmed. Dates count from today. The games cover:
+
+- games that link to the conference calendar
+- games that don't link: a different time, a different location, or the other school never entered it
+- postponed and canceled games
+- games against schools outside the conference
+- buses that are confirmed, not confirmed, or not entered
+- a busy day, a past game, and a winter game
+
+To give each test AD games to edit on the dashboard, load the same games into the **test** Supabase project:
+
+1. Open the test project's SQL editor (never the live project).
+2. Run `supabase/seed/sample-games.sql`. It deletes the three test schools' games and sample coaches, then loads the sample games, buses, coaches, and a few waiting coach emails.
+3. Run it again whenever you want a fresh set. Dates move forward with the day you run it.
+
+It works whether or not the newer draft migrations are applied. Bus confirmation, coaches, and the email outbox load only if their tables exist.

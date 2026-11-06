@@ -220,9 +220,10 @@ function startStaffCoaches(client, { currentSchool, schools, existingGames }) {
       };
     }
     if (item.kind === 'summary') {
+      const one = item.entries.length === 1;
       return {
-        subject: item.entries.length + ' new games added to your ' + school + ' schedule',
-        body: [hello, '', 'These games were added to the schedule:', ...item.entries.map(entry => '• ' + gameLine(entry.games)), ...footer].join('\n'),
+        subject: (one ? '1 new game' : item.entries.length + ' new games') + ' added to your ' + school + ' schedule',
+        body: [hello, '', one ? 'This game was added to the schedule:' : 'These games were added to the schedule:', ...item.entries.map(entry => '• ' + gameLine(entry.games)), ...footer].join('\n'),
       };
     }
     const game = item.games;

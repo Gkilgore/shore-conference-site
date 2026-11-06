@@ -1,4 +1,18 @@
 // Configures the shared calendar and updates its events when filters change.
+
+// Phones (including landscape and "desktop site" mode) and small tablets start in the list view.
+// Rotating or resizing across that size switches between the list and the month grid.
+const listViewQuery = matchMedia('(max-width: 768px), (pointer: coarse) and (max-width: 1000px)');
+
+function preferredCalendarView() {
+  return listViewQuery.matches ? 'listMonth' : 'dayGridMonth';
+}
+
+function followPreferredView(calendar) {
+  const update = () => calendar.changeView(preferredCalendarView());
+  listViewQuery.addEventListener('change', update);
+  return () => listViewQuery.removeEventListener('change', update);
+}
 function renderCalendar(events) {
   const target = document.getElementById('calendar');
   const filters = document.getElementById('calendar-filters');
@@ -23,8 +37,7 @@ function renderCalendar(events) {
 
   const showGameDetails = createGameDetails(target);
   const calendar = new FullCalendar.Calendar(target, {
-    initialView: matchMedia('(max-width: 640px)').matches ? 'listMonth' : 'dayGridMonth',
-    initialDate: sampleGames[0].start,
+    initialView: preferredCalendarView(),
     headerToolbar: {
       start: 'title',
       center: 'dayGridMonth,timeGridWeek,listMonth,listDay',
@@ -108,6 +121,7 @@ function renderCalendar(events) {
     calendar.refetchEvents();
   }, 0));
   calendar.render();
+  followPreferredView(calendar);
 }
 
 function createGameDetails(calendar) {
