@@ -14,6 +14,8 @@
   <script defer src="js/site.js"></script>
   <script defer src="js/seasons.js"></script>
   <script defer src="js/calendar.js"></script>
+  <script defer src="js/supabase-config.js"></script>
+  <script defer src="js/public-calendar.js"></script>
   <script defer src="js/school.js"></script>
 </head>
 <body>
@@ -38,13 +40,14 @@
         <p class="hero-copy" id="school-welcome">Find upcoming games, venues, and bus times for this school.</p>
         <div class="actions">
           <a id="calendar-link" class="button primary" href="#school-calendar">View schedule</a>
+          <a id="subscribe-calendar" class="button secondary" href="subscribe.html">Subscribe for updates</a>
           <a class="button secondary" href="schools.html">All schools</a>
         </div>
       </div>
     </section>
     <div id="school-content" class="wrap section">
       <section aria-labelledby="upcoming-title">
-        <div class="section-heading"><div><p class="eyebrow">Sample schedule · Eastern Time</p><h2 id="upcoming-title">Upcoming games</h2></div></div>
+        <div class="section-heading"><div><p id="public-schedule-status" class="eyebrow" role="status">Loading schedule · Eastern Time</p><h2 id="upcoming-title">Upcoming games</h2></div></div>
         <ul class="game-list" id="upcoming"></ul>
       </section>
       <section class="school-calendar" id="school-calendar" aria-labelledby="calendar-title">
@@ -52,6 +55,7 @@
       <form id="calendar-filters" class="filters" role="search" aria-label="Filter games">
         <label>Season<select name="season"><option value="">All seasons</option></select></label>
         <label>Sport<select name="sport"><option value="">All sports</option></select></label>
+        <label>Team<select name="gender"><option value="">All teams</option><option>Boys</option><option>Girls</option><option>Coed</option></select></label>
         <label>Level<select name="level"><option value="">All levels</option></select></label>
         <label>Search<input name="search" type="search" placeholder="Team or venue"></label>
         <button type="reset" class="button secondary">Reset filters</button>

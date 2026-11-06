@@ -1,4 +1,4 @@
-// Selects matched games for the conference calendar and homepage preview.
+// Loads published matched games; the matching helper also supports explicit sample previews.
 function conferenceEvents(games) {
   // Same rules as the plan's match check: both schools entered it, scheduled, and every detail agrees.
   const scheduled = games.filter(game =>
@@ -23,11 +23,27 @@ function conferenceEvents(games) {
       location: game.location,
       schools: [game.school, game.opponent_school_id],
       sport: game.sport,
+      gender: game.gender,
       season: game.season,
       level: game.level,
     }));
 }
 
-const conferenceGames = conferenceEvents(sampleGames);
-if (document.getElementById('calendar')) renderCalendar(conferenceGames);
-if (document.getElementById('upcoming')) renderUpcoming(conferenceGames);
+(async () => {
+  const sample = new URLSearchParams(location.search).get('sample') === '1';
+  const status = document.getElementById('public-schedule-status');
+  try {
+    const games = sample ? conferenceEvents(sampleGames)
+      : publicCalendarEvents(await loadPublicCalendar({ scope: 'conference' }));
+    if (status) status.textContent = sample ? 'Sample schedule · Eastern Time' : 'Published schedule · Eastern Time';
+    if (document.getElementById('calendar')) renderCalendar(games);
+    if (document.getElementById('upcoming')) renderUpcoming(games);
+    setSubscriptionLink({ scope: 'conference' });
+  } catch (error) {
+    if (status) status.textContent = error.message;
+    if (document.getElementById('calendar-filters')) document.getElementById('calendar-filters').hidden = true;
+    if (document.getElementById('upcoming')) document.getElementById('upcoming').textContent = 'Schedule unavailable. Please try again later.';
+    const link = document.getElementById('subscribe-calendar');
+    if (link) link.hidden = true;
+  }
+})();

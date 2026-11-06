@@ -18,6 +18,7 @@
   <script defer src="js/staff-transportation.js"></script>
   <script defer src="data/sample-data.js"></script>
   <script defer src="js/staff-branding.js"></script>
+  <script defer src="js/staff-publication.js"></script>
   <script defer src="js/seasons.js"></script>
   <script defer src="js/staff-overview.js"></script>
   <script defer src="js/staff-import.js"></script>
@@ -225,6 +226,16 @@
           <section id="staff-settings-panel" class="staff-panel" aria-labelledby="settings-title" hidden>
             <h3 id="settings-title" tabindex="-1">School settings</h3>
             <p id="settings-school" class="staff-subhead"></p>
+            <section class="staff-section" aria-labelledby="publication-title">
+              <h4 id="publication-title">Public schedule</h4>
+              <form id="publication-form" class="prose">
+                <label class="staff-check"><input name="published" type="checkbox" disabled> Publish schedule</label>
+                <p class="staff-hint">When published, families can see your games and subscribe for updates. Saved changes become public automatically. Turning this off clears subscribed games when calendar apps refresh; downloaded copies stay on their devices.</p>
+                <div><button class="button primary" type="submit" disabled>Save publication setting</button></div>
+                <p id="publication-status" role="status"></p>
+                <a id="publication-link" class="button secondary" target="_blank" rel="noopener">View public calendar</a>
+              </form>
+            </section>
             <div class="branding-layout">
               <form id="branding-form" class="branding-form">
                 <fieldset>
