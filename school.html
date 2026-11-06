@@ -12,6 +12,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.22/index.global.min.js"></script>
   <script defer src="data/sample-data.js"></script>
   <script defer src="js/site.js"></script>
+  <script defer src="js/seasons.js"></script>
   <script defer src="js/calendar.js"></script>
   <script defer src="js/school.js"></script>
 </head>
@@ -49,6 +50,7 @@
       <section class="school-calendar" id="school-calendar" aria-labelledby="calendar-title">
         <h2 id="calendar-title">School calendar</h2>
       <form id="calendar-filters" class="filters" role="search" aria-label="Filter games">
+        <label>Season<select name="season"><option value="">All seasons</option></select></label>
         <label>Sport<select name="sport"><option value="">All sports</option></select></label>
         <label>Level<select name="level"><option value="">All levels</option></select></label>
         <label>Search<input name="search" type="search" placeholder="Team or venue"></label>
