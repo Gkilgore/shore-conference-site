@@ -45,6 +45,7 @@ function startStaffSchedule(client, invite) {
     onImported: date => loadGames(date),
   });
   const settings = startStaffSettings(client, currentSchool, school => applySchoolTheme(client, school));
+  const publication = startStaffPublication(client, currentSchool);
   const transportation = startStaffTransportation(client, invite,
     () => schools.find(school => school.slug === selector.value), gameTitle);
   const form = document.getElementById('game-form');
@@ -154,6 +155,7 @@ function startStaffSchedule(client, invite) {
     const showOverview = !overviewPanel.hidden;
     const showCoaches = canEdit && !coachesPanel.hidden;
     transportation.reset();
+    publication.reset();
     coachList.reset();
     coachImport.reset();
     overview.reset();
@@ -402,6 +404,7 @@ function startStaffSchedule(client, invite) {
     settingsPanel.hidden = false;
     settingsTab.setAttribute('aria-current', 'true');
     settings.load();
+    publication.load();
     venues.showSettings();
     if (focus) settingsTitle.focus();
   }
@@ -478,6 +481,7 @@ function startStaffSchedule(client, invite) {
     stopped = true;
     transportation.stop();
     settings.stop();
+    publication.stop();
     overview.stop();
     importer.stop();
     coachList.stop();

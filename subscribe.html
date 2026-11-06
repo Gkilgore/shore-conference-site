@@ -1,0 +1,124 @@
+<!-- Lets families subscribe to published school, team and conference calendars in their preferred app. -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Subscribe to a Calendar | The Shore Conference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700;800&display=swap">
+  <link rel="stylesheet" href="css/site.css">
+  <script defer src="data/sample-data.js"></script>
+  <script defer src="js/supabase-config.js"></script>
+  <script defer src="js/seasons.js"></script>
+  <script defer src="js/public-calendar.js"></script>
+  <script defer src="js/subscribe.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="masthead"><div class="site-header wrap">
+    <a class="brand" href="index.html">The Shore Conference</a>
+    <nav aria-label="Main navigation"><a href="index.html">Home</a><a href="schools.html">Schools</a><a href="calendar.html">Calendar</a><a href="about.html">About</a></nav>
+    <a class="staff-link" href="admin.html">Staff sign-in</a>
+  </div></header>
+  <main id="main">
+    <section class="intro"><div class="wrap"><h1>Subscribe to a calendar</h1><p>Choose your schedule once. Keep up with changes in your calendar app.</p></div></section>
+    <div class="wrap section prose">
+      <p>First time subscribing? <a href="#calendar-help">See setup instructions for your calendar app.</a></p>
+      <form id="subscription-filters" class="filters" aria-label="Choose a calendar">
+        <label>Calendar<select name="scope"><option value="school">School or team</option><option value="conference">Conference</option></select></label>
+        <label id="subscription-school-label">School<select name="school"><option value="">Choose a school</option></select></label>
+        <label>Sport<select name="sport"><option value="">All sports</option></select></label>
+        <label>Team<select name="gender"><option value="">All teams</option><option>Boys</option><option>Girls</option><option>Coed</option></select></label>
+        <label>Level<select name="level"><option value="">All levels</option><option>Varsity</option><option>JV</option><option>Freshman</option></select></label>
+        <label>Season<select name="season"><option value="">All seasons</option><option>Fall</option><option>Winter</option><option>Spring</option></select></label>
+        <label>Search<input name="search" type="search" maxlength="100" placeholder="Optional team or venue"></label>
+      </form>
+      <p id="subscription-status" role="status">Choose a calendar to get started.</p>
+      <section id="subscription-actions" aria-labelledby="subscription-title" hidden>
+        <h2 id="subscription-title">Subscribe for updates</h2>
+        <p id="subscription-name"></p>
+        <div class="actions">
+          <a id="subscribe-apple" class="button primary">Apple Calendar</a>
+          <a id="subscribe-google" class="button secondary" target="_blank" rel="noopener">Google Calendar</a>
+          <button id="copy-subscription" class="button secondary" type="button">Copy link for another app</button>
+        </div>
+        <p>Updates appear when your calendar app refreshes. This can take several hours or longer. <a href="#calendar-help">Need help setting it up?</a></p>
+        <label for="subscription-url">Calendar subscription URL</label>
+        <input id="subscription-url" type="url" readonly aria-describedby="subscription-copy-status">
+        <p id="subscription-copy-status" role="status"></p>
+        <h2>Need a one-time copy?</h2>
+        <p>A downloaded file does not receive later changes. Subscribe above to stay up to date.</p>
+        <a id="download-calendar" class="button secondary">Download .ics file</a>
+      </section>
+      <section id="calendar-help" class="prose" aria-labelledby="calendar-help-title">
+        <h2 id="calendar-help-title">How to sync with your calendar</h2>
+        <p>Choose your school and team above, then follow the steps for your app. Your sports schedule appears as a separate calendar alongside your personal events. You do not need to copy games into your personal calendar.</p>
+        <p><strong>Choose a subscription to receive changes.</strong> Importing a downloaded .ics file gives you a one-time copy. After subscribing, new games and AD changes arrive when your app checks for updates.</p>
+        <details>
+          <summary>iPhone or iPad · Apple Calendar</summary>
+          <ol>
+            <li>Choose <strong>Apple Calendar</strong> above and follow the prompts to subscribe.</li>
+            <li>Give the calendar a name you will recognize, such as “Marlboro Girls Soccer.”</li>
+            <li>If offered an account, choose <strong>iCloud</strong> to see the subscription on your other Apple devices using the same account.</li>
+            <li>Open Calendar and make sure your new calendar is checked in the <strong>Calendars</strong> list.</li>
+          </ol>
+          <p>If the button does not open Calendar, copy the subscription URL above. On current iOS and iPadOS, open Calendar → Calendars → Add Calendar → Add Subscription Calendar, paste the URL, then choose Find and finish adding it.</p>
+          <p><a href="https://support.apple.com/102301" target="_blank" rel="noopener">Apple instructions, including older iPhones and iPads</a></p>
+        </details>
+        <details>
+          <summary>Mac · Apple Calendar</summary>
+          <ol>
+            <li>Choose <strong>Apple Calendar</strong> above. Or copy the subscription URL and open Calendar → File → New Calendar Subscription.</li>
+            <li>Check or paste the URL, then choose <strong>Subscribe</strong>.</li>
+            <li>Name the calendar. Choose <strong>iCloud</strong> as its location if you want it on your other Apple devices.</li>
+            <li>Choose an <strong>Auto-refresh</strong> interval and save.</li>
+          </ol>
+          <p><a href="https://support.apple.com/guide/calendar/icl1022/mac" target="_blank" rel="noopener">Apple Calendar help for Mac</a></p>
+        </details>
+        <details>
+          <summary>Android or iPhone · Google Calendar</summary>
+          <p>Set this up once in Google Calendar on a computer web browser. Adding a calendar from a URL is not available inside the Google Calendar phone app.</p>
+          <ol>
+            <li>Copy the subscription URL above.</li>
+            <li>Open <a href="https://calendar.google.com/" target="_blank" rel="noopener">Google Calendar</a> on a computer with the Google account you use on your phone.</li>
+            <li>Next to <strong>Other calendars</strong>, choose <strong>+</strong>, then <strong>From URL</strong>.</li>
+            <li>Paste the subscription URL and choose <strong>Add calendar</strong>.</li>
+            <li>Open Google Calendar on your phone using the same account. Open its menu and check the sports calendar so its games appear.</li>
+          </ol>
+          <p>The <strong>Google Calendar</strong> button above offers a shortcut to start adding the selected calendar in your browser.</p>
+          <p><a href="https://support.google.com/calendar/answer/37100" target="_blank" rel="noopener">Google Calendar subscription help</a></p>
+        </details>
+        <details>
+          <summary>Outlook</summary>
+          <ol>
+            <li>Copy the subscription URL above.</li>
+            <li>Open Outlook on the web with the account you use on your phone or computer, then open <strong>Calendar</strong>.</li>
+            <li>Choose <strong>Add calendar</strong>, then <strong>Subscribe from web</strong>.</li>
+            <li>Paste the URL, give the calendar a name, and save.</li>
+            <li>Make sure the sports calendar is selected in your calendar list. Check the same account in your Outlook app.</li>
+          </ol>
+          <p><a href="https://support.microsoft.com/en-us/outlook/import-or-subscribe-to-a-calendar-in-outlook-com-or-outlook-on-the-web" target="_blank" rel="noopener">Microsoft subscription instructions</a></p>
+        </details>
+        <details>
+          <summary>Another calendar app</summary>
+          <p>Copy the subscription URL above. In your app, look for Subscribe, From URL, or Add by URL and paste it. Your app must support calendar subscriptions to receive updates. If it only imports files, use a subscription-capable app such as Apple Calendar, Google Calendar or Outlook.</p>
+        </details>
+        <details>
+          <summary>Games missing, duplicated or not updated?</summary>
+          <ul>
+            <li><strong>Nothing appears:</strong> check that the sports calendar is enabled in your app and that you chose the right school, sport, team and level. An unpublished school cannot be subscribed to yet.</li>
+            <li><strong>A change has not arrived:</strong> check the school calendar on this site for the latest saved schedule. Your app controls refresh timing; updates can take a day or longer in some apps.</li>
+            <li><strong>Games appear twice:</strong> you may have both a subscription and an imported copy, or overlapping school and team subscriptions. Keep the subscription you want. Remove unwanted copies or subscriptions in your calendar app.</li>
+            <li><strong>Want a different team:</strong> choose it above and add its subscription. Unsubscribe from the old calendar in your app if you no longer want it.</li>
+          </ul>
+          <p>Subscribed games are read-only. Contact the school's athletic office to correct a game. Editing your own copy will not update the school's schedule.</p>
+        </details>
+      </section>
+      <p><a href="schools.html">Find a school</a> · <a href="calendar.html">View conference calendar</a></p>
+    </div>
+  </main>
+  <footer class="site-footer"><div class="wrap">The Shore Conference <span>New Jersey Athletics</span></div></footer>
+</body>
+</html>
