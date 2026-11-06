@@ -98,12 +98,9 @@ h2 { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.1; }
 .hero-copy { max-width: 40ch; margin-block: 1rem 1.4rem; line-height: 1.55; font-size: 1.05rem; }
 .eyebrow { text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.76rem; font-weight: 700; margin-bottom: 0.55rem; }
 
-/* Home hero: centered conference logo with the title and actions beneath it. */
+/* Home hero: centered conference logo with a line of text and the actions beneath it. */
 .home-hero .hero-inner { display: grid; justify-items: center; text-align: center; }
-.home-hero h1 { display: grid; justify-items: center; gap: clamp(1rem, 3vw, 1.75rem); }
 .conference-logo { display: block; width: min(24rem, 78vw); height: auto; }
-.home-title { font-size: clamp(2.2rem, 6.5vw, 4.5rem); }
-.home-title em { font-style: normal; color: var(--red); }
 .home-hero .actions { justify-content: center; }
 
 /* Step-and-repeat logo backdrop, like a signing-day banner. Built by buildLogoWall() in site.js. */
