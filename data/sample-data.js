@@ -1,4 +1,6 @@
-// Fictional schools and game entries for the two prototype calendars.
+// Fictional schools and games for the prototype, in the same shape an AD saves in the game editor.
+// Dates count from today so the demo never goes stale. supabase/seed/sample-games.sql loads the
+// same games into the test database; keep the two in step.
 const sampleSchools = {
   'colts-neck': { name: 'Colts Neck', color: '#2f4a29', accent: '#dad8d9',
     venues: ['Colts Neck Courts', 'Colts Neck Field 2', 'Colts Neck Gym'] },
@@ -8,44 +10,86 @@ const sampleSchools = {
     venues: ['Shore Regional East Field', 'Shore Regional Gym', 'Shore Regional Turf Field'] },
 };
 
-const sampleGames = [
-  // These two games link. The first has a bus time on the away entry only.
-  ...sampleMatch('marlboro', 'colts-neck', 'Soccer', 'Girls', 'Varsity',
-    '2026-11-09T15:45', 'Marlboro Turf Field', '14:45'),
-  ...sampleMatch('shore-regional', 'marlboro', 'Field Hockey', 'Girls', 'JV',
-    '2026-11-12T16:00', 'Shore Regional Turf Field', '15:00'),
-  // A busy date exercises the month grid's overflow and the full-day schedule.
-  ...sampleMatch('colts-neck', 'marlboro', 'Soccer', 'Boys', 'Freshman',
-    '2026-11-12T14:30', 'Colts Neck Field 2'),
-  ...sampleMatch('marlboro', 'shore-regional', 'Volleyball', 'Girls', 'JV',
-    '2026-11-12T15:00', 'Marlboro Gym'),
-  ...sampleMatch('shore-regional', 'colts-neck', 'Soccer', 'Girls', 'JV',
-    '2026-11-12T15:15', 'Shore Regional East Field'),
-  ...sampleMatch('colts-neck', 'shore-regional', 'Tennis', 'Girls', 'Varsity',
-    '2026-11-12T15:30', 'Colts Neck Courts'),
-  ...sampleMatch('marlboro', 'colts-neck', 'Football', 'Boys', 'Freshman',
-    '2026-11-12T16:30', 'Marlboro Turf Field'),
-  ...sampleMatch('marlboro', 'shore-regional', 'Volleyball', 'Girls', 'Varsity',
-    '2026-11-12T16:30', 'Marlboro Gym'),
-  ...sampleMatch('shore-regional', 'colts-neck', 'Field Hockey', 'Girls', 'Varsity',
-    '2026-11-12T17:30', 'Shore Regional Turf Field'),
-  // These entries stay on their own school calendars because the times differ.
-  {
-    school: 'colts-neck', opponent: 'shore-regional', home: true,
-    sport: 'Soccer', gender: 'Boys', level: 'JV', start: '2026-11-16T15:30',
-    location: 'Colts Neck Field 2', status: 'Scheduled',
-  },
-  {
-    school: 'shore-regional', opponent: 'colts-neck', home: false,
-    sport: 'Soccer', gender: 'Boys', level: 'JV', start: '2026-11-16T16:00',
-    location: 'Colts Neck Field 2', status: 'Scheduled', busTime: '14:50',
-  },
-];
+function sampleDate(days) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' +
+    String(date.getDate()).padStart(2, '0');
+}
 
-function sampleMatch(homeSchool, awaySchool, sport, gender, level, start, location, busTime) {
-  const game = { sport, gender, level, start, location, status: 'Scheduled' };
+function sampleBus(departure, pickup, back, confirmed, notes = null) {
+  return { bus_departure: departure, pickup_location: pickup, return_time: back, notes, bus_confirmed: confirmed };
+}
+
+// One school's saved entry. The opponent is a school slug or, for non-member schools, a name.
+function sampleEntry({ school, opponent, homeAway, day, time, status = 'Scheduled', notes = null, bus = null, ...team }) {
+  const member = Object.hasOwn(sampleSchools, opponent);
+  return {
+    school, ...team, game_date: sampleDate(day), start_time: time, home_away: homeAway,
+    opponent_school_id: member ? opponent : null, opponent_name: member ? null : opponent,
+    location: team.location, status, notes, transportation: bus,
+  };
+}
+
+// Both schools' entries for one game. awayChanges makes the away entry differ, so it doesn't link.
+function sampleMatch({ home, away, homeNotes = null, awayBus = null, awayChanges = {}, ...game }) {
   return [
-    { ...game, school: homeSchool, opponent: awaySchool, home: true },
-    { ...game, school: awaySchool, opponent: homeSchool, home: false, busTime },
+    sampleEntry({ ...game, school: home, opponent: away, homeAway: 'Home', notes: homeNotes }),
+    { ...sampleEntry({ ...game, school: away, opponent: home, homeAway: 'Away', bus: awayBus }), ...awayChanges },
   ];
 }
+
+const sampleGames = [
+  // Last week, linked: shows a past game.
+  ...sampleMatch({ home: 'colts-neck', away: 'marlboro', sport: 'Soccer', gender: 'Girls', level: 'JV', season: 'Fall',
+    day: -3, time: '15:45', location: 'Colts Neck Field 2', awayBus: sampleBus('14:30', 'Gym lot', '18:00', true) }),
+  // Linked, with game notes and a confirmed bus.
+  ...sampleMatch({ home: 'marlboro', away: 'colts-neck', sport: 'Soccer', gender: 'Girls', level: 'Varsity', season: 'Fall',
+    day: 3, time: '15:45', location: 'Marlboro Turf Field', homeNotes: 'Senior night. Players arrive by 3:00 PM.',
+    awayBus: sampleBus('14:30', 'Front loop', '18:30', true) }),
+  // Postponed by both schools.
+  ...sampleMatch({ home: 'colts-neck', away: 'marlboro', sport: 'Tennis', gender: 'Girls', level: 'JV', season: 'Fall',
+    day: 4, time: '15:30', location: 'Colts Neck Courts', status: 'Postponed', homeNotes: 'Postponed for rain. New date to come.' }),
+  // Against a school outside the conference: never links, bus not confirmed yet.
+  sampleEntry({ school: 'marlboro', opponent: 'Freehold Township', homeAway: 'Away', sport: 'Soccer', gender: 'Boys',
+    level: 'Varsity', season: 'Fall', day: 5, time: '16:00', location: 'Freehold Township High School',
+    bus: sampleBus('14:45', 'Front loop', '18:45', false) }),
+  // A busy day: fills the month grid and shows "+ more".
+  ...sampleMatch({ home: 'colts-neck', away: 'marlboro', sport: 'Soccer', gender: 'Boys', level: 'Freshman', season: 'Fall',
+    day: 6, time: '14:30', location: 'Colts Neck Field 2', awayBus: sampleBus('13:30', 'Gym lot', '17:00', true) }),
+  ...sampleMatch({ home: 'marlboro', away: 'shore-regional', sport: 'Volleyball', gender: 'Girls', level: 'JV', season: 'Fall',
+    day: 6, time: '15:00', location: 'Marlboro Gym' }),
+  ...sampleMatch({ home: 'colts-neck', away: 'shore-regional', sport: 'Tennis', gender: 'Girls', level: 'Varsity', season: 'Fall',
+    day: 6, time: '15:30', location: 'Colts Neck Courts', awayBus: sampleBus('14:30', 'Main lot', '18:00', true) }),
+  ...sampleMatch({ home: 'shore-regional', away: 'marlboro', sport: 'Field Hockey', gender: 'Girls', level: 'JV', season: 'Fall',
+    day: 6, time: '16:00', location: 'Shore Regional Turf Field', awayBus: sampleBus('15:00', 'Gym lot', '18:15', false) }),
+  ...sampleMatch({ home: 'marlboro', away: 'colts-neck', sport: 'Football', gender: 'Boys', level: 'Freshman', season: 'Fall',
+    day: 6, time: '16:30', location: 'Marlboro Turf Field' }),
+  ...sampleMatch({ home: 'marlboro', away: 'shore-regional', sport: 'Volleyball', gender: 'Girls', level: 'Varsity', season: 'Fall',
+    day: 6, time: '16:30', location: 'Marlboro Gym', awayBus: sampleBus('15:30', 'Main lot', '19:00', false) }),
+  ...sampleMatch({ home: 'shore-regional', away: 'colts-neck', sport: 'Field Hockey', gender: 'Girls', level: 'Varsity', season: 'Fall',
+    day: 6, time: '17:30', location: 'Shore Regional Turf Field', awayBus: sampleBus('16:30', 'Front loop', '20:00', true) }),
+  // Not linked: the schools entered different locations.
+  ...sampleMatch({ home: 'marlboro', away: 'shore-regional', sport: 'Football', gender: 'Boys', level: 'Varsity', season: 'Fall',
+    day: 8, time: '18:00', location: 'Marlboro Turf Field', homeNotes: 'Homecoming game.',
+    awayChanges: { location: 'Marlboro High School Stadium' }, awayBus: sampleBus('16:15', 'Main lot', '21:30', false) }),
+  // Linked, confirmed bus.
+  ...sampleMatch({ home: 'shore-regional', away: 'colts-neck', sport: 'Soccer', gender: 'Girls', level: 'Varsity', season: 'Fall',
+    day: 9, time: '15:15', location: 'Shore Regional East Field', awayBus: sampleBus('14:15', 'Front loop', '18:00', true) }),
+  // Not linked: the schools entered different start times.
+  ...sampleMatch({ home: 'colts-neck', away: 'shore-regional', sport: 'Soccer', gender: 'Boys', level: 'JV', season: 'Fall',
+    day: 10, time: '15:30', location: 'Colts Neck Field 2', awayChanges: { start_time: '16:00' },
+    awayBus: sampleBus('14:50', 'Main lot', '18:30', false) }),
+  // Canceled by both schools.
+  ...sampleMatch({ home: 'marlboro', away: 'shore-regional', sport: 'Soccer', gender: 'Boys', level: 'Varsity', season: 'Fall',
+    day: 11, time: '16:00', location: 'Marlboro Turf Field', status: 'Canceled', homeNotes: 'Canceled: field closed.' }),
+  // Home game against a school outside the conference.
+  sampleEntry({ school: 'colts-neck', opponent: 'Red Bank Catholic', homeAway: 'Home', sport: 'Field Hockey', gender: 'Girls',
+    level: 'JV', season: 'Fall', day: 12, time: '16:00', location: 'Colts Neck Field 2' }),
+  // Not linked: Shore Regional hasn't entered this game. No bus entered yet.
+  sampleEntry({ school: 'marlboro', opponent: 'shore-regional', homeAway: 'Away', sport: 'Soccer', gender: 'Girls',
+    level: 'JV', season: 'Fall', day: 13, time: '15:45', location: 'Shore Regional Turf Field' }),
+  // Winter season.
+  ...sampleMatch({ home: 'colts-neck', away: 'marlboro', sport: 'Basketball', gender: 'Boys', level: 'Varsity', season: 'Winter',
+    day: 34, time: '19:00', location: 'Colts Neck Gym', awayBus: sampleBus('17:45', 'Front loop', '21:30', false) }),
+];

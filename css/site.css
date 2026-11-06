@@ -346,6 +346,14 @@ textarea { display: block; resize: vertical; }
 #calendar .fc-daygrid-event .game-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
 #calendar .fc-daygrid-event .game-time { color: inherit; font-weight: 800; }
 #calendar .fc-timegrid-event { border-radius: 0; }
+/* Same status colors as the staff dashboard: postponed yellow, canceled red and struck through. */
+#calendar .fc-event.is-postponed { --fc-event-bg-color: var(--yellow); --fc-event-text-color: var(--ink); }
+#calendar .fc-daygrid-event.is-postponed { background: var(--yellow); color: var(--ink); }
+#calendar .fc-event.is-canceled { --fc-event-bg-color: var(--red); --fc-event-text-color: white; }
+#calendar .fc-daygrid-event.is-canceled { background: var(--red); color: white; }
+#calendar .is-canceled .game-title { text-decoration: line-through; }
+#calendar .fc-list-event.is-postponed td { background: #fff1c2; }
+#calendar .fc-list-event.is-canceled td { background: #f6dde3; }
 #calendar .fc-more-link {
   display: inline-block;
   margin: 0.15rem 0.2rem;

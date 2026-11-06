@@ -40,7 +40,8 @@ for (const host of document.querySelectorAll('[data-logo-wall]')) {
 
 function renderUpcoming(events) {
   const list = document.getElementById('upcoming');
-  const games = events.filter(game => !game.status || game.status === 'Scheduled')
+  const now = new Date().toISOString().slice(0, 10);
+  const games = events.filter(game => (!game.status || game.status === 'Scheduled') && game.start.slice(0, 10) >= now)
     .sort((first, second) => first.start.localeCompare(second.start)).slice(0, 3);
   if (!games.length) {
     list.innerHTML = '<li>No upcoming games are listed.</li>';

@@ -76,8 +76,8 @@
       <div class="staff-layout">
         <aside class="staff-sidebar" aria-label="Dashboard controls">
           <nav class="staff-nav" aria-label="Staff dashboard">
-            <button id="staff-schedule-tab" class="staff-tab" type="button" aria-current="true">Calendar</button>
             <button id="staff-overview-tab" class="staff-tab" type="button">Schedule</button>
+            <button id="staff-schedule-tab" class="staff-tab" type="button" aria-current="true">Calendar</button>
             <button id="staff-transportation-tab" class="staff-tab" type="button" hidden>Transportation</button>
             <button id="staff-coaches-tab" class="staff-tab" type="button" hidden>Coaches</button>
             <button id="staff-settings-tab" class="staff-tab" type="button" hidden>School settings</button>
@@ -124,11 +124,6 @@
               <p class="staff-hint">Upcoming games against conference schools that aren’t on the conference calendar yet, and why. The other school’s details stay private.</p>
               <ul id="link-list" class="game-list staff-attention"></ul>
             </section>
-            <section id="bus-section" class="staff-section" aria-labelledby="bus-title">
-              <h4 id="bus-title">Bus not confirmed</h4>
-              <p class="staff-hint">Upcoming away games whose bus hasn’t been confirmed by transportation. Open a game and tick “Bus confirmed” once it is.</p>
-              <ul id="bus-list" class="game-list staff-attention"></ul>
-            </section>
             <section class="staff-section" aria-labelledby="tournament-title">
               <h4 id="tournament-title">Tournaments</h4>
               <p class="staff-hint">Conference tournament games will appear here once the conference office imports them.</p>
@@ -146,8 +141,14 @@
             <div id="schedule-games"></div>
           </section>
           <section id="staff-transportation-panel" class="staff-panel prose" aria-labelledby="transportation-title" hidden>
-            <h3 id="transportation-title" tabindex="-1">Transportation contact</h3>
+            <h3 id="transportation-title" tabindex="-1">Transportation</h3>
             <p id="transportation-school"></p>
+            <section id="bus-section" class="staff-section" aria-labelledby="bus-title">
+              <h4 id="bus-title">Bus not confirmed</h4>
+              <p class="staff-hint">Upcoming away games whose bus hasn’t been confirmed by transportation. Open a game and tick “Bus confirmed” once it is.</p>
+              <ul id="bus-list" class="game-list staff-attention"></ul>
+            </section>
+            <h4>Transportation contact</h4>
             <form id="transportation-contact-form" class="prose">
               <label for="transportation-email">Coordinator email</label>
               <input id="transportation-email" type="email" maxlength="254" autocomplete="off">
