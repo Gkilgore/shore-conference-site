@@ -34,7 +34,7 @@ test('the shared directory contains all 48 approved schools with unique safe slu
   for (const [slug] of entries) assert.match(slug, /^[a-z]+(?:-[a-z]+)*$/);
 });
 
-test('verified branding survives and unverified schools use conference branding', () => {
+test('every school has its own local logo and colors while the three test-school brands survive', () => {
   const directory = schools();
   const verified = {
     'colts-neck': ['Colts Neck', '#2f4a29', '#dad8d9'],
@@ -46,12 +46,24 @@ test('verified branding survives and unverified schools use conference branding'
       assert.deepEqual([school.name, school.color, school.accent], verified[slug]);
       assert.equal(school.logo, 'assets/logos/' + slug + '.png');
     } else {
-      assert.equal(school.color, '#002857');
-      assert.equal(school.accent, '#f3efe6');
-      assert.equal(school.logo, 'assets/logos/shore-conference.svg');
+      assert.match(school.color, /^#[0-9a-f]{6}$/);
+      assert.match(school.accent, /^#[0-9a-f]{6}$/);
+      assert.notEqual(school.color, school.accent);
+      assert.match(school.logo, new RegExp('^assets/logos/' + slug + '\\.(?:png|jpe?g|webp|gif|svg)$'));
     }
     assert.ok(existsSync(new URL('../' + school.logo, import.meta.url)), school.logo);
   }
+});
+
+test('school buttons retain normal-text contrast on bright school red', () => {
+  const context = vm.createContext({document:{querySelectorAll:()=>[],getElementById:()=>null}});
+  vm.runInContext(source('js/site.js'), context);
+  const luminance = hex => [1,3,5].map(index=>parseInt(hex.slice(index,index+2),16)/255)
+    .map(channel=>channel<=0.04045?channel/12.92:((channel+0.055)/1.055)**2.4)
+    .reduce((sum,channel,index)=>sum+channel*[0.2126,0.7152,0.0722][index],0);
+  const background = '#ee1f25';
+  const values = [luminance(background),luminance(context.readableInk(background))].sort((a,b)=>a-b);
+  assert.ok((values[1]+0.05)/(values[0]+0.05)>=4.5, 'Keyport red requires at least 4.5:1 for button text');
 });
 
 function renderDirectory(includeRoster = true) {

@@ -1,4 +1,4 @@
-// Builds the school directory and upcoming-game previews from the sample data.
+// Builds school directories, logo backdrops and upcoming-game previews.
 function teamLabel(game) {
   return [game.gender, game.level, game.sport].join(' ');
 }
@@ -10,14 +10,15 @@ function readableInk(hex) {
     channel /= 255;
     return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
   });
-  return 0.2126 * red + 0.7152 * green + 0.0722 * blue > 0.179 ? '#111418' : '#ffffff';
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue > 0.179 ? '#000000' : '#ffffff';
 }
 
 // Fills a hero with a faint, staggered repeat of a logo, like a signing-day backdrop.
-function buildLogoWall(host, src, rows = 9, perRow = 26) {
+function buildLogoWall(host, src, rows = 9, perRow = 26, logoBackground = 'transparent') {
   host.querySelector('.logo-wall')?.remove();
   const wall = document.createElement('div');
   wall.className = 'logo-wall';
+  wall.dataset.logoBackground = logoBackground;
   wall.setAttribute('aria-hidden', 'true');
   for (let row = 0; row < rows; row++) {
     const line = document.createElement('div');
@@ -44,7 +45,7 @@ function renderUpcoming(events) {
   const games = events.filter(game => (!game.status || game.status === 'Scheduled') && game.start.slice(0, 10) >= now)
     .sort((first, second) => first.start.localeCompare(second.start)).slice(0, 3);
   if (!games.length) {
-    list.innerHTML = '<li>No upcoming games are listed.</li>';
+    list.innerHTML = '<li class="empty-schedule">No upcoming games are listed.</li>';
     return;
   }
 
@@ -90,6 +91,8 @@ if (directory) {
       logo.src = school.logo || 'assets/logos/' + slug + '.png';
       logo.alt = '';
       logo.width = logo.height = 48;
+      logo.loading = 'lazy';
+      logo.decoding = 'async';
       label.textContent = school.name;
       hint.textContent = 'View schedule →';
       label.append(hint);

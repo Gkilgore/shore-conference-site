@@ -133,6 +133,12 @@ h2 { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.1; }
   -webkit-mask-image: radial-gradient(ellipse 55% 60% at 50% 50%, transparent 45%, #000 95%);
   mask-image: radial-gradient(ellipse 55% 60% at 50% 50%, transparent 45%, #000 95%);
 }
+/* Keep same-color marks visible; white-backed originals blend into the school background. */
+.school-hero .logo-wall img, .staff-heading .logo-wall img, .branding-preview .logo-wall img {
+  filter: drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff);
+}
+.logo-wall[data-logo-background="white"] { mix-blend-mode: screen; }
+.logo-wall[data-logo-background="white"] img { filter: grayscale(1) invert(1); }
 
 /* Conference page bands: navy with the Shore Conference logo repeated behind a centered logo and title,
    the same idea as the school heroes. */
@@ -239,6 +245,7 @@ h2 { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.1; }
 .game-list strong { padding-top: 0.75rem; font-weight: 700; }
 .game-list span { padding-bottom: 0.75rem; font-size: 0.92rem; color: var(--muted); }
 .game-list li:only-child { padding: 0.85rem; }
+.game-list .empty-schedule { display: block; }
 
 /* School directory cards fill with the school's color on hover. */
 .school-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 0.75rem; }
