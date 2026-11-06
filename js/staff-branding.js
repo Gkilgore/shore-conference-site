@@ -21,6 +21,11 @@ function schoolLogoUrl(client, school) {
     : 'assets/logos/' + school.slug + '.png';
 }
 
+function schoolLogoBackground(school) {
+  return !school?.logo_path && typeof shoreSchools !== 'undefined'
+    ? shoreSchools[school?.slug]?.logoBackground : 'transparent';
+}
+
 function setSchoolColors(element, primary, accent) {
   element.style.setProperty('--school-color', primary);
   element.style.setProperty('--school-ink', readableInk(primary));
@@ -43,7 +48,7 @@ function applySchoolTheme(client, school) {
     heading.querySelector('.logo-wall')?.remove();
   };
   logo.src = url;
-  buildLogoWall(heading, url, 5, 24);
+  buildLogoWall(heading, url, 5, 24, schoolLogoBackground(school));
 }
 
 function luminance(hex) {
@@ -140,7 +145,7 @@ function startStaffSettings(client, currentSchool, onSaved) {
     preview.querySelector('.branding-preview-name').textContent = school?.name ?? '';
     previewLogo.hidden = !logoUrl();
     previewLogo.src = logoUrl();
-    if (logoUrl()) buildLogoWall(preview, logoUrl(), 4, 16);
+    if (logoUrl()) buildLogoWall(preview, logoUrl(), 4, 16, fileUrl ? 'transparent' : schoolLogoBackground(school));
     const weak = contrastRatio(primary, accent) < 2.5;
     contrast.classList.toggle('is-warning', weak);
     contrast.textContent = weak

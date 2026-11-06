@@ -1,0 +1,162 @@
+{
+  "asbury-park": {
+    "name": "Asbury Park High School",
+    "logo": "assets/logos/asbury-park.png",
+    "source_page": "https://matawanhuskyathletics.digitalsports.com/",
+    "source_image": "https://leagueminder.digitalsports.com/lm/images/logo/LOGO3_1782122539_350.png",
+    "colors_source": "Sampled from the current mark in the official athletics conference school selector.",
+    "notes": "Original provider-hosted 350px transparent rendition; no local editing. Official athletics selector uses the district seal, which is retained intact rather than substituting an unverified mascot.",
+    "color": "#050608",
+    "accent": "#93c5e6"
+  },
+  "barnegat": {
+    "name": "Barnegat High School",
+    "logo": "assets/logos/barnegat.png",
+    "source_page": "https://matawanhuskyathletics.digitalsports.com/",
+    "source_image": "https://leagueminder.digitalsports.com/lm/images/logo/Barnegat%20High%20School%20-%20Bengals_1781522796_350.png",
+    "colors_source": "Sampled from the current mark in the official athletics conference school selector.",
+    "notes": "Original provider-hosted 350px transparent rendition; no local editing.",
+    "color": "#000000",
+    "accent": "#f26a24"
+  },
+  "brick-memorial": {
+    "name": "Brick Memorial High School",
+    "logo": "assets/logos/brick-memorial.png",
+    "source_page": "https://matawanhuskyathletics.digitalsports.com/",
+    "source_image": "https://leagueminder.digitalsports.com/lm/images/logo/Brick%20Memorial%20High%20School%20-%20Mustangs_1781541950_350.png",
+    "colors_source": "Sampled from the current mark in the official athletics conference school selector.",
+    "notes": "Original provider-hosted 350px transparent rendition; no local editing.",
+    "color": "#004022",
+    "accent": "#c7b573"
+  },
+  "brick-township": {
+    "name": "Brick Township High School",
+    "logo": "assets/logos/brick-township.png",
+    "source_page": "https://matawanhuskyathletics.digitalsports.com/",
+    "source_image": "https://leagueminder.digitalsports.com/lm/images/logo/Brick%20Township%20High%20School%20-%20Dragons_1781522840_350.png",
+    "colors_source": "Sampled from the current mark in the official athletics conference school selector.",
+    "notes": "Original provider-hosted 350px transparent rendition; no local editing. White accent keeps heading text readable against the school green.",
+    "color": "#006738",
+    "accent": "#ffffff"
+  },
+  "central-regional": {
+    "name": "Central Regional School District",
+    "logo": "assets/logos/central-regional.png",
+    "source_page": "https://matawanhuskyathletics.digitalsports.com/",
+    "source_image": "https://leagueminder.digitalsports.com/lm/images/logo/Central%20Regional%20High%20Shcool%20-%20Golden%20Eagles_1781522863_350.png",
+    "colors_source": "Sampled from the current mark in the official athletics conference school selector.",
+    "notes": "Original provider-hosted 350px transparent rendition; no local editing.",
+    "color": "#75170b",
+    "accent": "#ffc404"
+  },
+  "christian-brothers-academy": {
+    "name": "Christian Brothers Academy",
+    "logo": "assets/logos/christian-brothers-academy.png",
+    "source_page": "https://matawanhuskyathletics.digitalsports.com/",
+    "source_image": "https://leagueminder.digitalsports.com/lm/images/logo/Christian%20Brothers%20Academy%20-%20Colts_1781522895_350.png",
+    "colors_source": "Sampled from the current mark in the official athletics conference school selector.",
+    "notes": "Original provider-hosted 350px transparent rendition; no local editing.",
+    "color": "#001540",
+    "accent": "#85bae4"
+  },
+  "donovan-catholic": {
+    "name": "Donovan Catholic High School",
+    "logo": "assets/logos/donovan-catholic.png",
+    "source_page": "https://matawanhuskyathletics.digitalsports.com/",
+    "source_image": "https://leagueminder.digitalsports.com/lm/images/logo/Donovan%20Catholic%20-%20Griffins_1781522953_350.png",
+    "colors_source": "Sampled from the current mark in the official athletics conference school selector.",
+    "notes": "Original provider-hosted 350px transparent rendition; no local editing.",
+    "color": "#003c71",
+    "accent": "#c8b08c"
+  },
+  "freehold-boro": {
+    "name": "Freehold Boro High School",
+    "logo": "assets/logos/freehold-boro.png",
+    "source_page": "https://matawanhuskyathletics.digitalsports.com/",
+    "source_image": "https://leagueminder.digitalsports.com/lm/images/logo/Freehold%20Boro%20High%20School%20-%20Colonials_1781522979_350.png",
+    "colors_source": "Sampled from the current mark in the official athletics conference school selector.",
+    "notes": "Original provider-hosted 350px transparent rendition; no local editing.",
+    "color": "#12365a",
+    "accent": "#a18e64"
+  },
+  "freehold-township": {
+    "name": "Freehold Township High School",
+    "logo": "assets/logos/freehold-township.png",
+    "source_page": "https://matawanhuskyathletics.digitalsports.com/",
+    "source_image": "https://leagueminder.digitalsports.com/lm/images/logo/Freehold%20TOwnship%20High%20School%20-%20Patriots_1781523008_350.png",
+    "colors_source": "Sampled from the current mark in the official athletics conference school selector.",
+    "notes": "Original provider-hosted 350px transparent rendition; no local editing.",
+    "color": "#01244e",
+    "accent": "#accfe5"
+  },
+  "henry-hudson-regional": {
+    "name": "Henry Hudson Regional High School",
+    "logo": "assets/logos/henry-hudson-regional.png",
+    "source_page": "https://matawanhuskyathletics.digitalsports.com/",
+    "source_image": "https://leagueminder.digitalsports.com/lm/images/logo/Henry%20Hudson%20Regional%20High%20School-%20Admirals_1781523035_350.png",
+    "colors_source": "Sampled from the current mark in the official athletics conference school selector.",
+    "notes": "Original provider-hosted 350px transparent rendition; no local editing.",
+    "color": "#121a2d",
+    "accent": "#8a8b8a"
+  },
+  "holmdel": {
+    "name": "Holmdel High School",
+    "logo": "assets/logos/holmdel.png",
+    "source_page": "https://matawanhuskyathletics.digitalsports.com/",
+    "source_image": "https://leagueminder.digitalsports.com/lm/images/logo/Holmdel%20High%20School%20-%20Hornets_1781523063_350.png",
+    "colors_source": "Sampled from the current mark in the official athletics conference school selector.",
+    "notes": "Original provider-hosted 350px transparent rendition; no local editing.",
+    "color": "#2b3678",
+    "accent": "#ffffff"
+  },
+  "howell": {
+    "name": "Howell High School",
+    "logo": "assets/logos/howell.png",
+    "source_page": "https://matawanhuskyathletics.digitalsports.com/",
+    "source_image": "https://leagueminder.digitalsports.com/lm/images/logo/Howell%20High%20School%20-%20Rebels_1781523084_350.png",
+    "colors_source": "Sampled from the current mark in the official athletics conference school selector.",
+    "notes": "Original provider-hosted 350px transparent rendition; no local editing.",
+    "color": "#1e1544",
+    "accent": "#ffffff"
+  },
+  "jackson-township": {
+    "name": "Jackson Township High School",
+    "logo": "assets/logos/jackson-township.png",
+    "source_page": "https://jthsathletics.digitalsports.com/",
+    "source_image": "https://leagueminder.digitalsports.com/lm/images/logo/Jackson%20Township%20High%20chool%20-%20Jaguars_1781523121_350.png",
+    "colors_source": "Official district Jaguar Logo and Style Guide: https://www.jacksonsd.org/jthslogo (public Google Slides, exact Jackson Red #CC0000, black #000000, dark gray #757575, white #FFFFFF).",
+    "notes": "Current consolidated Jackson Township Jaguars mark from the school athletics selector; not the former Jackson Memorial/Liberty identity. White display accent maintains readable text on red.",
+    "color": "#cc0000",
+    "accent": "#ffffff"
+  },
+  "keansburg": {
+    "name": "Keansburg High School",
+    "logo": "assets/logos/keansburg.png",
+    "source_page": "https://matawanhuskyathletics.digitalsports.com/",
+    "source_image": "https://leagueminder.digitalsports.com/lm/images/logo/Keansburg%20High%20School%20-%20Titans_1781523152_350.png",
+    "colors_source": "Sampled from the current mark in the official athletics conference school selector.",
+    "notes": "Original provider-hosted 350px transparent rendition; no local editing. Orange secondary is #e55335 sampled from the mark; white display accent keeps text readable on the school blue.",
+    "color": "#4951a0",
+    "accent": "#ffffff"
+  },
+  "keyport": {
+    "name": "Keyport High School",
+    "logo": "assets/logos/keyport.png",
+    "source_page": "https://matawanhuskyathletics.digitalsports.com/",
+    "source_image": "https://leagueminder.digitalsports.com/lm/images/logo/Keyport%20High%20School%20-%20Red%20Raiders_1781523174_350.png",
+    "colors_source": "Sampled from the current mark in the official athletics conference school selector.",
+    "notes": "Original provider-hosted 350px transparent rendition; no local editing.",
+    "color": "#000000",
+    "accent": "#ee1f25"
+  },
+  "colts-neck": {
+    "name": "Colts Neck",
+    "logo": "assets/logos/colts-neck.png",
+    "color": "#2f4a29",
+    "accent": "#dad8d9",
+    "source_page": "https://sites.google.com/frhsd.com/cnhsseca/home",
+    "source_image": "https://leagueminder.digitalsports.com/lm/images/logo/Colts%20Neck%20High%20School-%20Cougars_1781543346_350.png",
+    "colors_source": "Existing verified test-school palette preserved.",
+    "notes": "Existing transparent authentic school mark preserved as instructed; visually verified. Current official athletics selector independently shows the same Cougars identity."
+  }
+}
