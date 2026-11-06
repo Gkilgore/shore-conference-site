@@ -8,7 +8,8 @@
   const copyStatus = document.getElementById('subscription-copy-status');
   const query = new URLSearchParams(location.search);
   let requestNumber = 0;
-  for (const [slug, school] of Object.entries(sampleSchools).sort((a, b) => a[1].name.localeCompare(b[1].name))) {
+  const schools = typeof shoreSchools !== 'undefined' ? shoreSchools : {};
+  for (const [slug, school] of Object.entries(schools).sort((a, b) => a[1].name.localeCompare(b[1].name))) {
     fields.school.add(new Option(school.name, slug));
   }
   const sports = [...new Set(Object.values(sportSeasons).flat().map(sport => sport.replace(/^(Boys|Girls) /, '')))];
@@ -45,7 +46,6 @@
     try {
       const schedule = await loadPublicCalendar(options);
       if (request !== requestNumber) return;
-      if (!schedule.published) { status.textContent = 'This school has not published its schedule yet. Please check back with the athletic office.'; return; }
       for (const event of schedule.events) {
         if (![...fields.sport.options].some(option => option.value === event.sport)) fields.sport.add(new Option(event.sport, event.sport));
       }
@@ -56,11 +56,17 @@
       document.getElementById('download-calendar').href = url + '&download=1';
       document.getElementById('subscription-name').textContent = schedule.name;
       status.textContent = schedule.events.length + (schedule.events.length === 1 ? ' game' : ' games') +
-        ' currently listed. New matching games will be included automatically.';
+        ' currently listed. ' + (conference ? 'New matching games will be included automatically.' : 'New posted games appear as schedules are published.');
       actions.hidden = false;
-    } catch {
-      if (request === requestNumber) status.textContent = 'Subscriptions are temporarily unavailable. Refresh to try again.';
+    } catch (error) {
+      if (request === requestNumber) status.textContent = error.status === 404
+        ? error.message : 'Subscriptions are temporarily unavailable. Refresh to try again.';
     }
+  }
+  if (query.get('school') && !Object.hasOwn(schools, query.get('school'))) {
+    actions.hidden = true;
+    status.textContent = 'School not found. Choose a school from the directory.';
+    return;
   }
   update();
 })();

@@ -1,4 +1,4 @@
-// Runs the staff dashboard tabs: Calendar, Schedule, Transportation, Coaches, School settings, and the game editor.
+// Runs staff schedule, transportation, settings, access tabs and the game editor.
 function startStaffSchedule(client, invite) {
   const selector = document.getElementById('schedule-school');
   const preview = document.getElementById('view-as');
@@ -8,6 +8,10 @@ function startStaffSchedule(client, invite) {
   const account = document.getElementById('workspace-account');
   const signedInAccount = account.textContent;
   const isSiteAdmin = invite.role === 'site_admin';
+  const mayManageAccess = isSiteAdmin || invite.role === 'conference_office';
+  const accessTab = document.getElementById('staff-access-tab');
+  const accessPanel = document.getElementById('staff-access-workspace');
+  const access = startStaffAccess(client, invite, () => schools);
   const status = document.getElementById('schedule-status');
   const list = document.getElementById('schedule-games');
   const calendarTarget = document.getElementById('calendar');
@@ -110,12 +114,14 @@ function startStaffSchedule(client, invite) {
     const choice = isSiteAdmin ? preview.value : '';
     const schoolId = choice.startsWith('ad:') ? choice.slice(3) : invite.school_id;
     const role = choice === 'office' ? 'conference_office' : choice.startsWith('ad:') ? 'ad' : invite.role;
+    accessTab.hidden = !mayManageAccess || Boolean(choice);
+    access.reset();
     const school = schools.find(item => item.slug === schoolId);
     canEdit = role !== 'conference_office';
     title.textContent = workspaceTitles[role];
     account.textContent = choice ? school?.name ?? '' : signedInAccount;
     previewStatus.textContent = choice === 'office'
-      ? 'Previewing the read-only conference office view. You are still signed in as a site admin.'
+      ? 'Previewing conference school calendars (read-only). Staff access tools use the actual signed-in account.'
       : choice && school
         ? 'Previewing the ' + school.name + ' AD view. Saves change the schedule under your site admin account.'
         : '';
@@ -351,6 +357,11 @@ function startStaffSchedule(client, invite) {
       panel.hidden = true;
       tab.removeAttribute('aria-current');
     }
+    accessPanel.hidden = true;
+    accessTab.removeAttribute('aria-current');
+    access.reset();
+    selector.parentElement.hidden = false;
+    addGame.hidden = !canEdit;
     form.hidden = true;
     filterForm.hidden = true;
   }
@@ -415,6 +426,18 @@ function startStaffSchedule(client, invite) {
     if (focus) settingsTitle.focus();
   }
 
+  function openStaffAccess() {
+    if (!mayManageAccess || accessTab.hidden) return;
+    hidePanels();
+    accessPanel.hidden = false;
+    accessTab.setAttribute('aria-current','true');
+    selector.parentElement.hidden = true;
+    addGame.hidden = true;
+    access.load();
+    document.getElementById('staff-access-title').focus();
+  }
+  accessTab.onclick = openStaffAccess;
+
   transportationTab.onclick = () => openTransportation();
   overviewTab.onclick = () => openOverview();
   coachesTab.onclick = () => openCoaches();
@@ -453,6 +476,7 @@ function startStaffSchedule(client, invite) {
     addGame.disabled = true;
     transportationTab.disabled = true;
     settingsTab.disabled = true;
+    accessTab.disabled = true;
     preview.disabled = true;
     selector.disabled = true;
     list.querySelectorAll('button').forEach(button => button.disabled = true);
@@ -469,6 +493,7 @@ function startStaffSchedule(client, invite) {
     addGame.disabled = false;
     transportationTab.disabled = false;
     settingsTab.disabled = false;
+    accessTab.disabled = false;
     preview.disabled = !isSiteAdmin;
     selector.disabled = selector.options.length < 2;
     if (error) {
@@ -492,6 +517,9 @@ function startStaffSchedule(client, invite) {
     transportation.stop();
     settings.stop();
     publication.stop();
+    access.stop();
+    accessTab.onclick = null;
+    accessTab.disabled = false;
     overview.stop();
     importer.stop();
     coachList.stop();

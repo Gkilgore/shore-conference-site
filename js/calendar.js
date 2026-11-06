@@ -24,7 +24,8 @@ function renderCalendar(events) {
 
   const fields = filters.elements;
   if (fields.school) {
-    for (const [slug, school] of Object.entries(sampleSchools)) {
+    const schools = typeof shoreSchools !== 'undefined' ? shoreSchools : sampleSchools;
+    for (const [slug, school] of Object.entries(schools).sort(([, first], [, second]) => first.name.localeCompare(second.name))) {
       fields.school.add(new Option(school.name, slug));
     }
   }
@@ -121,6 +122,13 @@ function renderCalendar(events) {
     fillSportOptions(fields.season, fields.sport, events);
     calendar.refetchEvents();
   }, 0));
+  window.addEventListener('shore:season-selected', ({ detail }) => {
+    if (!detail) return;
+    fields.season.value = detail.season;
+    fillSportOptions(fields.season, fields.sport, events);
+    calendar.gotoDate(detail.date);
+    calendar.refetchEvents();
+  });
   calendar.render();
   followPreferredView(calendar);
 }

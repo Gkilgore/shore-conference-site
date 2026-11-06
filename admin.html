@@ -14,6 +14,7 @@
   <script defer src="js/supabase-config.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.22/index.global.min.js"></script>
   <script defer src="js/site.js"></script>
+  <script defer src="data/school-directory.js"></script>
   <script defer src="js/calendar.js"></script>
   <script defer src="js/staff-transportation.js"></script>
   <script defer src="data/sample-data.js"></script>
@@ -27,6 +28,7 @@
   <script defer src="js/staff-venues.js"></script>
   <script defer src="js/staff-coach-import.js"></script>
   <script defer src="js/staff-schedule.js"></script>
+  <script defer src="js/staff-access.js"></script>
   <script defer src="js/admin.js"></script>
 </head>
 <body>
@@ -83,6 +85,7 @@
             <button id="staff-transportation-tab" class="staff-tab" type="button" hidden>Transportation</button>
             <button id="staff-coaches-tab" class="staff-tab" type="button" hidden>Coaches</button>
             <button id="staff-settings-tab" class="staff-tab" type="button" hidden>School settings</button>
+            <button id="staff-access-tab" class="staff-tab" type="button" hidden>Staff access</button>
           </nav>
           <button id="add-calendar-game" class="button primary" type="button" hidden>Add game</button>
           <div>
@@ -291,6 +294,27 @@
               </form>
             </section>
           </section>
+          <section id="staff-access-workspace" class="staff-panel" aria-labelledby="staff-access-title" hidden>
+            <h3 id="staff-access-title" tabindex="-1">Staff access</h3>
+            <p id="staff-access-status" role="status" aria-live="polite"></p>
+            <div id="staff-access-panel" hidden>
+              <p>Add invited access using the person's school email. Several AD accounts may share a school. This saves access only; no email is sent.</p>
+              <form id="staff-access-form">
+                <div class="filters">
+                  <label>Invited email<input id="staff-access-email" type="email" maxlength="254" autocomplete="off" required></label>
+                  <label>Name<input id="staff-access-name" maxlength="100" autocomplete="off" required></label>
+                  <label>Access<select id="staff-access-role" required></select></label>
+                  <label id="staff-access-school-field">School<select id="staff-access-school" required></select></label>
+                </div>
+                <div class="staff-actions">
+                  <button id="staff-access-submit" class="button primary" type="submit">Review invited access</button>
+                  <button id="staff-access-cancel-edit" class="button secondary" type="button" hidden>Cancel edit</button>
+                </div>
+              </form>
+              <h4>Current invited access</h4>
+              <ul id="staff-access-list" class="game-list"></ul>
+            </div>
+          </section>
           <form id="game-form" class="staff-panel prose" aria-labelledby="game-form-title" hidden>
             <h3 id="game-form-title">Add a game</h3>
             <fieldset class="prose">
@@ -345,6 +369,14 @@
       <div class="actions">
         <button id="publication-confirm" class="button primary" type="button">Publish selected schedules</button>
         <form method="dialog"><button class="button secondary" autofocus>Keep working</button></form>
+      </div>
+    </dialog>
+    <dialog id="staff-access-review" class="game-details" aria-labelledby="staff-access-review-title">
+      <h2 id="staff-access-review-title">Review invited access</h2>
+      <p id="staff-access-review-summary"></p>
+      <div class="staff-actions">
+        <button id="staff-access-review-confirm" class="button primary" type="button">Add invited access</button>
+        <button id="staff-access-review-cancel" class="button secondary" type="button">Cancel</button>
       </div>
     </dialog>
     <dialog id="coach-draft" class="game-details" aria-labelledby="coach-draft-title">

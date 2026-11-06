@@ -16,10 +16,14 @@ November 5, 2026 · Greg Kilgore and Alexa
 |-------------------|----------------------------------------------------------------------------|------------------------------------------------------------------|
 | Public            | School pages, conference calendar, subscribe links                         | Nothing                                                          |
 | School AD         | Their school's full schedule, including transportation                     | Their own school's teams, games, transportation, logo and colors |
-| Conference office | Every school calendar, the conference calendar, the list of unlinked games | Nothing on school calendars. Later: tournament schedules         |
-| Site admin        | Everything (Greg and Alexa)                                                | Schools, AD accounts, fixes                                      |
+| Conference admin  | Every school calendar, the conference calendar, the list of unlinked games | AD invitations and school assignments; school schedules stay read-only |
+| Site admin        | Everything (Greg and Alexa)                                                | Schools, AD accounts, conference-admin access, fixes               |
 
 **Bus times** show on each game on the school's own calendar and in that school's subscribe feeds, never on another school's calendar or the conference calendar.
+
+**Staff access (Greg's November 6 update):** Several invited AD/staff accounts may share a school, and several accounts may be conference admins. Conference admins can add, reassign or remove AD access. Site admins can also manage conference admins. These tools cannot grant site-admin access or change the signed-in administrator's own access. Every change checks current permissions and the reviewed account version. Removing an invitation blocks future school database access even with an existing login token.
+
+**Public updates:** Each school page identifies the season, year and teams actually posted, followed by recent published game changes. Draft edits stay private until approved. Withdrawing a schedule hides its old game details from public history, including after reposting.
 
 **School branding:** ADs upload their logo and pick two colors in the admin area. The site chooses black or white text automatically so it stays readable, and the AD previews the page before saving.
 
@@ -49,6 +53,8 @@ It names the field that differs but never shows the other school's values.
 | transportation   | Game, bus departure, pickup location, return time, notes                                         |
 | team_publications | Which team/season-year schedules have been published and when                                   |
 | published_games  | Last approved public game values, kept separate from working drafts, with stable calendar IDs    |
+| publication_updates | Approved season notices and recent public game changes; withdrawn game history stays private |
+| staff_access_audit | Internal record of invited-access additions, changes and removals                            |
 | users            | Name, email, role (AD, conference office, site admin), school                                    |
 | conference_links | The two matched games and when they linked (created by the site)                                 |
 | tournament_games | Later phase: tournament, round, date, time, location, two slots (a school or "Winner of Game 3") |
@@ -100,7 +106,7 @@ A game's opponent is either a member school picked from a list or a typed name f
 
 ### Then Hostinger and Supabase Pro
 
-- Hostinger's Business plan supports a wildcard subdomain, so all 47 school addresses work at once. Confirm SSL covers every subdomain.
+- Hostinger's Business plan supports a wildcard subdomain, so all 48 school addresses work at once. Confirm SSL covers every subdomain.
 - Supabase's free plan covers building and the pilot, but pauses after a week idle and has no backups. Move to Pro (from \$25/month) before rollout.
 
 ## 8. Build order
@@ -115,7 +121,7 @@ A game's opponent is either a member school picked from a list or a typed name f
 
 6.  **Conference office login:** view only, unlinked-games list
 7.  **Spring pilot at Marlboro** with coaches Greg knows, using Colts Neck and Shore Regional to test matching
-8.  **Roll out to all 47 schools**
+8.  **Roll out to all 48 schools**, using the current NJSIAA roster including Ocean Academy (approved November 6; see `school-directory-access.md`). School records and reusable page links are ready; invitations and actual schedules are assigned separately.
 9.  **Later: tournament import.** Games go onto both schools' calendars and the conference calendar automatically. ADs can add transportation but not change date, time or location. "Winner of Game 3" slots fill in with results.
 10. **Later: installable phone app** (PWA) using the same pages and data
 

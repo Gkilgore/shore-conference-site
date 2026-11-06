@@ -6,7 +6,8 @@ const logoTypes = ['image/png', 'image/jpeg', 'image/webp'];
 // logo-matched colors from data/sample-data.js, and anything else uses the conference colors.
 function schoolColors(school) {
   // sampleSchools is a top-level const, so it is not a window property.
-  const demo = school && typeof sampleSchools !== 'undefined' ? sampleSchools[school.slug] : null;
+  const demo = school && typeof shoreSchools !== 'undefined' ? shoreSchools[school.slug]
+    : school && typeof sampleSchools !== 'undefined' ? sampleSchools[school.slug] : null;
   return {
     primary: school?.primary_color || demo?.color || brandingDefaults.primary_color,
     accent: school?.accent_color || demo?.accent || brandingDefaults.accent_color,
@@ -16,7 +17,8 @@ function schoolColors(school) {
 function schoolLogoUrl(client, school) {
   if (!school) return '';
   if (school.logo_path) return client.storage.from('school-logos').getPublicUrl(school.logo_path).data.publicUrl;
-  return 'assets/logos/' + school.slug + '.png';
+  return typeof shoreSchools !== 'undefined' ? shoreSchools[school.slug]?.logo ?? 'assets/logos/shore-conference.svg'
+    : 'assets/logos/' + school.slug + '.png';
 }
 
 function setSchoolColors(element, primary, accent) {
