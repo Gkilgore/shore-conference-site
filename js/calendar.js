@@ -81,6 +81,7 @@ function renderCalendar(events) {
         (!fields.school?.value || game.schools.includes(fields.school.value)) &&
         (!fields.season.value || game.season === fields.season.value) &&
         (!fields.sport.value || game.sport === fields.sport.value) &&
+        (!fields.gender?.value || game.gender === fields.gender.value) &&
         (!fields.level.value || game.level === fields.level.value) &&
         (game.title + ' ' + game.location).toLowerCase().includes(query));
       document.getElementById('filter-count').textContent =

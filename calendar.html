@@ -14,6 +14,8 @@
   <script defer src="js/site.js"></script>
   <script defer src="js/seasons.js"></script>
   <script defer src="js/calendar.js"></script>
+  <script defer src="js/supabase-config.js"></script>
+  <script defer src="js/public-calendar.js"></script>
   <script defer src="js/conference.js"></script>
 </head>
 <body>
@@ -31,12 +33,15 @@
     </div>
   </header>
   <main id="main">
-    <section class="intro" data-logo-wall="assets/logos/shore-conference.svg"><div class="wrap"><img class="intro-logo" src="assets/logos/shore-conference.svg" alt="" width="190" height="112"><h1>Conference Calendar</h1><p>Browse games confirmed by both schools. Sample schedule · Eastern Time</p></div></section>
+    <section class="intro" data-logo-wall="assets/logos/shore-conference.svg"><div class="wrap"><img class="intro-logo" src="assets/logos/shore-conference.svg" alt="" width="190" height="112"><h1>Conference Calendar</h1><p>Browse published games confirmed by both schools. Eastern Time</p></div></section>
     <section class="wrap section" aria-label="Conference calendar">
+      <p><a id="subscribe-calendar" class="button primary" href="subscribe.html?scope=conference">Subscribe for updates</a></p>
+      <p id="public-schedule-status" role="status">Loading schedule…</p>
       <form id="calendar-filters" class="filters" role="search" aria-label="Filter games">
         <label>School<select name="school"><option value="">All schools</option></select></label>
         <label>Season<select name="season"><option value="">All seasons</option></select></label>
         <label>Sport<select name="sport"><option value="">All sports</option></select></label>
+        <label>Team<select name="gender"><option value="">All teams</option><option>Boys</option><option>Girls</option><option>Coed</option></select></label>
         <label>Level<select name="level"><option value="">All levels</option></select></label>
         <label>Search<input name="search" type="search" placeholder="Team or venue"></label>
         <button type="reset" class="button secondary">Reset filters</button>
