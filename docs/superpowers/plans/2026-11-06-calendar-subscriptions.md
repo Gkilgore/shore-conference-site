@@ -17,7 +17,8 @@
 - [x] Add the school publication form and subscription chooser. Load public pages from live endpoint; keep sample mode explicitly labeled and separate from subscriptions.
 - [x] Run full local tests, syntax checks and diff checks; review the whole change. Fifteen tests pass. Independent reviewer found a duplicate conference entry issue; regression test and deterministic deduplication resolve it. Pagination also handles server row limits below 1000.
 - [ ] Complete 390px phone and staff-publication visual checks. Desktop subscription page inspected with fictional fixture data; app links and one-time download distinction are visible.
-- [ ] Deploy and verify database permissions, triggers, REST joins and calendar-app refresh behavior in test project. Connector metadata access denied; SQL tool additionally reports a missing connection argument. No remote database changes have run. Do not merge or publish frontend before these checks pass.
+- [x] Deploy migration and Edge Function to test project `jrtcyihpdrcnhxgproyw`; verify database permissions, transport revision trigger, REST joins, filtered ICS, time/status updates, stable UID, conference cancellation removal and unpublishing. All checks passed. Original game details restored; all schools left unpublished.
+- [ ] Check subscription refresh inside actual Apple, Google and Outlook apps. This is manual follow-up; user authorized merging with this limit recorded.
 
 ## Review focus
 

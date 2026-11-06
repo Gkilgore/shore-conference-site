@@ -1,0 +1,23 @@
+<!-- Local-only rendering of the actual School settings markup; it never signs in or writes data. -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Publication settings layout check</title>
+  <link rel="stylesheet" href="../css/site.css"><link rel="stylesheet" href="../css/staff.css">
+</head>
+<body>
+  <main id="workspace"><p>Layout preview only. Controls are inactive.</p><div class="staff-content"></div></main>
+  <script>
+    fetch('../admin.html').then(response => response.text()).then(html => {
+      const page = new DOMParser().parseFromString(html, 'text/html');
+      const panel = page.getElementById('staff-settings-panel');
+      panel.hidden = false;
+      panel.querySelector('#settings-school').textContent = 'Marlboro';
+      panel.querySelector('#publication-status').textContent = 'Private. Families cannot see or subscribe to this schedule yet.';
+      panel.querySelectorAll('input,button').forEach(field => field.disabled = true);
+      document.querySelector('.staff-content').append(panel);
+    });
+  </script>
+</body>
+</html>

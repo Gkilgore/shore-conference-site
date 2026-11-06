@@ -1,9 +1,13 @@
 -- Adds opt-in school publication and stable modification timestamps for public calendar subscriptions.
 alter table public.schools add column schedule_published boolean not null default false;
 
--- The existing schools update policy permits only the owning AD or a site admin.
--- No public access to the underlying schedule or staff tables is added.
+-- Publication also works before the optional branding migration is installed.
+-- Column grants and ownership rules keep all other school settings protected.
 grant update (schedule_published) on public.schools to authenticated;
+create policy "Staff publish own school schedule" on public.schools
+  for update to authenticated
+  using (shore_private.can_manage_schedule(slug))
+  with check (shore_private.can_manage_schedule(slug));
 
 alter table public.games add column updated_at timestamptz not null default statement_timestamp();
 
