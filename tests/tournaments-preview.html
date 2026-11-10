@@ -1,0 +1,59 @@
+<!doctype html>
+<!-- Local-only tournament dashboard QA using the real admin markup and fictional checked-RPC responses. -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tournament dashboard preview</title><link rel="stylesheet" href="../css/site.css"><link rel="stylesheet" href="../css/staff.css"><link rel="stylesheet" href="../css/tournament-public.css"><link rel="stylesheet" href="../css/tournaments.css"></head><body>
+<script type="module">
+  const source = await fetch('../admin.html').then(response => response.text());
+  const markup = new DOMParser().parseFromString(source,'text/html');
+  document.body.replaceChildren(...markup.body.childNodes);
+  document.querySelector('.staff-auth').hidden = true;
+  document.getElementById('workspace').hidden = false;
+  document.getElementById('staff-overview-panel').hidden = true;
+  document.getElementById('staff-schedule-panel').hidden = true;
+  document.getElementById('staff-filters').hidden = true;
+  document.getElementById('staff-tournaments-panel').hidden = false;
+  document.getElementById('staff-tournaments-tab').setAttribute('aria-current','true');
+  document.getElementById('staff-schedule-tab').removeAttribute('aria-current');
+  document.getElementById('workspace-title').textContent = 'Tournament dashboard preview';
+  document.getElementById('workspace-account').textContent = 'Fictional games · local preview';
+  document.getElementById('schedule-school').parentElement.hidden = true;
+  for (const file of ['staff-import.js','tournament-engine.js','tournament-public.js','staff-tournaments.js']) {
+    await new Promise((resolve,reject) => {
+      const script = document.createElement('script');
+      script.src = '../js/' + file;script.onload = resolve;script.onerror = reject;document.head.append(script);
+    });
+  }
+  const schools = [{slug:'marlboro',name:'Marlboro'},{slug:'colts-neck',name:'Colts Neck'},{slug:'shore',name:'Shore Regional'}];
+  const participants = TournamentEngine.participantsFromText('1. Marlboro\n2. Colts Neck\n3. Shore Regional\n4. Guest Academy',schools).participants;
+  const base = {name:'Spring Cup · fictional',sport:'Softball',gender:'Girls',level:'Varsity',season:'Spring',season_year:2027,duration_minutes:90,turnaround_minutes:15,rest_minutes:60,windows:[{date:'2027-04-10',start:'09:00',end:'18:00',venue:'Main field'}],participants,matches:TournamentEngine.generateBracket(participants)};
+  const draft = TournamentEngine.schedule(base,base.windows).document;
+  let record = {id:'11111111-1111-4111-8111-111111111111',revision:1,published_revision:1,draft,published:structuredClone(draft),issues:[]};
+  const role = new URLSearchParams(location.search).get('role') === 'ad' ? 'ad' : 'conference_office';
+  const calls = [];
+  const buses = [];
+  const rpc = async (name,args) => {
+    calls.push({name,args:structuredClone(args)});
+    if (name === 'list_tournaments') return {data:{actor_role:role,school_id:role === 'ad' ? 'marlboro' : null,tournaments:[role === 'ad' ? {...record,draft:undefined} : record],conflicts:[],transportation:buses}};
+    if (name === 'save_tournament') {
+      if (args.p_expected_revision !== (args.p_id === record.id ? record.revision : 0)) return {error:{code:'40001'}};
+      record = {...record,id:args.p_id,revision:record.revision+1,draft:structuredClone(args.p_document)};
+      return {data:structuredClone(record)};
+    }
+    if (name === 'review_tournament') return {data:{...structuredClone(record),token:'preview-'+record.revision,changes:record.draft.matches.filter(match => JSON.stringify(match) !== JSON.stringify(record.published?.matches.find(old => old.id === match.id))).map(match => ({id:match.id,before:record.published?.matches.find(old => old.id === match.id) ?? null,after:match})),issues:TournamentEngine.validate(record.draft),affected_schools:participants.map(team => team.school_id).filter(Boolean)}};
+    if (name === 'publish_tournament') {
+      if (args.p_token !== 'preview-'+record.revision) return {error:{code:'40001'}};
+      record.published = TournamentEngine.resolve(structuredClone(record.draft));record.published_revision = record.revision;
+      return {data:structuredClone(record)};
+    }
+    if (name === 'save_tournament_transport') {
+      const row = {tournament_id:args.p_tournament,match_id:args.p_match,school_id:args.p_school,revision:args.p_expected_revision+1,...args.p_transport};
+      buses.push(row);return {data:row};
+    }
+    return {error:{message:'Unknown preview request'}};
+  };
+  const controller = startStaffTournaments({rpc},{schools:() => schools});
+  window.tournamentPreview = {controller,calls,record:() => record};
+  await controller.load();
+  document.getElementById('staff-tournaments-tab').onclick = () => controller.load();
+  window.tournamentPreview.ready = true;
+</script>
+</body></html>

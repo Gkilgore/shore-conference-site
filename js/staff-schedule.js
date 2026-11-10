@@ -12,6 +12,9 @@ function startStaffSchedule(client, invite) {
   const accessTab = document.getElementById('staff-access-tab');
   const accessPanel = document.getElementById('staff-access-workspace');
   const access = startStaffAccess(client, invite, () => schools);
+  const tournamentsTab = document.getElementById('staff-tournaments-tab');
+  const tournamentsPanel = document.getElementById('staff-tournaments-panel');
+  const tournaments = startStaffTournaments(client, { schools: () => schools });
   const status = document.getElementById('schedule-status');
   const list = document.getElementById('schedule-games');
   const calendarTarget = document.getElementById('calendar');
@@ -162,6 +165,7 @@ function startStaffSchedule(client, invite) {
     const showContact = canEdit && !transportationPanel.hidden;
     const showSettings = canEdit && !settingsPanel.hidden;
     const showOverview = !overviewPanel.hidden;
+    const showTournaments = !tournamentsPanel.hidden;
     const showCoaches = canEdit && !coachesPanel.hidden;
     transportation.reset();
     publication.reset();
@@ -189,6 +193,7 @@ function startStaffSchedule(client, invite) {
     if (showCoaches) openCoaches(false);
     if (showSettings) openSettings(false);
     if (showOverview) openOverview(false);
+    if (showTournaments) openTournaments(false);
     document.getElementById('import-section').hidden = !canEdit;
     loadGames(null, true);
   }
@@ -353,13 +358,14 @@ function startStaffSchedule(client, invite) {
   // Hides every panel and clears the selected tab; each opener then shows its own panel.
   function hidePanels() {
     for (const [panel, tab] of [[schedulePanel, scheduleTab], [overviewPanel, overviewTab],
-      [transportationPanel, transportationTab], [coachesPanel, coachesTab], [settingsPanel, settingsTab]]) {
+      [transportationPanel, transportationTab], [coachesPanel, coachesTab], [settingsPanel, settingsTab], [tournamentsPanel, tournamentsTab]]) {
       panel.hidden = true;
       tab.removeAttribute('aria-current');
     }
     accessPanel.hidden = true;
     accessTab.removeAttribute('aria-current');
     access.reset();
+    tournaments.reset();
     selector.parentElement.hidden = false;
     addGame.hidden = !canEdit;
     form.hidden = true;
@@ -426,6 +432,17 @@ function startStaffSchedule(client, invite) {
     if (focus) settingsTitle.focus();
   }
 
+  function openTournaments(focus = true) {
+    hidePanels();
+    tournamentsPanel.hidden = false;
+    tournamentsTab.setAttribute('aria-current', 'true');
+    selector.parentElement.hidden = true;
+    addGame.hidden = true;
+    tournaments.load();
+    if (focus) document.getElementById('tournaments-title').focus();
+  }
+  tournamentsTab.onclick = () => openTournaments();
+
   function openStaffAccess() {
     if (!mayManageAccess || accessTab.hidden) return;
     hidePanels();
@@ -477,6 +494,7 @@ function startStaffSchedule(client, invite) {
     transportationTab.disabled = true;
     settingsTab.disabled = true;
     accessTab.disabled = true;
+    tournamentsTab.disabled = true;
     preview.disabled = true;
     selector.disabled = true;
     list.querySelectorAll('button').forEach(button => button.disabled = true);
@@ -494,6 +512,7 @@ function startStaffSchedule(client, invite) {
     transportationTab.disabled = false;
     settingsTab.disabled = false;
     accessTab.disabled = false;
+    tournamentsTab.disabled = false;
     preview.disabled = !isSiteAdmin;
     selector.disabled = selector.options.length < 2;
     if (error) {
@@ -518,6 +537,9 @@ function startStaffSchedule(client, invite) {
     settings.stop();
     publication.stop();
     access.stop();
+    tournaments.stop();
+    tournamentsTab.onclick = null;
+    tournamentsTab.disabled = false;
     accessTab.onclick = null;
     accessTab.disabled = false;
     overview.stop();

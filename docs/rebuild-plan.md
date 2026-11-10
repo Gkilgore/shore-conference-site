@@ -8,7 +8,7 @@ November 5, 2026 · Greg Kilgore and Alexa
 - **Each school owns its schedule.** Only that school's Athletic Director (AD) can add, import or edit its games. Nothing one school enters appears on another school's calendar.
 - **Review before publishing (Greg's November 6 update).** Saves and imports are working drafts. Publish each sport/gender/level/season-year schedule separately, or select several to review and publish together. Later edits can be reviewed and published per game or per selected team. Posted calendars and subscriptions keep the last approved version until publication. Existing subscription URLs stay the same.
 - **The conference calendar is built by matching.** When two member schools publish the same game and the details agree, it appears on the conference calendar automatically.
-- **Tournaments are the one exception** (later phase). The conference office imports them and they go onto both schools' calendars, because the conference owns those games.
+- **Tournaments are the one exception** (Greg's November 9 update). Conference admins import or generate a bracket, schedule its games, review and publish. Conference publication places each game on the conference calendar and confirmed participating schools' calendars. ADs manage their own tournament transportation. See `tournaments-design.md` for the implemented workflow.
 
 ## 2. Who can do what
 
@@ -16,7 +16,7 @@ November 5, 2026 · Greg Kilgore and Alexa
 |-------------------|----------------------------------------------------------------------------|------------------------------------------------------------------|
 | Public            | School pages, conference calendar, subscribe links                         | Nothing                                                          |
 | School AD         | Their school's full schedule, including transportation                     | Their own school's teams, games, transportation, logo and colors |
-| Conference admin  | Every school calendar, the conference calendar, the list of unlinked games | AD invitations and school assignments; school schedules stay read-only |
+| Conference admin  | Every school calendar, the conference calendar, the list of unlinked games | AD invitations, school assignments and conference-owned tournaments; school schedules stay read-only |
 | Site admin        | Everything (Greg and Alexa)                                                | Schools, AD accounts, conference-admin access, fixes               |
 
 **Bus times** show on each game on the school's own calendar and in that school's subscribe feeds, never on another school's calendar or the conference calendar.
@@ -57,7 +57,9 @@ It names the field that differs but never shows the other school's values.
 | staff_access_audit | Internal record of invited-access additions, changes and removals                            |
 | users            | Name, email, role (AD, conference office, site admin), school                                    |
 | conference_links | The two matched games and when they linked (created by the site)                                 |
-| tournament_games | Later phase: tournament, round, date, time, location, two slots (a school or "Winner of Game 3") |
+| tournaments | Conference-owned bracket, participants, schedule and results, with private drafts and approved snapshots |
+| tournament_transportation | Each participating school's own bus details for a published tournament match |
+| tournament_updates | Approved tournament match changes used by public calendar history |
 
 A game's opponent is either a member school picked from a list or a typed name for non-conference opponents. Only games with a picked member school can link.
 
@@ -122,7 +124,7 @@ A game's opponent is either a member school picked from a list or a typed name f
 6.  **Conference office login:** view only, unlinked-games list
 7.  **Spring pilot at Marlboro** with coaches Greg knows, using Colts Neck and Shore Regional to test matching
 8.  **Roll out to all 48 schools**, using the current NJSIAA roster including Ocean Academy (approved November 6; see `school-directory-access.md`). School records and reusable page links are ready; invitations and actual schedules are assigned separately.
-9.  **Later: tournament import.** Games go onto both schools' calendars and the conference calendar automatically. ADs can add transportation but not change date, time or location. "Winner of Game 3" slots fill in with results.
+9.  **Tournament workflow implemented in the test project.** Import CSV or generate seeded single elimination with byes, build a master schedule, review and publish. Confirmed participants appear on school calendars and feeds. "Winner of Game 3" slots fill in through reviewed results. ADs manage their own transportation. Production rollout remains Greg's responsibility.
 10. **Later: installable phone app** (PWA) using the same pages and data
 
 ## 9. Working together: Greg and Alexa

@@ -17,7 +17,26 @@ const schools = Object.entries(data.schools).map(([slug, school]) => ({ slug, na
 const games = data.games.map((game, index) => ({ ...game, id: 'preview-' + index,
   school_id: game.school, updated_at: '2026-11-06T12:00:00Z', revision: 1,
   teams: { sport: game.sport, gender: game.gender, level: game.level, season: game.season } }));
-const handle = createHandler(async () => ({ schools, games }));
+vm.runInContext(await readFile(resolve(root, 'js/tournament-engine.js'), 'utf8'), sandbox);
+const tournamentId = '7f2d23ed-3c84-4ba7-854c-41dd7b834c53';
+const participants = ['marlboro', 'colts-neck', 'shore-regional', null].map((school, index) => ({
+  id: 'p' + (index + 1), name: data.schools[school]?.name || 'Guest Academy', school_id: school, seed: index + 1,
+}));
+const tournament = sandbox.TournamentEngine.resolve(sandbox.TournamentEngine.schedule({
+  name: 'Spring Cup · fictional', sport: 'Softball', gender: 'Girls', level: 'Varsity', season: 'Spring', season_year: 2027,
+  duration_minutes: 90, turnaround_minutes: 15, rest_minutes: 60, participants,
+  matches: sandbox.TournamentEngine.generateBracket(participants), windows: [],
+}, [{ date: '2027-04-10', start: '09:00', end: '18:00', venue: 'Main field' }]).document);
+const tournamentGames = tournament.matches.map(match => ({ ...match,
+  id: 'tournament-' + tournamentId + '-' + match.id, tournament_id: tournamentId, tournament_name: tournament.name,
+  match_id: match.id, match_label: match.label, location: match.venue, revision: 1, updated_at: '2026-11-09T12:00:00Z',
+  teams: { sport: tournament.sport, gender: tournament.gender, level: tournament.level, season: tournament.season },
+  ...Object.fromEntries(['a', 'b'].map(side => [side, participants.find(participant => participant.id === match['resolved_' + side]) || {
+    id: null, school_id: null, name: 'Winner of ' + tournament.matches.find(source => source.id === match[side].winner_of)?.label,
+  }])),
+}));
+const handle = createHandler(async () => ({ schools, games, tournament_games: tournamentGames,
+  tournaments: [{ id: tournamentId, document: tournament }] }));
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml' };
 
 createServer(async (req, res) => {

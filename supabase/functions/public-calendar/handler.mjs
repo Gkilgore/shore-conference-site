@@ -14,11 +14,11 @@ export function createHandler(load) {
     try { options = parseOptions(new URL(request.url)); }
     catch (error) { return new Response(error.message, { status: 400, headers: cors }); }
     try {
-      const { schools, games, seasons = [], updates = [] } = await load(options);
+      const { schools, games, seasons = [], updates = [], tournament_games = [], tournaments = [] } = await load(options);
       if (options.school && !schools.some(school => school.slug === options.school)) {
         return new Response('School not found.', { status: 404, headers: cors });
       }
-      const schedule = { ...publicSchedule(schools, games, options), seasons, updates };
+      const schedule = { ...publicSchedule(schools, games, options, tournament_games), seasons, updates, tournaments };
       const json = options.format === 'json';
       const body = json ? JSON.stringify(schedule) : buildCalendar(schedule);
       return new Response(request.method === 'HEAD' ? null : body, {

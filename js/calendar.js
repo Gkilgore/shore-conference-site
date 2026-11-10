@@ -141,6 +141,7 @@ function createGameDetails(calendar) {
     <p class="eyebrow">Game details</p>
     <h2 id="game-details-title"></h2>
     <dl></dl>
+    <p><a class="button secondary" data-tournament-bracket hidden>View tournament bracket</a></p>
     <form method="dialog"><button class="button secondary" autofocus>Close</button></form>
   `;
   calendar.after(dialog);
@@ -154,6 +155,10 @@ function createGameDetails(calendar) {
       ['Status', details.status || 'Scheduled'],
     ];
     if (details.bus) rows.push(['Transportation', details.bus]);
+    const bracket = dialog.querySelector('[data-tournament-bracket]');
+    bracket.hidden = !details.tournament_id;
+    if (details.tournament_id) bracket.href = 'tournament.html?id=' + encodeURIComponent(details.tournament_id) +
+      (details.match_id ? '#match-' + encodeURIComponent(details.match_id) : '');
     dialog.querySelector('h2').textContent = event.title;
     dialog.querySelector('dl').replaceChildren(...rows.flatMap(([label, value]) => {
       const term = document.createElement('dt');

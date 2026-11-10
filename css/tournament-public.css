@@ -1,0 +1,23 @@
+/* Shows published tournament rounds in compact, framed columns that stack on phones. */
+#tournament-status { margin-block: 1rem; }
+.tournament-bracket { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 1rem; align-items: start; }
+.tournament-round { min-width: 0; }
+.tournament-round h2 { font-size: 1.4rem; margin-bottom: 0.75rem; }
+.tournament-round ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; }
+.tournament-match { padding: 0.8rem; border: var(--frame); scroll-margin-block: 1rem; overflow-wrap: anywhere; }
+.tournament-match:target { outline: 3px solid var(--navy); outline-offset: 3px; }
+.tournament-match h3 { margin: 0 0 0.5rem; font-size: 1.05rem; }
+.tournament-match p + p { margin-top: 0.35rem; }
+.tournament-match .tournament-slot { display: flex; justify-content: space-between; gap: 0.75rem; }
+.tournament-slot a { display: block; padding-inline: 0.2rem; margin-inline: -0.2rem; }
+.tournament-slot a:is(:hover, :focus-visible) { background: var(--yellow); color: var(--ink); }
+.tournament-score { font-weight: 700; }
+.tournament-match.is-canceled { background: var(--red); color: var(--paper); }
+.tournament-match.is-canceled a { color: inherit; }
+.tournament-match.is-canceled a:is(:hover, :focus-visible) { background: var(--ink); color: var(--paper); }
+.tournament-match.is-postponed { background: var(--yellow); }
+.tournament-match.is-postponed a:is(:hover, :focus-visible) { background: var(--ink); color: var(--paper); }
+.tournament-match .tournament-result { margin-top: 0.6rem; font-weight: 700; }
+@media (max-width: 640px) {
+  .tournament-bracket { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,33 @@
+/* Frames compact tournament drafting, match tables and checked publication reviews. */
+.tournament-metadata, .tournament-window { align-items: end; }
+.tournament-metadata > label, .tournament-window > label { flex: 1 1 9rem; min-width: 0; }
+.tournament-mapping { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); }
+.tournament-mapping label { min-width: 0; }
+.tournament-mapping select { max-width: 100%; }
+.tournament-table-wrap { overflow: auto; max-width: 100%; border: var(--frame); margin-block: 1rem; }
+.tournament-table { width: 100%; min-width: 65rem; border-collapse: collapse; }
+.tournament-table th, .tournament-table td { border: var(--frame); padding: .5rem; vertical-align: top; text-align: left; }
+.tournament-table thead { background: var(--ink); color: var(--paper); }
+.tournament-table input, .tournament-table select { width: 100%; min-width: 6rem; }
+.tournament-table label { display: block; margin-block: .35rem; }
+.tournament-table tbody th { min-width: 8rem; }
+.tournament-window { margin-block: .75rem; padding: .75rem; border: var(--frame); }
+.tournament-proposal { border: var(--frame); padding: 1rem; background: var(--yellow); }
+.tournament-issues:empty { display: none; }
+.tournament-issues { padding: .75rem 2rem; border: var(--frame); }
+.tournament-review { width: min(60rem, calc(100% - 2rem)); max-width: calc(100% - 2rem); }
+.tournament-change { margin-block: 1rem; border: var(--frame); padding: .75rem; }
+.tournament-selection { display: flex; flex-wrap: wrap; gap: .75rem; padding-block: .75rem; }
+.tournament-selection label { display: flex; align-items: center; gap: .4rem; }
+.tournament-selection input { width: auto; }
+#tournament-selector { display: block; margin-block: 1rem; }
+#tournament-selector[hidden] { display: none; }
+
+/* Tournament sections use complete frames, overriding the older shared section rule. */
+#staff-tournaments-panel .staff-section { border: var(--frame); padding: .75rem; }
+#staff-tournaments-panel .tournament-round h5 { font-size: 1.1rem; margin-block: 0 .5rem; }
+#staff-tournaments-panel .tournament-match h6 { font-size: 1rem; margin-block: 0 .5rem; }
+#staff-tournaments-panel .tournament-bracket { gap: .75rem; }
+.tournament-field-changes { display: grid; gap: .65rem; padding-inline-start: 1.25rem; }
+.tournament-field-changes strong, .tournament-field-changes span { display: block; }
+.tournament-field-changes span { overflow-wrap: anywhere; }
