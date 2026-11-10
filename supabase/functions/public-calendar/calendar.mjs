@@ -24,11 +24,51 @@ function matchKey(game) {
     game.teams.sport, game.teams.gender, game.teams.level]);
 }
 
-export function publicSchedule(schools, games, options) {
+function tournamentEvents(games, options) {
+  const unique = new Map();
+  for (const game of games) {
+    if (!game.game_date || !game.start_time || !game.teams) continue;
+    if (!unique.has(game.id) || game.revision > unique.get(game.id).revision) unique.set(game.id, game);
+  }
+  return [...unique.values()].flatMap(game => {
+    const schools = [...new Set([game.a.school_id, game.b.school_id].filter(Boolean))];
+    if (options.school && !schools.includes(options.school)) return [];
+    const team = game.teams;
+    const home = game.home_side === 'a' ? game.a : game.home_side === 'b' ? game.b : null;
+    const away = home === game.a ? game.b : game.a;
+    const opponent = game.a.school_id === options.school ? game.b : game.a;
+    const pairing = options.scope === 'school'
+      ? (home && home.school_id !== options.school ? 'at ' : 'vs. ') + opponent.name
+      : home ? away.name + ' at ' + home.name : game.a.name + ' vs. ' + game.b.name;
+    const event = {
+      id: game.id, revision: game.revision, updated_at: game.updated_at,
+      title: [team.gender, team.level, team.sport].join(' ') + ' · ' + game.tournament_name +
+        ' · ' + game.match_label + ' · ' + pairing + (game.status === 'Scheduled' ? '' : ' · ' + game.status),
+      start: game.game_date + 'T' + game.start_time, location: game.location,
+      status: game.status, notes: '', school: options.scope === 'school' ? options.school : home?.school_id ?? schools[0] ?? null,
+      schools, sport: team.sport, gender: team.gender, level: team.level, season: team.season,
+      tournament_id: game.tournament_id, tournament_name: game.tournament_name,
+      match_id: game.match_id, match_label: game.match_label, round: game.round,
+      duration_minutes: game.duration_minutes, ics_start_utc: game.ics_start_utc,
+    };
+    if (options.scope === 'school') {
+      // The database returns only this school's bus row. Also reject a foreign row if one is supplied.
+      const rows = Array.isArray(game.transportation) ? game.transportation : [game.transportation];
+      const bus = rows.find(row => row && (!row.school_id || row.school_id === options.school));
+      if (bus) event.transportation = {
+        bus_departure: bus.bus_departure, pickup_location: bus.pickup_location, return_time: bus.return_time,
+      };
+    }
+    return [event];
+  });
+}
+
+export function publicSchedule(schools, games, options, tournamentGames = []) {
   const directory = new Map(schools.map(school => [school.slug, school]));
   const school = directory.get(options.school);
   if (options.school && !school) throw new Error('School not found.');
   const isConference = options.scope === 'conference';
+  const tournaments = tournamentEvents(tournamentGames, options);
   const publicGames = games.filter(game => directory.get(game.school_id)?.schedule_published === true && game.teams);
   let selected;
   if (isConference) {
@@ -76,14 +116,14 @@ export function publicSchedule(schools, games, options) {
       };
     }
     return event;
-  }).filter(event => (!options.school || event.schools.includes(options.school)) &&
+  }).concat(tournaments).filter(event => (!options.school || event.schools.includes(options.school)) &&
     ['sport', 'gender', 'level', 'season'].every(key => !options[key] || event[key] === options[key]) &&
     (!options.search || (event.title + ' ' + event.location).toLowerCase().includes(options.search.toLowerCase())))
     .sort((a, b) => a.start.localeCompare(b.start) || a.id.localeCompare(b.id));
   return {
     scope: options.scope, name: [isConference ? 'Shore Conference' : school.name,
       options.gender, options.level, options.sport, options.season].filter(Boolean).join(' · '),
-    published: isConference || school.schedule_published === true,
+    published: isConference || school.schedule_published === true || tournaments.length > 0,
     events,
   };
 }
@@ -128,9 +168,11 @@ export function buildCalendar(schedule) {
       if (bus.return_time) description.push('Return: ' + time(bus.return_time));
     }
     const modified = new Date(game.updated_at).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    // A repeated Eastern clock hour needs its checked UTC instant to preserve the chosen occurrence.
     lines.push('BEGIN:VEVENT', 'UID:' + schedule.scope + '-' + game.id + '@shore-calendar',
       'DTSTAMP:' + modified, 'LAST-MODIFIED:' + modified, 'SEQUENCE:' + game.revision,
-      'DTSTART;TZID=America/New_York:' + game.start.replace(/[-:]/g, '').slice(0, 15),
+      game.ics_start_utc ? 'DTSTART:' + game.ics_start_utc
+        : 'DTSTART;TZID=America/New_York:' + (game.start.length === 16 ? game.start + ':00' : game.start).replace(/[-:]/g, '').slice(0, 15),
       'SUMMARY:' + escapeText(game.title), 'LOCATION:' + escapeText(game.location),
       'DESCRIPTION:' + escapeText(description.filter(Boolean).join('\n')),
       'STATUS:' + (game.status === 'Canceled' ? 'CANCELLED' : game.status === 'Postponed' ? 'TENTATIVE' : 'CONFIRMED'),
