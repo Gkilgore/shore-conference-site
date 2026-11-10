@@ -1,4 +1,4 @@
-<!-- Shows a selected school’s branding, upcoming games, and filterable calendar. -->
+<!-- Shows a selected school’s branding, next games, and filterable calendar. -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -38,27 +38,23 @@
     <section class="hero school-hero">
       <div class="wrap hero-inner">
         <img id="school-logo" alt="" width="350" height="350" hidden>
-        <h1 id="page-title">School Calendar</h1>
-        <p class="hero-copy" id="school-welcome">Find upcoming games, venues, and bus times for this school.</p>
+        <div class="school-name">
+          <h1 id="page-title">School Calendar</h1>
+          <p class="hero-copy" id="school-welcome" hidden>Choose a school from the directory.</p>
+        </div>
         <div class="actions">
-          <a id="calendar-link" class="button primary" href="#school-calendar">View schedule</a>
-          <a id="subscribe-calendar" class="button secondary" href="subscribe.html">Subscribe for updates</a>
-          <a class="button secondary" href="schools.html">All schools</a>
+          <a id="subscribe-calendar" class="button primary" href="subscribe.html">Subscribe for updates</a>
+          <a id="all-schools-link" class="button secondary" href="schools.html" hidden>All schools</a>
         </div>
       </div>
     </section>
     <div id="school-content" class="wrap section">
-      <section id="school-postings" class="public-postings" aria-labelledby="school-seasons-title">
-        <h2 id="school-seasons-title">Posted schedules</h2>
-        <div id="school-seasons" aria-live="polite"><p>Loading posted team schedules…</p></div>
-        <p>New posted games appear as schedules are published.</p>
-      </section>
       <section aria-labelledby="upcoming-title">
-        <div class="section-heading"><div><p id="public-schedule-status" class="eyebrow" role="status">Loading schedule · Eastern Time</p><h2 id="upcoming-title">Upcoming games</h2></div></div>
+        <div class="section-heading"><div><p id="public-schedule-status" class="eyebrow" role="status">Loading schedule · Eastern Time</p><h2 id="upcoming-title">Next games</h2></div></div>
         <ul class="game-list" id="upcoming"></ul>
       </section>
       <section class="school-calendar" id="school-calendar" aria-labelledby="calendar-title">
-        <h2 id="calendar-title">School calendar</h2>
+        <h2 id="calendar-title">Full schedule</h2>
       <form id="calendar-filters" class="filters" role="search" aria-label="Filter games">
         <label>Season<select name="season"><option value="">All seasons</option></select></label>
         <label>Sport<select name="sport"><option value="">All sports</option></select></label>
@@ -75,10 +71,14 @@
         <p class="filter-count"><span id="filter-count" role="status"></span> Select a game for details.</p>
       </div>
       </section>
-      <section id="recent-updates" class="public-postings" aria-labelledby="school-updates-title">
-        <h2 id="school-updates-title">Recent updates</h2>
-        <p>Posted team schedules and published game changes. Dates use Eastern Time.</p>
-        <ul id="school-updates" class="public-update-list" aria-live="polite"><li>Loading published changes…</li></ul>
+      <!-- Shown only when the school has postings or changes, or when they fail to load. -->
+      <section id="school-postings" class="public-postings" aria-labelledby="school-seasons-title" hidden>
+        <h2 id="school-seasons-title">Posted schedules</h2>
+        <div id="school-seasons" aria-live="polite"></div>
+      </section>
+      <section id="recent-updates" class="public-postings" aria-labelledby="school-updates-title" hidden>
+        <h2 id="school-updates-title">Schedule changes</h2>
+        <ul id="school-updates" class="public-update-list" aria-live="polite"></ul>
       </section>
     </div>
   </main>

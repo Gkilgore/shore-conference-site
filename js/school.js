@@ -16,8 +16,6 @@ if (Object.hasOwn(schoolDirectory, schoolSlug)) {
   const emphasis = document.createElement('em');
   emphasis.textContent = 'Athletics';
   document.getElementById('page-title').replaceChildren(school.name + ' ', emphasis);
-  document.getElementById('school-welcome').textContent =
-    'Browse ' + school.name + ' posted games by sport or level. Check dates, venues, and school bus times.';
   const logo = document.getElementById('school-logo');
   logo.src = school.logo ?? (['colts-neck', 'marlboro', 'shore-regional'].includes(schoolSlug)
     ? 'assets/logos/' + schoolSlug + '.png' : 'assets/logos/shore-conference.svg');
@@ -48,17 +46,19 @@ if (Object.hasOwn(schoolDirectory, schoolSlug)) {
     if (!sample) {
       const schedule = await loadPublicCalendar({ scope: 'school', school: schoolSlug });
       games = publicCalendarEvents(schedule);
-      status.textContent = 'School calendar · Eastern Time';
-      renderSchoolSeasons(document.getElementById('school-seasons'), schedule, notice => {
+      status.textContent = 'All times Eastern';
+      // Each renderer returns how many items it drew; empty sections stay hidden.
+      document.getElementById('school-postings').hidden = !renderSchoolSeasons(document.getElementById('school-seasons'), schedule, notice => {
         window.dispatchEvent(new CustomEvent('shore:season-selected', { detail: notice }));
       });
-      renderSchoolUpdates(document.getElementById('school-updates'), schedule, schoolDirectory);
+      document.getElementById('recent-updates').hidden =
+        !renderSchoolUpdates(document.getElementById('school-updates'), schedule, schoolDirectory);
     } else {
       status.textContent = 'Sample schedule · Eastern Time';
       document.getElementById('school-postings').hidden = true;
       document.getElementById('recent-updates').hidden = true;
     }
-    renderUpcoming(games);
+    renderUpcoming(games, { showChanged: true });
     renderCalendar(games);
     setSubscriptionLink({ scope: 'school', school: schoolSlug });
   } catch (error) {
@@ -68,11 +68,13 @@ if (Object.hasOwn(schoolDirectory, schoolSlug)) {
     document.getElementById('upcoming').textContent = 'Schedule unavailable. Please try again later.';
     document.getElementById('school-seasons').textContent = 'Posted schedules could not be loaded. Please try again later.';
     document.getElementById('school-updates').textContent = 'Published changes could not be loaded. Please try again later.';
+    document.getElementById('school-postings').hidden = false;
+    document.getElementById('recent-updates').hidden = false;
   }
 } else {
   document.getElementById('page-title').textContent = 'School not found';
-  document.getElementById('school-welcome').textContent = 'Choose a school from the directory.';
-  document.getElementById('calendar-link').hidden = true;
+  document.getElementById('school-welcome').hidden = false;
+  document.getElementById('all-schools-link').hidden = false;
   document.getElementById('subscribe-calendar').hidden = true;
   document.getElementById('school-content').hidden = true;
 }

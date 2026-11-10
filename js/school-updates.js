@@ -106,9 +106,10 @@ function renderSchoolSeasons(target, schedule, onSelect) {
   }));
   if (!notices.length) {
     const empty = document.createElement('p');
-    empty.textContent = 'Choose a season to view posted schedules.';
+    empty.textContent = 'No team schedules are posted yet.';
     target.append(empty);
   }
+  return notices.length;
 }
 
 function renderSchoolUpdates(target, schedule, schoolNames) {
@@ -144,4 +145,5 @@ function renderSchoolUpdates(target, schedule, schoolNames) {
     empty.textContent = 'Published changes will appear here.';
     target.append(empty);
   }
+  return updates.length;
 }

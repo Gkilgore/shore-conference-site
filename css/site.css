@@ -165,16 +165,22 @@ h2 { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.1; }
   mask-image: radial-gradient(ellipse 55% 60% at 50% 50%, transparent 40%, #000 95%);
 }
 
-/* School hero: same centered layout as Home, filled with the school's color.
+/* School band: logo, name and the subscribe button in one compact row, filled with the school's color,
+   so the next games start near the top of a phone screen.
    A thin white outline keeps a logo visible even when it shares the background color. */
 .school-hero { background: var(--school-color); color: var(--school-ink); }
-.school-hero .hero-inner { display: grid; justify-items: center; text-align: center; padding-block: clamp(1.25rem, 3.5vw, 2.25rem); }
-.school-hero h1 { margin-top: 0.6rem; font-size: clamp(1.9rem, 5vw, 3.25rem); }
-.school-hero .hero-copy { margin-block: 0.5rem 1rem; font-size: 1rem; }
+.school-hero .hero-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; padding-block: clamp(0.9rem, 2.5vw, 1.4rem); }
+.school-name { flex: 1 1 10rem; min-width: 0; }
+.school-hero h1 { font-size: clamp(1.6rem, 4.5vw, 2.75rem); overflow-wrap: anywhere; }
+.school-hero .hero-copy { margin-block: 0.3rem 0; font-size: 1rem; }
 .school-hero h1 em { font-style: normal; color: var(--school-accent); }
-.school-hero .actions { justify-content: center; }
+@media (max-width: 640px) {
+  .school-hero .actions { flex-basis: 100%; }
+  .school-hero .actions .button { flex: 1; }
+}
 #school-logo {
-  width: clamp(5rem, 13vw, 7.5rem);
+  flex: none;
+  width: clamp(3.5rem, 9vw, 5.5rem);
   height: auto;
   filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff);
 }
@@ -244,6 +250,23 @@ h2 { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.1; }
 }
 .game-list strong { padding-top: 0.75rem; font-weight: 700; }
 .game-list span { padding-bottom: 0.75rem; font-size: 0.92rem; color: var(--muted); }
+/* Status label before the matchup: same colors as the calendar (postponed yellow, canceled red). */
+.game-status {
+  display: inline-block;
+  margin-right: 0.3rem;
+  padding: 0 0.4rem;
+  border: var(--frame);
+  font-size: 0.72rem;
+  font-style: normal;
+  line-height: 1.5;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  vertical-align: 0.1em;
+}
+.game-status.is-postponed { background: var(--yellow); color: var(--ink); }
+.game-status.is-canceled { background: var(--red); border-color: var(--red); color: white; }
+.game-list strong span { padding: 0; font-size: inherit; color: inherit; }
+.game-status.is-canceled + span { text-decoration: line-through; }
 .game-list li:only-child { padding: 0.85rem; }
 .game-list .empty-schedule { display: block; }
 

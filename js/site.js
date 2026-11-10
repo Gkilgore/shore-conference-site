@@ -39,10 +39,12 @@ for (const host of document.querySelectorAll('[data-logo-wall]')) {
   buildLogoWall(host, host.dataset.logoWall);
 }
 
-function renderUpcoming(events) {
+// showChanged keeps postponed and canceled games in the list, each with a status label before the matchup.
+function renderUpcoming(events, { showChanged = false } = {}) {
   const list = document.getElementById('upcoming');
   const now = new Date().toISOString().slice(0, 10);
-  const games = events.filter(game => (!game.status || game.status === 'Scheduled') && game.start.slice(0, 10) >= now)
+  const scheduled = game => !game.status || game.status === 'Scheduled';
+  const games = events.filter(game => (showChanged || scheduled(game)) && game.start.slice(0, 10) >= now)
     .sort((first, second) => first.start.localeCompare(second.start)).slice(0, 3);
   if (!games.length) {
     list.innerHTML = '<li class="empty-schedule">No upcoming games are listed.</li>';
@@ -59,8 +61,19 @@ function renderUpcoming(events) {
     const start = new Date(game.start);
     date.dateTime = game.start;
     date.textContent = dateFormat.format(start);
-    title.textContent = game.title;
-    details.textContent = [timeFormat.format(start), game.location, game.bus].filter(Boolean).join(' · ');
+    if (scheduled(game)) {
+      title.textContent = game.title;
+      details.textContent = [timeFormat.format(start), game.location, game.bus].filter(Boolean).join(' · ');
+    } else {
+      // Calendar titles end with " · Postponed"; here the status leads, so drop that ending.
+      const label = document.createElement('em');
+      const matchup = document.createElement('span');
+      label.className = 'game-status is-' + game.status.toLowerCase();
+      label.textContent = game.status;
+      matchup.textContent = game.title.endsWith(' · ' + game.status) ? game.title.slice(0, -game.status.length - 3) : game.title;
+      title.append(label, ' ', matchup);
+      details.textContent = ['Was ' + timeFormat.format(start), game.location].filter(Boolean).join(' · ');
+    }
     row.append(date, title, details);
     return row;
   }));
