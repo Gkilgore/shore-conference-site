@@ -31,7 +31,7 @@ November 5, 2026 · Greg Kilgore and Alexa
 
 A game goes on the public conference calendar only when both schools have published it and all of these match: sport, gender and level; date; start time; location; home and away mirrored; each school lists the other as its opponent. Transportation is ignored for matching.
 
-If a published update stops matching, or either school publishes a postponement or cancellation, the game comes off the conference calendar until both published entries agree again. Draft checks may run on save or import, but draft edits never change posted calendars. Public matching is checked against approved copies on each calendar/feed read.
+If a published update stops matching, the game comes off the conference calendar until both published entries agree again. A matched game that either school publishes as postponed or canceled stays on the conference calendar with that status, so visitors can see what changed (Greg's November 9 update). A game entered by mistake can be deleted; the removal reaches public calendars when the AD reviews and publishes it. Draft checks may run on save or import, but draft edits never change posted calendars. Public matching is checked against approved copies on each calendar/feed read.
 
 **AD status line.** Each game against a member school shows its status in the AD's admin screen:
 

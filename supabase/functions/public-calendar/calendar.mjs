@@ -76,19 +76,22 @@ export function publicSchedule(schools, games, options, tournamentGames = []) {
       directory.get(game.opponent_school_id)?.is_conference_member && game.school_id !== game.opponent_school_id);
     const awayByKey = new Map();
     for (const game of [...members].sort((a, b) => a.id.localeCompare(b.id))) {
-      if (game.status === 'Scheduled' && game.home_away === 'Away' && !awayByKey.has(matchKey(game))) {
+      if (game.home_away === 'Away' && !awayByKey.has(matchKey(game))) {
         awayByKey.set(matchKey(game), game);
       }
     }
     const emitted = new Set();
-    selected = members.filter(game => game.status === 'Scheduled' && game.home_away === 'Home')
+    // A matched game stays listed when either school postpones or cancels it, and carries that status.
+    const shared = (...statuses) => statuses.includes('Canceled') ? 'Canceled'
+      : statuses.includes('Postponed') ? 'Postponed' : 'Scheduled';
+    selected = members.filter(game => game.home_away === 'Home')
       .sort((a, b) => a.id.localeCompare(b.id))
       .flatMap(home => {
         const key = matchKey(home);
         const away = awayByKey.get(key);
         if (!away || emitted.has(key)) return [];
         emitted.add(key);
-        return [{ ...home, feed_id: [home.id, away.id].sort().join('-'),
+        return [{ ...home, status: shared(home.status, away.status), feed_id: [home.id, away.id].sort().join('-'),
           revision: home.revision + away.revision,
           updated_at: home.updated_at > away.updated_at ? home.updated_at : away.updated_at }];
       });

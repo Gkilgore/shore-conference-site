@@ -426,6 +426,7 @@
               <p class="staff-hint">Saving a draft keeps the posted game unchanged, including cancellations. Review and publish when you are ready to update families.</p>
               <button class="button secondary" id="preview-editor-transportation-email" type="button" hidden>Preview saved transportation email</button>
               <button class="button secondary" id="close-game-editor" type="button">Back to calendar</button>
+              <button class="button secondary" id="delete-game" type="button" hidden>Delete game</button>
             </div>
           </form>
         </div>
@@ -439,6 +440,17 @@
       <div id="tournament-review-scope" hidden><label>Publication scope<select id="tournament-publish-scope"><option value="all">Full tournament</option><option value="selected">Selected changed matches</option></select></label><div id="tournament-review-selection" class="tournament-selection" hidden></div></div>
       <p id="tournament-review-status" role="status" aria-live="polite"></p>
       <div class="actions"><button id="tournament-publish" class="button primary" type="button">Publish reviewed tournament</button><button id="tournament-review-cancel" class="button secondary" type="button">Keep working</button></div>
+    </dialog>
+    <dialog id="delete-game-dialog" class="game-details" aria-labelledby="delete-game-title">
+      <h2 id="delete-game-title">Delete this game?</h2>
+      <p id="delete-game-summary"></p>
+      <p>Use this for a game entered by mistake. For a real game that is off or moved, set its status to Postponed or Canceled so families can see what changed.</p>
+      <p>If this game is published, it stays on public calendars until you review and publish the removal.</p>
+      <p id="delete-game-status" role="status"></p>
+      <div class="actions">
+        <button id="delete-game-confirm" class="button primary" type="button">Delete game</button>
+        <form method="dialog"><button class="button secondary" autofocus>Keep game</button></form>
+      </div>
     </dialog>
     <dialog id="publication-dialog" class="game-details" aria-labelledby="publication-dialog-title">
       <h2 id="publication-dialog-title">Review selected schedules</h2>

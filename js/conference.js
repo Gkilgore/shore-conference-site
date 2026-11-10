@@ -1,24 +1,28 @@
 // Loads published matched games; the matching helper also supports explicit sample previews.
 function conferenceEvents(games) {
-  // Same rules as the plan's match check: both schools entered it, scheduled, and every detail agrees.
+  // Same rules as the plan's match check: both schools entered it and every detail agrees.
+  // A postponed or canceled game stays listed with that status.
   const scheduled = games.filter(game =>
-    game.status === 'Scheduled' &&
     Object.hasOwn(sampleSchools, game.school) &&
     Object.hasOwn(sampleSchools, game.opponent_school_id ?? '') &&
     game.school !== game.opponent_school_id
   );
 
-  return scheduled
-    .filter(home => home.home_away === 'Home' && scheduled.some(away =>
-      away.home_away === 'Away' && away.school === home.opponent_school_id &&
-      away.opponent_school_id === home.school &&
-      away.sport === home.sport && away.gender === home.gender && away.level === home.level &&
-      away.game_date === home.game_date && away.start_time === home.start_time &&
-      away.location === home.location
-    ))
-    .map(game => ({
+  return scheduled.filter(home => home.home_away === 'Home').flatMap(game => {
+    const away = scheduled.find(away =>
+      away.home_away === 'Away' && away.school === game.opponent_school_id &&
+      away.opponent_school_id === game.school &&
+      away.sport === game.sport && away.gender === game.gender && away.level === game.level &&
+      away.game_date === game.game_date && away.start_time === game.start_time &&
+      away.location === game.location);
+    if (!away) return [];
+    const statuses = [game.status, away.status];
+    const status = statuses.includes('Canceled') ? 'Canceled' : statuses.includes('Postponed') ? 'Postponed' : 'Scheduled';
+    return [{
       title: teamLabel(game) + ' · ' + sampleSchools[game.opponent_school_id].name +
-        ' at ' + sampleSchools[game.school].name,
+        ' at ' + sampleSchools[game.school].name + (status === 'Scheduled' ? '' : ' · ' + status),
+      status,
+      classNames: status === 'Scheduled' ? [] : ['is-' + status.toLowerCase()],
       start: game.game_date + 'T' + game.start_time,
       location: game.location,
       schools: [game.school, game.opponent_school_id],
@@ -26,7 +30,8 @@ function conferenceEvents(games) {
       gender: game.gender,
       season: game.season,
       level: game.level,
-    }));
+    }];
+  });
 }
 
 (async () => {
@@ -37,7 +42,7 @@ function conferenceEvents(games) {
       : publicCalendarEvents(await loadPublicCalendar({ scope: 'conference' }));
     if (status) status.textContent = sample ? 'Sample schedule · Eastern Time' : 'Published schedule · Eastern Time';
     if (document.getElementById('calendar')) renderCalendar(games);
-    if (document.getElementById('upcoming')) renderUpcoming(games);
+    if (document.getElementById('upcoming')) renderUpcoming(games, { showChanged: true });
     setSubscriptionLink({ scope: 'conference' });
   } catch (error) {
     if (status) status.textContent = error.message;

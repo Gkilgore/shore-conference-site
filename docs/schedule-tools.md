@@ -25,6 +25,12 @@ Tests on the test project:
 2. Call it for another school. It should return nothing.
 3. Enter a game at both test schools with one field different. The reason should name that field.
 
+## Postponed, canceled and deleted games
+
+A matched game that either school publishes as Postponed or Canceled stays on the conference calendar with that status. Use **Delete game** in the editor only for a game entered by mistake. A deleted game that was already published stays public until the AD reviews and publishes that team; the school page then lists it under Schedule changes as "Game removed".
+
+`supabase/migrations/20261125000100_delete_staff_game.sql` is a draft for Greg. It grants delete on `games` (still limited by the existing row-level security policy) and adds `delete_staff_game(id, revision)`. It has not been run. Check on the test project that a test AD can delete their own draft game, cannot delete another school's, and that a published copy remains until the removal is published. The draft link check (`game_link_status`) was not changed.
+
 ## CSV import
 
 Use **Download template** on the Schedule tab. The columns are:

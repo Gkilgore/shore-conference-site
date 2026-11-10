@@ -147,6 +147,7 @@ function startStaffSchedule(client, invite) {
     form.reset();
     formStatus.textContent = '';
     document.getElementById('game-form-title').textContent = game ? 'Edit game' : 'Add a game';
+    document.getElementById('delete-game').hidden = !game;
     if (game) {
       const bus = game.transportation;
       const values = { ...game, ...game.teams, ...bus, notes: game.notes, transport_notes: bus?.notes };
@@ -474,6 +475,39 @@ function startStaffSchedule(client, invite) {
   fields.opponent_school_id.onchange = syncOpponent;
   closeEditor.onclick = () => showSchedule(true);
   scheduleTab.onclick = () => showSchedule(true);
+  // Deleting is for mistakes. A published copy stays public until the AD publishes the removal.
+  const deleteDialog = document.getElementById('delete-game-dialog');
+  const deleteStatus = document.getElementById('delete-game-status');
+  const deleteConfirm = document.getElementById('delete-game-confirm');
+  document.getElementById('delete-game').onclick = () => {
+    if (!activeGame || !canEdit) return;
+    document.getElementById('delete-game-summary').textContent = gameTitle(activeGame) + ' · ' +
+      dateFormat.format(new Date(activeGame.game_date + 'T' + activeGame.start_time));
+    deleteStatus.textContent = '';
+    deleteConfirm.disabled = false;
+    deleteDialog.showModal();
+  };
+  deleteConfirm.onclick = async () => {
+    const game = activeGame;
+    if (!game) return;
+    deleteConfirm.disabled = true;
+    deleteStatus.textContent = 'Deleting game…';
+    const { error } = await client.rpc('delete_staff_game', { p_id: game.id, p_revision: game.revision });
+    if (stopped) return;
+    deleteConfirm.disabled = false;
+    if (error) {
+      deleteStatus.textContent = error.code === '40001'
+        ? 'This game changed. Close this, choose the game again and review the latest version.'
+        : 'The game could not be deleted. Please try again.';
+      return;
+    }
+    deleteDialog.close();
+    edit(null);
+    showSchedule(true);
+    scheduleFeedback.textContent = 'Game deleted. If it was published, review and publish its team to remove it from public calendars.';
+    await loadGames(game.game_date);
+  };
+
   form.onsubmit = async event => {
     event.preventDefault();
     const reviewAfterSave = event.submitter?.id === 'save-and-review-publication';

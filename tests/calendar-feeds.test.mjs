@@ -47,15 +47,24 @@ test('unpublished school returns an empty calendar without leaking game or bus f
   assert.doesNotMatch(buildCalendar(result), /BEGIN:VEVENT|Arrive early|School lot/);
 });
 
-test('conference requires two published members and exact active mirrored entries', () => {
+test('conference requires two published members and exact mirrored entries, and keeps changed games', () => {
   const opts = { scope: 'conference' };
   assert.equal(project([home, away], opts).events.length, 1);
   for (const change of [
     { start_time: '16:00:00' }, { location: 'Another field' }, { game_date: '2026-11-10' },
-    { status: 'Canceled' }, { status: 'Postponed' }, { home_away: 'Home' },
+    { home_away: 'Home' },
     { opponent_school_id: 'shore-regional' }, { teams: { ...away.teams, gender: 'Boys' } },
     { teams: { ...away.teams, level: 'JV' } }, { teams: { ...away.teams, sport: 'Tennis' } },
   ]) assert.equal(project([home, { ...away, ...change }], opts).events.length, 0);
+  for (const status of ['Canceled', 'Postponed']) {
+    for (const pair of [[home, { ...away, status }], [{ ...home, status }, away]]) {
+      const events = project(pair, opts).events;
+      assert.equal(events.length, 1);
+      assert.equal(events[0].status, status);
+      assert.ok(events[0].title.endsWith(' · ' + status));
+    }
+  }
+  assert.equal(project([{ ...home, status: 'Postponed' }, { ...away, status: 'Canceled' }], opts).events[0].status, 'Canceled');
   assert.equal(project([home], opts).events.length, 0);
   assert.equal(project([home, away], opts, schools.map(s => ({ ...s, schedule_published: false }))).events.length, 0);
 });
