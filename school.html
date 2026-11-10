@@ -56,19 +56,18 @@
       <section class="school-calendar" id="school-calendar" aria-labelledby="calendar-title">
         <h2 id="calendar-title">Full schedule</h2>
       <form id="calendar-filters" class="filters" role="search" aria-label="Filter games">
-        <label>Season<select name="season"><option value="">All seasons</option></select></label>
         <label>Sport<select name="sport"><option value="">All sports</option></select></label>
         <label>Team<select name="gender"><option value="">All teams</option><option>Boys</option><option>Girls</option><option>Coed</option></select></label>
         <label>Level<select name="level"><option value="">All levels</option></select></label>
         <label>Search<input name="search" type="search" placeholder="Team or venue"></label>
-        <button type="reset" class="button secondary">Reset filters</button>
+        <button type="reset" class="button secondary">Clear filters</button>
       </form>
+      <p id="filter-count" class="filter-count" role="status"></p>
       <div id="calendar" aria-label="School schedule"></div>
       <div class="calendar-footer">
         <ul class="status-key" aria-label="Game status colors">
           <li class="is-scheduled">Scheduled</li><li class="is-postponed">Postponed</li><li class="is-canceled">Canceled</li>
         </ul>
-        <p class="filter-count"><span id="filter-count" role="status"></span> Select a game for details.</p>
       </div>
       </section>
       <!-- Shown only when the school has postings or changes, or when they fail to load. -->

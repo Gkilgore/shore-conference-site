@@ -117,7 +117,7 @@ function renderConferenceCalendar() {
     add(option) { this.children.push(option); },
     setAttribute() {}, after() {}, addEventListener() {},
   });
-  const fields = Object.fromEntries(['school', 'season', 'sport', 'level', 'gender', 'search'].map(id => [id, element()]));
+  const fields = Object.fromEntries(['school', 'sport', 'level', 'gender', 'search'].map(id => [id, element()]));
   fields.gender.value = 'Girls';
   const elements = { calendar: element(), 'calendar-filters': { ...element(), elements: fields }, 'filter-count': element() };
   const listeners = {}, calendar = { render() {}, changeView() {},
@@ -146,15 +146,15 @@ test('conference school filter offers the same 48 members', () => {
   assert.equal(new Set(fields.school.options.map(option => option.value)).size, 48);
 });
 
-test('season selection navigates to its year and refreshes sports while preserving gender', () => {
+test('a posted-season link opens that season\'s month and leaves the filters alone', () => {
   const { fields, calendar, listeners } = renderConferenceCalendar();
   fields.sport.value = 'Soccer';
   assert.equal(typeof listeners['shore:season-selected'], 'function');
   listeners['shore:season-selected']({ detail: { season: 'Spring', season_year: 2027, date: '2027-03-01' } });
-  assert.equal(fields.season.value, 'Spring');
+  assert.equal(fields.season, undefined);
   assert.equal(fields.gender.value, 'Girls');
-  assert.equal(fields.sport.value, '');
-  assert.equal(fields.sport.options[1].value, 'Softball');
+  assert.equal(fields.sport.value, 'Soccer');
+  assert.deepEqual(fields.sport.options.slice(1).map(option => option.value), ['Soccer', 'Softball']);
   assert.equal(calendar.date, '2027-03-01');
   assert.equal(calendar.refreshes, 1);
 });

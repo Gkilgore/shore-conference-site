@@ -16,7 +16,7 @@
   if (query.get('sport') && query.get('sport').length <= 100) sports.push(query.get('sport'));
   for (const sport of [...new Set(sports)].sort()) fields.sport.add(new Option(sport, sport));
   fields.scope.value = query.get('scope') === 'conference' ? 'conference' : 'school';
-  for (const name of ['school', 'sport', 'gender', 'level', 'season', 'search']) {
+  for (const name of ['school', 'sport', 'gender', 'level', 'search']) {
     if (query.has(name)) fields[name].value = query.get(name);
   }
   form.addEventListener('submit', event => event.preventDefault());
@@ -38,7 +38,7 @@
     fields.school.options[0].textContent = conference ? 'All schools' : 'Choose a school';
     if (!conference && !fields.school.value) { status.textContent = 'Choose a school to get started.'; return; }
     const options = { scope: fields.scope.value };
-    for (const name of ['school', 'sport', 'gender', 'level', 'season', 'search']) {
+    for (const name of ['school', 'sport', 'gender', 'level', 'search']) {
       if (fields[name].value) options[name] = fields[name].value;
     }
     history.replaceState(null, '', '?' + new URLSearchParams(options));

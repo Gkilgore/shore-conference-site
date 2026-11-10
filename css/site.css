@@ -34,9 +34,11 @@
 body { margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
 main { flex: 1; }
 a { color: var(--navy); text-underline-offset: 0.2em; }
+/* Keyboard focus: an ink ring with a white ring inside it, so one of the two shows on any school color. */
 a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
-  outline: 3px solid var(--red);
+  outline: 3px solid var(--ink);
   outline-offset: 3px;
+  box-shadow: 0 0 0 3px white;
 }
 h1, h2, p { margin: 0; }
 h1, h2 { font-weight: 800; letter-spacing: -0.02em; }
@@ -318,10 +320,25 @@ input, select, textarea {
 select:hover, input:hover, textarea:hover { background: #fff8e0; }
 textarea { display: block; resize: vertical; }
 .filter-count { color: var(--muted); font-size: 0.92rem; margin-block: 0.75rem; }
+.filter-count:empty { display: none; }
 
 #calendar-filters { margin-bottom: 1rem; }
+#filter-count { margin-block: 0 0.6rem; }
+/* Replaces the game count when nothing matches. */
+.calendar-empty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 1rem;
+  margin-bottom: 0.75rem;
+  padding: 0.85rem;
+  background: white;
+  border: var(--frame);
+}
+.calendar-empty p { font-weight: 700; }
 
-/* Under each calendar: the status key and the game count, so the calendar's own month title comes first. */
+/* Under each school calendar: the status key. */
 .calendar-footer {
   display: flex;
   flex-wrap: wrap;
@@ -330,7 +347,6 @@ textarea { display: block; resize: vertical; }
   gap: 0.4rem 1rem;
   margin-top: 0.6rem;
 }
-.calendar-footer .filter-count { margin: 0 0 0 auto; font-size: 0.85rem; }
 .status-key, .staff-legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin: 0; padding: 0; list-style: none; font-size: 0.85rem; font-weight: 500; }
 .status-key li, .staff-legend li { display: flex; align-items: center; gap: 0.4rem; }
 .status-key li::before, .staff-legend li::before { content: ''; width: 0.85rem; aspect-ratio: 1; border: 2px solid var(--ink); background: var(--school-color); }
@@ -435,7 +451,7 @@ textarea { display: block; resize: vertical; }
 #calendar .fc-more-link:is(:hover, :focus-visible) { background: var(--red); color: white; }
 #calendar .fc-list { border: 0; }
 #calendar .fc-list-day-cushion { background: var(--ink); color: white; }
-#calendar .fc-list-day-cushion a { color: inherit; text-decoration: none; font-weight: 700; }
+#calendar .fc-list-day-cushion a { display: inline-block; padding-block: 0.15rem; color: inherit; text-decoration: none; font-weight: 700; }
 #calendar .fc-list-day-cushion a:is(:hover, :focus-visible) { background: var(--yellow); color: var(--ink); outline: 0.2rem solid var(--yellow); }
 #calendar .fc-list-event-time { color: var(--red); font-weight: 700; font-variant-numeric: tabular-nums; }
 #calendar .fc-list-event-graphic { display: none; }
@@ -474,9 +490,15 @@ textarea { display: block; resize: vertical; }
 
 /* Game details shared by the school and conference calendars. */
 #calendar .fc-event[aria-haspopup="dialog"] { cursor: pointer; }
+/* Month blocks: white ring inside the school color, ink ring outside it. List rows: ink ring on white. */
 #calendar .fc-event[aria-haspopup="dialog"]:focus-visible {
-  outline: 2px solid var(--red);
-  outline-offset: -2px;
+  outline: 3px solid white;
+  outline-offset: -3px;
+  box-shadow: 0 0 0 3px var(--ink);
+}
+#calendar .fc-list-event[aria-haspopup="dialog"]:focus-visible {
+  outline-color: var(--ink);
+  box-shadow: none;
 }
 .game-details {
   width: min(30rem, calc(100% - 2rem));

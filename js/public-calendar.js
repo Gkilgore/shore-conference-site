@@ -35,7 +35,7 @@ function setSubscriptionLink(options) {
   const filters = document.getElementById('calendar-filters');
   const update = () => {
     const query = new URLSearchParams(options);
-    for (const name of ['school', 'season', 'sport', 'gender', 'level', 'search']) {
+    for (const name of ['school', 'sport', 'gender', 'level', 'search']) {
       const value = filters?.elements[name]?.value;
       if (value) query.set(name, value);
     }
@@ -43,6 +43,5 @@ function setSubscriptionLink(options) {
   };
   filters?.addEventListener('input', update);
   filters?.addEventListener('reset', () => setTimeout(update, 0));
-  window.addEventListener('shore:season-selected', update);
   update();
 }

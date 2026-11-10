@@ -15,13 +15,8 @@ function seasonOf(sport, gender) {
   return 'Other';
 }
 
-function currentSeason(date = new Date()) {
-  const month = date.getMonth();
-  return month >= 7 && month <= 10 ? 'Fall' : month === 11 || month <= 1 ? 'Winter' : 'Spring';
-}
-
 // Fills a season select and a sport select whose options are grouped by season.
-// Choosing a season narrows the sport list to that season.
+// Choosing a season narrows the sport list to that season. Public calendars pass no season select.
 function fillSeasonFilters(seasonSelect, sportSelect, games) {
   const seasons = seasonOrder.filter(season => games.some(game => game.season === season));
   const keep = seasonSelect.value;
@@ -32,7 +27,7 @@ function fillSeasonFilters(seasonSelect, sportSelect, games) {
 
 function fillSportOptions(seasonSelect, sportSelect, games) {
   const keep = sportSelect.value;
-  const chosen = seasonSelect.value;
+  const chosen = seasonSelect?.value ?? '';
   const groups = seasonOrder.filter(season => !chosen || season === chosen).map(season => {
     const sports = [...new Set(games.filter(game => game.season === season).map(game => game.sport))].sort();
     if (!sports.length) return null;

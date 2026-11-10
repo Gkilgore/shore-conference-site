@@ -108,7 +108,7 @@ function subscriptionContext(schedule, search = '?school=asbury-park&season=Spri
     return elements.get(id);
   };
   const select = () => ({value:'',options:[{value:'',textContent:''}],add(option){this.options.push(option);},addEventListener(){}});
-  const fields = Object.fromEntries(['scope','school','sport','gender','level','season','search'].map(name=>[name,select()]));
+  const fields = Object.fromEntries(['scope','school','sport','gender','level','search'].map(name=>[name,select()]));
   element('subscription-filters').elements = fields;
   const requests = [];
   const sandbox = vm.createContext({
@@ -126,8 +126,8 @@ test('families can subscribe before the first team is posted, with stable URLs',
   vm.runInContext(readFileSync(new URL('../js/subscribe.js',import.meta.url),'utf8'),fixture.sandbox);
   await new Promise(resolve=>setImmediate(resolve));
   assert.equal(fixture.element('subscription-actions').hidden,false);
-  assert.equal(fixture.element('subscription-url').value,'https://calendar.example/feed?scope=school&school=asbury-park&season=Spring');
-  assert.equal(fixture.element('subscribe-apple').href,'webcal://calendar.example/feed?scope=school&school=asbury-park&season=Spring');
+  assert.equal(fixture.element('subscription-url').value,'https://calendar.example/feed?scope=school&school=asbury-park');
+  assert.equal(fixture.element('subscribe-apple').href,'webcal://calendar.example/feed?scope=school&school=asbury-park');
   assert.match(fixture.element('subscription-status').textContent,/New posted games appear as schedules are published/);
 });
 
