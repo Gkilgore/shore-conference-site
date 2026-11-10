@@ -3,18 +3,23 @@
 
 :root {
   scrollbar-gutter: stable;
+  /* Navy, maroon and steel come straight from the Shore Conference logo. */
   --navy: #002857;
   --red: #a12641;
-  --yellow: #f2b600;
-  --ink: #111418;
-  --muted: #4a5560;
-  --rule: #c9c3b6;
-  --paper: #f3efe6;
-  --frame: 2px solid var(--ink);
+  --steel: #9aadbc;
+  --steel-dark: #5f7a90; /* Steel deepened to 3:1 so field and button edges stay visible. */
+  --yellow: #f2b600; /* Off-logo on purpose: postponed games and warnings only. */
+  --ink: var(--navy);
+  --muted: #44586b;
+  --rule: #d5dee5;
+  --paper: #eef2f5;
+  --hover: var(--steel);
+  --frame: 1px solid var(--steel);
+  --control-frame: 1px solid var(--steel-dark);
   --ease-out: cubic-bezier(0.2, 0.75, 0.25, 1);
   --school-color: var(--navy);
   --school-ink: #fff;
-  --school-accent: var(--yellow);
+  --school-accent: var(--steel);
   --accent-ink: var(--ink);
   color: var(--ink);
   background: var(--paper);
@@ -46,7 +51,7 @@ h2 { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.1; }
 .wrap { width: min(100% - 2rem, 70rem); margin-inline: auto; }
 .section { padding-block: clamp(1.5rem, 4vw, 3rem); }
 .skip-link { position: absolute; left: 1rem; top: -10rem; }
-.skip-link:focus { top: 1rem; z-index: 5; background: var(--yellow); color: var(--ink); padding: 0.75rem; border: var(--frame); }
+.skip-link:focus { top: 1rem; z-index: 5; background: var(--hover); color: var(--ink); padding: 0.75rem; border: var(--frame); }
 
 /* Masthead: brand, main navigation, and the staff sign-in link. */
 .masthead { background: white; border-bottom: var(--frame); view-transition-name: masthead; }
@@ -68,10 +73,10 @@ h2 { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.1; }
   font-weight: 500;
   border: 2px solid transparent;
 }
-.site-header nav a:is(:hover, :focus-visible) { background: var(--yellow); border-color: var(--ink); }
+.site-header nav a:is(:hover, :focus-visible) { background: var(--hover); border-color: var(--hover); }
 .site-header :is(nav a, .staff-link):is([aria-current], .section-active) { background: var(--navy); border-color: var(--navy); color: white; }
 .site-header :is(nav a, .staff-link):is([aria-current], .section-active):is(:hover, :focus-visible) { background: var(--red); border-color: var(--red); }
-.staff-link { border-color: var(--ink); font-size: 0.9rem; font-weight: 700; }
+.staff-link { border-color: var(--steel-dark); font-size: 0.9rem; font-weight: 700; }
 .staff-link:is(:hover, :focus-visible) { background: var(--ink); color: white; }
 .brand { color: var(--ink); font-weight: 800; font-size: 1.1rem; letter-spacing: -0.01em; padding: 0.3rem 0; }
 .brand:is(:hover, :focus-visible) { color: var(--red); }
@@ -88,7 +93,7 @@ h2 { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.1; }
     border-top: var(--frame);
   }
   .site-header nav a { min-height: 3rem; padding-inline: 0.25rem; border: 0; font-size: 0.95rem; }
-  .site-header nav a + a { box-shadow: inset 2px 0 var(--ink); }
+  .site-header nav a + a { box-shadow: inset 1px 0 var(--steel); }
   .site-header nav a:is(:hover, :focus-visible) { outline-offset: -3px; }
   .staff-link { grid-row: 1; grid-column: 2; min-height: 2.25rem; padding-inline: 0.6rem; font-size: 0.85rem; }
   .site-header nav { grid-row: 2; }
@@ -200,7 +205,7 @@ h2 { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.1; }
   justify-content: center;
   min-height: 2.75rem;
   padding: 0.55rem 1rem;
-  border: var(--frame);
+  border: var(--control-frame);
   border-radius: 0;
   font: inherit;
   font-weight: 700;
@@ -212,7 +217,7 @@ h2 { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.1; }
 .dark { background: var(--navy); border-color: var(--navy); color: white; }
 .dark:is(:hover, :focus-visible) { background: var(--red); border-color: var(--red); }
 .secondary { background: white; color: var(--ink); }
-.secondary:is(:hover, :focus-visible) { background: var(--yellow); }
+.secondary:is(:hover, :focus-visible) { background: var(--hover); }
 
 /* Section headings and the upcoming-game list. */
 .section-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 0.65rem; margin-bottom: 1rem; }
@@ -222,13 +227,13 @@ h2 { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.1; }
   font-weight: 700;
   text-decoration: none;
   padding: 0.4rem 0.7rem;
-  border: var(--frame);
+  border: var(--control-frame);
   background: white;
 }
-.section-heading > a:is(:hover, :focus-visible) { background: var(--yellow); }
+.section-heading > a:is(:hover, :focus-visible) { background: var(--hover); }
 
 .game-list, .school-grid { list-style: none; margin: 0; padding: 0; display: grid; }
-.game-list { gap: 2px; padding: 2px; background: var(--ink); }
+.game-list { gap: 1px; padding: 1px; background: var(--steel); }
 .game-list li {
   display: grid;
   grid-template-columns: 4.75rem 1fr;
@@ -265,7 +270,7 @@ h2 { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.1; }
   letter-spacing: 0.08em;
   vertical-align: 0.1em;
 }
-.game-status.is-postponed { background: var(--yellow); color: var(--ink); }
+.game-status.is-postponed { background: var(--yellow); border-color: var(--yellow); color: var(--ink); }
 .game-status.is-canceled { background: var(--red); border-color: var(--red); color: white; }
 .game-list strong span { padding: 0; font-size: inherit; color: inherit; }
 .game-status.is-canceled + span { text-decoration: line-through; }
@@ -307,7 +312,7 @@ h2 { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.1; }
 input, select, textarea {
   width: 100%;
   min-height: 2.75rem;
-  border: var(--frame);
+  border: var(--control-frame);
   border-radius: 0;
   padding: 0.45rem 0.6rem;
   background: white;
@@ -317,7 +322,7 @@ input, select, textarea {
   letter-spacing: normal;
   text-transform: none;
 }
-select:hover, input:hover, textarea:hover { background: #fff8e0; }
+select:hover, input:hover, textarea:hover { background: var(--paper); }
 textarea { display: block; resize: vertical; }
 .filter-count { color: var(--muted); font-size: 0.92rem; margin-block: 0.75rem; }
 .filter-count:empty { display: none; }
@@ -349,7 +354,7 @@ textarea { display: block; resize: vertical; }
 }
 .status-key, .staff-legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin: 0; padding: 0; list-style: none; font-size: 0.85rem; font-weight: 500; }
 .status-key li, .staff-legend li { display: flex; align-items: center; gap: 0.4rem; }
-.status-key li::before, .staff-legend li::before { content: ''; width: 0.85rem; aspect-ratio: 1; border: 2px solid var(--ink); background: var(--school-color); }
+.status-key li::before, .staff-legend li::before { content: ''; width: 0.85rem; aspect-ratio: 1; border: 1px solid var(--steel-dark); background: var(--school-color); }
 .status-key .is-postponed::before, .staff-legend .is-postponed::before { background: var(--yellow); }
 .status-key .is-canceled::before, .staff-legend .is-canceled::before { background: var(--red); }
 
@@ -362,15 +367,15 @@ textarea { display: block; resize: vertical; }
   border: var(--frame);
   --fc-border-color: var(--rule);
   --fc-neutral-bg-color: var(--paper);
-  --fc-today-bg-color: #f2b60026;
-  --fc-list-event-hover-bg-color: #fff1c2;
+  --fc-today-bg-color: #9aadbc40;
+  --fc-list-event-hover-bg-color: var(--rule);
   --fc-button-bg-color: white;
   --fc-button-text-color: var(--ink);
-  --fc-button-border-color: var(--ink);
-  --fc-button-hover-bg-color: var(--yellow);
-  --fc-button-hover-border-color: var(--ink);
+  --fc-button-border-color: var(--steel-dark);
+  --fc-button-hover-bg-color: var(--hover);
+  --fc-button-hover-border-color: var(--steel-dark);
   --fc-button-active-bg-color: var(--school-color);
-  --fc-button-active-border-color: var(--ink);
+  --fc-button-active-border-color: var(--steel-dark);
   --fc-event-bg-color: var(--school-color);
   --fc-event-border-color: var(--school-color);
   --fc-event-text-color: var(--school-ink);
@@ -384,14 +389,14 @@ textarea { display: block; resize: vertical; }
 }
 #calendar .fc-toolbar-title { color: var(--ink); font-size: clamp(1.25rem, 4vw, 1.9rem); font-weight: 800; line-height: 1.15; }
 #calendar .fc-button {
-  border-width: 2px;
+  border-width: 1px;
   border-radius: 0;
   box-shadow: none;
   font-family: inherit;
   font-weight: 700;
   min-height: 2.5rem;
 }
-#calendar .fc-button-group > .fc-button:not(:first-child) { margin-left: -2px; }
+#calendar .fc-button-group > .fc-button:not(:first-child) { margin-left: -1px; }
 #calendar .fc-button:hover { color: var(--ink); }
 #calendar .fc-button-active, #calendar .fc-button-active:hover { color: var(--school-ink); background: var(--school-color); }
 #calendar .fc-button:focus { box-shadow: none; }
@@ -417,7 +422,7 @@ textarea { display: block; resize: vertical; }
   color: var(--ink);
   font-weight: 700;
 }
-#calendar a.fc-daygrid-day-number:is(:hover, :focus-visible) { background: var(--yellow); }
+#calendar a.fc-daygrid-day-number:is(:hover, :focus-visible) { background: var(--hover); }
 #calendar .fc-day-today .fc-daygrid-day-number { background: var(--red); color: white; border-radius: 50%; }
 #calendar .fc-daygrid-event-dot { display: none; }
 #calendar .fc-daygrid-event {
@@ -446,13 +451,13 @@ textarea { display: block; resize: vertical; }
   color: var(--red);
   font-weight: 800;
   text-decoration: none;
-  border: 2px solid var(--red);
+  border: 1px solid var(--red);
 }
 #calendar .fc-more-link:is(:hover, :focus-visible) { background: var(--red); color: white; }
 #calendar .fc-list { border: 0; }
 #calendar .fc-list-day-cushion { background: var(--ink); color: white; }
 #calendar .fc-list-day-cushion a { display: inline-block; padding-block: 0.15rem; color: inherit; text-decoration: none; font-weight: 700; }
-#calendar .fc-list-day-cushion a:is(:hover, :focus-visible) { background: var(--yellow); color: var(--ink); outline: 0.2rem solid var(--yellow); }
+#calendar .fc-list-day-cushion a:is(:hover, :focus-visible) { background: var(--hover); color: var(--ink); outline: 0.2rem solid var(--hover); }
 #calendar .fc-list-event-time { color: var(--red); font-weight: 700; font-variant-numeric: tabular-nums; }
 #calendar .fc-list-event-graphic { display: none; }
 .game { overflow-wrap: anywhere; white-space: normal; }
@@ -510,7 +515,7 @@ textarea { display: block; resize: vertical; }
 }
 .game-details h2 { font-size: clamp(1.3rem, 4vw, 1.7rem); }
 .game-details .eyebrow { color: var(--red); }
-.game-details::backdrop { background: #111418b3; }
+.game-details::backdrop { background: #002857b3; }
 .game-details dl {
   display: grid;
   grid-template-columns: minmax(5.5rem, max-content) minmax(0, 1fr);

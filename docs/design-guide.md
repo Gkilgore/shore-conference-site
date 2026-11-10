@@ -7,20 +7,22 @@ The site uses a modern Bauhaus look in the spirit of Dieter Rams: functional, fl
 - No decorative shapes or abstract art. Logos and school colors carry the personality.
 - Square corners everywhere. Do not use `border-radius`, except for the red "today" circle on calendars.
 - No soft drop shadows.
-- No partial borders. Do not add a colored stripe on one side of a box (`border-left`, `border-top`, or an inset underline). Use a full `var(--frame)` border (2px black) or a solid color fill instead.
+- No partial borders. Do not add a colored stripe on one side of a box (`border-left`, `border-top`, or an inset underline). Use a full `var(--frame)` border (1px logo steel) or a solid color fill instead. Form fields and buttons use `var(--control-frame)`, a deeper steel that meets 3:1 contrast. Do not use black borders.
 - Font: Jost, loaded in each page's `<head>` (copy the three font lines from `index.html`).
 
 ## Color
 
-Use only the variables in `site.css`. Do not add new colors or use the old `--line`, `--radius-*`, or `--shadow-*` variables.
+The conference palette comes from the Shore Conference logo: navy, maroon, steel and white. Use only the variables in `site.css`. Do not add new colors or use the old `--line`, `--radius-*`, or `--shadow-*` variables.
 
 | Color | Variable | Meaning |
 | --- | --- | --- |
 | Navy | `--navy` | Current page, selected tab, page header bands |
-| Red | `--red` | Main action button, today, canceled games |
-| Yellow | `--yellow` | Hover, "you are previewing", postponed games |
-| Black | `--ink` | Text, frames, calendar header row, footer |
-| Paper | `--paper` | Page background |
+| Maroon | `--red` | Main action button, today, canceled games |
+| Steel | `--steel` | Frames and dividers; also `--hover`, the hover fill |
+| Deep steel | `--steel-dark` | Edges of form fields and buttons |
+| Yellow | `--yellow` | Off-logo on purpose: postponed games and warnings, including "you are previewing" |
+| Ink | `--ink` | Same value as navy: text, calendar header row, footer |
+| Paper | `--paper` | Page background, a pale tint of steel |
 | School color | `--school-color` | Anything belonging to a school (dates, events, school header) |
 
 Color must mean something. Do not use it only for decoration.
@@ -29,10 +31,10 @@ Color must mean something. Do not use it only for decoration.
 
 Hovers change the whole background to a different solid color, with no movement.
 
-- Plain nav link or white button: turns yellow.
+- Plain nav link or white button: turns steel.
 - Navy (current) item: turns red.
 - Red main button: turns navy.
-- Clickable game in a calendar: turns black with white text.
+- Clickable game in a calendar: turns navy with white text.
 
 ## Reuse these pieces
 

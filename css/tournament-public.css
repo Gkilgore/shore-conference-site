@@ -10,7 +10,7 @@
 .tournament-match p + p { margin-top: 0.35rem; }
 .tournament-match .tournament-slot { display: flex; justify-content: space-between; gap: 0.75rem; }
 .tournament-slot a { display: block; padding-inline: 0.2rem; margin-inline: -0.2rem; }
-.tournament-slot a:is(:hover, :focus-visible) { background: var(--yellow); color: var(--ink); }
+.tournament-slot a:is(:hover, :focus-visible) { background: var(--hover); color: var(--ink); }
 .tournament-score { font-weight: 700; }
 .tournament-match.is-canceled { background: var(--red); color: var(--paper); }
 .tournament-match.is-canceled a { color: inherit; }
