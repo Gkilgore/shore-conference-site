@@ -44,6 +44,7 @@
       if (school) style.setProperty(name, colors[name]);
       else style.removeProperty(name);
     }
+    document.documentElement.classList.toggle('school-page', Boolean(school));
     logo.src = school?.logo ?? 'assets/logos/shore-conference.svg';
     buildLogoWall(band, logo.src, 9, 26, school?.logoBackground);
     back.hidden = !school;

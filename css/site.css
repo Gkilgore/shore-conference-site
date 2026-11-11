@@ -605,3 +605,24 @@ textarea { display: block; resize: vertical; }
 .step-help details > :not(summary) { margin: 0.8rem 0.9rem; }
 .step-help :is(ol, ul) { padding-left: 1.3rem; line-height: 1.55; }
 .step-help li + li { margin-top: 0.35rem; }
+
+/* A school's page takes its whole palette from the school's color. The class is added by script only after
+   the school's color is set, so these never refer back to the conference navy.
+   Fills use the color itself; text uses a darkened version so it stays readable; frames and the page
+   background are light tints of it. Red is kept for canceled games only. */
+:root.school-page {
+  --navy: var(--school-color);
+  --ink: color-mix(in srgb, var(--school-color) 55%, #000);
+  --muted: color-mix(in srgb, var(--school-color) 25%, #4a4f55);
+  --steel: color-mix(in srgb, var(--school-color) 32%, #d3d8dc);
+  --steel-dark: color-mix(in srgb, var(--school-color) 55%, #7f8a93);
+  --rule: color-mix(in srgb, var(--school-color) 13%, #e4e7e9);
+  --paper: color-mix(in srgb, var(--school-color) 7%, #f7f7f5);
+}
+.school-page .section-heading .eyebrow, .school-page .game-details .eyebrow, .school-page #calendar .fc-list-event-time { color: var(--ink); }
+.school-page #calendar .fc-day-today .fc-daygrid-day-number { background: var(--school-accent); color: var(--accent-ink); box-shadow: 0 0 0 1px var(--steel-dark); }
+.school-page #calendar .fc-more-link { color: var(--ink); border-color: var(--ink); }
+.school-page #calendar .fc-more-link:is(:hover, :focus-visible) { background: var(--ink); color: white; }
+.school-page .brand:is(:hover, :focus-visible) { color: var(--school-color); }
+.school-page .site-header :is(nav a, .staff-link):is([aria-current], .section-active):is(:hover, :focus-visible) { background: var(--ink); border-color: var(--ink); }
+.school-page #calendar { --fc-today-bg-color: color-mix(in srgb, var(--school-color) 12%, white); }

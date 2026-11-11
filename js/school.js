@@ -25,6 +25,8 @@ if (Object.hasOwn(schoolDirectory, schoolSlug)) {
   document.documentElement.style.setProperty('--school-accent', school.accent);
   document.documentElement.style.setProperty('--school-ink', readableInk(school.color));
   document.documentElement.style.setProperty('--accent-ink', readableInk(school.accent));
+  // Recolors the whole page from the school's color: frames, calendar, text and a faint background tint.
+  document.documentElement.classList.add('school-page');
 
   // The school's own athletics site, when its link has been checked.
   const site = schoolSite(schoolSlug);
