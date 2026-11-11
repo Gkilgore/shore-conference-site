@@ -525,3 +525,12 @@ textarea { display: block; resize: vertical; }
 .game-details dt { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding-top: 0.15rem; }
 .game-details dd { margin: 0; overflow-wrap: anywhere; }
 
+/* About page: the conference comes first; the note about this site sits in its own framed block. */
+.about h2 { margin-bottom: 0.3rem; }
+.about-history { margin-top: 0.6rem; max-width: 46rem; }
+.about-history li { align-items: start; }
+.about-history time { font-size: 1.05rem; }
+.about-history span { line-height: 1.55; color: var(--ink); }
+.about-source { font-size: 0.88rem; color: var(--muted); }
+.about-site { max-width: 46rem; padding: 1rem; background: white; border: var(--frame); }
+.about-site h2 { font-size: 1.25rem; }
