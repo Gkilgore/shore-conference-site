@@ -115,8 +115,9 @@ function renderCalendar(events) {
         (game.title + ' ' + game.location).toLowerCase().includes(query));
       const results = matches.filter(game =>
         game.start.slice(0, 10) >= firstDay && game.start.slice(0, 10) < afterLastDay);
+      // Read aloud by screen readers when filters change; not shown on screen.
       document.getElementById('filter-count').textContent = results.length
-        ? results.length + (results.length === 1 ? ' game' : ' games') + ' in this view. Select a game for details.' : '';
+        ? results.length + (results.length === 1 ? ' game shown.' : ' games shown.') : '';
       showEmpty(results, matches, afterLastDay);
       // Tells the page which team and which part of the year are on screen.
       window.dispatchEvent(new CustomEvent('shore:calendar-view', { detail: {

@@ -166,6 +166,7 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
 }
 .intro h1 { font-size: clamp(2rem, 5.5vw, 3.4rem); }
 .intro p { margin-top: 0.6rem; max-width: 46ch; color: #dfe6f0; }
+.intro .actions { margin-top: 1rem; justify-content: center; }
 .intro .logo-wall {
   --wall-cell: 6.5rem;
   --wall-height: 3.8rem;
