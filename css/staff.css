@@ -561,3 +561,4 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
 .staff-section fieldset, .publication-teams > li, .staff-section .tournament-match, .staff-section .tournament-window { background: white; }
 .staff-section .branding-layout { margin-top: 0.4rem; }
 [data-generator][hidden] { display: none !important; }
+.staff-tab[hidden] { display: none; }

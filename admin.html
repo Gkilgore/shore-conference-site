@@ -320,7 +320,8 @@
             <label id="tournament-selector" hidden>Tournament<select id="tournament-select"></select></label>
             <p id="tournament-empty"></p>
             <div id="tournament-manager" hidden>
-              <!-- Bracket and schedule generator is switched off for now. Remove the hidden attributes marked "generator" to bring it back. -->
+              <!-- Tournament tools are switched off for now, except uploading a finished schedule and publishing it.
+                   Remove the hidden attributes marked "data-generator" to bring a piece back. -->
               <div class="actions" hidden data-generator><button id="tournament-new" class="button primary" type="button">New tournament</button></div>
               <section class="staff-section" aria-labelledby="tournament-import-title">
                 <h4 id="tournament-import-title">Upload a tournament schedule</h4>
@@ -331,11 +332,11 @@
                 <button id="tournament-import-preview" class="button secondary" type="button">Preview upload</button>
               </section>
               <div id="tournament-editor" hidden>
-                <section class="staff-section" aria-labelledby="tournament-details-title">
+                <section class="staff-section" aria-labelledby="tournament-details-title" hidden data-generator>
                   <h4 id="tournament-details-title">Tournament details</h4>
                   <div id="tournament-metadata" class="filters tournament-metadata"></div>
                 </section>
-                <section class="staff-section" aria-labelledby="tournament-info-title">
+                <section class="staff-section" aria-labelledby="tournament-info-title" hidden data-generator>
                   <h4 id="tournament-info-title">Rules and dates</h4>
                   <p class="staff-hint">Shown on the public tournament page after you publish. A date that needs confirmation is left off that page.</p>
                   <div id="tournament-info-sources" class="tournament-sources" hidden></div>
@@ -343,7 +344,7 @@
                   <div id="tournament-info-dates"></div>
                   <div class="actions"><button id="tournament-add-date" class="button secondary" type="button">Add date</button></div>
                 </section>
-                <section class="staff-section" aria-labelledby="tournament-bracket-title">
+                <section class="staff-section" aria-labelledby="tournament-bracket-title" hidden data-generator>
                   <h4 id="tournament-bracket-title">Bracket</h4>
                   <div id="tournament-draft-bracket" class="tournament-bracket"></div>
                   <div hidden data-generator>
@@ -361,13 +362,13 @@
                   <div class="actions"><button id="tournament-add-window" class="button secondary" type="button">Add playing window</button><button id="tournament-propose-schedule" class="button secondary" type="button">Propose schedule</button></div>
                 </section>
                 <section class="staff-section" aria-labelledby="tournament-matches-title">
-                  <h4 id="tournament-matches-title" tabindex="-1">Matches and results</h4>
-                  <p class="staff-hint">Edit any game here. If you correct a winner, use Clear result on the later games that depended on it, then re-enter them.</p>
-                  <div class="tournament-table-wrap"><table class="tournament-table"><thead><tr><th scope="col">Match</th><th scope="col">Teams A / B</th><th scope="col">Date</th><th scope="col">Time</th><th scope="col">Venue</th><th scope="col">Home</th><th scope="col">Status and result</th></tr></thead><tbody id="tournament-match-rows"></tbody></table></div>
+                  <h4 id="tournament-matches-title" tabindex="-1">Save and publish</h4>
+                  <p class="staff-hint" hidden data-generator>Edit any game here. If you correct a winner, use Clear result on the later games that depended on it, then re-enter them.</p>
+                  <div class="tournament-table-wrap" hidden data-generator><table class="tournament-table"><thead><tr><th scope="col">Match</th><th scope="col">Teams A / B</th><th scope="col">Date</th><th scope="col">Time</th><th scope="col">Venue</th><th scope="col">Home</th><th scope="col">Status and result</th></tr></thead><tbody id="tournament-match-rows"></tbody></table></div>
                   <ul id="tournament-issues" class="tournament-issues"></ul>
                   <p id="tournament-dirty" role="status"></p>
                   <div class="actions"><button id="tournament-save" class="button primary" type="button">Save draft</button><button id="tournament-review" class="button secondary" type="button">Review publishing</button><button id="tournament-export" class="button secondary" type="button">Download master CSV</button></div>
-                  <p class="staff-hint">Drafts are private. Publishing updates both schools’ calendars and the conference calendar.</p>
+                  <p class="staff-hint">Drafts are private. Publishing puts the games on school calendars and the conference calendar. To change a game, upload the corrected schedule.</p>
                 </section>
               </div>
               <section id="tournament-proposal" class="staff-section tournament-proposal" hidden aria-labelledby="tournament-proposal-title">

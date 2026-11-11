@@ -61,3 +61,13 @@ Compared with theshoreconference.com and rechecked that day. Checked with fictio
 ### Keeping it current
 
 `docs/conference-resources.md` has the steps. In short: each summer add the new division lists to `data/conference-resources.js` and keep the old ones; recheck school links once a year; a conference admin confirms tournament dates in the tournament itself.
+
+### Tournament tools switched off (November 10, later)
+
+Greg asked for everything tournament-related to be hidden except a conference admin uploading a finished schedule.
+
+- Conference and site admins still see the Tournaments tab, with "Upload a tournament schedule" and "Save and publish". Tournament details, Rules and dates, the bracket and the matches table are hidden.
+- Athletic directors no longer see the Tournaments tab, so tournament bus details are off too.
+- Public game details no longer link to the bracket page. Published tournament games still show on calendars and feeds.
+- Nothing was deleted. Each hidden piece of `admin.html` carries `hidden data-generator`; the tab rule is in `js/staff-schedule.js` and the bracket link in `js/calendar.js`.
+- A game can now be corrected only by uploading the schedule again, since the matches table is hidden.

@@ -185,7 +185,8 @@ function createGameDetails(calendar) {
     ];
     if (details.bus) rows.push(['Transportation', details.bus]);
     const bracket = dialog.querySelector('[data-tournament-bracket]');
-    bracket.hidden = !details.tournament_id;
+    // The bracket page is switched off for now. Use "!details.tournament_id" here to bring the link back.
+    bracket.hidden = true;
     if (details.tournament_id) bracket.href = 'tournament.html?id=' + encodeURIComponent(details.tournament_id) +
       (details.match_id ? '#match-' + encodeURIComponent(details.match_id) : '');
     dialog.querySelector('h2').textContent = event.title;

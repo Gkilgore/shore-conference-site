@@ -22,6 +22,8 @@ function startStaffSchedule(client, invite) {
   const accessPanel = document.getElementById('staff-access-workspace');
   const access = startStaffAccess(client, invite, () => schools);
   const tournamentsTab = document.getElementById('staff-tournaments-tab');
+  // Tournament tools are off for now, except a conference or site admin uploading a finished schedule.
+  tournamentsTab.hidden = !mayManageAccess;
   const tournamentsPanel = document.getElementById('staff-tournaments-panel');
   const tournaments = startStaffTournaments(client, { schools: () => schools });
   const status = document.getElementById('schedule-status');

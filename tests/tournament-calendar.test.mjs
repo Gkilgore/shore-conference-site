@@ -172,7 +172,8 @@ test('public bracket has a clear empty state', () => {
   assert.match(JSON.stringify(target), /No matches have been published/);
 });
 
-test('calendar game details link to the approved bracket match and clear the link for ordinary games', () => {
+// The bracket link is switched off for now. When it comes back, the first assertion goes back to false.
+test('calendar game details keep the bracket link hidden while tournament pages are switched off', () => {
   const link = new Element('a');
   const heading = new Element('h2');
   const list = new Element('dl');
@@ -188,7 +189,7 @@ test('calendar game details link to the approved bracket match and clear the lin
   const show = context.createGameDetails({ after() {} });
   show({ title: 'Spring Cup', start: new Date('2027-04-10T13:00:00Z'),
     extendedProps: { tournament_id: match.tournament_id, match_id: 'r1m1' } });
-  assert.equal(link.hidden, false);
+  assert.equal(link.hidden, true);
   assert.equal(link.href, 'tournament.html?id=' + match.tournament_id + '#match-r1m1');
   show({ title: 'Regular game', extendedProps: {} });
   assert.equal(link.hidden, true);
