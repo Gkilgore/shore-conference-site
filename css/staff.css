@@ -36,14 +36,11 @@
   letter-spacing: 0.1em;
 }
 
-.staff-auth:has(#sign-out:not([hidden])) { width: 100%; padding: 0.5rem 0.5rem 0.5rem 1rem; }
+.staff-main:has(#staff-sign-in-title[hidden]) .staff-auth { width: 100%; padding: 0.5rem 1rem; }
 .staff-session { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem 1rem; }
-.staff-auth:has(#sign-out:not([hidden])) #auth-status { margin: 0; font-weight: 500; color: var(--ink); }
-/* Inside the dashboard the account bar shrinks to a quiet line above the workspace. */
-.staff-main:has(#workspace:not([hidden])) .staff-auth { padding: 0; background: none; border: 0; }
-.staff-main:has(#workspace:not([hidden])) .staff-session { justify-content: flex-end; }
-.staff-main:has(#workspace:not([hidden])) #auth-status { font-size: 0.9rem; color: var(--muted); }
-.staff-main:has(#workspace:not([hidden])) #sign-out { min-height: 2.25rem; padding-block: 0.3rem; }
+.staff-main:has(#staff-sign-in-title[hidden]) #auth-status { margin: 0; font-weight: 500; color: var(--ink); }
+/* Sign out sits in the masthead, so the dashboard needs no account line. It returns only to report a problem. */
+.staff-main:has(#workspace:not([hidden])) .staff-auth:not(.has-problem) { display: none; }
 #sign-out:is(:hover, :focus-visible) { background: var(--red); border-color: var(--red); color: white; }
 
 /* "View as" bar for site admins. It turns yellow while previewing someone else's view. */

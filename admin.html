@@ -50,13 +50,14 @@
         <a href="about.html">About</a>
       </nav>
       <a class="staff-link" href="admin.html" aria-current="page">Staff sign-in</a>
+      <!-- Takes the sign-in link's place once someone is signed in. -->
+      <button class="staff-link" id="sign-out" type="button" hidden>Sign out</button>
     </div>
   </header>
   <main id="main" class="wrap section staff-main">
     <div class="staff-auth">
     <div class="staff-session">
       <div><h1 id="staff-sign-in-title">Staff sign-in</h1><p id="auth-status" role="status">Checking sign-in setup…</p></div>
-      <button class="button secondary" id="sign-out" type="button" hidden>Sign out</button>
     </div>
     <section id="sign-in" class="staff-sign-in" hidden aria-label="Sign-in options">
       <button class="button primary" id="google-sign-in" type="button">Continue with Google</button>

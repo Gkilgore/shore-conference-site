@@ -49,7 +49,8 @@ function startStaffSignIn() {
     document.getElementById('staff-sign-in-title').hidden = Boolean(session);
     signIn.hidden = Boolean(session);
     signOut.hidden = !session;
-    document.querySelector('.staff-link').textContent = session ? 'Staff dashboard' : 'Staff sign-in';
+    document.querySelector('a.staff-link').hidden = Boolean(session);
+    document.querySelector('.staff-auth').classList.remove('has-problem');
     document.title = (session ? 'Staff Dashboard' : 'Staff Sign-in') + ' | The Shore Conference';
     authStatus.textContent = session ? 'Checking staff access…' : 'Sign in with the email address your invitation was sent to.';
     if (session) setTimeout(() => checkAccess(check), 0);
@@ -111,6 +112,10 @@ function startStaffSignIn() {
 
   signOut.addEventListener('click', async () => {
     const { error } = await client.auth.signOut({ scope: 'local' });
-    if (error) authStatus.textContent = 'Sign-out failed. Try again.';
+    if (error) {
+      authStatus.textContent = 'Sign-out failed. Try again.';
+      // The status line is hidden inside the dashboard, so bring it back for this.
+      document.querySelector('.staff-auth').classList.add('has-problem');
+    }
   });
 }
