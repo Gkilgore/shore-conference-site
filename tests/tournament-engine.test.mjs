@@ -344,3 +344,44 @@ test('external date filtering preserves cross-midnight rest and long-duration ov
     start_time: '09:00', duration_minutes: 60, venue: 'Away' }];
   assert.equal(engine.schedule(doc, doc.windows, beforeDst).document.matches[0].start_time, '11:00');
 });
+
+const info = () => ({ rules_url: 'https://theshoreconference.com/rules.pdf', director: 'Pat Example', director_confirmed: true,
+  reviewed_on: '2026-11-10', dates: [
+    { label: 'Qualification cutoff', date: '', confirmed: false, note: 'Two sources disagree.' },
+    { label: 'Finals', date: '2026-10-24', confirmed: true, note: '' }] });
+
+test('rules and dates never become matches or CSV rows', () => {
+  const plainDocument = document(), withInfo = { ...document(), info: info() };
+  assert.deepEqual(plain(engine.validate(withInfo)), plain(engine.validate(plainDocument)));
+  assert.deepEqual(plain(engine.resolve(withInfo).matches), plain(engine.resolve(plainDocument).matches));
+  const scheduled = engine.schedule(withInfo, withInfo.windows);
+  assert.equal(scheduled.document.matches.length, plainDocument.matches.length);
+  assert.deepEqual(plain(scheduled.document.info), info());
+  const csv = engine.exportCsv(withInfo, 'cup');
+  assert.equal(csv, engine.exportCsv(plainDocument, 'cup'));
+  assert.doesNotMatch(csv, /Qualification cutoff|2026-10-24/);
+});
+
+test('validate rejects a rules link that is not https', () => {
+  for (const rules_url of ['http://example.com/rules.pdf', 'javascript:alert(1)', 'theshoreconference.com/rules']) {
+    const issues = engine.validate({ ...document(), info: { ...info(), rules_url } });
+    assert.ok(issues.some(issue => issue.blocking && /rules link must start with https/.test(issue.message)), rules_url);
+  }
+});
+
+test('validate rejects a confirmed date with no date, a bad date and an unnamed date', () => {
+  const messages = dates => engine.validate({ ...document(), info: { ...info(), dates } }).filter(issue => !issue.match_id).map(issue => issue.message).join(' | ');
+  assert.match(messages([{ label: 'Semifinals', date: '', confirmed: true }]), /Semifinals is marked confirmed but has no date/);
+  assert.match(messages([{ label: 'Semifinals', date: '2026-02-30', confirmed: false }]), /Semifinals needs a valid date/);
+  assert.match(messages([{ label: '', date: '2026-10-24', confirmed: true }]), /Each key date needs a name/);
+  assert.equal(messages([{ label: 'Semifinals', date: '', confirmed: false, note: 'Sources disagree.' }]), '');
+});
+
+test('cleanInfo trims text, drops empty rows and reports whether anything is left', () => {
+  const clean = engine.cleanInfo({ rules_url: '  https://example.org/r.pdf ', dates: [{ label: ' ', date: '', note: '' }, { label: ' Finals ', date: '2026-10-24', confirmed: 'yes' }] });
+  assert.equal(clean.rules_url, 'https://example.org/r.pdf');
+  assert.deepEqual(plain(clean.dates), [{ label: 'Finals', date: '2026-10-24', confirmed: false, note: '' }]);
+  assert.equal(engine.hasInfo(clean), true);
+  assert.equal(engine.hasInfo(undefined), false);
+  assert.equal(engine.hasInfo({ dates: [{ label: '', date: '' }], director_confirmed: true }), false);
+});

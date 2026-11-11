@@ -31,6 +31,8 @@ function mount(rpc, realEngine = false) {
   const downloads=[];
   const document={getElementById(id){ if(!registry.has(id)){const el=new Element('div',registry);el.id=id;}return registry.get(id);},createElement(tag){return new Element(tag,registry);}};
   const engine={validate:()=>[],resolve:value=>({...value,matches:value.matches.map(match=>({...match,resolved_a:match.a.participant_id??null,resolved_b:match.b.participant_id??null}))}),csvHeaders:['match_id'],exportCsv:()=>'',participantsFromText:()=>({participants:doc().participants,errors:[]}),generateBracket:()=>doc().matches,schedule:value=>({document:value,issues:[]})};
+  engine.cleanInfo=info=>({rules_url:'',director:'',director_confirmed:false,reviewed_on:'',...(info||{}),dates:(info?.dates||[]).map(row=>({...row}))});
+  engine.hasInfo=info=>Boolean(info&&(info.rules_url||info.director||info.reviewed_on||info.dates?.length));
   const context=vm.createContext({document,TournamentEngine:engine,crypto:{randomUUID:()=> '22222222-2222-4222-8222-222222222222'},URL:{createObjectURL(blob){downloads.push(blob);return 'blob:preview';},revokeObjectURL(){}},Blob,console});
   if(realEngine)for(const file of ['staff-import.js','tournament-engine.js'])vm.runInContext(readFileSync(new URL('../js/'+file,import.meta.url),'utf8'),context);
   vm.runInContext(readFileSync(new URL('../js/tournament-public.js',import.meta.url),'utf8').split('(async () => {')[0],context);
@@ -503,4 +505,54 @@ for(const role of ['conference_office','site_admin','ad'])test('normal staff ent
   assert.equal(el('tournament-manager').hidden,true);
   assert.equal(el('tournament-select').children.length,0);
   assert.equal(el('tournament-metadata').children.length,0);
+});
+
+test('a rules and dates edit marks the draft unsaved and is sent with the save',async()=>{
+  const calls=[];
+  const {controller,el}=mount(async(name,args)=>{
+    calls.push({name,args});
+    if(name==='list_tournaments')return {data:listing()};
+    return {data:{...record(2),draft:args.p_document}};
+  });
+  await controller.load();
+  assert.equal(el('tournament-discard').hidden,true);
+  const link=el('tournament-info-rules-url');link.value='https://theshoreconference.com/rules.pdf';link.onchange();
+  assert.equal(el('tournament-discard').hidden,false);
+  el('tournament-add-date').click();
+  const label=el('tournament-date-0-label');label.value='Qualification cutoff';label.onchange();
+  assert.equal(el('tournament-info-dates').children[0].children.some(item=>item.textContent==='Needs date confirmation'),true);
+  await el('tournament-save').click();
+  const sent=calls.at(-1).args.p_document;
+  assert.equal(sent.info.rules_url,'https://theshoreconference.com/rules.pdf');
+  assert.deepEqual(JSON.parse(JSON.stringify(sent.info.dates)),[{label:'Qualification cutoff',date:'',confirmed:false,note:''}]);
+  assert.equal(sent.matches.length,doc().matches.length);
+  assert.match(el('tournament-status').textContent,/^Draft saved\. /);
+});
+
+test('a save that comes back without rules and dates says so and keeps them',async()=>{
+  const {controller,el}=mount(async(name,args)=>{
+    if(name==='list_tournaments')return {data:listing()};
+    const draft={...args.p_document};delete draft.info;
+    return {data:{...record(2),draft}};
+  });
+  await controller.load();
+  const director=el('tournament-info-director');director.value='Pat Example';director.onchange();
+  await el('tournament-save').click();
+  assert.match(el('tournament-status').textContent,/Rules and dates were not/);
+  assert.equal(el('tournament-info-director').value,'Pat Example');
+  assert.equal(el('tournament-discard').hidden,false);
+});
+
+test('clearing every rules and dates field removes the section from the draft',async()=>{
+  const calls=[];
+  const withInfo={...record(),draft:{...doc(),info:{rules_url:'',director:'Pat Example',director_confirmed:false,reviewed_on:'',dates:[]}}};
+  const {controller,el}=mount(async(name,args)=>{
+    calls.push({name,args});
+    if(name==='list_tournaments')return {data:listing('conference_office',[withInfo])};
+    return {data:{...record(2),draft:args.p_document}};
+  });
+  await controller.load();
+  const director=el('tournament-info-director');director.value='';director.onchange();
+  await el('tournament-save').click();
+  assert.equal('info' in calls.at(-1).args.p_document,false);
 });

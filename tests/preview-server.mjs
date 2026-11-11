@@ -35,8 +35,19 @@ const tournamentGames = tournament.matches.map(match => ({ ...match,
     id: null, school_id: null, name: 'Winner of ' + tournament.matches.find(source => source.id === match[side].winner_of)?.label,
   }])),
 }));
+// A second fictional bracket that carries real "Rules and dates" from the curated official sources.
+vm.runInContext(await readFile(resolve(root, 'data/conference-resources.js'), 'utf8'), sandbox);
+const soccerSource = vm.runInContext('shoreConferenceResources.tournamentSources[0]', sandbox);
+const soccerId = '2b0e1c7a-5d7e-4a43-9a51-6f0c7b1d2e90';
+const soccer = sandbox.TournamentEngine.resolve({
+  name: 'Boys Soccer SCT · fictional bracket', sport: 'Soccer', gender: 'Boys', level: 'Varsity', season: 'Fall', season_year: 2026,
+  duration_minutes: 90, turnaround_minutes: 15, rest_minutes: 60, participants,
+  matches: sandbox.TournamentEngine.generateBracket(participants), windows: [],
+  info: { rules_url: soccerSource.rules_url, director: soccerSource.director, director_confirmed: true,
+    reviewed_on: soccerSource.reviewed, dates: soccerSource.dates.Boys },
+});
 const handle = createHandler(async () => ({ schools, games, tournament_games: tournamentGames,
-  tournaments: [{ id: tournamentId, document: tournament }] }));
+  tournaments: [{ id: tournamentId, document: tournament }, { id: soccerId, document: soccer }] }));
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml' };
 
 createServer(async (req, res) => {

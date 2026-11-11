@@ -79,3 +79,5 @@ To give each test AD games to edit on the dashboard, load the same games into th
 3. Run it again whenever you want a fresh set. Dates move forward with the day you run it.
 
 It works whether or not the newer draft migrations are applied. Bus confirmation, coaches, and the email outbox load only if their tables exist.
+
+`supabase/migrations/20261126000100_tournament_info.sql` is also a draft for Greg. It lets a tournament keep its "Rules and dates" section (see `docs/tournaments-design.md`). Run it in the test project, then save a tournament with a rules link and one unconfirmed date, review it, publish it, and confirm the public tournament page shows the link and no unconfirmed date. Confirm a tournament saved before the migration does not show as changed.

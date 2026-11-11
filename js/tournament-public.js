@@ -58,6 +58,40 @@ function renderPublicTournament(tournament, target, { idPrefix = '', headingLeve
   if (!rounds.size) target.append(text('p', emptyText));
 }
 
+// Shows a tournament's rules link, confirmed director and confirmed dates. Unconfirmed details stay off the page.
+function renderTournamentInfo(tournament, target) {
+  const info = tournament.info || {};
+  const items = [];
+  const item = (label, content) => {
+    const row = document.createElement('li');
+    const name = document.createElement('span');
+    name.textContent = label;
+    row.append(name, content);
+    items.push(row);
+  };
+  if (/^https:\/\/\S+$/.test(info.rules_url || '')) {
+    const link = document.createElement('a');
+    link.href = info.rules_url;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = 'Tournament rules';
+    item('Official', link);
+  }
+  if (info.director && info.director_confirmed === true) item('Director', info.director);
+  const dateFormat = new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' });
+  for (const row of Array.isArray(info.dates) ? info.dates : []) {
+    if (row.confirmed === true && /^\d{4}-\d{2}-\d{2}$/.test(row.date || '') && row.label) {
+      item(row.label, dateFormat.format(new Date(row.date + 'T12:00:00Z')));
+    }
+  }
+  target.replaceChildren();
+  target.hidden = !items.length;
+  if (!items.length) return;
+  const list = document.createElement('ul');
+  list.append(...items);
+  target.append(list);
+}
+
 (async () => {
   const target = document.getElementById('tournament-bracket');
   if (!target) return;
@@ -79,6 +113,7 @@ function renderPublicTournament(tournament, target, { idPrefix = '', headingLeve
     document.getElementById('tournament-title').textContent = tournament.name;
     document.getElementById('tournament-description').textContent = [tournament.gender, tournament.level,
       tournament.sport, tournament.season, tournament.season_year].filter(Boolean).join(' · ');
+    renderTournamentInfo(tournament, document.getElementById('tournament-info'));
     renderPublicTournament(tournament, target);
     status.textContent = 'Published bracket and results · Eastern Time';
     const selected = location.hash.slice(1);

@@ -31,3 +31,11 @@
 .tournament-field-changes { display: grid; gap: .65rem; padding-inline-start: 1.25rem; }
 .tournament-field-changes strong, .tournament-field-changes span { display: block; }
 .tournament-field-changes span { overflow-wrap: anywhere; }
+
+/* Rules and dates: official source links, then one framed row per key date. */
+.tournament-sources { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem 1rem; margin-block: .6rem; padding: .6rem .75rem; background: white; border: var(--frame); }
+.tournament-sources[hidden] { display: none; }
+.tournament-date { display: grid; grid-template-columns: minmax(11rem, 1.2fr) 11rem minmax(0, 1.6fr) auto auto; align-items: end; background: white; }
+.tournament-date-flag { grid-column: 1 / -1; order: -1; justify-self: start; padding: .2rem .5rem; background: var(--yellow); color: var(--ink); font-size: .85rem; font-weight: 700; }
+@media (max-width: 760px) { .tournament-date { grid-template-columns: 1fr; } }
+#tournament-info-fields .staff-check, .tournament-date .staff-check { align-self: center; }

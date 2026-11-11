@@ -18,6 +18,8 @@
   <script defer src="js/supabase-config.js"></script>
   <script defer src="js/public-calendar.js"></script>
   <script defer src="js/school-updates.js"></script>
+  <script defer src="data/conference-resources.js"></script>
+  <script defer src="js/team-info.js"></script>
   <script defer src="js/school.js"></script>
 </head>
 <body>
@@ -44,6 +46,7 @@
         </div>
         <div class="actions">
           <a id="subscribe-calendar" class="button primary" href="subscribe.html">Subscribe for updates</a>
+          <a id="school-site-link" class="button secondary" target="_blank" rel="noopener" hidden>School athletics website<span class="visually-hidden"> (opens in a new tab)</span></a>
           <a id="all-schools-link" class="button secondary" href="schools.html" hidden>All schools</a>
         </div>
       </div>
@@ -62,6 +65,7 @@
         <label>Search<input name="search" type="search" placeholder="Team or venue"></label>
         <button type="reset" class="button secondary">Clear filters</button>
       </form>
+      <div id="team-info" class="team-info" hidden></div>
       <p id="filter-count" class="filter-count" role="status"></p>
       <div id="calendar" aria-label="School schedule"></div>
       <div class="calendar-footer">

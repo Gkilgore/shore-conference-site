@@ -205,7 +205,7 @@ function startStaffTournaments(client, { schools = () => [] } = {}) {
     el('tournament-empty').textContent = records.length ? '' : manages() ? 'No tournaments yet. Upload a tournament schedule to add one.' : 'No published tournament games involve your school yet.';
     if (manages()) {
       renderSchools();
-      if (working) { renderMetadata(); renderWindows(); renderMatches(); renderIssues(); renderBracket(working,el('tournament-draft-bracket'),'draft-'); }
+      if (working) { renderMetadata(); renderInfo(); renderWindows(); renderMatches(); renderIssues(); renderBracket(working,el('tournament-draft-bracket'),'draft-'); }
     } else if (working) renderPublished();
     renderTransport();
     updateActions();
@@ -226,9 +226,80 @@ function startStaffTournaments(client, { schools = () => [] } = {}) {
         if (!editable()) return;
         working[name] = type === 'number' ? Number(item.value) : item.value.trim();
         changed();
+        renderInfo();
       };
       target.append(field(label, item));
     }
+  }
+  // Rules and dates: the official regulations, the director and key dates such as a qualification cutoff.
+  // They are stored beside the bracket, never as matches, so they cannot reach a calendar or feed.
+  function officialSource() {
+    if (typeof shoreConferenceResources === 'undefined') return null;
+    return shoreConferenceResources.tournamentSources.find(source => source.sports.includes(working.sport) &&
+      source.genders.includes(working.gender) && source.season === working.season && source.year === working.season_year) ?? null;
+  }
+  function renderInfo() {
+    const info = TournamentEngine.cleanInfo(working.info);
+    const keep = () => {
+      if (!editable()) return false;
+      if (TournamentEngine.hasInfo(info)) working.info = info;
+      else delete working.info;
+      changed();
+      return true;
+    };
+    const sources = el('tournament-info-sources'), source = officialSource();
+    sources.hidden = !source;
+    if (source) {
+      const link = (text, href) => { const item = node('a', text); item.href = href; item.target = '_blank'; item.rel = 'noopener'; return item; };
+      const fill = button(TournamentEngine.hasInfo(info) ? 'Replace with official sources' : 'Fill from official sources', () => {
+        if (!editable()) return;
+        working.info = TournamentEngine.cleanInfo({ rules_url: source.rules_url, director: source.director, director_confirmed: true,
+          reviewed_on: source.reviewed, dates: source.dates[working.gender] ?? [] });
+        changed();renderInfo();
+      });
+      fill.id = 'tournament-info-fill';
+      sources.replaceChildren(node('span', 'On the conference site for ' + [working.gender, working.sport, working.season, working.season_year].join(' ') + ':'),
+        link('Tournament rules', source.rules_url), link('Quick chart of dates', source.chart_url), fill);
+    }
+    const fields = el('tournament-info-fields');
+    fields.replaceChildren();
+    for (const [name, label, type, max] of [['rules_url','Tournament rules link','url',500],['director','Tournament director','text',120],['reviewed_on','Sources last checked','date']]) {
+      const item = input('tournament-info-' + name.replaceAll('_','-'), info[name], type);
+      if (max) item.maxLength = max;
+      if (type === 'url') item.placeholder = 'https://';
+      item.onchange = () => { info[name] = item.value.trim(); keep(); };
+      fields.append(field(label, item));
+    }
+    const confirmed = input('tournament-info-director-confirmed', '', 'checkbox');
+    confirmed.checked = info.director_confirmed;
+    confirmed.onchange = () => { info.director_confirmed = confirmed.checked; keep(); };
+    const confirmedLabel = node('label', undefined, 'staff-check');
+    confirmedLabel.append(confirmed, ' Director confirmed for this season');
+    fields.append(confirmedLabel);
+    el('tournament-info-dates').replaceChildren(...info.dates.map((row, index) => {
+      const line = node('div', undefined, 'filters tournament-window tournament-date');
+      for (const [name, label, type, max] of [['label','Date name','text',80],['date','Date','date'],['note','What needs confirming','text',200]]) {
+        const item = input('tournament-date-' + index + '-' + name, row[name], type);
+        if (max) item.maxLength = max;
+        item.onchange = () => { row[name] = item.value.trim(); keep(); };
+        line.append(field(label, item));
+      }
+      const check = input('tournament-date-' + index + '-confirmed', '', 'checkbox');
+      check.checked = row.confirmed;
+      check.onchange = () => { row.confirmed = check.checked; if (keep()) renderInfo(); };
+      const checkLabel = node('label', undefined, 'staff-check');
+      checkLabel.append(check, ' Confirmed');
+      line.append(checkLabel);
+      if (!row.confirmed) line.append(node('span', 'Needs date confirmation', 'tournament-date-flag'));
+      line.append(button('Remove date', () => { info.dates.splice(index, 1); if (keep()) renderInfo(); }));
+      return line;
+    }));
+    el('tournament-add-date').onclick = () => {
+      if (!editable()) return;
+      info.dates.push({ label: 'New date', date: '', confirmed: false, note: '' });
+      keep();renderInfo();
+      el('tournament-date-' + (info.dates.length - 1) + '-label').focus();
+    };
   }
   function renderSchools() {
     const target = el('tournament-school-options');
@@ -308,6 +379,7 @@ function startStaffTournaments(client, { schools = () => [] } = {}) {
   function renderPublished() {
     const resolved = resolvedDocument(working);
     el('tournament-readonly-title').textContent = working.name;
+    renderTournamentInfo(working, el('tournament-readonly-info'));
     const matches = resolved.matches.filter(match => [match.resolved_a,match.resolved_b].some(id => resolved.participants.find(participant => participant.id === id)?.school_id === schoolId));
     el('tournament-published-games').replaceChildren(...matches.map(match => {
       const row = node('li');
@@ -490,6 +562,13 @@ function startStaffTournaments(client, { schools = () => [] } = {}) {
     await operation(() => request('save_tournament',{p_id:id,p_expected_revision:revision,p_document:document}), record => {
       storeRecord(record);
       status.textContent = 'Draft saved. Review publishing to update school and conference calendars.';
+      // An older database drops this section. Say so and keep what was typed.
+      if (TournamentEngine.hasInfo(document.info) && !TournamentEngine.hasInfo(record.draft?.info) && working) {
+        working.info = document.info;
+        dirty = true;
+        renderInfo();updateActions();
+        status.textContent = 'Draft saved, but Rules and dates were not. The database update for that section has not been run yet.';
+      }
     });
   }
   function dateLabel(value) {
@@ -509,6 +588,7 @@ function startStaffTournaments(client, { schools = () => [] } = {}) {
       return (participant.seed ? participant.seed + '. ' : '') + participant.name +
         (school && school !== participant.name ? ' (' + school + ')' : '');
     });
+    const info = TournamentEngine.cleanInfo(value.info);
     const windows = value.windows.map(window => [dateLabel(window.date),timeLabel(window.start) + '–' + timeLabel(window.end),window.venue || 'Venue to be chosen'].join(' · '));
     return {
       'Tournament name':value.name,'Sport':value.sport,'Gender':value.gender,'Level':value.level,
@@ -516,6 +596,9 @@ function startStaffTournaments(client, { schools = () => [] } = {}) {
       'Game length':value.duration_minutes + ' minutes','Between games at a venue':value.turnaround_minutes + ' minutes',
       'Team rest':value.rest_minutes + ' minutes','Teams and seeds':participants.join(' · ') || 'No teams',
       'Playing windows':windows.join(' / ') || 'No playing windows',
+      'Tournament rules link':info.rules_url || 'None',
+      'Tournament director':info.director ? info.director + (info.director_confirmed ? '' : ' (needs confirmation)') : 'None',
+      'Key dates':info.dates.map(row => row.label + ': ' + (row.confirmed ? dateLabel(row.date) : 'Needs date confirmation')).join(' · ') || 'None',
     };
   }
   function matchFields(match, value) {

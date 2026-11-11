@@ -27,6 +27,7 @@ Read [the rebuild plan](docs/rebuild-plan.md) before making changes. Greg and Al
 - `index.html` is Home, `schools.html` is the school directory, `calendar.html` is the conference calendar, and `about.html` explains how schedules work. `school.html` is the reusable school calendar. Keep the future admin page at `admin.html` with its script at `js/admin.js`.
 - `css/site.css` holds shared styles. `js/site.js` builds the school directory and upcoming-game previews. `js/calendar.js` configures FullCalendar and its filters. `js/school.js` and `js/conference.js` prepare each page's games.
 - `data/sample-data.js` holds fictional school and game data. `assets/logos/` holds the school marks.
+- `data/conference-resources.js` holds facts copied from the official conference site: division lists, school athletics links and tournament sources. `js/team-info.js` shows them. Follow [conference resources](docs/conference-resources.md) when updating them.
 
 ## Working together
 

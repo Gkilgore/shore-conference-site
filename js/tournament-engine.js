@@ -178,6 +178,35 @@
     }
     return { matches, participants, resolveSlot, teams };
   }
+  // Rules and dates are reference details for a tournament. They are kept apart from matches,
+  // so a deadline can never turn into a game on a calendar or feed.
+  function cleanInfo(info) {
+    const source = info && typeof info === 'object' ? info : {};
+    const text = (value, max) => String(value ?? '').trim().slice(0, max);
+    return { rules_url: text(source.rules_url, 500), director: text(source.director, 120),
+      director_confirmed: source.director_confirmed === true, reviewed_on: text(source.reviewed_on, 10),
+      dates: (Array.isArray(source.dates) ? source.dates : []).map(row => ({ label: text(row?.label, 80),
+        date: text(row?.date, 10), confirmed: row?.confirmed === true, note: text(row?.note, 200) }))
+        .filter(row => row.label || row.date || row.note) };
+  }
+  function hasInfo(info) {
+    const clean = cleanInfo(info);
+    return Boolean(clean.rules_url || clean.director || clean.reviewed_on || clean.dates.length);
+  }
+  function infoProblems(info) {
+    const clean = cleanInfo(info), problems = [];
+    if (clean.rules_url && !/^https:\/\/\S+$/.test(clean.rules_url)) problems.push('The tournament rules link must start with https://.');
+    if (clean.reviewed_on && !validDate(clean.reviewed_on)) problems.push('“Sources last checked” needs a valid date.');
+    if (clean.director_confirmed && !clean.director) problems.push('A confirmed director needs a name.');
+    if (clean.dates.length > 20) problems.push('List no more than 20 key dates.');
+    for (const row of clean.dates) {
+      const name = row.label || 'A key date';
+      if (!row.label) problems.push('Each key date needs a name.');
+      if (row.date && !validDate(row.date)) problems.push(name + ' needs a valid date.');
+      if (row.confirmed && !row.date) problems.push(name + ' is marked confirmed but has no date.');
+    }
+    return problems;
+  }
   function resolve(document) {
     const result = copy(document), state = graph(result);
     result.matches = (result.matches || []).map(match => ({ ...match,
@@ -239,6 +268,7 @@
     if (!Number.isInteger(document.duration_minutes) || document.duration_minutes < 1 || document.duration_minutes > 1440) add(null, 'Game duration must be between 1 and 1440 minutes.');
     for (const field of ['rest_minutes', 'turnaround_minutes']) if (!integer(document[field]) || document[field] > 10080) add(null, field.replace(/_/g, ' ') + ' must be between 0 and 10080.');
     if (!Array.isArray(document.windows)) add(null, 'Available windows must be a list.');
+    if (document.info !== undefined) infoProblems(document.info).forEach(message => add(null, message));
     for (const window of Array.isArray(document.windows) ? document.windows : []) {
       if (!window || !validDate(window.date) || minutes(window.start) === null || minutes(window.end) === null ||
         minutes(window.start) >= minutes(window.end) || !String(window.venue || '').trim()) add(null, 'Each available window needs a valid date, increasing start/end times and a venue.');
@@ -471,5 +501,5 @@
     });
     return [csvHeaders.join(','), ...rows].join('\r\n');
   }
-  global.TournamentEngine = Object.freeze({ participantsFromText, generateBracket, validate, schedule, resolve, parseCsv, exportCsv, csvHeaders });
+  global.TournamentEngine = Object.freeze({ participantsFromText, generateBracket, validate, schedule, resolve, parseCsv, exportCsv, csvHeaders, cleanInfo, hasInfo });
 })(globalThis);

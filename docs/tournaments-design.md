@@ -79,3 +79,14 @@ Browser checks use fictional data through `tests/preview-server.mjs` and `tests/
 Existing project advisories include the platform-created `rls_auto_enable()` function and disabled leaked-password protection. The internal tournament tables intentionally expose checked functions with direct table grants revoked. Their RLS-without-policy informational notices follow that access design. [Public Security Definer functions](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable), [password security](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection), [RLS enabled without policy](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy)
 
 Performance advisories concern existing school-game foreign keys and overlapping school-schedule policies. The tournament tables introduce no new performance advisory. [Foreign-key indexes](https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys), [multiple policies](https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies)
+
+## Rules and dates
+
+A tournament document may carry an optional `info` object: `{rules_url, director, director_confirmed, reviewed_on, dates:[{label, date, confirmed, note}]}`. It holds the official regulations link, the director and key dates such as a qualification cutoff.
+
+- Key dates live only in `info.dates`. They are never matches, so they cannot appear in `tournament_games`, on a calendar or in a feed.
+- A date is either confirmed with a date, or marked "Needs date confirmation" with a note saying what is unsettled. A confirmed date with no date blocks publishing.
+- The staff section offers "Fill from official sources" when `data/conference-resources.js` has a record for the tournament's sport, gender, season and year. Dates the official sources disagree on arrive unconfirmed.
+- The public tournament page shows the rules link, a confirmed director and confirmed dates. Unconfirmed details and notes are not displayed there. They are still part of the published document, so keep private preparation notes out of them.
+- `info` is tournament-wide, so changing it needs a full publication, like any other tournament detail.
+- The database keeps `info` only after migration `20261126000100_tournament_info.sql`. That migration is a draft: not applied, not tested. Until it runs, saving reports "Rules and dates were not" saved and keeps the typed values on screen.

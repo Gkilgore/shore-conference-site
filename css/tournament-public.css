@@ -21,3 +21,9 @@
 @media (max-width: 640px) {
   .tournament-bracket { grid-template-columns: 1fr; }
 }
+
+/* Rules link, director and confirmed dates: one framed strip above the bracket. */
+.tournament-info { margin-block: 1rem; padding: 0.6rem 0.8rem; background: var(--paper); border: var(--frame); }
+.tournament-info[hidden] { display: none; }
+.tournament-info ul { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; margin: 0; padding: 0; list-style: none; }
+.tournament-info li span { display: block; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }

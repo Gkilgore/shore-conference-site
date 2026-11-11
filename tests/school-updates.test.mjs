@@ -152,7 +152,7 @@ test('production school pages use the complete directory and never read fictiona
     shoreSchools:{'asbury-park':{name:'Asbury Park',color:'#000000',accent:'#ffffff'}},
     document:{title:'',getElementById:element,createElement:()=>({textContent:''}),querySelector:()=>({}),
       documentElement:{style:{setProperty(){}}}},
-    buildLogoWall(){},readableInk:()=> '#ffffff',
+    buildLogoWall(){},readableInk:()=> '#ffffff',schoolSite:()=>null,renderTeamInfo(){},window:{addEventListener(){}},
     loadPublicCalendar:async options=>{fetchedSchool=options.school;return {events:[],published:false,seasons:[],updates:[]};},
     publicCalendarEvents:schedule=>schedule.events,renderSchoolSeasons(){},renderSchoolUpdates(){},renderUpcoming(){},renderCalendar(){},
     setSubscriptionLink(){element('subscribe-calendar').hidden=false;},

@@ -118,6 +118,11 @@ function renderCalendar(events) {
       document.getElementById('filter-count').textContent = results.length
         ? results.length + (results.length === 1 ? ' game' : ' games') + ' in this view. Select a game for details.' : '';
       showEmpty(results, matches, afterLastDay);
+      // Tells the page which team and which part of the year are on screen.
+      window.dispatchEvent(new CustomEvent('shore:calendar-view', { detail: {
+        sport: fields.sport.value, gender: fields.gender?.value ?? '', level: fields.level.value,
+        date: new Date((range.start.getTime() + range.end.getTime()) / 2).toISOString().slice(0, 10),
+      } }));
       showEvents(results);
     },
     eventContent({ event, timeText, view }) {

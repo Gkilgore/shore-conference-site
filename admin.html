@@ -32,6 +32,8 @@
   <script defer src="js/staff-coaches.js"></script>
   <script defer src="js/staff-venues.js"></script>
   <script defer src="js/staff-coach-import.js"></script>
+  <script defer src="data/conference-resources.js"></script>
+  <script defer src="js/team-info.js"></script>
   <script defer src="js/staff-schedule.js"></script>
   <script defer src="js/staff-access.js"></script>
   <script defer src="js/admin.js"></script>
@@ -141,6 +143,7 @@
               <p id="unpublished-text"></p>
               <button id="unpublished-review" class="button primary" type="button">Review and publish</button>
             </div>
+            <div id="staff-team-info" class="team-info" hidden></div>
             <button id="preview-transportation-email" class="button secondary" type="button" hidden>Preview transportation email</button>
             <div id="calendar" aria-label="Staff schedule calendar" hidden></div>
             <div id="schedule-games"></div>
@@ -332,6 +335,14 @@
                   <h4 id="tournament-details-title">Tournament details</h4>
                   <div id="tournament-metadata" class="filters tournament-metadata"></div>
                 </section>
+                <section class="staff-section" aria-labelledby="tournament-info-title">
+                  <h4 id="tournament-info-title">Rules and dates</h4>
+                  <p class="staff-hint">Shown on the public tournament page after you publish. A date that needs confirmation is left off that page.</p>
+                  <div id="tournament-info-sources" class="tournament-sources" hidden></div>
+                  <div id="tournament-info-fields" class="filters tournament-metadata"></div>
+                  <div id="tournament-info-dates"></div>
+                  <div class="actions"><button id="tournament-add-date" class="button secondary" type="button">Add date</button></div>
+                </section>
                 <section class="staff-section" aria-labelledby="tournament-bracket-title">
                   <h4 id="tournament-bracket-title">Bracket</h4>
                   <div id="tournament-draft-bracket" class="tournament-bracket"></div>
@@ -364,7 +375,7 @@
                 <div class="actions"><button id="tournament-proposal-apply" class="button primary" type="button">Use this draft proposal</button><button id="tournament-proposal-cancel" class="button secondary" type="button">Keep current draft</button></div>
               </section>
             </div>
-            <section id="tournament-readonly" hidden><h4 id="tournament-readonly-title"></h4><ul id="tournament-published-games" class="game-list"></ul></section>
+            <section id="tournament-readonly" hidden><h4 id="tournament-readonly-title"></h4><div id="tournament-readonly-info" class="tournament-info" hidden></div><ul id="tournament-published-games" class="game-list"></ul></section>
             <section id="tournament-transport" class="staff-section" aria-labelledby="tournament-bus-title" hidden>
               <h4 id="tournament-bus-title">Tournament transportation</h4><p id="tournament-bus-school"></p>
               <form id="tournament-bus-form">

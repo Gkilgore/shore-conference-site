@@ -26,6 +26,16 @@ if (Object.hasOwn(schoolDirectory, schoolSlug)) {
   document.documentElement.style.setProperty('--school-ink', readableInk(school.color));
   document.documentElement.style.setProperty('--accent-ink', readableInk(school.accent));
 
+  // The school's own athletics site, when its link has been checked.
+  const site = schoolSite(schoolSlug);
+  const siteLink = document.getElementById('school-site-link');
+  if (site) {
+    siteLink.href = site.url;
+    siteLink.hidden = false;
+  }
+  window.addEventListener('shore:calendar-view', ({ detail }) =>
+    renderTeamInfo(document.getElementById('team-info'), { school: schoolSlug, ...detail }));
+
   let games = sample ? sampleGames.filter(game => game.school === schoolSlug).map(game => ({
     title: teamLabel(game) + (game.home_away === 'Home' ? ' vs. ' : ' at ') +
       (schoolDirectory[game.opponent_school_id]?.name ?? game.opponent_name) +
@@ -59,6 +69,13 @@ if (Object.hasOwn(schoolDirectory, schoolSlug)) {
       document.getElementById('recent-updates').hidden = true;
     }
     renderUpcoming(games, { showChanged: true });
+    const noUpcoming = document.querySelector('#upcoming .empty-schedule');
+    if (noUpcoming && site) {
+      const other = siteLink.cloneNode(true);
+      other.removeAttribute('id');
+      other.className = '';
+      noUpcoming.append(' ', other);
+    }
     renderCalendar(games);
     setSubscriptionLink({ scope: 'school', school: schoolSlug });
   } catch (error) {

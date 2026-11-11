@@ -323,8 +323,18 @@ function startStaffSchedule(client, invite) {
       ? '' : 'Showing ' + visible.length + ' of ' + allGames.length + ' games';
   }
 
+  // The division for the team picked in the filters, for the school year in progress.
+  function showTeamInfo() {
+    const today = new Date();
+    renderTeamInfo(document.getElementById('staff-team-info'), {
+      school: selector.value, sport: filterFields.sport.value, gender: filterFields.gender.value, level: filterFields.level.value,
+      date: today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0'),
+    }, { quietWhenAll: true });
+  }
+
   function applyFilters() {
     const visible = visibleGames();
+    showTeamInfo();
     showCount(visible);
     overview.render(visible);
     publication.render();

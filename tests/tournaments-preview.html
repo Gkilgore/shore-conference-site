@@ -16,10 +16,10 @@
   document.getElementById('workspace-title').textContent = 'Tournament dashboard preview';
   document.getElementById('workspace-account').textContent = 'Fictional games · local preview';
   document.getElementById('schedule-school').parentElement.hidden = true;
-  for (const file of ['staff-import.js','tournament-engine.js','tournament-public.js','staff-tournaments.js']) {
+  for (const file of ['../data/conference-resources.js','staff-import.js','tournament-engine.js','tournament-public.js','staff-tournaments.js']) {
     await new Promise((resolve,reject) => {
       const script = document.createElement('script');
-      script.src = '../js/' + file;script.onload = resolve;script.onerror = reject;document.head.append(script);
+      script.src = file.startsWith('../') ? file : '../js/' + file;script.onload = resolve;script.onerror = reject;document.head.append(script);
     });
   }
   const schools = [{slug:'marlboro',name:'Marlboro'},{slug:'colts-neck',name:'Colts Neck'},{slug:'shore',name:'Shore Regional'}];

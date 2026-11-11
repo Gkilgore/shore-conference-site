@@ -38,3 +38,26 @@ Tracks the staff findings from the November 9 design review and the November 10 
 - Is "Save and publish…" or "Save as draft" the button they reach for first when adding many games?
 - Do they find Import games, and is the CSV template enough on its own?
 - Is the postponement guidance (keep the date, change it later) how they actually work?
+
+## Official-site findings (November 10, branch `feature/official-site-findings`)
+
+Compared with theshoreconference.com and rechecked that day. Checked with fictional games in headless Chrome at 1280px and 375px, and at 375px with doubled text. Nothing here was run against the Supabase test project.
+
+| Finding | Now |
+| --- | --- |
+| About page said six divisions, football aside | Says divisions are set per sport each season, with the 2026 boys' soccer and 2027 boys' golf lists linked. The member count is worded as what this site lists. |
+| No division beside a team | The school page and the staff Games tab show one line under the filters, for example "A North · Fall 2026 · Varsity", with "Official division list" and the schools in that division. It names a division only for a varsity team whose sport and team are chosen. JV and freshman get "None listed". All sports, or a sport with separate boys' and girls' lists, gets links and no division. Another school year shows that year's record or says none is on file. On the staff tab the line stays hidden until a sport is chosen. |
+| Tournaments had no rules or key dates | "Rules and dates" in the tournament workspace: rules link, director, date of last source check and key dates. Each date is confirmed or marked "Needs date confirmation". "Fill from official sources" copies what the conference posted. The public tournament page shows the rules link, a confirmed director and confirmed dates only. |
+| A school page with no schedule was a dead end | "School athletics website" in the school band, and beside "No upcoming games are listed." Shown for the 34 schools whose link was checked. |
+
+### Still open from this pass
+
+1. **Run migration `20261126000100_tournament_info.sql`** in the test project. Until then the database drops "Rules and dates" on save, and the staff page says so.
+2. **Source questions for the conference office.** Soccer tournament dates, the 2026–27 director list, whether division lists are varsity only, the Jackson listing and the member count. `docs/conference-resources.md` lists each one with its sources.
+3. **Fourteen school links** need a person to find the right page. Same document.
+4. **Tournament workspace on a real sign-in.** Saving, reviewing and publishing "Rules and dates" were checked with the real page code and fictional responses only.
+5. **Later, not in this pass:** regular-game scores, standings, streaming links, news.
+
+### Keeping it current
+
+`docs/conference-resources.md` has the steps. In short: each summer add the new division lists to `data/conference-resources.js` and keep the old ones; recheck school links once a year; a conference admin confirms tournament dates in the tournament itself.

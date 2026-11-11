@@ -559,3 +559,12 @@ textarea { display: block; resize: vertical; }
   .about-history strong { padding: 0.8rem 0.9rem 0.3rem; }
   .about-history span { padding: 0 0.9rem; }
 }
+
+/* One framed line under the filters: the selected team's division and its official source. */
+.team-info { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.9rem; margin-block: 0.75rem; padding: 0.5rem 0.75rem; background: var(--paper); border: var(--frame); font-size: 0.95rem; }
+.team-info[hidden] { display: none; }
+.team-info-label { font-size: 0.76rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+.team-info summary { cursor: pointer; text-decoration: underline; }
+.team-info details[open] { flex-basis: 100%; }
+.team-info ul { display: flex; flex-wrap: wrap; gap: 0.15rem 1rem; margin: 0.35rem 0 0; padding: 0; list-style: none; }
+.empty-schedule a { font-weight: 700; }
