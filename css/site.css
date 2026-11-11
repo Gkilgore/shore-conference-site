@@ -571,3 +571,11 @@ textarea { display: block; resize: vertical; }
 .team-info details[open] { flex-basis: 100%; }
 .team-info ul { display: flex; flex-wrap: wrap; gap: 0.15rem 1rem; margin: 0.35rem 0 0; padding: 0; list-style: none; }
 .empty-schedule a { font-weight: 700; }
+
+/* The subscribe page wears a school's colors when one school's calendar is chosen. */
+.intro.is-school { background: var(--school-color); color: var(--school-ink); }
+.intro.is-school p { color: inherit; }
+.intro.is-school .intro-logo { width: clamp(4.5rem, 12vw, 7rem); filter: none; }
+.intro .actions:not(:has(> :not([hidden]))) { display: none; }
+.school-themed main .prose .primary { background: var(--school-color); border-color: var(--school-color); color: var(--school-ink); }
+.school-themed main .prose .primary:is(:hover, :focus-visible) { background: var(--school-accent); border-color: var(--school-accent); color: var(--accent-ink); }

@@ -28,7 +28,37 @@
     catch { link.focus(); link.select(); copyStatus.textContent = 'Select and copy the subscription URL above.'; }
   };
 
+  // A school's calendar takes on that school's colors and logo, like its schedule page.
+  function applyTheme() {
+    if (typeof readableInk !== 'function' || !document.querySelector) return;
+    const slug = fields.scope.value === 'school' ? fields.school.value : '';
+    const school = Object.hasOwn(schools, slug) ? schools[slug] : null;
+    const band = document.getElementById('subscribe-band');
+    const logo = document.getElementById('subscribe-logo');
+    const back = document.getElementById('subscribe-back');
+    const style = document.documentElement.style;
+    const colors = school ? { '--school-color': school.color, '--school-accent': school.accent,
+      '--school-ink': readableInk(school.color), '--accent-ink': readableInk(school.accent) } : {};
+    for (const name of ['--school-color', '--school-accent', '--school-ink', '--accent-ink']) {
+      if (school) style.setProperty(name, colors[name]);
+      else style.removeProperty(name);
+    }
+    document.body.classList.toggle('school-themed', Boolean(school));
+    band.classList.toggle('is-school', Boolean(school));
+    band.querySelector('.logo-wall')?.remove();
+    logo.hidden = back.hidden = !school;
+    document.getElementById('subscribe-title').textContent = school ? 'Subscribe to ' + school.name : 'Subscribe to a calendar';
+    document.getElementById('subscribe-intro').textContent = (school ? 'Add ' + school.name + ' games to your calendar app.'
+      : 'Pick a school or team and add its games to your calendar app.') + ' Changes show up on their own.';
+    if (!school) return;
+    logo.src = school.logo ?? 'assets/logos/shore-conference.svg';
+    buildLogoWall(band, logo.src, 9, 26, school.logoBackground);
+    back.href = 'school.html?school=' + encodeURIComponent(slug);
+    back.textContent = 'Back to ' + school.name + ' schedule';
+  }
+
   async function update() {
+    applyTheme();
     const request = ++requestNumber;
     actions.hidden = true;
     copyStatus.textContent = '';

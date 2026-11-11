@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="css/site.css">
   <script defer src="data/sample-data.js"></script>
   <script defer src="data/school-directory.js"></script>
+  <script defer src="js/site.js"></script>
   <script defer src="js/supabase-config.js"></script>
   <script defer src="js/seasons.js"></script>
   <script defer src="js/public-calendar.js"></script>
@@ -24,7 +25,7 @@
     <a class="staff-link" href="admin.html">Staff sign-in</a>
   </div></header>
   <main id="main">
-    <section class="intro"><div class="wrap"><h1>Subscribe to a calendar</h1><p>Pick a school or team and add its games to your calendar app. Changes show up on their own.</p></div></section>
+    <section id="subscribe-band" class="intro"><div class="wrap"><img id="subscribe-logo" class="intro-logo" alt="" width="350" height="350" hidden><h1 id="subscribe-title">Subscribe to a calendar</h1><p id="subscribe-intro">Pick a school or team and add its games to your calendar app. Changes show up on their own.</p><div class="actions"><a id="subscribe-back" class="button secondary" hidden></a></div></div></section>
     <div class="wrap section prose">
       <p>First time subscribing? <a href="#calendar-help">See setup instructions for your calendar app.</a></p>
       <form id="subscription-filters" class="filters" aria-label="Choose a calendar">
