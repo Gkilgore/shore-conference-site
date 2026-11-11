@@ -40,7 +40,7 @@ function conferenceEvents(games) {
   try {
     const games = sample ? conferenceEvents(sampleGames)
       : publicCalendarEvents(await loadPublicCalendar({ scope: 'conference' }));
-    if (status) status.textContent = sample ? 'Sample schedule · Eastern Time' : 'Published schedule · Eastern Time';
+    if (status) status.textContent = sample ? 'Sample schedule' : '';
     if (document.getElementById('calendar')) renderCalendar(games);
     if (document.getElementById('upcoming')) renderUpcoming(games, { showChanged: true });
     setSubscriptionLink({ scope: 'conference' });

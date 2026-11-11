@@ -216,8 +216,8 @@ function startStaffSchedule(client, invite) {
     unpublished = map;
     const count = map.size + removed;
     unpublishedBar.hidden = !count;
-    document.getElementById('unpublished-text').textContent = count + (count === 1 ? ' change is' : ' changes are') +
-      ' not public yet. Outlined games are waiting to be published.';
+    document.getElementById('unpublished-text').textContent = count === 1
+      ? '1 game isn’t public yet. It’s outlined below.' : count + ' games aren’t public yet. They’re outlined below.';
     document.getElementById('publish-count').textContent = count ? ' · ' + count : '';
   }
 

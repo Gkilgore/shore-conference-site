@@ -546,3 +546,18 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
   #workspace-account { display: none; }
   #public-page-link { min-height: 2.4rem; padding-block: 0.3rem; }
 }
+
+/* Each section on a staff tab is its own tinted block with a filled title bar, so sections do not run together. */
+.staff-section { --pad: 1rem; margin-top: 1rem; padding: var(--pad); background: var(--paper); border: var(--frame); }
+.staff-section > h4:first-child, .import-panel > h4:first-child {
+  margin: calc(var(--pad) * -1) calc(var(--pad) * -1) 0.35rem;
+  padding: 0.5rem var(--pad);
+  background: var(--school-color);
+  color: var(--school-ink);
+  font-size: 1.05rem;
+}
+#staff-tournaments-panel .staff-section { --pad: 0.75rem; }
+.import-panel { --pad: 1rem; padding: var(--pad); background: var(--paper); }
+.staff-section fieldset, .publication-teams > li, .staff-section .tournament-match, .staff-section .tournament-window { background: white; }
+.staff-section .branding-layout { margin-top: 0.4rem; }
+[data-generator][hidden] { display: none !important; }

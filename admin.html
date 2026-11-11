@@ -116,7 +116,7 @@
             <ul id="overview-stats" class="staff-stats" aria-label="Schedule totals"></ul>
             <section id="publication-section" class="staff-section" aria-labelledby="publication-title" hidden>
               <h4 id="publication-title">Publish team schedules</h4>
-              <p class="staff-hint">Families see a team's games after you publish them. Later edits stay private until you publish again.</p>
+              <p class="staff-hint">Nothing shows on the public site until you publish it.</p>
               <p id="publication-status" role="status"></p>
               <p><a id="publication-public-link" target="_blank" rel="noopener" hidden>View public page</a></p>
               <form id="publication-form">
@@ -130,7 +130,7 @@
             </section>
             <section class="staff-section" aria-labelledby="link-title">
               <h4 id="link-title">Games that don’t match the other school’s entry</h4>
-              <p class="staff-hint">These stay off the conference calendar until both schools’ entries agree. We show which detail differs, never what the other school entered.</p>
+              <p class="staff-hint">These games don’t match what the other school entered, so they aren’t on the conference calendar yet. Fix the detail shown in red.</p>
               <ul id="link-list" class="game-list staff-attention"></ul>
             </section>
           </section>
@@ -152,7 +152,7 @@
             </div>
           <section id="import-section" class="staff-panel import-panel" aria-labelledby="import-title" hidden>
               <h4 id="import-title">Import games from a spreadsheet</h4>
-              <p class="staff-hint">Choose one or more CSV files. Each file can include several teams. Check the rows, then save the ready games as drafts. Nothing is public until you publish it on the Publish tab.</p>
+              <p class="staff-hint">Upload one or more CSV files, check the rows, then save. Imported games are drafts until you publish them.</p>
               <div class="import-controls">
                 <label>CSV files <input id="import-file" type="file" accept=".csv,text/csv" multiple></label>
                 <button id="import-template" class="button secondary" type="button">Download template</button>
@@ -176,9 +176,10 @@
             <p id="transportation-school"></p>
             <section id="bus-section" class="staff-section" aria-labelledby="bus-title">
               <h4 id="bus-title">Bus not confirmed</h4>
-              <p class="staff-hint">Upcoming away games whose bus hasn’t been confirmed by transportation. Open a game and tick “Bus confirmed” once it is.</p>
+              <p class="staff-hint">Away games with no confirmed bus. Open the game and check “Bus confirmed” when transportation confirms.</p>
               <ul id="bus-list" class="game-list staff-attention"></ul>
             </section>
+            <section class="staff-section">
             <h4>Transportation contact</h4>
             <form id="transportation-contact-form" class="prose">
               <label for="transportation-email">Coordinator email</label>
@@ -187,10 +188,11 @@
               <div><button class="button primary" type="submit">Save contact</button></div>
               <p id="transportation-contact-status" role="status"></p>
             </form>
+            </section>
           </section>
           <section id="staff-coaches-panel" class="staff-panel" aria-labelledby="coaches-title" hidden>
             <h3 id="coaches-title" tabindex="-1">Coaches</h3>
-            <p class="staff-hint">Coaches get an email when a game for one of their teams is scheduled, changed, postponed or canceled. Email sending isn’t connected yet, so emails wait in the outbox below.</p>
+            <p class="staff-hint">Coaches are emailed when one of their games is added or changed. Email isn’t turned on yet, so messages wait in the outbox below.</p>
             <p id="coaches-status" role="status"></p>
             <section class="staff-section" aria-labelledby="coach-form-title">
               <h4 id="coach-form-title">Add a coach</h4>
@@ -249,13 +251,15 @@
             </section>
             <section class="staff-section" aria-labelledby="coach-outbox-title">
               <h4 id="coach-outbox-title">Email outbox</h4>
-              <p class="staff-hint">Emails waiting to go to coaches. Games added in one import go out as one summary per coach.</p>
+              <p class="staff-hint">Emails waiting to be sent to coaches.</p>
               <ul id="coach-outbox" class="coach-outbox"></ul>
             </section>
           </section>
           <section id="staff-settings-panel" class="staff-panel" aria-labelledby="settings-title" hidden>
             <h3 id="settings-title" tabindex="-1">School settings</h3>
             <p id="settings-school" class="staff-subhead"></p>
+            <section class="staff-section">
+            <h4>Logo and colors</h4>
             <div class="branding-layout">
               <form id="branding-form" class="branding-form">
                 <fieldset>
@@ -292,9 +296,10 @@
                 </div>
               </div>
             </div>
+            </section>
             <section class="staff-section" aria-labelledby="venues-title">
               <h4 id="venues-title">Venues</h4>
-              <p class="staff-hint">Your fields, gyms and courts. ADs pick from this list for home games here, and visiting schools pick from it for away games at your school, so both entries match.</p>
+              <p class="staff-hint">Your fields, gyms and courts. Both schools pick from this list, so the venue always matches.</p>
               <p id="venue-status" class="venue-status" role="status"></p>
               <ul id="venue-list" class="venue-list"></ul>
               <form id="venue-add" class="filters venue-add">
@@ -312,14 +317,15 @@
             <label id="tournament-selector" hidden>Tournament<select id="tournament-select"></select></label>
             <p id="tournament-empty"></p>
             <div id="tournament-manager" hidden>
-              <div class="actions"><button id="tournament-new" class="button primary" type="button">New tournament</button></div>
+              <!-- Bracket and schedule generator is switched off for now. Remove the hidden attributes marked "generator" to bring it back. -->
+              <div class="actions" hidden data-generator><button id="tournament-new" class="button primary" type="button">New tournament</button></div>
               <section class="staff-section" aria-labelledby="tournament-import-title">
-                <h4 id="tournament-import-title">Import CSV</h4>
-                <p class="staff-hint">Choose which spreadsheet columns to use, then check the bracket before saving. Keep the match identifiers from a downloaded CSV to update those games. Other games are kept.</p>
+                <h4 id="tournament-import-title">Upload a tournament schedule</h4>
+                <p class="staff-hint">Upload the finished schedule as a CSV, match the columns, and check the bracket before saving. To update games you already uploaded, keep the match IDs from the downloaded CSV.</p>
                 <div class="actions"><label>CSV file<input id="tournament-import-file" type="file" accept=".csv,text/csv"></label><button id="tournament-template" class="button secondary" type="button">Download CSV template</button></div>
-                <p class="staff-hint">The template has one fictional Colts Neck–Marlboro game. Replace the example details before importing.</p>
+                <p class="staff-hint">The template has one sample game. Replace it with your own.</p>
                 <details><summary>Column mapping</summary><div id="tournament-import-mapping" class="filters tournament-mapping"></div></details>
-                <button id="tournament-import-preview" class="button secondary" type="button">Preview CSV import</button>
+                <button id="tournament-import-preview" class="button secondary" type="button">Preview upload</button>
               </section>
               <div id="tournament-editor" hidden>
                 <section class="staff-section" aria-labelledby="tournament-details-title">
@@ -329,13 +335,15 @@
                 <section class="staff-section" aria-labelledby="tournament-bracket-title">
                   <h4 id="tournament-bracket-title">Bracket</h4>
                   <div id="tournament-draft-bracket" class="tournament-bracket"></div>
+                  <div hidden data-generator>
                   <h4>Replace teams and seeds</h4>
                   <p class="staff-hint">Choose schools or paste one school or guest per line. Add seed numbers at the start of each line. Review the replacement before using it. Replacing a bracket clears its previous matches and results.</p>
                   <div class="filters"><label>School<select id="tournament-school-options"></select></label><button id="tournament-add-school" class="button secondary" type="button">Add school to list</button></div>
                   <label>Teams and seeds<textarea id="tournament-participants" rows="5" placeholder="1. Marlboro&#10;2. Colts Neck&#10;3. Shore Regional&#10;4. Guest team"></textarea></label>
                   <button id="tournament-generate" class="button secondary" type="button">Review replacement bracket</button>
+                  </div>
                 </section>
-                <section class="staff-section" aria-labelledby="tournament-windows-title">
+                <section class="staff-section" aria-labelledby="tournament-windows-title" hidden data-generator>
                   <h4 id="tournament-windows-title">Playing windows</h4>
                   <p class="staff-hint">Use Eastern local times. Add one window for each date and venue. For school games without an end time, checks allow the game length entered above.</p>
                   <div id="tournament-windows"></div>
@@ -343,12 +351,12 @@
                 </section>
                 <section class="staff-section" aria-labelledby="tournament-matches-title">
                   <h4 id="tournament-matches-title" tabindex="-1">Matches and results</h4>
-                  <p class="staff-hint">Adjust the proposal here. After correcting a winner, use Clear result on any later game with an incorrect winner, then enter its corrected result.</p>
+                  <p class="staff-hint">Edit any game here. If you correct a winner, use Clear result on the later games that depended on it, then re-enter them.</p>
                   <div class="tournament-table-wrap"><table class="tournament-table"><thead><tr><th scope="col">Match</th><th scope="col">Teams A / B</th><th scope="col">Date</th><th scope="col">Time</th><th scope="col">Venue</th><th scope="col">Home</th><th scope="col">Status and result</th></tr></thead><tbody id="tournament-match-rows"></tbody></table></div>
                   <ul id="tournament-issues" class="tournament-issues"></ul>
                   <p id="tournament-dirty" role="status"></p>
                   <div class="actions"><button id="tournament-save" class="button primary" type="button">Save draft</button><button id="tournament-review" class="button secondary" type="button">Review publishing</button><button id="tournament-export" class="button secondary" type="button">Download master CSV</button></div>
-                  <p class="staff-hint">Drafts stay private. Reviewed publication updates both schools’ calendars and the conference calendar. Unsaved changes are kept while you use other tabs.</p>
+                  <p class="staff-hint">Drafts are private. Publishing updates both schools’ calendars and the conference calendar.</p>
                 </section>
               </div>
               <section id="tournament-proposal" class="staff-section tournament-proposal" hidden aria-labelledby="tournament-proposal-title">
@@ -372,7 +380,7 @@
             <h3 id="staff-access-title" tabindex="-1">Staff access</h3>
             <p id="staff-access-status" role="status" aria-live="polite"></p>
             <div id="staff-access-panel" hidden>
-              <p>Add invited access using the person's school email. Several AD accounts may share a school. This saves access only; no email is sent.</p>
+              <p>Add a person by their school email. More than one AD can share a school. No email is sent, so let them know yourself.</p>
               <form id="staff-access-form">
                 <div class="filters">
                   <label>Invited email<input id="staff-access-email" type="email" maxlength="254" autocomplete="off" required></label>
@@ -426,7 +434,7 @@
               <label>Transportation notes <textarea name="transport_notes" maxlength="1000" rows="2"></textarea></label>
               <label class="staff-check"><input name="bus_confirmed" type="checkbox" value="true"> Bus confirmed by transportation</label>
             </fieldset>
-            <p class="staff-hint">Families keep seeing the published version until you publish this change. That includes postponements and cancellations.</p>
+            <p class="staff-hint">Families won’t see this change until you publish it. That includes postponing or canceling.</p>
             <p id="game-form-status" role="status"></p>
             <div class="actions">
               <button id="save-draft" class="button primary" type="submit">Save as draft</button>
@@ -459,8 +467,8 @@
     <dialog id="delete-game-dialog" class="game-details" aria-labelledby="delete-game-title">
       <h2 id="delete-game-title">Delete this game?</h2>
       <p id="delete-game-summary"></p>
-      <p>Use this for a game entered by mistake. For a real game that is off or moved, set its status to Postponed or Canceled so families can see what changed.</p>
-      <p>If this game is published, it stays on public calendars until you review and publish the removal.</p>
+      <p>Only delete a game that was entered by mistake. If a real game is off or moved, mark it Postponed or Canceled instead.</p>
+      <p>A published game stays on the public site until you publish its team again.</p>
       <p id="delete-game-status" role="status"></p>
       <div class="actions">
         <button id="delete-game-confirm" class="button primary" type="button">Delete game</button>

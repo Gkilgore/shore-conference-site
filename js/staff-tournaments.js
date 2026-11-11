@@ -202,7 +202,7 @@ function startStaffTournaments(client, { schools = () => [] } = {}) {
     el('tournament-editor').hidden = !manages() || !working;
     el('tournament-readonly').hidden = manages() || !working;
     el('tournament-selector').hidden = !records.length;
-    el('tournament-empty').textContent = records.length ? '' : manages() ? 'Create a tournament or import a master CSV.' : 'No published tournament games involve your school yet.';
+    el('tournament-empty').textContent = records.length ? '' : manages() ? 'No tournaments yet. Upload a tournament schedule to add one.' : 'No published tournament games involve your school yet.';
     if (manages()) {
       renderSchools();
       if (working) { renderMetadata(); renderWindows(); renderMatches(); renderIssues(); renderBracket(working,el('tournament-draft-bracket'),'draft-'); }

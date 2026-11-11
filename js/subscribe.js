@@ -56,7 +56,7 @@
       document.getElementById('download-calendar').href = url + '&download=1';
       document.getElementById('subscription-name').textContent = schedule.name;
       status.textContent = schedule.events.length + (schedule.events.length === 1 ? ' game' : ' games') +
-        ' currently listed. ' + (conference ? 'New matching games will be included automatically.' : 'New posted games appear as schedules are published.');
+        ' so far. ' + (conference ? 'More are added as schools confirm them.' : 'More are added as the school publishes them.');
       actions.hidden = false;
     } catch (error) {
       if (request === requestNumber) status.textContent = error.status === 404
