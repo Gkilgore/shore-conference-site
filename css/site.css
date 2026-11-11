@@ -546,17 +546,17 @@ textarea { display: block; resize: vertical; }
 .about-history time { font-size: 1.05rem; }
 .about-history span { line-height: 1.55; color: var(--ink); }
 .about-source { margin-top: 0.5rem; font-size: 0.88rem; color: var(--muted); }
-.about-site { padding: clamp(1rem, 2.5vw, 1.5rem); background: white; border: var(--frame); }
-.about-site h2 { font-size: 1.35rem; }
-.about-site-grid { display: grid; gap: 0.75rem 2rem; }
-.about-site-grid p + p { margin-top: 0; }
-.about-site .actions { margin-top: 1.1rem; }
+.about-links { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+.about-links li { display: grid; grid-template-rows: auto 1fr auto; gap: 0.4rem; padding: 1rem; background: white; border: var(--frame); }
+.about-links h3 { margin: 0; font-size: 1.15rem; }
+.about-links p { margin: 0; }
+.about-links .button { justify-self: start; margin-top: 0.5rem; }
 @media (min-width: 860px) {
   .about-top { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
-  .about-site-grid { grid-template-columns: 1.4fr 1fr 1fr; }
+  .about-links { grid-template-columns: repeat(3, 1fr); }
 }
 @media (min-width: 960px) {
-  .about-history { grid-template-columns: 1.5fr repeat(4, 1fr); }
+  .about-history { grid-template-columns: repeat(5, 1fr); }
   .about-history li { grid-template-columns: 1fr; align-content: start; gap: 0; padding: 0 0 1rem; }
   .about-history time { grid-row: auto; place-items: start; padding: 0.55rem 0.9rem; font-size: 1.35rem; text-align: left; }
   .about-history strong { padding: 0.8rem 0.9rem 0.3rem; }
