@@ -5,6 +5,15 @@ function startStaffSchedule(client, invite) {
   const previewPanel = document.getElementById('role-preview');
   const previewStatus = document.getElementById('preview-status');
   const title = document.getElementById('workspace-title');
+  const roleLabel = document.getElementById('workspace-role');
+  const roleLabels = { ad: 'Athletic director', conference_office: 'Conference admin', site_admin: 'Site admin' };
+  const publicLink = document.getElementById('public-page-link');
+  const importButton = document.getElementById('import-games');
+  const unpublishedBar = document.getElementById('unpublished-bar');
+  const discardDialog = document.getElementById('discard-dialog');
+  let unpublished = new Map();
+  let dirty = false;
+  let leave = null;
   const account = document.getElementById('workspace-account');
   const signedInAccount = account.textContent;
   const isSiteAdmin = invite.role === 'site_admin';
@@ -36,6 +45,7 @@ function startStaffSchedule(client, invite) {
   const filterForm = document.getElementById('staff-filters');
   const filterFields = filterForm.elements;
   const filterCount = document.getElementById('staff-filter-count');
+  const filtersToggle = document.getElementById('staff-filters-toggle');
   const currentSchool = () => schools.find(school => school.slug === selector.value);
   const overview = startStaffOverview(client, {
     currentSchool, gameTitle, canEdit: () => canEdit, openEditor: game => openEditor(game),
@@ -54,6 +64,12 @@ function startStaffSchedule(client, invite) {
   const settings = startStaffSettings(client, currentSchool, school => applySchoolTheme(client, school));
   const publication = startStaffPublication(client, currentSchool, {
     canEdit: () => canEdit, schools: () => schools,
+    onPublished: () => {
+      showUnpublished();
+      if (calendar) showCalendar(visibleGames());
+      // Publishing from the editor leaves the AD on Games, so confirm it here too.
+      scheduleFeedback.textContent = 'Published. The school page shows it now.';
+    },
     filterValues: () => Object.fromEntries(new FormData(filterForm)),
   });
   const transportation = startStaffTransportation(client, invite,
@@ -61,11 +77,12 @@ function startStaffSchedule(client, invite) {
   const form = document.getElementById('game-form');
   const formStatus = document.getElementById('game-form-status');
   const fields = form.elements;
-  const saveButton = form.querySelector('[type="submit"]');
+  const saveButton = form.querySelector('#save-draft');
   const venues = startStaffVenues(client, { currentSchool, schools: () => schools, fields });
   let canEdit = invite.role !== 'conference_office';
   const options = (schools) => schools.map(school => new Option(school.name, school.slug));
   const dateFormat = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const weekdayFormat = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   const timeFormat = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' });
   let calendar;
   let stopFollowingView = () => {};
@@ -121,8 +138,12 @@ function startStaffSchedule(client, invite) {
     access.reset();
     const school = schools.find(item => item.slug === schoolId);
     canEdit = role !== 'conference_office';
-    title.textContent = workspaceTitles[role];
-    account.textContent = choice ? school?.name ?? '' : signedInAccount;
+    roleLabel.textContent = roleLabels[role];
+    // Conference admins cannot publish a school's schedule; for them this tab only shows the match checks.
+    document.getElementById('publish-label').textContent = canEdit ? 'Publish' : 'Match checks';
+    overviewTitle.textContent = canEdit ? 'Publish' : 'Match checks';
+    title.textContent = roleLabels[role];
+    account.textContent = choice ? '' : signedInAccount;
     previewStatus.textContent = choice === 'office'
       ? 'Previewing conference school calendars (read-only). Staff access tools use the actual signed-in account.'
       : choice && school
@@ -131,6 +152,8 @@ function startStaffSchedule(client, invite) {
     const allowed = role === 'ad' ? schools.filter(item => item.slug === schoolId) : schools;
     selector.replaceChildren(...options(allowed));
     selector.disabled = allowed.length < 2;
+    // An AD has one school, already named in the heading, so the picker would be a dead control.
+    selector.parentElement.classList.toggle('is-single', allowed.length < 2);
     if (allowed.length) selectSchool();
     else status.textContent = 'No school is assigned to this account.';
   }
@@ -147,6 +170,18 @@ function startStaffSchedule(client, invite) {
     form.reset();
     formStatus.textContent = '';
     document.getElementById('game-form-title').textContent = game ? 'Edit game' : 'Add a game';
+    // Say whose game this is and whether families can see it, so nobody edits the wrong record.
+    const state = game ? unpublished.get(game.id) : null;
+    document.getElementById('game-form-context').textContent = [currentSchool()?.name,
+      game ? gameTitle(game) : 'New game',
+      game ? weekdayFormat.format(new Date(game.game_date + 'T' + game.start_time)) : '',
+      !game ? '' : state === 'Draft' ? 'Not public yet' : state === 'Changed' ? 'Has changes that are not public yet' : 'Published',
+    ].filter(Boolean).join(' · ');
+    // For a game families already see, publishing is the usual next step; for new work, saving a draft is.
+    const publishFirst = Boolean(game) && state !== 'Draft';
+    saveButton.className = 'button ' + (publishFirst ? 'secondary' : 'primary');
+    document.getElementById('save-and-review-publication').className = 'button ' + (publishFirst ? 'primary' : 'secondary');
+    dirty = false;
     document.getElementById('delete-game').hidden = !game;
     if (game) {
       const bus = game.transportation;
@@ -158,8 +193,38 @@ function startStaffSchedule(client, invite) {
       }
     }
     syncOpponent();
+    syncStatusHint();
     venues.sync(game?.location ?? '');
     transportation.setPreview(game, true);
+  }
+
+  function syncStatusHint() {
+    document.getElementById('status-hint').textContent = fields.status.value === 'Postponed'
+      ? 'Postponed: leave the original date for now. When the new date is set, change Date and switch Status back to Scheduled.'
+      : fields.status.value === 'Canceled' ? 'Canceled: families see this game marked Canceled once you publish. To remove a game entered by mistake, use Delete game.' : '';
+  }
+
+  function setHeading() {
+    title.textContent = currentSchool()?.name ?? roleLabel.textContent;
+    publicLink.hidden = !selector.value;
+    if (selector.value) publicLink.href = 'school.html?school=' + encodeURIComponent(selector.value);
+  }
+
+  // Counts what families cannot see yet and shows it above the games and on the Publish tab.
+  function showUnpublished() {
+    const { map, removed } = canEdit ? publication.states() : { map: new Map(), removed: 0 };
+    unpublished = map;
+    const count = map.size + removed;
+    unpublishedBar.hidden = !count;
+    document.getElementById('unpublished-text').textContent = count + (count === 1 ? ' change is' : ' changes are') +
+      ' not public yet. Outlined games are waiting to be published.';
+    document.getElementById('publish-count').textContent = count ? ' · ' + count : '';
+  }
+
+  function askToLeave(action) {
+    if (form.hidden || !dirty) return action();
+    leave = action;
+    discardDialog.showModal();
   }
 
   function selectSchool() {
@@ -185,8 +250,10 @@ function startStaffSchedule(client, invite) {
     );
     edit(null);
     showSchedule();
+    setHeading();
     scheduleFeedback.textContent = '';
     addGame.hidden = !canEdit;
+    importButton.hidden = !canEdit;
     transportationTab.hidden = !canEdit;
     settingsTab.hidden = !canEdit;
     coachesTab.hidden = !canEdit;
@@ -230,6 +297,7 @@ function startStaffSchedule(client, invite) {
     overview.load(visible);
     if (canEdit) await publication.load();
     if (stopped || request !== loadNumber) return;
+    showUnpublished();
     showCalendar(visible, focusDate ?? (newSchool ? new Date() : null));
     if (!calendar) showList(visible);
   }
@@ -249,6 +317,8 @@ function startStaffSchedule(client, invite) {
   }
 
   function showCount(visible) {
+    const active = ['season', 'sport', 'level', 'gender'].filter(name => filterFields[name].value).length;
+    filtersToggle.textContent = 'Filters' + (active ? ' · ' + active : '');
     filterCount.textContent = visible.length === allGames.length
       ? '' : 'Showing ' + visible.length + ' of ' + allGames.length + ' games';
   }
@@ -299,8 +369,8 @@ function startStaffSchedule(client, invite) {
       id: game.id,
       start: game.game_date + 'T' + game.start_time,
       title: gameTitle(game) + (game.status === 'Scheduled' ? '' : ' · ' + game.status),
-      classNames: ['staff-game', 'staff-game-' + game.status.toLowerCase()],
-      extendedProps: { game, location: game.location, status: game.status },
+      classNames: ['staff-game', 'staff-game-' + game.status.toLowerCase(), ...(unpublished.has(game.id) ? ['staff-unpublished'] : [])],
+      extendedProps: { game, location: game.location, status: game.status, unpublished: unpublished.get(game.id) },
     }));
     if (!calendar) {
       const showDetails = createGameDetails(calendarTarget);
@@ -320,7 +390,7 @@ function startStaffSchedule(client, invite) {
         navLinkDayClick: 'listDay',
         eventInteractive: true,
         noEventsText: 'No saved games in this view.',
-        eventDidMount({ el }) {
+        eventDidMount({ el, event }) {
           el.tabIndex = 0;
           el.setAttribute('role', 'button');
           el.addEventListener('keydown', key => {
@@ -329,6 +399,14 @@ function startStaffSchedule(client, invite) {
             key.stopPropagation();
             el.click();
           });
+          // Outlined games are not public yet. The list view and screen readers also get the word.
+          const state = event.extendedProps.unpublished;
+          if (!state) return;
+          el.title = state === 'Draft' ? 'Not public yet' : 'Has changes that are not public yet';
+          const tag = document.createElement('span');
+          tag.className = 'staff-tag';
+          tag.textContent = state;
+          (el.querySelector('.fc-event-title, .fc-list-event-title') ?? el).prepend(tag, ' ');
         },
         eventClick({ event }) {
           if (canEdit) openEditor(event.extendedProps.game);
@@ -369,6 +447,8 @@ function startStaffSchedule(client, invite) {
     tournaments.reset();
     selector.parentElement.hidden = false;
     addGame.hidden = !canEdit;
+    importButton.hidden = !canEdit;
+    setHeading();
     form.hidden = true;
     filterForm.hidden = true;
   }
@@ -411,7 +491,9 @@ function startStaffSchedule(client, invite) {
     if (date) fields.game_date.value = date;
     hidePanels();
     form.hidden = false;
-    fields.sport.focus();
+    scheduleTab.setAttribute('aria-current', 'true');
+    // A new game starts at the top; an existing one is most often opened to change its date.
+    (game ? fields.game_date : fields.sport).focus();
   }
 
   function openCoaches(focus = true) {
@@ -439,6 +521,9 @@ function startStaffSchedule(client, invite) {
     tournamentsTab.setAttribute('aria-current', 'true');
     selector.parentElement.hidden = true;
     addGame.hidden = true;
+    importButton.hidden = true;
+    title.textContent = 'Shore Conference';
+    publicLink.hidden = true;
     tournaments.load();
     if (focus) document.getElementById('tournaments-title').focus();
   }
@@ -451,6 +536,9 @@ function startStaffSchedule(client, invite) {
     accessTab.setAttribute('aria-current','true');
     selector.parentElement.hidden = true;
     addGame.hidden = true;
+    importButton.hidden = true;
+    title.textContent = 'Shore Conference';
+    publicLink.hidden = true;
     access.load();
     document.getElementById('staff-access-title').focus();
   }
@@ -473,7 +561,37 @@ function startStaffSchedule(client, invite) {
   preview.onchange = selectView;
   selector.onchange = selectSchool;
   fields.opponent_school_id.onchange = syncOpponent;
-  closeEditor.onclick = () => showSchedule(true);
+  closeEditor.onclick = () => askToLeave(() => showSchedule(true));
+  form.oninput = () => { dirty = true; syncStatusHint(); };
+  document.getElementById('discard-confirm').onclick = () => {
+    dirty = false;
+    discardDialog.close();
+    const action = leave;
+    leave = null;
+    action?.();
+  };
+  // Switching tabs with unsaved edits in the editor asks first, instead of silently dropping them.
+  const sidebar = document.querySelector?.('.staff-sidebar');
+  const guardTabs = event => {
+    const button = event.target.closest?.('button');
+    if (!button || form.hidden || !dirty) return;
+    event.stopPropagation();
+    event.preventDefault();
+    askToLeave(() => button.click());
+  };
+  sidebar?.addEventListener('click', guardTabs, true);
+  document.getElementById('unpublished-review').onclick = () => openOverview();
+  // Small screens keep the four filters behind one button so the games come sooner.
+  filtersToggle.onclick = () => {
+    const open = filterForm.classList.toggle('is-open');
+    filtersToggle.setAttribute('aria-expanded', String(Boolean(open)));
+  };
+  importButton.onclick = () => {
+    showSchedule();
+    const section = document.getElementById('import-section');
+    section.scrollIntoView({ block: 'start' });
+    document.getElementById('import-file').focus();
+  };
   scheduleTab.onclick = () => showSchedule(true);
   // Deleting is for mistakes. A published copy stays public until the AD publishes the removal.
   const deleteDialog = document.getElementById('delete-game-dialog');
@@ -559,7 +677,7 @@ function startStaffSchedule(client, invite) {
     }
     edit(null);
     showSchedule(true);
-    scheduleFeedback.textContent = 'Draft saved. Posted calendars stay unchanged until you review and publish.';
+    scheduleFeedback.textContent = 'Saved as a draft. It is not public until you publish.';
     list.replaceChildren();
     await loadGames(input.game_date, false, savedId);
     if (reviewAfterSave && !stopped) await publication.reviewGame(savedId);
@@ -567,6 +685,7 @@ function startStaffSchedule(client, invite) {
 
   return () => {
     stopped = true;
+    sidebar?.removeEventListener('click', guardTabs, true);
     transportation.stop();
     settings.stop();
     publication.stop();

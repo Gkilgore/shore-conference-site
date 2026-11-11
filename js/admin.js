@@ -49,7 +49,9 @@ function startStaffSignIn() {
     document.getElementById('staff-sign-in-title').hidden = Boolean(session);
     signIn.hidden = Boolean(session);
     signOut.hidden = !session;
-    authStatus.textContent = session ? 'Checking staff access…' : 'Use the email address that was invited.';
+    document.querySelector('.staff-link').textContent = session ? 'Staff dashboard' : 'Staff sign-in';
+    document.title = (session ? 'Staff Dashboard' : 'Staff Sign-in') + ' | The Shore Conference';
+    authStatus.textContent = session ? 'Checking staff access…' : 'Sign in with the email address your invitation was sent to.';
     if (session) setTimeout(() => checkAccess(check), 0);
   });
 
@@ -75,7 +77,7 @@ function startStaffSignIn() {
     inviteKey = key;
     document.getElementById('workspace-title').textContent = workspaceTitles[invite.role];
     document.getElementById('workspace-account').textContent =
-      [invite.name, invite.email, invite.schools?.name].filter(Boolean).join(' · ');
+      [invite.name, invite.email].filter(Boolean).join(' · ');
     authStatus.textContent = 'Signed in.';
     workspace.hidden = false;
     stopSchedule = startStaffSchedule(client, invite);

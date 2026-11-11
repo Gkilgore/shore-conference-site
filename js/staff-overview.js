@@ -73,15 +73,15 @@ function startStaffOverview(client, { currentSchool, gameTitle, canEdit, openEdi
     busSection.hidden = !canEdit();
     stats.replaceChildren(
       stat('Upcoming games', upcoming.length),
-      stat('Draft games matching', linked, 'linked'),
-      stat('Draft games not linked', checked ? unlinked.length : null, 'problem'),
+      stat('Matched with opponent', linked, 'linked'),
+      stat('Not matched', checked ? unlinked.length : null, 'problem'),
     );
 
-    if (links === null) linkList.replaceChildren(note('Checking which games are linked…'));
-    else if (!checked) linkList.replaceChildren(note('Link checks are not set up yet. They start working once the matching step is installed.'));
+    if (links === null) linkList.replaceChildren(note('Checking which games match…'));
+    else if (!checked) linkList.replaceChildren(note('Match checks are not set up yet.'));
     else linkList.replaceChildren(...(unlinked.length
       ? unlinked.map(game => row(game, links.get(game.id).reason))
-      : [note('Every upcoming conference game in this view is linked.')]));
+      : [note('Every upcoming conference game in this view matches.')]));
 
     busList.replaceChildren(...(needsBus.length
       ? needsBus.map(game => row(game, game.transportation?.bus_departure ? 'Bus entered, not confirmed' : 'No bus entered yet'))

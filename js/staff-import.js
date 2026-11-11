@@ -171,7 +171,7 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
     clear.hidden = !rows.length && !fileErrors.length;
     save.hidden = !counts.ready;
     save.textContent = 'Save ' + counts.ready + (counts.ready === 1 ? ' game as draft' : ' games as drafts');
-    const labels = { ready: 'Ready', problem: 'Needs a fix', duplicate: 'Skipped', imported: 'Draft saved', failed: 'Failed' };
+    const labels = { ready: 'Ready', problem: 'Needs a fix', duplicate: 'Skipped', imported: 'Saved as draft', failed: 'Failed' };
     table.tBodies[0].replaceChildren(...rows.map((row, index) => {
       const line = document.createElement('tr');
       line.className = 'is-' + row.state;
@@ -192,10 +192,11 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
     }));
     if (rows.length) {
       summary.textContent = [
-        counts.ready && counts.ready + ' ready', counts.problem && counts.problem + ' need a fix',
-        counts.duplicate && counts.duplicate + ' skipped', counts.imported && counts.imported + ' imported',
+        counts.ready && counts.ready + ' ready', counts.problem && counts.problem + (counts.problem === 1 ? ' needs a fix' : ' need a fix'),
+        counts.duplicate && counts.duplicate + ' skipped', counts.imported && counts.imported + ' saved as drafts',
         counts.failed && counts.failed + ' failed',
-      ].filter(Boolean).join(' · ') + (counts.problem ? '. Fix those rows in the file and choose it again.' : '.');
+      ].filter(Boolean).join(' · ') + (counts.problem ? '. Fix those rows in the file and choose it again.' : '.') +
+        (counts.imported ? ' Nothing is public yet. Publish these games on the Publish tab.' : '');
     }
   }
 

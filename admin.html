@@ -77,16 +77,17 @@
       <header class="staff-heading">
         <img id="workspace-logo" alt="" width="350" height="350" hidden>
         <div>
-          <p class="eyebrow">Staff dashboard</p>
+          <p class="eyebrow" id="workspace-role"></p>
           <h1 id="workspace-title"></h1>
           <p id="workspace-account"></p>
         </div>
+        <a id="public-page-link" class="button secondary" target="_blank" rel="noopener" hidden>View public page</a>
       </header>
       <div class="staff-layout">
         <aside class="staff-sidebar" aria-label="Dashboard controls">
           <nav class="staff-nav" aria-label="Staff dashboard">
-            <button id="staff-overview-tab" class="staff-tab" type="button">Schedule</button>
-            <button id="staff-schedule-tab" class="staff-tab" type="button" aria-current="true">Calendar</button>
+            <button id="staff-schedule-tab" class="staff-tab" type="button" aria-current="true">Games</button>
+            <button id="staff-overview-tab" class="staff-tab" type="button"><span id="publish-label">Publish</span><span id="publish-count"></span></button>
             <button id="staff-transportation-tab" class="staff-tab" type="button" hidden>Transportation</button>
             <button id="staff-coaches-tab" class="staff-tab" type="button" hidden>Coaches</button>
             <button id="staff-settings-tab" class="staff-tab" type="button" hidden>School settings</button>
@@ -94,12 +95,14 @@
             <button id="staff-access-tab" class="staff-tab" type="button" hidden>Staff access</button>
           </nav>
           <button id="add-calendar-game" class="button primary" type="button" hidden>Add game</button>
+          <button id="import-games" class="button secondary" type="button" hidden>Import games</button>
           <div>
             <label for="schedule-school">School</label>
             <select id="schedule-school"></select>
           </div>
         </aside>
         <div class="staff-content">
+          <button id="staff-filters-toggle" class="button secondary" type="button" aria-expanded="false" aria-controls="staff-filters">Filters</button>
           <form id="staff-filters" class="filters staff-filters" role="search" aria-label="Filter games">
             <label>Season<select name="season"><option value="">All seasons</option></select></label>
             <label>Sport<select name="sport"><option value="">All sports</option></select></label>
@@ -109,24 +112,47 @@
             <p id="staff-filter-count" role="status"></p>
           </form>
           <section id="staff-overview-panel" class="staff-panel" aria-labelledby="overview-title" hidden>
-            <h3 id="overview-title" tabindex="-1">Schedule</h3>
+            <h3 id="overview-title" tabindex="-1">Publish</h3>
             <ul id="overview-stats" class="staff-stats" aria-label="Schedule totals"></ul>
             <section id="publication-section" class="staff-section" aria-labelledby="publication-title" hidden>
-              <h4 id="publication-title">Review and publish team schedules</h4>
-              <p class="staff-hint">Add or import games as drafts. Select each team schedule when it is ready, then review and publish. Later edits stay private until you publish them.</p>
+              <h4 id="publication-title">Publish team schedules</h4>
+              <p class="staff-hint">Families see a team's games after you publish them. Later edits stay private until you publish again.</p>
+              <p id="publication-status" role="status"></p>
+              <p><a id="publication-public-link" target="_blank" rel="noopener" hidden>View public page</a></p>
               <form id="publication-form">
-                <button id="publication-select-all" class="button secondary" type="button" disabled>Select or clear all shown</button>
-                <ul id="publication-teams" class="publication-teams"></ul>
                 <div class="actions">
-                  <button id="publication-review" class="button primary" type="submit" disabled>Review selected schedules</button>
-                  <button id="publication-unpublish" class="button secondary" type="button" disabled>Review schedules to unpublish</button>
+                  <button id="publication-select-all" class="button secondary" type="button" disabled>Select all</button>
+                  <button id="publication-review" class="button primary" type="submit" disabled>Review and publish</button>
+                  <button id="publication-unpublish" class="button secondary" type="button" disabled>Unpublish…</button>
                 </div>
-                <p id="publication-status" role="status"></p>
+                <ul id="publication-teams" class="publication-teams"></ul>
               </form>
             </section>
-            <section id="import-section" class="staff-section" aria-labelledby="import-title" hidden>
-              <h4 id="import-title">Import draft schedules</h4>
-              <p class="staff-hint">Choose one or more CSV files. Each file can include several teams. Check the rows, then save the ready games as drafts. Review and publish each team above when it is ready.</p>
+            <section class="staff-section" aria-labelledby="link-title">
+              <h4 id="link-title">Games that don’t match the other school’s entry</h4>
+              <p class="staff-hint">These stay off the conference calendar until both schools’ entries agree. We show which detail differs, never what the other school entered.</p>
+              <ul id="link-list" class="game-list staff-attention"></ul>
+            </section>
+          </section>
+          <section id="staff-schedule-panel" class="staff-panel" aria-labelledby="schedule-title">
+            <h3 id="schedule-title" class="visually-hidden" tabindex="-1">School calendar</h3>
+            <p id="schedule-feedback" role="status"></p>
+            <div id="unpublished-bar" class="staff-unpublished" hidden>
+              <p id="unpublished-text"></p>
+              <button id="unpublished-review" class="button primary" type="button">Review and publish</button>
+            </div>
+            <button id="preview-transportation-email" class="button secondary" type="button" hidden>Preview transportation email</button>
+            <div id="calendar" aria-label="Staff schedule calendar" hidden></div>
+            <div id="schedule-games"></div>
+            <div class="calendar-footer">
+              <ul class="staff-legend" aria-label="Game status colors">
+                <li class="is-scheduled">Scheduled</li><li class="is-postponed">Postponed</li><li class="is-canceled">Canceled</li><li class="is-unpublished">Outlined: not public yet</li>
+              </ul>
+              <p id="schedule-status" role="status"></p>
+            </div>
+          <section id="import-section" class="staff-panel import-panel" aria-labelledby="import-title" hidden>
+              <h4 id="import-title">Import games from a spreadsheet</h4>
+              <p class="staff-hint">Choose one or more CSV files. Each file can include several teams. Check the rows, then save the ready games as drafts. Nothing is public until you publish it on the Publish tab.</p>
               <div class="import-controls">
                 <label>CSV files <input id="import-file" type="file" accept=".csv,text/csv" multiple></label>
                 <button id="import-template" class="button secondary" type="button">Download template</button>
@@ -143,29 +169,7 @@
                 <button id="import-save" class="button primary" type="button" hidden>Import games</button>
                 <button id="import-clear" class="button secondary" type="button" hidden>Clear</button>
               </div>
-            </section>
-            <section class="staff-section" aria-labelledby="link-title">
-              <h4 id="link-title">Not linked with a conference school</h4>
-              <p class="staff-hint">Match checks for working games. Public conference games use the last published schedules from both schools. The other school’s details stay private.</p>
-              <ul id="link-list" class="game-list staff-attention"></ul>
-            </section>
-            <section class="staff-section" aria-labelledby="tournament-title">
-              <h4 id="tournament-title">Tournaments</h4>
-              <p class="staff-hint">Use the Tournaments tab for published tournament games and your school's bus details. Conference admins create and publish the master schedule there.</p>
-            </section>
           </section>
-          <section id="staff-schedule-panel" class="staff-panel" aria-labelledby="schedule-title">
-            <h3 id="schedule-title" class="visually-hidden" tabindex="-1">School calendar</h3>
-            <p id="schedule-feedback" role="status"></p>
-            <button id="preview-transportation-email" class="button secondary" type="button" hidden>Preview transportation email</button>
-            <div id="calendar" aria-label="Staff schedule calendar" hidden></div>
-            <div id="schedule-games"></div>
-            <div class="calendar-footer">
-              <ul class="staff-legend" aria-label="Game status colors">
-                <li class="is-scheduled">Scheduled</li><li class="is-postponed">Postponed</li><li class="is-canceled">Canceled</li>
-              </ul>
-              <p id="schedule-status" role="status"></p>
-            </div>
           </section>
           <section id="staff-transportation-panel" class="staff-panel prose" aria-labelledby="transportation-title" hidden>
             <h3 id="transportation-title" tabindex="-1">Transportation</h3>
@@ -387,6 +391,8 @@
           </section>
           <form id="game-form" class="staff-panel prose" aria-labelledby="game-form-title" hidden>
             <h3 id="game-form-title">Add a game</h3>
+            <p id="game-form-context" class="staff-subhead"></p>
+            <p class="staff-hint">Everything is required except notes and transportation.</p>
             <fieldset class="prose">
               <legend>Team and game</legend>
               <div class="filters">
@@ -401,6 +407,7 @@
                 <label>Home or away <select name="home_away"><option>Home</option><option>Away</option></select></label>
                 <label>Status <select name="status"><option>Scheduled</option><option>Postponed</option><option>Canceled</option></select></label>
               </div>
+              <p id="status-hint" class="staff-hint" role="status"></p>
               <div class="filters">
                 <label>Opponent <select name="opponent_school_id"></select></label>
                 <label id="opponent-other">Opponent name <input name="opponent_name" maxlength="100"></label>
@@ -419,13 +426,13 @@
               <label>Transportation notes <textarea name="transport_notes" maxlength="1000" rows="2"></textarea></label>
               <label class="staff-check"><input name="bus_confirmed" type="checkbox" value="true"> Bus confirmed by transportation</label>
             </fieldset>
+            <p class="staff-hint">Families keep seeing the published version until you publish this change. That includes postponements and cancellations.</p>
             <p id="game-form-status" role="status"></p>
             <div class="actions">
-              <button class="button primary" type="submit">Save draft</button>
-              <button id="save-and-review-publication" class="button secondary" type="submit">Save and review publishing</button>
-              <p class="staff-hint">Saving a draft keeps the posted game unchanged, including cancellations. Review and publish when you are ready to update families.</p>
+              <button id="save-draft" class="button primary" type="submit">Save as draft</button>
+              <button id="save-and-review-publication" class="button secondary" type="submit">Save and publish…</button>
+              <button class="button secondary" id="close-game-editor" type="button">Cancel</button>
               <button class="button secondary" id="preview-editor-transportation-email" type="button" hidden>Preview saved transportation email</button>
-              <button class="button secondary" id="close-game-editor" type="button">Back to calendar</button>
               <button class="button secondary" id="delete-game" type="button" hidden>Delete game</button>
             </div>
           </form>
@@ -441,6 +448,14 @@
       <p id="tournament-review-status" role="status" aria-live="polite"></p>
       <div class="actions"><button id="tournament-publish" class="button primary" type="button">Publish reviewed tournament</button><button id="tournament-review-cancel" class="button secondary" type="button">Keep working</button></div>
     </dialog>
+    <dialog id="discard-dialog" class="game-details" aria-labelledby="discard-title">
+      <h2 id="discard-title">Leave without saving?</h2>
+      <p>Your changes to this game have not been saved.</p>
+      <div class="actions">
+        <button id="discard-confirm" class="button primary" type="button">Discard changes</button>
+        <form method="dialog"><button class="button secondary" autofocus>Keep editing</button></form>
+      </div>
+    </dialog>
     <dialog id="delete-game-dialog" class="game-details" aria-labelledby="delete-game-title">
       <h2 id="delete-game-title">Delete this game?</h2>
       <p id="delete-game-summary"></p>
@@ -453,7 +468,7 @@
       </div>
     </dialog>
     <dialog id="publication-dialog" class="game-details" aria-labelledby="publication-dialog-title">
-      <h2 id="publication-dialog-title">Review selected schedules</h2>
+      <h2 id="publication-dialog-title">Review and publish</h2>
       <p id="publication-dialog-summary"></p>
       <div id="publication-dialog-games"></div>
       <p id="publication-dialog-status" role="status"></p>

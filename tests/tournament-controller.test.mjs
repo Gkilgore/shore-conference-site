@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import { readFileSync, existsSync } from 'node:fs';
 
 class Element {
-  constructor(tag, registry) { this.tagName=tag.toUpperCase(); this.registry=registry; this.children=[]; this.value=''; this.hidden=false; this.checked=false; this.disabled=false; this.dataset={}; }
+  constructor(tag, registry) { this.tagName=tag.toUpperCase(); this.registry=registry; this.children=[]; this.value=''; this.hidden=false; this.checked=false; this.disabled=false; this.dataset={}; this.classList={toggle(){},add(){},remove(){}}; }
   set id(value) { this._id=value; this.registry.set(value,this); }
   get id() { return this._id; }
   append(...children) { this.children.push(...children); }
@@ -460,7 +460,7 @@ function mountStaffSchedule(role) {
     const query={select(){return query;},eq(){return query;},order(){return query;},then(resolve,reject){return Promise.resolve({data:table==='schools'?schools:[]}).then(resolve,reject);}};
     return query;
   }};
-  const stub=()=>({reset(){},load:async()=>{},render(){},stop(){},setPreview(){},sync(){},showSettings(){},coaches:()=>[]});
+  const stub=()=>({reset(){},load:async()=>{},render(){},stop(){},setPreview(){},sync(){},showSettings(){},coaches:()=>[],states:()=>({map:new Map(),removed:0})});
   const context=vm.createContext({document,window:{},console,crypto:{randomUUID:()=> '22222222-2222-4222-8222-222222222222'},
     Option:function(text,value){const option=new Element('option',registry);option.textContent=text;option.text=text;option.value=value;return option;},
     workspaceTitles:{site_admin:'Site admin workspace',conference_office:'Conference admin workspace',ad:'Athletic Director workspace'},

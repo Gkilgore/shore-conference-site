@@ -10,13 +10,19 @@ function publicationTime(value) {
   return (Number(hour)%12 || 12) + ':' + minute + (Number(hour)<12 ? ' AM' : ' PM');
 }
 
+function publicationDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value ?? '')) return value || 'Not entered';
+  return new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
+    .format(new Date(value + 'T12:00:00Z'));
+}
+
 function publicationChanges(entry, schoolNames = {}) {
   if (!entry.published) return ['New game'];
   if (!entry.draft) return ['Remove from the public calendar'];
   const before = entry.published, after = entry.draft;
   const opponent = game => schoolNames[game.opponent_school_id] ?? game.opponent_school_id ?? game.opponent_name ?? '';
   const fields = [
-    ['Date', game=>game.game_date], ['Start time', game=>publicationTime(game.start_time)],
+    ['Date', game=>publicationDate(game.game_date)], ['Start time', game=>publicationTime(game.start_time)],
     ['Opponent', opponent], ['Home or away', game=>game.home_away], ['Venue', game=>game.location],
     ['Status', game=>game.status], ['Game notes', game=>game.notes],
     ['Sport', game=>game.teams?.sport], ['Team', game=>game.teams?.gender],

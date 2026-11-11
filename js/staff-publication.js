@@ -1,5 +1,5 @@
 // Reviews and publishes selected team schedules while working games remain private drafts.
-function startStaffPublication(client, currentSchool, { canEdit = () => true, filterValues = () => ({}), schools = () => [] } = {}) {
+function startStaffPublication(client, currentSchool, { canEdit = () => true, filterValues = () => ({}), schools = () => [], onPublished = () => {} } = {}) {
   const section = document.getElementById('publication-section');
   const form = document.getElementById('publication-form');
   const list = document.getElementById('publication-teams');
@@ -11,6 +11,7 @@ function startStaffPublication(client, currentSchool, { canEdit = () => true, fi
   const dialogTitle = document.getElementById('publication-dialog-title');
   const dialogStatus = document.getElementById('publication-dialog-status');
   const confirm = document.getElementById('publication-confirm');
+  const publicLink = document.getElementById('publication-public-link');
   let groups = [], requestNumber = 0, active = true, pending = null, busy = false;
 
   const key = group => group.team_id + '|' + group.season_year;
@@ -20,12 +21,28 @@ function startStaffPublication(client, currentSchool, { canEdit = () => true, fi
     reviewButton.disabled = busy || !checked.size;
     unpublishButton.disabled = busy || !groups.some(group => checked.has(key(group)) && group.published_at);
     selectAll.disabled = busy || !list.querySelector('input');
+    const inputs = list.querySelectorAll('input');
+    selectAll.textContent = inputs.length && checked.size === inputs.length ? 'Clear all' : 'Select all';
+  }
+
+  // Which working games differ from what families see: never published (Draft) or edited since (Changed).
+  function states() {
+    const map = new Map();
+    let removed = 0;
+    for (const group of groups) for (const entry of group.games) {
+      if (!entry.draft) { if (entry.published && group.published_at) removed++; continue; }
+      if (!group.published_at || !entry.published) map.set(entry.id, 'Draft');
+      else if (entry.changed ?? publicationChanges(entry).length > 0) map.set(entry.id, 'Changed');
+    }
+    return { map, removed };
   }
 
   function render() {
     const checked = selected();
     const filters = filterValues();
-    const visible = groups.filter(group => ['sport','season','level','gender'].every(name => !filters[name] || filters[name] === group[name]));
+    // Teams with something to publish come first.
+    const visible = groups.filter(group => ['sport','season','level','gender'].every(name => !filters[name] || filters[name] === group[name]))
+      .sort((first, second) => Boolean(second.pending_count) - Boolean(first.pending_count));
     list.replaceChildren(...visible.map(group => {
       const row = document.createElement('li');
       const label = document.createElement('label');
@@ -38,8 +55,10 @@ function startStaffPublication(client, currentSchool, { canEdit = () => true, fi
       label.append(checkbox, publicationTeamLabel(group));
       const details = document.createElement('p');
       const count = group.games.filter(entry => entry.draft).length;
-      details.textContent = group.status + ' · ' + count + (count === 1 ? ' draft game' : ' draft games') +
-        (group.pending_count ? ' · ' + group.pending_count + ' to review' : '');
+      const games = count + (count === 1 ? ' game' : ' games');
+      const pending = group.pending_count + (group.pending_count === 1 ? ' change' : ' changes') + ' not public yet';
+      details.textContent = !group.published_at ? 'Not published · ' + games
+        : group.pending_count ? 'Published · ' + pending : 'Published · ' + games + ' · up to date';
       row.append(label, details);
       return row;
     }));
@@ -67,8 +86,8 @@ function startStaffPublication(client, currentSchool, { canEdit = () => true, fi
       return false;
     }
     groups = data;
-    status.textContent = groups.length ? 'Select one or more team schedules to review. Saving a draft does not change posted games.'
-      : 'Add or import games first. Each team schedule will appear here for review.';
+    status.textContent = groups.length ? 'Tick the teams that are ready, then choose Review and publish.'
+      : 'Add or import games first. Each team appears here once it has games.';
     render();
     return true;
   }
@@ -80,10 +99,10 @@ function startStaffPublication(client, currentSchool, { canEdit = () => true, fi
       team_id: group.team_id, season_year: group.season_year, token: group.token,
       ...(gameId ? { game_ids: [gameId] } : {}),
     })) };
-    dialogTitle.textContent = withdraw ? 'Review schedules to unpublish' : gameId ? 'Review game update' : 'Review selected schedules';
+    dialogTitle.textContent = withdraw ? 'Unpublish these schedules?' : gameId ? 'Review this change' : 'Review and publish';
     document.getElementById('publication-dialog-summary').textContent = withdraw
       ? 'These schedules will be removed from public calendars and subscriptions. Your working games will stay saved.'
-      : 'Review what will be posted below. All times are Eastern. School calendars and eligible conference games update when you publish. Calendar apps refresh on their own schedule.';
+      : 'Check what families will see. Times are Eastern.';
     const content = document.getElementById('publication-dialog-games');
     content.replaceChildren(...chosen.map(group => {
       const host = document.createElement('section');
@@ -97,7 +116,7 @@ function startStaffPublication(client, currentSchool, { canEdit = () => true, fi
         const row = document.createElement('li');
         const title = document.createElement('strong');
         const opponent = names[game.opponent_school_id] ?? game.opponent_name ?? game.opponent_school_id ?? 'Opponent';
-        title.textContent = game.game_date + ' · ' + publicationTime(game.start_time) +
+        title.textContent = publicationDate(game.game_date) + ' · ' + publicationTime(game.start_time) +
           (game.home_away === 'Home' ? ' vs. ' : ' at ') + opponent;
         const venue = document.createElement('p');
         venue.textContent = [game.location, game.status].filter(Boolean).join(' · ');
@@ -121,7 +140,7 @@ function startStaffPublication(client, currentSchool, { canEdit = () => true, fi
       host.append(heading, games);
       return host;
     }));
-    confirm.textContent = withdraw ? 'Unpublish selected schedules' : gameId ? 'Publish this update' : 'Publish selected schedules';
+    confirm.textContent = withdraw ? 'Unpublish' : gameId ? 'Publish this change' : 'Publish';
     confirm.disabled = false;
     dialogStatus.textContent = '';
     dialog.showModal();
@@ -167,12 +186,15 @@ function startStaffPublication(client, currentSchool, { canEdit = () => true, fi
     dialog.close();
     pending = null;
     await load();
-    status.textContent = action.withdraw ? 'Selected schedules unpublished. Your working games are still saved.'
-      : 'Reviewed changes published. Public calendars are updated; subscribed apps update on their next refresh.';
+    status.textContent = action.withdraw ? 'Unpublished. Families no longer see these schedules. Your games are still saved here.'
+      : 'Published. The school page shows it now. Calendar apps pick it up at their next refresh, which can take hours.';
+    publicLink.href = 'school.html?school=' + encodeURIComponent(action.school);
+    publicLink.hidden = false;
+    onPublished();
   };
 
   return {
-    load, render,
+    load, render, states,
     async reviewGame(id) {
       if (!await load()) return;
       const affected = groups.filter(group => group.games.some(entry => entry.id === id));
@@ -184,7 +206,7 @@ function startStaffPublication(client, currentSchool, { canEdit = () => true, fi
     },
     reset() {
       requestNumber++; groups = []; pending = null; busy = false;
-      list.replaceChildren(); status.textContent = ''; section.hidden = true;
+      list.replaceChildren(); status.textContent = ''; section.hidden = true; publicLink.hidden = true;
       if (dialog.open) dialog.close();
       updateButtons();
     },

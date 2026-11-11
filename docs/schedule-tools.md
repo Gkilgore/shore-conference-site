@@ -1,13 +1,13 @@
 # Schedule tools
 
-The staff dashboard opens its editing tools under **Calendar** and its review/import tools under **Schedule**. Schedule includes team publication status, CSV import, draft match checks and tournaments. Unconfirmed buses are under **Transportation**. The Season, Sport, Level and Gender filters also narrow the team schedules shown for publication.
+The staff dashboard opens on **Games**, where ADs add, edit and import games. **Publish** lists each team's publication status and the draft match checks. Games that are not public yet are outlined on the calendar, and a yellow bar above it counts them. Unconfirmed buses are under **Transportation**. The Season, Sport, Level and Gender filters also narrow the team schedules shown for publication.
 
 ## Save, review and publish
 
 1. Add or edit games and choose **Save draft**, or import one or more CSV files as drafts.
-2. Open **Schedule**, select the team schedules that are ready, and choose **Review selected schedules**.
-3. Check the games and before/after changes. Choose **Publish selected schedules** to post them together.
-4. For a later individual game update, choose **Save and review publishing** in the editor, check the changes, then **Publish this update**. The first publication must review the whole team.
+2. Open **Publish**, tick the teams that are ready, and choose **Review and publish**.
+3. Check the games and before/after changes. Choose **Publish** to post them together.
+4. For a later individual game update, choose **Save and publish…** in the editor, check the changes, then **Publish this change**. The first publication must review the whole team.
 
 Draft changes never alter a posted calendar. Each sport/gender/level and season year is separate. Moving a game between teams or seasons requires reviewing both schedules. Unpublishing keeps master games saved. Existing ICS links remain valid; apps refresh published updates on their own schedule.
 
@@ -33,7 +33,7 @@ A matched game that either school publishes as Postponed or Canceled stays on th
 
 ## CSV import
 
-Use **Download template** on the Schedule tab. The columns are:
+Use **Import games** on the Games tab, then **Download template**. The columns are:
 
 `date, start_time, sport, gender, level, season, home_away, opponent, location, status, bus_departure, pickup_location, return_time, transport_notes, notes`
 
