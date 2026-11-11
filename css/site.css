@@ -572,10 +572,36 @@ textarea { display: block; resize: vertical; }
 .team-info ul { display: flex; flex-wrap: wrap; gap: 0.15rem 1rem; margin: 0.35rem 0 0; padding: 0; list-style: none; }
 .empty-schedule a { font-weight: 700; }
 
-/* The subscribe page wears a school's colors when one school's calendar is chosen. */
-.intro.is-school { background: var(--school-color); color: var(--school-ink); }
-.intro.is-school p { color: inherit; }
-.intro.is-school .intro-logo { width: clamp(4.5rem, 12vw, 7rem); filter: none; }
-.intro .actions:not(:has(> :not([hidden]))) { display: none; }
-.school-themed main .prose .primary { background: var(--school-color); border-color: var(--school-color); color: var(--school-ink); }
-.school-themed main .prose .primary:is(:hover, :focus-visible) { background: var(--school-accent); border-color: var(--school-accent); color: var(--accent-ink); }
+/* Subscribe page: the same compact band as a school page, then numbered steps.
+   Each step is a white framed block with a filled title bar, so the parts do not run together. */
+.band-logo { flex: none; width: clamp(3.5rem, 9vw, 5.5rem); height: auto; filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff); }
+.subscribe, .subscribe-steps { display: grid; gap: 1.25rem; }
+.subscribe-steps[hidden] { display: none; }
+.step { --pad: clamp(0.9rem, 2.5vw, 1.25rem); padding: var(--pad); background: white; border: var(--frame); }
+.step > h2 { display: flex; align-items: center; gap: 0.6rem; margin: calc(var(--pad) * -1) calc(var(--pad) * -1) var(--pad); padding: 0.6rem var(--pad); background: var(--school-color); color: var(--school-ink); font-size: 1.15rem; }
+.step > h2 span { display: grid; place-items: center; width: 1.7rem; height: 1.7rem; background: var(--school-accent); color: var(--accent-ink); font-size: 1rem; }
+.step p { max-width: 65ch; line-height: 1.55; }
+.step .filters > label { flex: 1 1 9rem; min-width: 0; }
+.step-status { margin-top: 0.9rem; padding: 0.55rem 0.75rem; background: var(--paper); border: var(--frame); font-weight: 500; }
+.step-name { margin-bottom: 0.7rem; font-size: 1.15rem; font-weight: 700; }
+.step label[for] { display: block; margin-top: 1.1rem; }
+.step-link { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.3rem; }
+.step-link input { flex: 1 1 14rem; min-width: 0; background: var(--paper); }
+.step-note { margin-top: 0.9rem; color: var(--muted); font-size: 0.95rem; }
+#subscription-copy-status:empty { display: none; }
+#subscription-copy-status { margin-top: 0.4rem; font-weight: 700; }
+.step .primary { background: var(--school-color); border-color: var(--school-color); color: var(--school-ink); }
+.step .primary:is(:hover, :focus-visible) { background: var(--school-accent); border-color: var(--school-accent); color: var(--accent-ink); }
+.step-quiet { background: var(--paper); }
+.step-quiet > h2 { background: none; color: var(--ink); margin-bottom: 0; padding-bottom: 0.3rem; }
+.step-quiet .button { margin-top: 0.6rem; }
+.step-help > p { margin-bottom: 0.9rem; }
+.step-help details { border: var(--frame); background: var(--paper); }
+.step-help details + details { margin-top: 0.5rem; }
+.step-help summary { padding: 0.7rem 0.9rem; font-weight: 700; cursor: pointer; }
+.step-help summary:is(:hover, :focus-visible) { background: var(--hover); }
+.step-help details[open] { background: white; }
+.step-help details[open] summary { background: var(--paper); border-bottom: var(--frame); }
+.step-help details > :not(summary) { margin: 0.8rem 0.9rem; }
+.step-help :is(ol, ul) { padding-left: 1.3rem; line-height: 1.55; }
+.step-help li + li { margin-top: 0.35rem; }
