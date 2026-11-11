@@ -71,3 +71,4 @@ Greg asked for everything tournament-related to be hidden except a conference ad
 - Public game details no longer link to the bracket page. Published tournament games still show on calendars and feeds.
 - Nothing was deleted. Each hidden piece of `admin.html` carries `hidden data-generator`; the tab rule is in `js/staff-schedule.js` and the bracket link in `js/calendar.js`.
 - A game can now be corrected only by uploading the schedule again, since the matches table is hidden.
+- Later the same day: the Tournaments tab shows only in the conference admin view. A site admin sees it by choosing "Conference office" in the view picker, not while looking at a school.

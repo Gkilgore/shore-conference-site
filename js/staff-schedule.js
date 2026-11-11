@@ -22,8 +22,9 @@ function startStaffSchedule(client, invite) {
   const accessPanel = document.getElementById('staff-access-workspace');
   const access = startStaffAccess(client, invite, () => schools);
   const tournamentsTab = document.getElementById('staff-tournaments-tab');
-  // Tournament tools are off for now, except a conference or site admin uploading a finished schedule.
-  tournamentsTab.hidden = !mayManageAccess;
+  // Tournament tools are off for now, except the conference admin view uploading a finished schedule.
+  // selectView shows the tab for that view only.
+  tournamentsTab.hidden = true;
   const tournamentsPanel = document.getElementById('staff-tournaments-panel');
   const tournaments = startStaffTournaments(client, { schools: () => schools });
   const status = document.getElementById('schedule-status');
@@ -137,6 +138,9 @@ function startStaffSchedule(client, invite) {
     const schoolId = choice.startsWith('ad:') ? choice.slice(3) : invite.school_id;
     const role = choice === 'office' ? 'conference_office' : choice.startsWith('ad:') ? 'ad' : invite.role;
     accessTab.hidden = !mayManageAccess || Boolean(choice);
+    // Not for ADs, and not for a site admin looking at a school. A site admin reaches it through the Conference office view.
+    tournamentsTab.hidden = role !== 'conference_office';
+    if (tournamentsTab.hidden && !tournamentsPanel.hidden) showSchedule(true);
     access.reset();
     const school = schools.find(item => item.slug === schoolId);
     canEdit = role !== 'conference_office';
