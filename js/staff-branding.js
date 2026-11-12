@@ -249,7 +249,7 @@ function startStaffSettings(client, currentSchool, onSaved) {
     const oldPath = school.logo_path;
     let logoPath = oldPath ?? null;
     save.disabled = true;
-    status.textContent = 'Saving branding…';
+    status.textContent = 'Saving…';
     if (file) {
       const extension = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' }[file.type];
       logoPath = school.slug + '/logo-' + Date.now() + '.' + extension;
@@ -270,7 +270,7 @@ function startStaffSettings(client, currentSchool, onSaved) {
     const { data, error } = await client.from('schools').update(changes).eq('slug', school.slug).select('slug');
     if (!active) return;
     if (error || !data?.length) {
-      status.textContent = 'Branding could not be saved. This account may not manage this school.';
+      status.textContent = 'The logo and colors weren’t saved. Your account may not manage this school.';
       save.disabled = false;
       return;
     }
@@ -278,7 +278,7 @@ function startStaffSettings(client, currentSchool, onSaved) {
     Object.assign(school, changes);
     onSaved(school);
     load();
-    status.textContent = 'Branding saved.';
+    status.textContent = 'Logo and colors saved.';
   };
 
   return {

@@ -293,7 +293,7 @@ function startStaffCoaches(client, { currentSchool, schools, existingGames }) {
     ready = !coachResult.error;
     form.querySelector('[type="submit"]').disabled = !ready;
     if (!ready) {
-      status.textContent = 'Coach lists are not set up yet. They start working once the coach email migration is installed.';
+      status.textContent = 'Coach lists aren’t set up yet.';
       coaches = [];
       showList();
       outbox.replaceChildren();

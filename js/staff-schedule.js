@@ -151,9 +151,9 @@ function startStaffSchedule(client, invite) {
     title.textContent = roleLabels[role];
     account.textContent = choice ? '' : signedInAccount;
     previewStatus.textContent = choice === 'office'
-      ? 'Previewing conference school calendars (read-only). Staff access tools use the actual signed-in account.'
+      ? 'Viewing as the conference office. School schedules are read-only.'
       : choice && school
-        ? 'Previewing the ' + school.name + ' AD view. Saves change the schedule under your site admin account.'
+        ? 'Viewing as the ' + school.name + ' AD. Anything you save changes the real schedule.'
         : '';
     const allowed = role === 'ad' ? schools.filter(item => item.slug === schoolId) : schools;
     selector.replaceChildren(...options(allowed));
@@ -631,14 +631,14 @@ function startStaffSchedule(client, invite) {
     deleteConfirm.disabled = false;
     if (error) {
       deleteStatus.textContent = error.code === '40001'
-        ? 'This game changed. Close this, choose the game again and review the latest version.'
-        : 'The game could not be deleted. Please try again.';
+        ? 'Someone else changed this game. Close this and open the game again.'
+        : 'The game wasn’t deleted. Try again.';
       return;
     }
     deleteDialog.close();
     edit(null);
     showSchedule(true);
-    scheduleFeedback.textContent = 'Game deleted. If it was published, review and publish its team to remove it from public calendars.';
+    scheduleFeedback.textContent = 'Game deleted. If it was public, publish its team to take it off the public site.';
     await loadGames(game.game_date);
   };
 
@@ -686,8 +686,8 @@ function startStaffSchedule(client, invite) {
     if (error) {
       list.querySelectorAll('button').forEach(button => button.disabled = false);
       formStatus.textContent = error.code === '40001'
-        ? 'This game changed. Choose Edit again and review the latest version.'
-        : 'The game could not be saved. Check the required fields and try again.';
+        ? 'Someone else changed this game. Open it again to see the latest version.'
+        : 'The game wasn’t saved. Check the required fields and try again.';
       if (error.code === '40001') await loadGames();
       return;
     }

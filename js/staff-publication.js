@@ -74,14 +74,14 @@ function startStaffPublication(client, currentSchool, { canEdit = () => true, fi
     busy = true;
     list.querySelectorAll('input').forEach(input => input.disabled = true);
     updateButtons();
-    status.textContent = 'Loading team publication status…';
+    status.textContent = 'Loading teams…';
     const { data, error } = await client.rpc('review_schedule_publication', { p_school: school });
     if (!active || request !== requestNumber) return false;
     busy = false;
     if (error) {
       groups = [];
       list.replaceChildren();
-      status.textContent = 'Publication status could not load. Reopen Schedule to try again.';
+      status.textContent = 'The team list didn’t load. Open Publish again to retry.';
       updateButtons();
       return false;
     }
@@ -101,7 +101,7 @@ function startStaffPublication(client, currentSchool, { canEdit = () => true, fi
     })) };
     dialogTitle.textContent = withdraw ? 'Unpublish these schedules?' : gameId ? 'Review this change' : 'Review and publish';
     document.getElementById('publication-dialog-summary').textContent = withdraw
-      ? 'These schedules will be removed from public calendars and subscriptions. Your working games will stay saved.'
+      ? 'Families will no longer see these schedules. Your games stay saved here.'
       : 'Check what families will see. Times are Eastern.';
     const content = document.getElementById('publication-dialog-games');
     content.replaceChildren(...chosen.map(group => {
@@ -169,7 +169,7 @@ function startStaffPublication(client, currentSchool, { canEdit = () => true, fi
     const action = pending, request = ++requestNumber;
     busy = true;
     confirm.disabled = true;
-    dialogStatus.textContent = action.withdraw ? 'Unpublishing…' : 'Publishing reviewed changes…';
+    dialogStatus.textContent = action.withdraw ? 'Unpublishing…' : 'Publishing…';
     const { error } = await client.rpc('publish_schedule_changes', {
       p_school: action.school, selections: action.selections, withdraw: action.withdraw,
     });
@@ -179,15 +179,15 @@ function startStaffPublication(client, currentSchool, { canEdit = () => true, fi
     if (error) {
       if (error.code === '40001') confirm.disabled = true;
       dialogStatus.textContent = error.code === '40001'
-        ? 'The schedule changed after this review. Close this preview and review it again.'
-        : error.code === '22023' ? error.message : 'The reviewed changes could not be published. Please try again.';
+        ? 'The schedule changed while you were reviewing. Close this and review again.'
+        : error.code === '22023' ? error.message : 'Publishing didn’t go through. Try again.';
       return;
     }
     dialog.close();
     pending = null;
     await load();
     status.textContent = action.withdraw ? 'Unpublished. Families no longer see these schedules. Your games are still saved here.'
-      : 'Published. The school page shows it now. Calendar apps pick it up at their next refresh, which can take hours.';
+      : 'Published. It’s on the school page now. Calendar apps can take a few hours to update.';
     publicLink.href = 'school.html?school=' + encodeURIComponent(action.school);
     publicLink.hidden = false;
     onPublished();

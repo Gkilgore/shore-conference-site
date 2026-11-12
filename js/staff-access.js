@@ -30,7 +30,7 @@ function startStaffAccess(client, invite, schoolsFn) {
     name.disabled = role.disabled = submit.disabled = busy || !actorRole;
     cancelEdit.disabled = busy;
     cancelEdit.hidden = !editing;
-    submit.textContent = editing ? 'Review access change' : 'Review invited access';
+    submit.textContent = editing ? 'Review access change' : 'Review access';
     list.querySelectorAll('button').forEach(button => button.disabled = busy);
   }
 
@@ -117,7 +117,7 @@ function startStaffAccess(client, invite, schoolsFn) {
     clearDraft();
     accounts = []; list.replaceChildren(); panel.hidden = true;
     busy = true; syncFields();
-    status.textContent = 'Loading invited staff access…';
+    status.textContent = 'Loading staff access…';
     const {data, error} = await rpc('list_staff_access');
     if (!active || request !== requestNumber) return false;
     busy = false;
@@ -132,33 +132,33 @@ function startStaffAccess(client, invite, schoolsFn) {
     accounts = data.accounts;
     render();
     panel.hidden = false;
-    status.textContent = 'Add invited access; the person signs in with the invited email. Several ADs may share a school.';
+    status.textContent = '';
     return true;
   }
 
   function validate() {
     const draft = {email: normalized(email.value), name: name.value.trim(), role: role.value,
       school_id: role.value === 'ad' ? school.value : null};
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.email) || draft.email.length > 254) return 'Enter a valid invited email address.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.email) || draft.email.length > 254) return 'Enter a valid email address.';
     if (!draft.name || draft.name.length > 100) return 'Enter a name of up to 100 characters.';
     if (draft.role !== 'ad' && !(actorRole === 'site_admin' && draft.role === 'conference_office')) {
       return actorRole === 'conference_office' ? 'Conference admins can manage School AD access only.' : 'Choose School AD or Conference admin access.';
     }
     if (draft.role === 'ad' && !schoolsFn().some(item => item.slug === draft.school_id)) return 'Choose a school from the list.';
     if (editing && (draft.email !== normalized(editing.email) || !canManage(editing))) return 'Choose this person from the current access list again.';
-    if (!editing && accounts.some(account => normalized(account.email) === draft.email)) return 'This email already has invited access. Use Edit on its current entry.';
+    if (!editing && accounts.some(account => normalized(account.email) === draft.email)) return 'This email already has access. Use Edit on that person.';
     return draft;
   }
 
   function showReview(draft, previous, remove) {
     pending = {draft, previous, remove};
-    get('review-title').textContent = remove ? 'Review access removal' : previous ? 'Review access change' : 'Review invited access';
+    get('review-title').textContent = remove ? 'Review access removal' : previous ? 'Review access change' : 'Review access';
     get('review-summary').textContent = remove
-      ? 'Remove invited access for ' + draft.email + '? Current access: ' + assignment(previous) + '. They will lose staff access when this change is saved.'
+      ? 'Remove access for ' + draft.email + '? Current access: ' + assignment(previous) + '. They will lose staff access when this change is saved.'
       : (previous ? 'Current access: ' + previous.email + ' — ' + assignment(previous) + '.\n' : '') +
         'Requested access: ' + draft.email + ' — ' + draft.name + ' — ' + assignment(draft) + '.\n' +
-        'The person signs in with the invited email. This saves invited access only.';
-    confirm.textContent = remove ? 'Remove invited access' : previous ? 'Save access change' : 'Add invited access';
+        'They sign in with this email. No email is sent.';
+    confirm.textContent = remove ? 'Remove access' : previous ? 'Save change' : 'Add access';
     confirm.disabled = false;
     dialog.showModal();
   }
@@ -191,11 +191,11 @@ function startStaffAccess(client, invite, schoolsFn) {
     // Refresh after every result, including denied writes, to discover revoked or changed access.
     if (!await load()) return;
     status.textContent = error?.code === '40001'
-      ? 'Staff access changed after your review. The current list is loaded. Choose the person and review again.'
+      ? 'Staff access changed while you were reviewing. Choose the person and review again.'
       : error?.code === '42501'
-        ? 'This access change is not allowed. The current list is loaded. Choose an allowed change and review again.'
-        : error ? 'The access change could not be confirmed. Check the current list before reviewing again.'
-          : action.remove ? 'Invited staff access removed.' : action.previous ? 'Invited staff access updated.' : 'Invited staff access added. The person signs in with the invited email.';
+        ? 'You can’t make this change. Choose a different one and review again.'
+        : error ? 'The change may not have saved. Check the list before trying again.'
+          : action.remove ? 'Access removed.' : action.previous ? 'Access updated.' : 'Access added. They sign in with that email.';
   };
 
   reset();

@@ -14,7 +14,7 @@ const workspaceTitles = {
 if (location.protocol === 'file:') {
   authStatus.textContent = 'Open this page through the local web server to sign in.';
 } else if (!shoreSupabase.url || !shoreSupabase.publishableKey.startsWith('sb_publishable_')) {
-  authStatus.textContent = 'Staff sign-in is waiting for the Supabase test project.';
+  authStatus.textContent = 'Staff sign-in isn’t set up yet.';
 } else if (!window.supabase) {
   authStatus.textContent = 'The sign-in service could not load. Refresh to try again.';
 } else {
@@ -52,7 +52,7 @@ function startStaffSignIn() {
     document.querySelector('a.staff-link').hidden = Boolean(session);
     document.querySelector('.staff-auth').classList.remove('has-problem');
     document.title = (session ? 'Staff Dashboard' : 'Staff Sign-in') + ' | The Shore Conference';
-    authStatus.textContent = session ? 'Checking staff access…' : 'Sign in with the email address your invitation was sent to.';
+    authStatus.textContent = session ? 'Checking staff access…' : 'Use the email your invitation was sent to.';
     if (session) setTimeout(() => checkAccess(check), 0);
   });
 
@@ -69,7 +69,7 @@ function startStaffSignIn() {
       stopSchedule = undefined;
       inviteKey = undefined;
       workspace.hidden = true;
-      authStatus.textContent = 'This account has no staff invitation. Sign out and use your invited address.';
+      authStatus.textContent = 'This email hasn’t been invited. Sign out and use the email your invitation was sent to.';
       return;
     }
     const key = [invite.email,invite.name,invite.role,invite.school_id].join('|');

@@ -255,7 +255,7 @@
             </section>
             <section class="staff-section" aria-labelledby="coach-outbox-title">
               <h4 id="coach-outbox-title">Email outbox</h4>
-              <p class="staff-hint">Emails waiting to be sent to coaches.</p>
+              
               <ul id="coach-outbox" class="coach-outbox"></ul>
             </section>
           </section>
@@ -284,7 +284,7 @@
                 </fieldset>
                 <p id="branding-status" role="status"></p>
                 <div class="actions">
-                  <button class="button primary" type="submit">Save branding</button>
+                  <button class="button primary" type="submit">Save logo and colors</button>
                   <button id="branding-undo" class="button secondary" type="button">Undo changes</button>
                 </div>
               </form>
@@ -317,7 +317,7 @@
           <section id="staff-tournaments-panel" class="staff-panel" aria-labelledby="tournaments-title" hidden>
             <h3 id="tournaments-title" tabindex="-1">Tournaments</h3>
             <p id="tournament-status" role="status" aria-live="polite"></p>
-            <div class="actions"><button id="tournament-reload" class="button secondary" type="button">Reload saved tournaments</button><button id="tournament-discard" class="button secondary" type="button" hidden>Discard unsaved changes and reload</button></div>
+            <div class="actions"><button id="tournament-reload" class="button secondary" type="button">Reload</button><button id="tournament-discard" class="button secondary" type="button" hidden>Discard unsaved changes and reload</button></div>
             <label id="tournament-selector" hidden>Tournament<select id="tournament-select"></select></label>
             <p id="tournament-empty"></p>
             <div id="tournament-manager" hidden>
@@ -368,7 +368,7 @@
                   <div class="tournament-table-wrap" hidden data-generator><table class="tournament-table"><thead><tr><th scope="col">Match</th><th scope="col">Teams A / B</th><th scope="col">Date</th><th scope="col">Time</th><th scope="col">Venue</th><th scope="col">Home</th><th scope="col">Status and result</th></tr></thead><tbody id="tournament-match-rows"></tbody></table></div>
                   <ul id="tournament-issues" class="tournament-issues"></ul>
                   <p id="tournament-dirty" role="status"></p>
-                  <div class="actions"><button id="tournament-save" class="button primary" type="button">Save draft</button><button id="tournament-review" class="button secondary" type="button">Review publishing</button><button id="tournament-export" class="button secondary" type="button">Download master CSV</button></div>
+                  <div class="actions"><button id="tournament-save" class="button primary" type="button">Save draft</button><button id="tournament-review" class="button secondary" type="button">Review and publish</button><button id="tournament-export" class="button secondary" type="button">Download master CSV</button></div>
                   <p class="staff-hint">Drafts are private. Publishing puts the games on school calendars and the conference calendar. To change a game, upload the corrected schedule.</p>
                 </section>
               </div>
@@ -396,17 +396,17 @@
               <p>Add a person by their school email. More than one AD can share a school. No email is sent, so let them know yourself.</p>
               <form id="staff-access-form">
                 <div class="filters">
-                  <label>Invited email<input id="staff-access-email" type="email" maxlength="254" autocomplete="off" required></label>
+                  <label>Email<input id="staff-access-email" type="email" maxlength="254" autocomplete="off" required></label>
                   <label>Name<input id="staff-access-name" maxlength="100" autocomplete="off" required></label>
                   <label>Access<select id="staff-access-role" required></select></label>
                   <label id="staff-access-school-field">School<select id="staff-access-school" required></select></label>
                 </div>
                 <div class="staff-actions">
-                  <button id="staff-access-submit" class="button primary" type="submit">Review invited access</button>
+                  <button id="staff-access-submit" class="button primary" type="submit">Review access</button>
                   <button id="staff-access-cancel-edit" class="button secondary" type="button" hidden>Cancel edit</button>
                 </div>
               </form>
-              <h4>Current invited access</h4>
+              <h4>People with access</h4>
               <ul id="staff-access-list" class="game-list"></ul>
             </div>
           </section>
@@ -467,7 +467,7 @@
       <ul id="tournament-review-issues"></ul>
       <div id="tournament-review-scope" hidden><label>Publication scope<select id="tournament-publish-scope"><option value="all">Full tournament</option><option value="selected">Selected changed matches</option></select></label><div id="tournament-review-selection" class="tournament-selection" hidden></div></div>
       <p id="tournament-review-status" role="status" aria-live="polite"></p>
-      <div class="actions"><button id="tournament-publish" class="button primary" type="button">Publish reviewed tournament</button><button id="tournament-review-cancel" class="button secondary" type="button">Keep working</button></div>
+      <div class="actions"><button id="tournament-publish" class="button primary" type="button">Publish tournament</button><button id="tournament-review-cancel" class="button secondary" type="button">Keep working</button></div>
     </dialog>
     <dialog id="discard-dialog" class="game-details" aria-labelledby="discard-title">
       <h2 id="discard-title">Leave without saving?</h2>
@@ -499,10 +499,10 @@
       </div>
     </dialog>
     <dialog id="staff-access-review" class="game-details" aria-labelledby="staff-access-review-title">
-      <h2 id="staff-access-review-title">Review invited access</h2>
+      <h2 id="staff-access-review-title">Review access</h2>
       <p id="staff-access-review-summary"></p>
       <div class="staff-actions">
-        <button id="staff-access-review-confirm" class="button primary" type="button">Add invited access</button>
+        <button id="staff-access-review-confirm" class="button primary" type="button">Add access</button>
         <button id="staff-access-review-cancel" class="button secondary" type="button">Cancel</button>
       </div>
     </dialog>

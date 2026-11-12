@@ -227,7 +227,7 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
     const files = Array.from(fileInput.files);
     rows = [];
     fileErrors = [];
-    summary.textContent = files.length ? 'Reading selected CSV files…' : '';
+    summary.textContent = files.length ? 'Reading files…' : '';
     if (!files.length) return show();
     const preview = await previewScheduleFiles(files, check);
     if (!active || request !== requestNumber) return;

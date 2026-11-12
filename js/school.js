@@ -81,14 +81,13 @@ if (Object.hasOwn(schoolDirectory, schoolSlug)) {
     renderCalendar(games);
     setSubscriptionLink({ scope: 'school', school: schoolSlug });
   } catch (error) {
-    status.textContent = error.message;
+    status.textContent = '';
     document.getElementById('subscribe-calendar').hidden = true;
     document.getElementById('calendar-filters').hidden = true;
-    document.getElementById('upcoming').textContent = 'Schedule unavailable. Please try again later.';
-    document.getElementById('school-seasons').textContent = 'Posted schedules could not be loaded. Please try again later.';
-    document.getElementById('school-updates').textContent = 'Published changes could not be loaded. Please try again later.';
-    document.getElementById('school-postings').hidden = false;
-    document.getElementById('recent-updates').hidden = false;
+    // One message is enough; the sections that depend on the schedule stay hidden.
+    document.getElementById('upcoming').textContent = error.message;
+    document.getElementById('school-postings').hidden = true;
+    document.getElementById('recent-updates').hidden = true;
   }
 } else {
   document.getElementById('page-title').textContent = 'School not found';

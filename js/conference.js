@@ -47,7 +47,7 @@ function conferenceEvents(games) {
   } catch (error) {
     if (status) status.textContent = error.message;
     if (document.getElementById('calendar-filters')) document.getElementById('calendar-filters').hidden = true;
-    if (document.getElementById('upcoming')) document.getElementById('upcoming').textContent = 'Schedule unavailable. Please try again later.';
+    if (document.getElementById('upcoming')) document.getElementById('upcoming').textContent = 'The schedule didn’t load. Refresh to try again.';
     const link = document.getElementById('subscribe-calendar');
     if (link) link.hidden = true;
   }

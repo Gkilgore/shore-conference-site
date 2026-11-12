@@ -24,8 +24,8 @@
   let searchTimer;
   fields.search.addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(update, 300); });
   document.getElementById('copy-subscription').onclick = async () => {
-    try { await navigator.clipboard.writeText(link.value); copyStatus.textContent = 'Subscription link copied.'; }
-    catch { link.focus(); link.select(); copyStatus.textContent = 'Select and copy the subscription URL above.'; }
+    try { await navigator.clipboard.writeText(link.value); copyStatus.textContent = 'Link copied.'; }
+    catch { link.focus(); link.select(); copyStatus.textContent = 'Select the link above and copy it.'; }
   };
 
   // The band shows the conference by default. One school's calendar fills it with that school's colors and logo.

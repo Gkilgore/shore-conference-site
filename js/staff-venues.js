@@ -103,7 +103,7 @@ function startStaffVenues(client, { currentSchool, schools, fields }) {
     if (!school) return;
     addForm.hidden = !editable;
     status.textContent = editable ? status.textContent
-      : 'Venue lists are not set up yet. The dropdowns use the sample venues until the venue migration is installed.';
+      : 'Venue lists aren’t set up yet.';
     const own = venues.filter(venue => venue.school_id === school.slug).sort((a, b) => a.name.localeCompare(b.name));
     list.replaceChildren(...(own.length ? own.map(venue => {
       const item = document.createElement('li');

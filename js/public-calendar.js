@@ -13,7 +13,7 @@ async function loadPublicCalendar(options) {
     error.status = 404;
     throw error;
   }
-  if (!response.ok) throw new Error('The schedule could not be loaded. Please refresh to try again.');
+  if (!response.ok) throw new Error('The schedule didn’t load. Refresh to try again.');
   return response.json();
 }
 

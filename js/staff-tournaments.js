@@ -97,7 +97,7 @@ function startStaffTournaments(client, { schools = () => [] } = {}) {
   function errorMessage(error) {
     if (error?.code === '40001') return 'This tournament changed. Reload the saved version, review your changes and try again.';
     if (error?.code === '42501') return 'Your invited access no longer permits this action. Reload tournaments to check your access.';
-    return error?.message || 'The request could not finish. Try again.';
+    return error?.message || 'That didn’t go through. Try again.';
   }
   async function request(name, args) {
     const result = await client.rpc(name, args);
@@ -159,7 +159,7 @@ function startStaffTournaments(client, { schools = () => [] } = {}) {
     el('tournament-selector').hidden = true;
     el('tournament-transport').hidden = true;
     invalidateReview();
-    status.textContent = 'Checking tournament access…';
+    status.textContent = 'Loading tournaments…';
     await operation(() => request('list_tournaments'), data => {
       if (ticket !== generation) return;
       actorRole = data.actor_role;
@@ -177,7 +177,7 @@ function startStaffTournaments(client, { schools = () => [] } = {}) {
         dirty = true;
         fillSelect();render();
       }
-      status.textContent = manages() ? 'Conference-owned games. Ordinary school schedules remain read-only for conference staff.'
+      status.textContent = manages() ? ''
         : actorRole === 'ad' ? 'Published tournament games for your school. Add your school’s bus details below.' : 'Tournament access is unavailable for this account.';
       if (restore && saved && saved.revision !== selected.revision) status.textContent = 'The saved tournament changed while you were away. Your unsaved draft is kept. Download its master CSV before discarding and reloading the current version.';
     });
@@ -551,7 +551,7 @@ function startStaffTournaments(client, { schools = () => [] } = {}) {
       const existing = id === selected?.id ? working : records.find(record => record.id === id)?.draft;
       const document = mergeImport(existing,result.document,mapping);
       const updates = result.document.matches.filter(match => existing?.matches.some(old => old.id === match.id)).length;
-      showProposal(document,'Review CSV import',result.document.matches.length - updates + ' new matches. ' + updates + ' existing matches updated. ' +
+      showProposal(document,'Review upload',result.document.matches.length - updates + ' new matches. ' + updates + ' existing matches updated. ' +
         (existing ? existing.matches.length - updates : 0) + ' other matches kept. Tournament ' + (document.name || 'Untitled tournament') + '.',id);
     } catch (error) { status.textContent = errorMessage(error); }
   }
@@ -561,7 +561,7 @@ function startStaffTournaments(client, { schools = () => [] } = {}) {
     status.textContent = 'Saving draft…';
     await operation(() => request('save_tournament',{p_id:id,p_expected_revision:revision,p_document:document}), record => {
       storeRecord(record);
-      status.textContent = 'Draft saved. Review publishing to update school and conference calendars.';
+      status.textContent = 'Draft saved. Choose Review and publish to make it public.';
       // An older database drops this section. Say so and keep what was typed.
       if (TournamentEngine.hasInfo(document.info) && !TournamentEngine.hasInfo(record.draft?.info) && working) {
         working.info = document.info;
@@ -657,7 +657,7 @@ function startStaffTournaments(client, { schools = () => [] } = {}) {
         return field(change.after?.label || change.before?.label || 'Tournament game',checkbox);
       }));
       el('tournament-review-selection').hidden = true;
-      el('tournament-review-status').textContent = initial ? 'First publication includes the full tournament.' : 'Publish all changes or select changed matches. Changes to tournament details and participants require full publication. Include every later game affected by a corrected result.';
+      el('tournament-review-status').textContent = initial ? 'The first publish includes every game.' : 'Publish everything, or pick the changed games. A change to teams or tournament details needs everything published.';
       el('tournament-publish').disabled = false;
       dialog.showModal();
     },el('tournament-review-status'));
@@ -671,7 +671,7 @@ function startStaffTournaments(client, { schools = () => [] } = {}) {
     el('tournament-publish').disabled = true;
     await operation(() => request('publish_tournament',{p_id:snapshot.id,p_token:snapshot.token,p_match_ids:ids}),record => {
       storeRecord(record);
-      status.textContent = 'Tournament published. School and conference calendars use the approved games.';
+      status.textContent = 'Published. The games are on school and conference calendars.';
     },el('tournament-review-status'));
   }
   function ownPublishedMatches() {

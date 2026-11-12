@@ -87,7 +87,7 @@ function renderTeamInfo(target, selection, { quietWhenAll = false } = {}) {
       parts.push(details);
     }
   } else if (result.state === 'all') {
-    parts.push(part('span', 'Divisions are set by sport. Choose a sport and team to see one.'),
+    parts.push(part('span', 'Choose a sport and team to see its division.'),
       link('Official conference site', conferenceSite));
   } else if (result.state === 'choose-team') {
     parts.push(part('span', 'Choose a team. Each has its own division list.'),

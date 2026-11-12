@@ -98,14 +98,14 @@ function renderTournamentInfo(tournament, target) {
   const status = document.getElementById('tournament-status');
   const id = new URLSearchParams(location.search).get('id');
   if (!id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
-    status.textContent = 'Choose a tournament from a calendar game.';
+    status.textContent = 'Open a tournament from one of its games on the calendar.';
     return;
   }
   try {
     const schedule = await loadPublicCalendar({ scope: 'conference' });
     const record = (schedule.tournaments || []).find(tournament => tournament.id === id);
     if (!record) {
-      status.textContent = 'This tournament has no published bracket.';
+      status.textContent = 'This tournament’s bracket isn’t published yet.';
       return;
     }
     const tournament = record.document;
@@ -115,10 +115,10 @@ function renderTournamentInfo(tournament, target) {
       tournament.sport, tournament.season, tournament.season_year].filter(Boolean).join(' · ');
     renderTournamentInfo(tournament, document.getElementById('tournament-info'));
     renderPublicTournament(tournament, target);
-    status.textContent = 'Published bracket and results · Eastern Time';
+    status.hidden = true;
     const selected = location.hash.slice(1);
     if (selected.startsWith('match-')) document.getElementById(selected)?.scrollIntoView({ block: 'center' });
   } catch (error) {
-    status.textContent = error.message || 'The bracket could not be loaded. Please refresh to try again.';
+    status.textContent = error.message || 'The bracket didn’t load. Refresh to try again.';
   }
 })();
