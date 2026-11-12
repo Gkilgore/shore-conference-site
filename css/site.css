@@ -281,9 +281,11 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
 .game-list .empty-schedule { display: block; }
 
 /* School directory cards fill with the school's color on hover. */
-.school-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 0.75rem; }
+.school-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); grid-auto-rows: 1fr; gap: 0.75rem; }
 .school-grid a {
-  display: flex;
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  height: 100%;
   align-items: center;
   gap: 0.85rem;
   padding: 0.85rem;
@@ -294,6 +296,8 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
   font-size: 1.1rem;
   text-decoration: none;
 }
+/* Reserve two name lines; longer names and enlarged text can grow every tile. */
+.school-grid a > span { display: grid; grid-template-rows: minmax(2lh, 1fr) auto; align-self: stretch; overflow-wrap: anywhere; }
 .school-grid small { display: block; color: var(--muted); font-weight: 500; font-size: 0.88rem; }
 .school-grid img { flex: none; width: 3.5rem; height: 3.5rem; object-fit: contain; padding: 0.2rem; background: white; outline: 2px solid transparent; }
 .school-grid a:is(:hover, :focus-visible) { background: var(--card-color, var(--navy)); border-color: var(--card-color, var(--navy)); color: var(--card-ink, white); }
