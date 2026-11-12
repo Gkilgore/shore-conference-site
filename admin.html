@@ -92,6 +92,7 @@
         <aside class="staff-sidebar" aria-label="Dashboard controls">
           <nav class="staff-nav" aria-label="Staff dashboard">
             <button id="staff-schedule-tab" class="staff-tab" type="button" aria-current="true">Schedule</button>
+            <button id="staff-games-tab" class="staff-tab" type="button" hidden>Games</button>
             <button id="staff-teams-tab" class="staff-tab" type="button" hidden>Teams</button>
             <button id="staff-overview-tab" class="staff-tab" type="button"><span id="publish-label">Publish</span><span id="publish-count"></span></button>
             <button id="staff-transportation-tab" class="staff-tab" type="button" hidden>Transportation</button>
@@ -100,8 +101,6 @@
             <button id="staff-tournaments-tab" class="staff-tab" type="button">Tournaments</button>
             <button id="staff-access-tab" class="staff-tab" type="button" hidden>Staff access</button>
           </nav>
-          <button id="add-calendar-game" class="button primary" type="button" hidden>Add game</button>
-          <button id="import-games" class="button secondary" type="button" hidden>Import games</button>
           <div>
             <label for="schedule-school">School</label>
             <select id="schedule-school"></select>
@@ -117,6 +116,39 @@
             <button type="reset" class="button secondary">Reset</button>
             <p id="staff-filter-count" role="status"></p>
           </form>
+          <section id="staff-games-panel" class="staff-panel" aria-labelledby="games-title" hidden>
+            <h3 id="games-title" tabindex="-1">Games</h3>
+            <div class="actions games-actions">
+              <button id="add-calendar-game" class="button primary" type="button" hidden>Add game</button>
+              <button id="import-games" class="button secondary" type="button" aria-expanded="false" aria-controls="import-section" hidden>Import games</button>
+            </div>
+            <p id="games-feedback" role="status"></p>
+            <div id="games-next" class="actions" hidden><button id="games-view-schedule" class="button secondary" type="button">View on Schedule</button></div>
+            <div id="games-unpublished" class="staff-unpublished" hidden>
+              <p id="games-unpublished-text"></p>
+              <button id="games-review" class="button primary" type="button">Review and publish</button>
+            </div>
+          <section id="import-section" class="staff-section import-panel" aria-labelledby="import-title" hidden>
+              <h4 id="import-title" tabindex="-1">Import games</h4>
+              <p class="staff-hint">Choose one or more CSV files and check the rows before saving. Imported games are drafts until you publish them.</p>
+              <div class="import-controls">
+                <label>CSV files <input id="import-file" type="file" accept=".csv,text/csv" multiple></label>
+                <button id="import-template" class="button secondary" type="button">Download template</button>
+              </div>
+              <p id="import-summary" role="status"></p>
+              <ul id="import-file-errors" class="staff-hint" hidden></ul>
+              <div class="import-table-wrap">
+                <table id="import-preview" class="import-preview" hidden>
+                  <thead><tr><th>File</th><th>Row</th><th>Result</th><th>Date</th><th>Time</th><th>Team</th><th>Opponent</th><th>Location</th><th>Problems</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+              <div class="actions">
+                <button id="import-save" class="button primary" type="button" hidden>Import games</button>
+                <button id="import-clear" class="button secondary" type="button" hidden>Clear</button>
+              </div>
+          </section>
+          </section>
           <section id="staff-teams-panel" class="staff-panel" aria-labelledby="teams-title" hidden>
             <h3 id="teams-title" tabindex="-1">Teams</h3>
             <p id="teams-status" role="status"></p>
@@ -163,26 +195,6 @@
               </ul>
               <p id="schedule-status" role="status"></p>
             </div>
-          <section id="import-section" class="staff-panel import-panel" aria-labelledby="import-title" hidden>
-              <h4 id="import-title">Import games from a spreadsheet</h4>
-              <p class="staff-hint">Upload one or more CSV files, check the rows, then save. Imported games are drafts until you publish them.</p>
-              <div class="import-controls">
-                <label>CSV files <input id="import-file" type="file" accept=".csv,text/csv" multiple></label>
-                <button id="import-template" class="button secondary" type="button">Download template</button>
-              </div>
-              <p id="import-summary" role="status"></p>
-              <ul id="import-file-errors" class="staff-hint" hidden></ul>
-              <div class="import-table-wrap">
-                <table id="import-preview" class="import-preview" hidden>
-                  <thead><tr><th>File</th><th>Row</th><th>Result</th><th>Date</th><th>Time</th><th>Team</th><th>Opponent</th><th>Location</th><th>Problems</th></tr></thead>
-                  <tbody></tbody>
-                </table>
-              </div>
-              <div class="actions">
-                <button id="import-save" class="button primary" type="button" hidden>Import games</button>
-                <button id="import-clear" class="button secondary" type="button" hidden>Clear</button>
-              </div>
-          </section>
           </section>
           <section id="staff-transportation-panel" class="staff-panel prose" aria-labelledby="transportation-title" hidden>
             <h3 id="transportation-title" tabindex="-1">Transportation</h3>

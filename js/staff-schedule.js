@@ -32,6 +32,11 @@ function startStaffSchedule(client, invite) {
   const calendarTarget = document.getElementById('calendar');
   const addGame = document.getElementById('add-calendar-game');
   const scheduleTab = document.getElementById('staff-schedule-tab');
+  const gamesTab = document.getElementById('staff-games-tab');
+  const gamesPanel = document.getElementById('staff-games-panel');
+  const gamesFeedback = document.getElementById('games-feedback');
+  const gamesNext = document.getElementById('games-next');
+  const importSection = document.getElementById('import-section');
   const teamsTab = document.getElementById('staff-teams-tab');
   const teamsPanel = document.getElementById('staff-teams-panel');
   // Where the game editor was opened from, so closing it returns there.
@@ -66,7 +71,7 @@ function startStaffSchedule(client, invite) {
   });
   const importer = startStaffImport(client, {
     currentSchool, schools: () => schools, existingGames: () => allGames,
-    onImported: date => loadGames(date),
+    onImported: date => { gamesNext.hidden = false; loadGames(date); },
   });
   const settings = startStaffSettings(client, currentSchool, school => applySchoolTheme(client, school));
   const publication = startStaffPublication(client, currentSchool, {
@@ -98,6 +103,7 @@ function startStaffSchedule(client, invite) {
   });
   function feedback(text) {
     scheduleFeedback.textContent = text;
+    gamesFeedback.textContent = text;
     teams.setStatus(text);
   }
   const transportation = startStaffTransportation(client, invite,
@@ -250,6 +256,8 @@ function startStaffSchedule(client, invite) {
     document.getElementById('unpublished-text').textContent = count === 1
       ? '1 game isn’t public yet. It’s outlined below.' : count + ' games aren’t public yet. They’re outlined below.';
     document.getElementById('publish-count').textContent = count ? ' · ' + count : '';
+    document.getElementById('games-unpublished').hidden = !count;
+    document.getElementById('games-unpublished-text').textContent = count === 1 ? '1 game isn’t public yet.' : count + ' games aren’t public yet.';
   }
 
   function askToLeave(action) {
@@ -265,6 +273,11 @@ function startStaffSchedule(client, invite) {
     const showTournaments = !tournamentsPanel.hidden;
     const showCoaches = canEdit && !coachesPanel.hidden;
     const showTeams = canEdit && !teamsPanel.hidden;
+    const showGames = canEdit && !gamesPanel.hidden;
+    gamesTab.hidden = !canEdit;
+    showImport(false);
+    gamesFeedback.textContent = '';
+    gamesNext.hidden = true;
     teams.reset();
     teamsTab.hidden = !canEdit;
     transportation.reset();
@@ -294,11 +307,11 @@ function startStaffSchedule(client, invite) {
     if (showContact) openTransportation(false);
     if (showCoaches) openCoaches(false);
     if (showTeams) openTeams(false);
-    else if (!canEdit && !teamsPanel.hidden) showSchedule();
+    if (showGames) openGames(false);
+    else if (!canEdit && !(teamsPanel.hidden && gamesPanel.hidden)) showSchedule();
     if (showSettings) openSettings(false);
     if (showOverview) openOverview(false);
     if (showTournaments) openTournaments(false);
-    document.getElementById('import-section').hidden = !canEdit;
     loadGames(null, true);
   }
 
@@ -320,7 +333,7 @@ function startStaffSchedule(client, invite) {
     fillSeasonFilters(filterFields.season, filterFields.sport, filterOptions());
     status.textContent = data.length
       ? data.length + (data.length === 1 ? ' saved game.' : ' saved games.') + (canEdit ? ' Select a game to edit it.' : '')
-      : 'No games saved for this school.' + (canEdit ? ' Use Add game to enter the first one.' : '');
+      : 'No games saved for this school.' + (canEdit ? ' Open Games to add the first one.' : '');
     if (newSchool && data.length) {
       const today = new Date();
       const dateKey = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') +
@@ -484,7 +497,7 @@ function startStaffSchedule(client, invite) {
 
   // Hides every panel and clears the selected tab; each opener then shows its own panel.
   function hidePanels() {
-    for (const [panel, tab] of [[schedulePanel, scheduleTab], [teamsPanel, teamsTab], [overviewPanel, overviewTab],
+    for (const [panel, tab] of [[schedulePanel, scheduleTab], [gamesPanel, gamesTab], [teamsPanel, teamsTab], [overviewPanel, overviewTab],
       [transportationPanel, transportationTab], [coachesPanel, coachesTab], [settingsPanel, settingsTab], [tournamentsPanel, tournamentsTab]]) {
       panel.hidden = true;
       tab.removeAttribute('aria-current');
@@ -522,7 +535,19 @@ function startStaffSchedule(client, invite) {
     coachList.load().then(() => { if (!stopped) teams.render(); });
     if (focus) (document.getElementById('team-title') ?? document.getElementById('teams-title')).focus();
   }
-  const leaveEditor = () => editorOrigin === 'teams' ? openTeams(true) : showSchedule(true);
+  // Games: the two ways to enter games. The import section opens in place when chosen.
+  function openGames(focus = true) {
+    if (!canEdit || !selector.value) return;
+    hidePanels();
+    gamesPanel.hidden = false;
+    gamesTab.setAttribute('aria-current', 'true');
+    if (focus) document.getElementById('games-title').focus();
+  }
+  function showImport(open) {
+    importSection.hidden = !open;
+    importButton.setAttribute('aria-expanded', String(open));
+  }
+  const leaveEditor = () => editorOrigin === 'teams' ? openTeams(true) : editorOrigin === 'games' ? openGames(true) : showSchedule(true);
 
   function openOverview(focus = true) {
     hidePanels();
@@ -553,7 +578,8 @@ function startStaffSchedule(client, invite) {
     if (date) fields.game_date.value = date;
     hidePanels();
     form.hidden = false;
-    (origin === 'teams' ? teamsTab : scheduleTab).setAttribute('aria-current', 'true');
+    ({ teams: teamsTab, games: gamesTab }[origin] ?? scheduleTab).setAttribute('aria-current', 'true');
+    gamesNext.hidden = true;
     // A new game starts at the top; an existing one is most often opened to change its date.
     (game ? fields.game_date : fields.sport).focus();
   }
@@ -620,7 +646,7 @@ function startStaffSchedule(client, invite) {
     applyFilters();
   }, 0);
   settingsTab.onclick = () => openSettings();
-  addGame.onclick = () => openEditor(null);
+  addGame.onclick = () => openEditor(null, null, 'games');
   preview.onchange = selectView;
   selector.onchange = selectSchool;
   fields.opponent_school_id.onchange = syncOpponent;
@@ -650,11 +676,13 @@ function startStaffSchedule(client, invite) {
     filtersToggle.setAttribute('aria-expanded', String(Boolean(open)));
   };
   importButton.onclick = () => {
-    showSchedule();
-    const section = document.getElementById('import-section');
-    section.scrollIntoView({ block: 'start' });
+    openGames(false);
+    showImport(true);
     document.getElementById('import-file').focus();
   };
+  gamesTab.onclick = () => openGames();
+  document.getElementById('games-view-schedule').onclick = () => showSchedule(true);
+  document.getElementById('games-review').onclick = () => openOverview();
   scheduleTab.onclick = () => showSchedule(true);
   // Deleting is for mistakes. A published copy stays public until the AD publishes the removal.
   const deleteDialog = document.getElementById('delete-game-dialog');
@@ -741,6 +769,7 @@ function startStaffSchedule(client, invite) {
     edit(null);
     leaveEditor();
     feedback('Saved as a draft. It is not public until you publish.');
+    gamesNext.hidden = false;
     list.replaceChildren();
     await loadGames(input.game_date, false, savedId);
     if (reviewAfterSave && !stopped) await publication.reviewGame(savedId);
@@ -765,6 +794,7 @@ function startStaffSchedule(client, invite) {
     coachImport.stop();
     coachesTab.onclick = null;
     teamsTab.onclick = null;
+    gamesTab.onclick = null;
     coachesTab.disabled = false;
     overviewTab.onclick = null;
     overviewTab.disabled = false;

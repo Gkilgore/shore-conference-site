@@ -45,7 +45,7 @@ function teamDivision({ school, sport, gender, level, date }) {
     members: list.complete ? list.divisions[division] : null };
 }
 
-// quietWhenAll hides the line until a sport is chosen; the staff Games tab uses it to stay compact.
+// quietWhenAll hides the line until a sport is chosen; the staff Schedule tab uses it to stay compact.
 function renderTeamInfo(target, selection, { quietWhenAll = false } = {}) {
   const result = teamDivision(selection);
   if (quietWhenAll && result.state === 'all') {

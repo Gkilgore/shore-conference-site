@@ -88,3 +88,14 @@ Checked with fictional games and a fake sign-in at 1280px and 375px. Not run aga
 2. **Team details.** A team is its sport, gender, level and season, taken from its games. There is no team record to edit (no nickname, roster or home venue).
 3. **A team with no games** does not appear until its first game is added.
 4. **Public check.** Publishing was confirmed inside the dashboard with fictional responses. That the change then shows on the public school page was not checked against the real project.
+
+## Games tab (November 11, later)
+
+Greg asked for Add game and Import games to move out of the sidebar into their own tab. This replaces the earlier note that no Games area was needed.
+
+- **Tabs for an AD:** Schedule, Games, Teams, Publish, Transportation, Coaches, School settings.
+- **Games** opens with Add game and Import games side by side. Add game opens the usual editor and returns to Games. Import games opens the import section in place.
+- After a save or an import, Games shows the confirmation, "View on Schedule" (the calendar is already on that game's month) and a yellow bar counting games that aren't public, with Review and publish.
+- **Schedule** is now the calendar only. Without the two sidebar buttons the calendar starts about 70px higher on a phone.
+- **Still there:** Add game inside a team (carries the team) and clicking a date on the Schedule calendar.
+- Checked with fictional data: add, cancel with unsaved edits, an import with one good row and two bad ones, find the draft on Schedule, publish, and the team shortcut. Clicking a calendar date was not exercised by the script; its code did not change.
