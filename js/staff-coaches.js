@@ -308,6 +308,18 @@ function startStaffCoaches(client, { currentSchool, schools, existingGames }) {
   return {
     load,
     coaches: () => coaches,
+    // Opened from the Teams tab: edit one coach, or start a new coach already assigned to a team.
+    edit(id) {
+      const coach = coaches.find(item => item.id === id);
+      if (coach) startForm(coach);
+      fields.name.focus();
+    },
+    addFor(team) {
+      startForm();
+      teams = [{ sport: team.sport, gender: team.gender, level: team.level }];
+      showChips();
+      fields.name.focus();
+    },
     reset() {
       request++;
       coaches = [];

@@ -559,3 +559,40 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
 .staff-section .branding-layout { margin-top: 0.4rem; }
 [data-generator][hidden] { display: none !important; }
 .staff-tab[hidden] { display: none; }
+
+/* Teams tab: a compact list of teams, then one team's schedule, unmatched games and coaches. */
+.team-list, .team-coaches { margin: 0.75rem 0 0; padding: 0; list-style: none; border: var(--frame); background: white; }
+.team-list > li + li, .team-coaches > li + li { border-top: 1px solid var(--rule); }
+.team-row { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; align-items: center; gap: 0.25rem 1rem; width: 100%; min-height: 3rem; padding: 0.6rem 0.85rem; border: 0; background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.team-row:is(:hover, :focus-visible) { background: var(--school-accent); color: var(--accent-ink); }
+.team-row:focus-visible { outline-offset: -4px; }
+.team-meta { color: var(--muted); font-size: 0.92rem; }
+.team-row:is(:hover, :focus-visible) .team-meta { color: inherit; }
+.team-tags { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.3rem; }
+.team-tag { display: inline-block; padding: 0.1rem 0.45rem; border: 1px solid var(--steel-dark); background: white; color: var(--ink); font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+.team-tag.is-draft { background: var(--yellow); border-color: var(--yellow); }
+.team-tag.is-problem { background: var(--red); border-color: var(--red); color: white; }
+.team-tag.is-public { background: var(--school-color); border-color: var(--school-color); color: var(--school-ink); }
+.team-list .staff-empty, .team-coaches .staff-empty { padding: 0.85rem; color: var(--muted); }
+.team-head { display: grid; gap: 0.6rem; margin-top: 0.75rem; }
+.team-head #team-back { justify-self: start; min-height: 2.25rem; padding-block: 0.25rem; }
+.team-heading { margin: 0; font-size: clamp(1.3rem, 3.5vw, 1.7rem); }
+.team-state { margin: 0; }
+.team-state .team-tag { margin-right: 0.4rem; }
+.team-games { background: white; }
+.team-games .staff-tag.is-postponed { background: var(--yellow); border-color: var(--yellow); }
+.team-games .staff-tag.is-canceled { background: var(--red); border-color: var(--red); color: white; }
+.team-coaches > li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto; align-items: center; gap: 0.25rem 1rem; padding: 0.5rem 0.85rem; }
+.team-coaches span { overflow-wrap: anywhere; color: var(--muted); }
+.team-coaches + .actions { margin-top: 0.75rem; }
+@media (max-width: 640px) {
+  .team-row { grid-template-columns: 1fr; }
+  .team-tags { justify-content: flex-start; }
+  .team-coaches > li { grid-template-columns: 1fr auto; }
+  .team-coaches span { grid-column: 1; }
+  .team-coaches button { grid-column: 2; grid-row: 1 / span 2; }
+}
+@media (max-width: 640px) {
+  .team-games li { grid-template-columns: 3.75rem minmax(0, 1fr); }
+  .team-games li > .button { grid-column: 2; grid-row: auto; justify-self: start; }
+}

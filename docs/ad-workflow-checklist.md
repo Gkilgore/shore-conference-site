@@ -72,3 +72,19 @@ Greg asked for everything tournament-related to be hidden except a conference ad
 - Nothing was deleted. Each hidden piece of `admin.html` carries `hidden data-generator`; the tab rule is in `js/staff-schedule.js` and the bracket link in `js/calendar.js`.
 - A game can now be corrected only by uploading the schedule again, since the matches table is hidden.
 - Later the same day: the Tournaments tab shows only in the conference admin view. A site admin sees it by choosing "Conference office" in the view picker, not while looking at a school.
+
+## Teams tab and navigation (November 11)
+
+Checked with fictional games and a fake sign-in at 1280px and 375px. Not run against the Supabase project.
+
+- **Tabs for an AD:** Schedule (was Games), Teams, Publish, Transportation, Coaches, School settings. There is no separate Games area: Schedule finds any game across teams and Teams finds a team's games, so a third list would repeat them.
+- **Teams:** a list of teams with game count, next game, publish status and a "not matched" flag. Opening a team shows its status, Add game, Review and publish, Unpublish, games that are not matched with the other school and why, the full schedule with Draft and Changed tags, and its coaches. Edit on a game opens the usual editor and returns to the team. Coach Edit and Add a coach open the Coaches tab with that coach or team filled in.
+- **Publishing:** stays in three places, all using the same review step. A team from Teams; one game from the editor ("Save and publish…"); several teams, or unpublishing several, from Publish. The Publish tab stays because it is the only place to publish many teams at once and to see every unmatched game.
+- **Fixed on the way:** unpublishing used to confirm with "Published."
+
+### Gaps
+
+1. **Scheduling conflicts.** The only check that exists for school games is matching with the opponent. Nothing flags two games for one team at the same time, a shared venue, or a bus clash. The Teams tab shows unmatched games only, and labels them as that. A conflict rule needs a decision first.
+2. **Team details.** A team is its sport, gender, level and season, taken from its games. There is no team record to edit (no nickname, roster or home venue).
+3. **A team with no games** does not appear until its first game is added.
+4. **Public check.** Publishing was confirmed inside the dashboard with fictional responses. That the change then shows on the public school page was not checked against the real project.

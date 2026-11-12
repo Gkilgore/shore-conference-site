@@ -103,6 +103,7 @@ function startStaffOverview(client, { currentSchool, gameTitle, canEdit, openEdi
   return {
     load,
     render,
+    links: () => links,
     reset() {
       request++;
       links = null;

@@ -30,6 +30,7 @@
   <script defer src="js/tournament-public.js"></script>
   <script defer src="js/staff-tournaments.js"></script>
   <script defer src="js/staff-coaches.js"></script>
+  <script defer src="js/staff-teams.js"></script>
   <script defer src="js/staff-venues.js"></script>
   <script defer src="js/staff-coach-import.js"></script>
   <script defer src="data/conference-resources.js"></script>
@@ -89,7 +90,8 @@
       <div class="staff-layout">
         <aside class="staff-sidebar" aria-label="Dashboard controls">
           <nav class="staff-nav" aria-label="Staff dashboard">
-            <button id="staff-schedule-tab" class="staff-tab" type="button" aria-current="true">Games</button>
+            <button id="staff-schedule-tab" class="staff-tab" type="button" aria-current="true">Schedule</button>
+            <button id="staff-teams-tab" class="staff-tab" type="button" hidden>Teams</button>
             <button id="staff-overview-tab" class="staff-tab" type="button"><span id="publish-label">Publish</span><span id="publish-count"></span></button>
             <button id="staff-transportation-tab" class="staff-tab" type="button" hidden>Transportation</button>
             <button id="staff-coaches-tab" class="staff-tab" type="button" hidden>Coaches</button>
@@ -114,6 +116,12 @@
             <button type="reset" class="button secondary">Reset</button>
             <p id="staff-filter-count" role="status"></p>
           </form>
+          <section id="staff-teams-panel" class="staff-panel" aria-labelledby="teams-title" hidden>
+            <h3 id="teams-title" tabindex="-1">Teams</h3>
+            <p id="teams-status" role="status"></p>
+            <ul id="team-list" class="team-list"></ul>
+            <div id="team-detail" hidden></div>
+          </section>
           <section id="staff-overview-panel" class="staff-panel" aria-labelledby="overview-title" hidden>
             <h3 id="overview-title" tabindex="-1">Publish</h3>
             <ul id="overview-stats" class="staff-stats" aria-label="Schedule totals"></ul>

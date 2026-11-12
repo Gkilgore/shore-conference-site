@@ -190,11 +190,19 @@ function startStaffPublication(client, currentSchool, { canEdit = () => true, fi
       : 'Published. It’s on the school page now. Calendar apps can take a few hours to update.';
     publicLink.href = 'school.html?school=' + encodeURIComponent(action.school);
     publicLink.hidden = false;
-    onPublished();
+    onPublished(action.withdraw);
   };
 
+  // One team's review or unpublish, started from the Teams tab. Same review step as the Publish tab.
+  async function reviewTeam(teamKey, withdraw = false) {
+    if (!await load()) return;
+    const group = groups.find(item => key(item) === teamKey);
+    if (group && (!withdraw || group.published_at)) preview([group], { withdraw });
+  }
+
   return {
-    load, render, states,
+    load, render, states, reviewTeam,
+    groups: () => groups,
     async reviewGame(id) {
       if (!await load()) return;
       const affected = groups.filter(group => group.games.some(entry => entry.id === id));

@@ -462,7 +462,7 @@ function mountStaffSchedule(role) {
     const query={select(){return query;},eq(){return query;},order(){return query;},then(resolve,reject){return Promise.resolve({data:table==='schools'?schools:[]}).then(resolve,reject);}};
     return query;
   }};
-  const stub=()=>({reset(){},load:async()=>{},render(){},stop(){},setPreview(){},sync(){},showSettings(){},coaches:()=>[],states:()=>({map:new Map(),removed:0})});
+  const stub=()=>({reset(){},load:async()=>{},render(){},stop(){},setPreview(){},sync(){},showSettings(){},coaches:()=>[],states:()=>({map:new Map(),removed:0}),groups:()=>[],links:()=>null,setStatus(){}});
   const context=vm.createContext({document,window:{},console,crypto:{randomUUID:()=> '22222222-2222-4222-8222-222222222222'},
     Option:function(text,value){const option=new Element('option',registry);option.textContent=text;option.text=text;option.value=value;return option;},
     workspaceTitles:{site_admin:'Site admin workspace',conference_office:'Conference admin workspace',ad:'Athletic Director workspace'},
@@ -470,7 +470,7 @@ function mountStaffSchedule(role) {
   });
   for(const file of ['staff-import.js','tournament-engine.js'])vm.runInContext(readFileSync(new URL('../js/'+file,import.meta.url),'utf8'),context);
   vm.runInContext(readFileSync(new URL('../js/tournament-public.js',import.meta.url),'utf8').split('(async () => {')[0],context);
-  for(const name of ['startStaffAccess','startStaffOverview','startStaffCoaches','startCoachImport','startStaffImport','startStaffSettings','startStaffPublication','startStaffTransportation','startStaffVenues'])context[name]=stub;
+  for(const name of ['startStaffAccess','startStaffOverview','startStaffCoaches','startCoachImport','startStaffImport','startStaffSettings','startStaffPublication','startStaffTransportation','startStaffVenues','startStaffTeams'])context[name]=stub;
   for(const file of ['staff-tournaments.js','staff-schedule.js'])vm.runInContext(readFileSync(new URL('../js/'+file,import.meta.url),'utf8'),context);
   let tournamentStarts=0;
   const realTournamentController=context.startStaffTournaments;

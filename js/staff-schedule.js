@@ -32,6 +32,10 @@ function startStaffSchedule(client, invite) {
   const calendarTarget = document.getElementById('calendar');
   const addGame = document.getElementById('add-calendar-game');
   const scheduleTab = document.getElementById('staff-schedule-tab');
+  const teamsTab = document.getElementById('staff-teams-tab');
+  const teamsPanel = document.getElementById('staff-teams-panel');
+  // Where the game editor was opened from, so closing it returns there.
+  let editorOrigin = 'schedule';
   const schedulePanel = document.getElementById('staff-schedule-panel');
   const scheduleTitle = document.getElementById('schedule-title');
   const scheduleFeedback = document.getElementById('schedule-feedback');
@@ -67,14 +71,35 @@ function startStaffSchedule(client, invite) {
   const settings = startStaffSettings(client, currentSchool, school => applySchoolTheme(client, school));
   const publication = startStaffPublication(client, currentSchool, {
     canEdit: () => canEdit, schools: () => schools,
-    onPublished: () => {
+    onPublished: withdrawn => {
       showUnpublished();
       if (calendar) showCalendar(visibleGames());
-      // Publishing from the editor leaves the AD on Games, so confirm it here too.
-      scheduleFeedback.textContent = 'Published. The school page shows it now.';
+      // Publishing can start from the editor, Schedule or Teams, so confirm it wherever the AD is.
+      feedback(withdrawn ? 'Unpublished. Families no longer see that schedule.' : 'Published. The school page shows it now.');
+      teams.render();
     },
     filterValues: () => Object.fromEntries(new FormData(filterForm)),
   });
+  const teams = startStaffTeams({
+    games: () => allGames, groups: () => canEdit ? publication.groups() : [], states: () => publication.states(),
+    links: () => overview.links(), coaches: () => coachList.coaches(),
+    schoolName: slug => schools.find(school => school.slug === slug)?.name,
+    filterValues: () => Object.fromEntries(new FormData(filterForm)),
+    openGame: game => openEditor(game, null, 'teams'),
+    addGame: team => {
+      openEditor(null, null, 'teams');
+      for (const name of ['sport', 'gender', 'level', 'season']) fields[name].value = team[name];
+      fields.game_date.focus();
+    },
+    reviewTeam: key => publication.reviewTeam(key),
+    unpublishTeam: key => publication.reviewTeam(key, true),
+    editCoach: id => { openCoaches(false); coachList.edit(id); },
+    addCoach: team => { openCoaches(false); coachList.addFor(team); },
+  });
+  function feedback(text) {
+    scheduleFeedback.textContent = text;
+    teams.setStatus(text);
+  }
   const transportation = startStaffTransportation(client, invite,
     () => schools.find(school => school.slug === selector.value), gameTitle);
   const form = document.getElementById('game-form');
@@ -239,6 +264,9 @@ function startStaffSchedule(client, invite) {
     const showOverview = !overviewPanel.hidden;
     const showTournaments = !tournamentsPanel.hidden;
     const showCoaches = canEdit && !coachesPanel.hidden;
+    const showTeams = canEdit && !teamsPanel.hidden;
+    teams.reset();
+    teamsTab.hidden = !canEdit;
     transportation.reset();
     publication.reset();
     coachList.reset();
@@ -265,6 +293,8 @@ function startStaffSchedule(client, invite) {
     coachesTab.hidden = !canEdit;
     if (showContact) openTransportation(false);
     if (showCoaches) openCoaches(false);
+    if (showTeams) openTeams(false);
+    else if (!canEdit && !teamsPanel.hidden) showSchedule();
     if (showSettings) openSettings(false);
     if (showOverview) openOverview(false);
     if (showTournaments) openTournaments(false);
@@ -304,6 +334,7 @@ function startStaffSchedule(client, invite) {
     if (canEdit) await publication.load();
     if (stopped || request !== loadNumber) return;
     showUnpublished();
+    teams.render();
     showCalendar(visible, focusDate ?? (newSchool ? new Date() : null));
     if (!calendar) showList(visible);
   }
@@ -344,6 +375,7 @@ function startStaffSchedule(client, invite) {
     showCount(visible);
     overview.render(visible);
     publication.render();
+    teams.render();
     if (calendar) showCalendar(visible);
     else showList(visible);
   }
@@ -452,7 +484,7 @@ function startStaffSchedule(client, invite) {
 
   // Hides every panel and clears the selected tab; each opener then shows its own panel.
   function hidePanels() {
-    for (const [panel, tab] of [[schedulePanel, scheduleTab], [overviewPanel, overviewTab],
+    for (const [panel, tab] of [[schedulePanel, scheduleTab], [teamsPanel, teamsTab], [overviewPanel, overviewTab],
       [transportationPanel, transportationTab], [coachesPanel, coachesTab], [settingsPanel, settingsTab], [tournamentsPanel, tournamentsTab]]) {
       panel.hidden = true;
       tab.removeAttribute('aria-current');
@@ -479,6 +511,19 @@ function startStaffSchedule(client, invite) {
     if (focus) scheduleTitle.focus();
   }
 
+  // Teams: the list, or the team that was open. Coaches load in the background and fill in when ready.
+  function openTeams(focus = true) {
+    if (!canEdit || !selector.value) return;
+    hidePanels();
+    teamsPanel.hidden = false;
+    teamsTab.setAttribute('aria-current', 'true');
+    filterForm.hidden = false;
+    teams.render();
+    coachList.load().then(() => { if (!stopped) teams.render(); });
+    if (focus) (document.getElementById('team-title') ?? document.getElementById('teams-title')).focus();
+  }
+  const leaveEditor = () => editorOrigin === 'teams' ? openTeams(true) : showSchedule(true);
+
   function openOverview(focus = true) {
     hidePanels();
     overviewPanel.hidden = false;
@@ -501,13 +546,14 @@ function startStaffSchedule(client, invite) {
     if (focus) transportationTitle.focus();
   }
 
-  function openEditor(game, date) {
+  function openEditor(game, date, origin = 'schedule') {
     if (!canEdit || saveButton.disabled) return;
+    editorOrigin = origin;
     edit(game);
     if (date) fields.game_date.value = date;
     hidePanels();
     form.hidden = false;
-    scheduleTab.setAttribute('aria-current', 'true');
+    (origin === 'teams' ? teamsTab : scheduleTab).setAttribute('aria-current', 'true');
     // A new game starts at the top; an existing one is most often opened to change its date.
     (game ? fields.game_date : fields.sport).focus();
   }
@@ -563,6 +609,7 @@ function startStaffSchedule(client, invite) {
   transportationTab.onclick = () => openTransportation();
   overviewTab.onclick = () => openOverview();
   coachesTab.onclick = () => openCoaches();
+  teamsTab.onclick = () => openTeams();
   filterForm.onsubmit = event => event.preventDefault();
   filterForm.oninput = event => {
     if (event.target === filterFields.season) fillSportOptions(filterFields.season, filterFields.sport, filterOptions());
@@ -577,7 +624,7 @@ function startStaffSchedule(client, invite) {
   preview.onchange = selectView;
   selector.onchange = selectSchool;
   fields.opponent_school_id.onchange = syncOpponent;
-  closeEditor.onclick = () => askToLeave(() => showSchedule(true));
+  closeEditor.onclick = () => askToLeave(leaveEditor);
   form.oninput = () => { dirty = true; syncStatusHint(); };
   document.getElementById('discard-confirm').onclick = () => {
     dirty = false;
@@ -637,8 +684,8 @@ function startStaffSchedule(client, invite) {
     }
     deleteDialog.close();
     edit(null);
-    showSchedule(true);
-    scheduleFeedback.textContent = 'Game deleted. If it was public, publish its team to take it off the public site.';
+    leaveEditor();
+    feedback('Game deleted. If it was public, publish its team to take it off the public site.');
     await loadGames(game.game_date);
   };
 
@@ -692,8 +739,8 @@ function startStaffSchedule(client, invite) {
       return;
     }
     edit(null);
-    showSchedule(true);
-    scheduleFeedback.textContent = 'Saved as a draft. It is not public until you publish.';
+    leaveEditor();
+    feedback('Saved as a draft. It is not public until you publish.');
     list.replaceChildren();
     await loadGames(input.game_date, false, savedId);
     if (reviewAfterSave && !stopped) await publication.reviewGame(savedId);
@@ -717,6 +764,7 @@ function startStaffSchedule(client, invite) {
     venues.stop();
     coachImport.stop();
     coachesTab.onclick = null;
+    teamsTab.onclick = null;
     coachesTab.disabled = false;
     overviewTab.onclick = null;
     overviewTab.disabled = false;
