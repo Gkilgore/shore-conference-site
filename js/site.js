@@ -115,3 +115,9 @@ if (directory) {
     }));
   }
 }
+
+// Browser-tab icon: the conference logo by default, or a school's logo on its own pages.
+function setPageIcon(src) {
+  const icon = document.getElementById('page-icon');
+  if (icon) icon.href = src || 'assets/logos/shore-conference.svg';
+}

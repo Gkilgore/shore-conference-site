@@ -128,7 +128,7 @@ test('families can subscribe before the first team is posted, with stable URLs',
   assert.equal(fixture.element('subscription-actions').hidden,false);
   assert.equal(fixture.element('subscription-url').value,'https://calendar.example/feed?scope=school&school=asbury-park');
   assert.equal(fixture.element('subscribe-apple').href,'webcal://calendar.example/feed?scope=school&school=asbury-park');
-  assert.match(fixture.element('subscription-status').textContent,/More are added as the school publishes them/);
+  assert.match(fixture.element('subscription-status').textContent,/No games posted yet\. Subscribe now/);
 });
 
 test('unknown-school subscriptions show a clear error and expose no subscription actions', async () => {

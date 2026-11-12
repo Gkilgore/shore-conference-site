@@ -20,6 +20,7 @@ if (Object.hasOwn(schoolDirectory, schoolSlug)) {
   logo.src = school.logo ?? (['colts-neck', 'marlboro', 'shore-regional'].includes(schoolSlug)
     ? 'assets/logos/' + schoolSlug + '.png' : 'assets/logos/shore-conference.svg');
   logo.hidden = false;
+  if (typeof setPageIcon === 'function') setPageIcon(logo.src);
   buildLogoWall(document.querySelector('.school-hero'), logo.src, 9, 26, school.logoBackground);
   document.documentElement.style.setProperty('--school-color', school.color);
   document.documentElement.style.setProperty('--school-accent', school.accent);

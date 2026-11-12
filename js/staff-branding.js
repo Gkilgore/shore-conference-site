@@ -42,9 +42,11 @@ function applySchoolTheme(client, school) {
   const url = schoolLogoUrl(client, school);
   heading.querySelector('.logo-wall')?.remove();
   logo.hidden = !url;
+  if (typeof setPageIcon === 'function') setPageIcon(url);
   if (!url) return;
   logo.onerror = () => {
     logo.hidden = true;
+    if (typeof setPageIcon === 'function') setPageIcon();
     heading.querySelector('.logo-wall')?.remove();
   };
   logo.src = url;

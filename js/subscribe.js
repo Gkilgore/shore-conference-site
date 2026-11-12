@@ -46,6 +46,7 @@
     }
     document.documentElement.classList.toggle('school-page', Boolean(school));
     logo.src = school?.logo ?? 'assets/logos/shore-conference.svg';
+    setPageIcon(logo.src);
     buildLogoWall(band, logo.src, 9, 26, school?.logoBackground);
     back.hidden = !school;
     if (school) {
@@ -87,8 +88,14 @@
       document.getElementById('subscribe-google').href = 'https://calendar.google.com/calendar/r?cid=' + encodeURIComponent(url);
       document.getElementById('download-calendar').href = url + '&download=1';
       document.getElementById('subscription-name').textContent = schedule.name;
-      status.textContent = schedule.events.length + (schedule.events.length === 1 ? ' game' : ' games') +
-        ' so far. ' + (conference ? 'More are added as schools confirm them.' : 'More are added as the school publishes them.');
+      // How many games this calendar holds, split into played and still to come.
+      const total = schedule.events.length;
+      // Game times are Eastern with no zone attached, so compare by day: today's games count as upcoming.
+      const today = new Date();
+      const day = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+      const upcoming = schedule.events.filter(event => String(event.start).slice(0, 10) >= day).length;
+      status.textContent = !total ? 'No games posted yet. Subscribe now and they’ll show up when they are.'
+        : total + (total === 1 ? ' game: ' : ' games: ') + upcoming + ' upcoming, ' + (total - upcoming) + ' past.';
       actions.hidden = false;
     } catch (error) {
       if (request === requestNumber) status.textContent = error.status === 404
