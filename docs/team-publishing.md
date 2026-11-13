@@ -1,5 +1,7 @@
 # Team schedule publishing
 
+> **Superseded on November 12, 2026 for the AD workflow.** Saving now posts. The tables and checked functions described here are unchanged and still do the work; `posting-on-save.md` describes how the dashboard uses them.
+
 Agreed workflow: each sport/gender/level schedule is published separately; ADs may select several schedules to review and publish together. CSV files may contain several teams, and several CSV files may be previewed together. Manual saves and imports are drafts. The existing public version stays in place until the AD reviews and publishes changes. Later updates can be published one game at a time or by selected teams.
 
 Schedules are grouped by team and season year. Winter uses the year in which the season starts (December 2026 and January 2027 both belong to Winter 2026–27). Other seasons use the game date's year. This prevents publishing next year's drafts over this year's schedule.

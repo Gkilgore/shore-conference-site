@@ -72,6 +72,7 @@ function startStaffSchedule(client, invite) {
   const importer = startStaffImport(client, {
     currentSchool, schools: () => schools, existingGames: () => allGames,
     onImported: date => { gamesNext.hidden = false; loadGames(date); },
+    post: ids => publication.post(ids),
   });
   const settings = startStaffSettings(client, currentSchool, school => applySchoolTheme(client, school));
   const publication = startStaffPublication(client, currentSchool, {
@@ -79,11 +80,10 @@ function startStaffSchedule(client, invite) {
     onPublished: withdrawn => {
       showUnpublished();
       if (calendar) showCalendar(visibleGames());
-      // Publishing can start from the editor, Schedule or Teams, so confirm it wherever the AD is.
-      feedback(withdrawn ? 'Unpublished. Families no longer see that schedule.' : 'Published. The school page shows it now.');
+      // Posting a held-back schedule or taking one down, from Teams.
+      feedback(withdrawn ? 'Schedule taken down. Families no longer see it.' : 'Schedule posted.');
       teams.render();
     },
-    filterValues: () => Object.fromEntries(new FormData(filterForm)),
   });
   const teams = startStaffTeams({
     games: () => allGames, groups: () => canEdit ? publication.groups() : [], states: () => publication.states(),
@@ -176,9 +176,6 @@ function startStaffSchedule(client, invite) {
     const school = schools.find(item => item.slug === schoolId);
     canEdit = role !== 'conference_office';
     roleLabel.textContent = roleLabels[role];
-    // Conference admins cannot publish a school's schedule; for them this tab only shows the match checks.
-    document.getElementById('publish-label').textContent = canEdit ? 'Publish' : 'Match checks';
-    overviewTitle.textContent = canEdit ? 'Publish' : 'Match checks';
     title.textContent = roleLabels[role];
     account.textContent = choice ? '' : signedInAccount;
     previewStatus.textContent = choice === 'office'
@@ -212,12 +209,8 @@ function startStaffSchedule(client, invite) {
     document.getElementById('game-form-context').textContent = [currentSchool()?.name,
       game ? gameTitle(game) : 'New game',
       game ? weekdayFormat.format(new Date(game.game_date + 'T' + game.start_time)) : '',
-      !game ? '' : state === 'Draft' ? 'Not public yet' : state === 'Changed' ? 'Has changes that are not public yet' : 'Published',
+      !game ? '' : state === 'Draft' ? 'Not posted' : state === 'Changed' ? 'Has a change that isn’t posted' : 'Posted',
     ].filter(Boolean).join(' · ');
-    // For a game families already see, publishing is the usual next step; for new work, saving a draft is.
-    const publishFirst = Boolean(game) && state !== 'Draft';
-    saveButton.className = 'button ' + (publishFirst ? 'secondary' : 'primary');
-    document.getElementById('save-and-review-publication').className = 'button ' + (publishFirst ? 'primary' : 'secondary');
     dirty = false;
     document.getElementById('delete-game').hidden = !game;
     if (game) {
@@ -238,7 +231,7 @@ function startStaffSchedule(client, invite) {
   function syncStatusHint() {
     document.getElementById('status-hint').textContent = fields.status.value === 'Postponed'
       ? 'Postponed: leave the original date for now. When the new date is set, change Date and switch Status back to Scheduled.'
-      : fields.status.value === 'Canceled' ? 'Canceled: families see this game marked Canceled once you publish. To remove a game entered by mistake, use Delete game.' : '';
+      : fields.status.value === 'Canceled' ? 'Canceled: families see this game marked Canceled. To remove a game entered by mistake, use Delete game.' : '';
   }
 
   function setHeading() {
@@ -247,17 +240,16 @@ function startStaffSchedule(client, invite) {
     if (selector.value) publicLink.href = 'school.html?school=' + encodeURIComponent(selector.value);
   }
 
-  // Counts what families cannot see yet and shows it above the games and on the Publish tab.
+  // Normally nothing is waiting. This counts games saved before posting became automatic, and any save whose posting failed.
   function showUnpublished() {
     const { map, removed } = canEdit ? publication.states() : { map: new Map(), removed: 0 };
     unpublished = map;
     const count = map.size + removed;
     unpublishedBar.hidden = !count;
     document.getElementById('unpublished-text').textContent = count === 1
-      ? '1 game isn’t public yet. It’s outlined below.' : count + ' games aren’t public yet. They’re outlined below.';
-    document.getElementById('publish-count').textContent = count ? ' · ' + count : '';
+      ? '1 game isn’t on the public schedule. It’s outlined below.' : count + ' games aren’t on the public schedule. They’re outlined below.';
     document.getElementById('games-unpublished').hidden = !count;
-    document.getElementById('games-unpublished-text').textContent = count === 1 ? '1 game isn’t public yet.' : count + ' games aren’t public yet.';
+    document.getElementById('games-unpublished-text').textContent = count === 1 ? '1 game isn’t on the public schedule.' : count + ' games aren’t on the public schedule.';
   }
 
   function askToLeave(action) {
@@ -387,7 +379,6 @@ function startStaffSchedule(client, invite) {
     showTeamInfo();
     showCount(visible);
     overview.render(visible);
-    publication.render();
     teams.render();
     if (calendar) showCalendar(visible);
     else showList(visible);
@@ -460,13 +451,13 @@ function startStaffSchedule(client, invite) {
             key.stopPropagation();
             el.click();
           });
-          // Outlined games are not public yet. The list view and screen readers also get the word.
+          // Outlined games are not on the public schedule. The list view and screen readers also get the words.
           const state = event.extendedProps.unpublished;
           if (!state) return;
-          el.title = state === 'Draft' ? 'Not public yet' : 'Has changes that are not public yet';
+          el.title = state === 'Draft' ? 'Not posted' : 'Has a change that isn’t posted';
           const tag = document.createElement('span');
           tag.className = 'staff-tag';
-          tag.textContent = state;
+          tag.textContent = state === 'Draft' ? 'Not posted' : 'Change not posted';
           (el.querySelector('.fc-event-title, .fc-list-event-title') ?? el).prepend(tag, ' ');
         },
         eventClick({ event }) {
@@ -555,7 +546,6 @@ function startStaffSchedule(client, invite) {
     overviewTab.setAttribute('aria-current', 'true');
     filterForm.hidden = false;
     overview.render(visibleGames());
-    publication.load();
     if (focus) overviewTitle.focus();
   }
 
@@ -669,7 +659,7 @@ function startStaffSchedule(client, invite) {
     askToLeave(() => button.click());
   };
   sidebar?.addEventListener('click', guardTabs, true);
-  document.getElementById('unpublished-review').onclick = () => openOverview();
+  document.getElementById('unpublished-review').onclick = () => openTeams();
   // Small screens keep the four filters behind one button so the games come sooner.
   filtersToggle.onclick = () => {
     const open = filterForm.classList.toggle('is-open');
@@ -682,9 +672,9 @@ function startStaffSchedule(client, invite) {
   };
   gamesTab.onclick = () => openGames();
   document.getElementById('games-view-schedule').onclick = () => showSchedule(true);
-  document.getElementById('games-review').onclick = () => openOverview();
+  document.getElementById('games-review').onclick = () => openTeams();
   scheduleTab.onclick = () => showSchedule(true);
-  // Deleting is for mistakes. A published copy stays public until the AD publishes the removal.
+  // Deleting is for mistakes. The public copy is removed right after the delete succeeds.
   const deleteDialog = document.getElementById('delete-game-dialog');
   const deleteStatus = document.getElementById('delete-game-status');
   const deleteConfirm = document.getElementById('delete-game-confirm');
@@ -713,20 +703,22 @@ function startStaffSchedule(client, invite) {
     deleteDialog.close();
     edit(null);
     leaveEditor();
-    feedback('Game deleted. If it was public, publish its team to take it off the public site.');
+    feedback('Game deleted. Taking it off the public schedule…');
+    const posted = await publication.post([game.id]);
+    if (stopped) return;
+    feedback(posted.ok && !posted.held.length ? 'Game deleted. It’s off the public schedule.'
+      : 'Game deleted, but it still shows on the public schedule. Open Teams and choose Post schedule for ' + (posted.held[0] ?? 'its team') + '.');
     await loadGames(game.game_date);
   };
 
   form.onsubmit = async event => {
     event.preventDefault();
-    const reviewAfterSave = event.submitter?.id === 'save-and-review-publication';
     const input = Object.fromEntries(new FormData(form));
     for (const name of Object.keys(input)) input[name] = input[name].trim() || null;
     input.school_id = selector.value;
     input.id = activeGame?.id ?? null;
     input.revision = activeGame?.revision ?? null;
     saveButton.disabled = true;
-    document.getElementById('save-and-review-publication').disabled = true;
     const fieldsets = form.querySelectorAll('fieldset');
     fieldsets.forEach(fieldset => fieldset.disabled = true);
     closeEditor.disabled = true;
@@ -744,8 +736,14 @@ function startStaffSchedule(client, invite) {
     formStatus.textContent = 'Saving game…';
     const { data: savedId, error } = await client.rpc('save_staff_game', { input });
     if (stopped) return;
+    // Saving is only half of it: copy the saved game to the public schedule before reporting anything.
+    let posted = null;
+    if (!error) {
+      formStatus.textContent = 'Posting…';
+      posted = await publication.post([savedId]);
+      if (stopped) return;
+    }
     saveButton.disabled = false;
-    document.getElementById('save-and-review-publication').disabled = false;
     fieldsets.forEach(fieldset => fieldset.disabled = false);
     closeEditor.disabled = false;
     scheduleTab.disabled = false;
@@ -768,11 +766,12 @@ function startStaffSchedule(client, invite) {
     }
     edit(null);
     leaveEditor();
-    feedback('Saved as a draft. It is not public until you publish.');
+    feedback(!posted.ok ? 'Game saved, but it didn’t post. Open Teams and choose Post schedule for its team.'
+      : posted.held.length ? 'Game saved, but not posted. ' + posted.held[0] + ' has other games that aren’t public. Open Teams and choose Post schedule to post them together.'
+      : 'Game posted.');
     gamesNext.hidden = false;
     list.replaceChildren();
     await loadGames(input.game_date, false, savedId);
-    if (reviewAfterSave && !stopped) await publication.reviewGame(savedId);
   };
 
   return () => {
@@ -808,7 +807,6 @@ function startStaffSchedule(client, invite) {
     preview.onchange = null;
     saveButton.disabled = false;
     form.querySelectorAll('fieldset').forEach(fieldset => fieldset.disabled = false);
-    document.getElementById('save-and-review-publication').disabled = false;
     closeEditor.disabled = false;
     scheduleTab.disabled = false;
     addGame.disabled = false;

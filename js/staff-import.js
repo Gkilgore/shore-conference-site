@@ -91,7 +91,7 @@ async function previewScheduleFiles(files, check) {
   return { rows, errors };
 }
 
-function startStaffImport(client, { currentSchool, schools, existingGames, onImported }) {
+function startStaffImport(client, { currentSchool, schools, existingGames, onImported, post = async () => ({ ok: true, held: [], heldIds: new Set() }) }) {
   const fileInput = document.getElementById('import-file');
   const template = document.getElementById('import-template');
   const summary = document.getElementById('import-summary');
@@ -162,16 +162,17 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
     return { game, state, problems, raw };
   }
 
+  let heldNote = '';
   function show() {
     errorList.hidden = !fileErrors.length;
     errorList.replaceChildren(...fileErrors.map(text => { const item=document.createElement('li'); item.textContent=text; return item; }));
-    const counts = { ready: 0, problem: 0, duplicate: 0, imported: 0, failed: 0 };
+    const counts = { ready: 0, problem: 0, duplicate: 0, imported: 0, held: 0, failed: 0 };
     rows.forEach(row => counts[row.state]++);
     table.hidden = !rows.length;
     clear.hidden = !rows.length && !fileErrors.length;
     save.hidden = !counts.ready;
-    save.textContent = 'Save ' + counts.ready + (counts.ready === 1 ? ' game as draft' : ' games as drafts');
-    const labels = { ready: 'Ready', problem: 'Needs a fix', duplicate: 'Skipped', imported: 'Saved as draft', failed: 'Failed' };
+    save.textContent = 'Import and post ' + counts.ready + (counts.ready === 1 ? ' game' : ' games');
+    const labels = { ready: 'Ready', problem: 'Needs a fix', duplicate: 'Skipped', imported: 'Posted', held: 'Saved, not posted', failed: 'Failed' };
     table.tBodies[0].replaceChildren(...rows.map((row, index) => {
       const line = document.createElement('tr');
       line.className = 'is-' + row.state;
@@ -193,10 +194,10 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
     if (rows.length) {
       summary.textContent = [
         counts.ready && counts.ready + ' ready', counts.problem && counts.problem + (counts.problem === 1 ? ' needs a fix' : ' need a fix'),
-        counts.duplicate && counts.duplicate + ' skipped', counts.imported && counts.imported + ' saved as drafts',
+        counts.duplicate && counts.duplicate + ' skipped', counts.imported && counts.imported + ' posted', counts.held && counts.held + ' saved but not posted',
         counts.failed && counts.failed + ' failed',
       ].filter(Boolean).join(' · ') + (counts.problem ? '. Fix those rows in the file and choose it again.' : '.') +
-        (counts.imported ? ' Nothing is public yet. Publish these games on the Publish tab.' : '');
+        (counts.held ? ' ' + heldNote : '');
     }
   }
 
@@ -241,7 +242,7 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
   save.onclick = async () => {
     const request = requestNumber;
     const ready = rows.filter(row => row.state === 'ready');
-    // One draft batch across all files. Publication is a separate reviewed action.
+    // One batch across all files. The saved games are posted together once every row has been tried.
     const batch = crypto.randomUUID();
     ready.forEach(row => { row.game.import_batch = batch; });
     save.disabled = true;
@@ -250,16 +251,27 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
     for (const [index, row] of ready.entries()) {
       if (!active || request !== requestNumber) return;
       summary.textContent = 'Importing ' + (index + 1) + ' of ' + ready.length + '…';
-      const { error } = await client.rpc('save_staff_game', { input: row.game });
+      const { data, error } = await client.rpc('save_staff_game', { input: row.game });
       if (!active || request !== requestNumber) return;
-      row.state = error ? 'failed' : 'imported';
+      row.state = error ? 'failed' : 'held';
+      row.id = data;
       if (error) row.problems.push('Could not be saved. Check this row and try again.');
+    }
+    // Rows stay "Saved, not posted" until the server confirms they are public.
+    const saved = ready.filter(row => row.state === 'held');
+    if (saved.length) {
+      summary.textContent = 'Posting ' + saved.length + (saved.length === 1 ? ' game…' : ' games…');
+      const result = await post(saved.map(row => row.id));
+      if (!active || request !== requestNumber) return;
+      if (result.ok) saved.forEach(row => { if (!result.heldIds.has(row.id)) row.state = 'imported'; });
+      heldNote = !result.ok ? 'Posting didn’t go through. The games are saved. Open Teams and choose Post schedule for each team.'
+        : 'Open Teams and choose Post schedule for ' + result.held.join(', ') + '. Those teams have other games that aren’t public, so nothing was posted for them.';
     }
     fileInput.disabled = false;
     clear.disabled = false;
     save.disabled = false;
     show();
-    const imported = ready.filter(row => row.state === 'imported');
+    const imported = ready.filter(row => row.state === 'imported' || row.state === 'held');
     if (imported.length) onImported(imported[0].game.game_date);
   };
 

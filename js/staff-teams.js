@@ -1,4 +1,4 @@
-// Teams tab: one team's schedule, unmatched games, coaches and publish status in one place.
+// Teams tab: one team's schedule, unmatched games, coaches and whether it is posted, in one place.
 // It reads what the other controllers already loaded and sends every change through their existing steps.
 function startStaffTeams({ games, groups, states, links, coaches, schoolName, filterValues,
   openGame, addGame, reviewTeam, unpublishTeam, editCoach, addCoach }) {
@@ -59,9 +59,9 @@ function startStaffTeams({ games, groups, states, links, coaches, schoolName, fi
   function publishState(team) {
     const group = team.group;
     if (!group) return { text: '', tone: '' };
-    if (!group.published_at) return { text: 'Not published', tone: 'is-draft' };
-    if (group.pending_count) return { text: group.pending_count + (group.pending_count === 1 ? ' change' : ' changes') + ' not public', tone: 'is-draft' };
-    return { text: 'Published', tone: 'is-public' };
+    if (!group.published_at) return { text: 'Not posted', tone: 'is-draft' };
+    if (group.pending_count) return { text: group.pending_count + (group.pending_count === 1 ? ' change' : ' changes') + ' not posted', tone: 'is-draft' };
+    return { text: 'Posted', tone: 'is-public' };
   }
   // Upcoming games against member schools whose entry differs from the other school's.
   function unmatched(team) {
@@ -101,7 +101,7 @@ function startStaffTeams({ games, groups, states, links, coaches, schoolName, fi
     date.dateTime = game.game_date;
     const title = node('strong', opponent(game));
     const state = states().map.get(game.id);
-    if (state) title.append(' ', node('span', state, 'staff-tag'));
+    if (state) title.append(' ', node('span', state === 'Draft' ? 'Not posted' : 'Change not posted', 'staff-tag'));
     if (game.status !== 'Scheduled') title.append(' ', node('span', game.status, 'staff-tag is-' + game.status.toLowerCase()));
     const details = node('span', [dateFormat.format(when(game)).split(',')[0], timeFormat.format(when(game)), game.location].filter(Boolean).join(' · '));
     if (reason) details.append(node('em', reason, 'staff-reason'));
@@ -131,14 +131,14 @@ function startStaffTeams({ games, groups, states, links, coaches, schoolName, fi
     const stateLine = node('p', undefined, 'team-state');
     if (state.text) stateLine.append(node('span', state.text, 'team-tag ' + state.tone));
     if (group && !group.published_at) stateLine.append(' Families can’t see this schedule yet.');
-    else if (group?.pending_count) stateLine.append(' Families still see the last published version.');
+    else if (group?.pending_count) stateLine.append(' Families still see the earlier version.');
     const actions = node('div', undefined, 'actions');
     actions.append(button('Add game', 'primary', () => addGame(team)));
     if (group) {
-      const publish = button('Review and publish', 'secondary', () => reviewTeam(team.key));
+      const publish = button('Post schedule', 'secondary', () => reviewTeam(team.key));
       publish.disabled = Boolean(group.published_at && !group.pending_count);
       actions.append(publish);
-      if (group.published_at) actions.append(button('Unpublish…', 'secondary', () => unpublishTeam(team.key)));
+      if (group.published_at) actions.append(button('Take down…', 'secondary', () => unpublishTeam(team.key)));
     }
     const head = node('div', undefined, 'team-head');
     head.append(back, heading, stateLine, actions);

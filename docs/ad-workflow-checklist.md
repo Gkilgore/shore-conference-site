@@ -99,3 +99,15 @@ Greg asked for Add game and Import games to move out of the sidebar into their o
 - **Schedule** is now the calendar only. Without the two sidebar buttons the calendar starts about 70px higher on a phone.
 - **Still there:** Add game inside a team (carries the team) and clicking a date on the Schedule calendar.
 - Checked with fictional data: add, cancel with unsaved edits, an import with one good row and two bad ones, find the draft on Schedule, publish, and the team shortcut. Clicking a calendar date was not exercised by the script; its code did not change.
+
+## Saving posts the game (November 12, branch `feature/post-on-save`)
+
+Greg asked for the draft and publish step to go. Details and the plan for older private games are in `docs/posting-on-save.md`.
+
+- **Tabs for an AD:** Schedule, Games, Teams, Match checks, Transportation, Coaches, School settings. Publish is gone; its totals and unmatched list remain as Match checks.
+- **Editor:** one button, "Save game". Confirmation is "Game posted."
+- **Import:** "Import and post N games". Rows end as Posted, Saved, not posted, Needs a fix or Failed.
+- **Delete** removes the game from the public schedule too.
+- **Teams:** status reads Posted or Not posted. "Post schedule" and "Take down…" are the two reviewed actions left.
+- **Older private games** are not exposed. A save into a team that still holds them is saved and held, with a message naming the team.
+- Checked with fictional data at 1280px and 375px: add, edit, postpone, delete, a held team, posting it from Teams, an import with a posted team, a held team and a bad row, taking a schedule down, a failed post with retry, and a failed save. Not checked against the Supabase project or the public pages.
