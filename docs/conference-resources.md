@@ -7,6 +7,7 @@
 - A division's `complete` flag describes the membership copied for that division, not coverage of every conference division. Missing schools get an unknown-assignment message and the link to the saved list. Partial memberships are not presented as complete lists.
 - Public document records carry their edition label, review date, format and limitations. Past-season leadership remains labeled as such. Link summaries are not full accessible transcriptions of original files.
 - Tournament source records do not create games. The existing conference-office upload and publish workflow stays unchanged; generator and bracket-discovery tools remain hidden.
+- The History tab is the conference's own history PDF laid out as an article, 1936 to 1969, with its officers in a table. The wording is tidied for reading; facts and spellings follow the PDF. Photo boxes are placeholders. To fill one, save the picture in `assets/history/`, replace the box's `photo-slot` div with an `<img>` that has `alt` text, and write the caption. Only use pictures the conference or a school has the right to publish.
 - Each tab has its own address (`resources.html#divisions`). Navigation and the About and History text work without JavaScript.
 
 ### Approved next-phase permissions

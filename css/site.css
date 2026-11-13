@@ -123,7 +123,7 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
 .side-tab[aria-current]:is(:hover, :focus-visible) { background: var(--red); }
 .side-tab:focus-visible { outline-offset: -5px; outline-color: white; }
 .side-panels { display: grid; gap: 1rem; min-width: 0; }
-.panel { display: grid; gap: 1rem; min-width: 0; padding: clamp(0.85rem, 2.5vw, 1.5rem); background: white; border: var(--frame); }
+.panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; min-width: 0; padding: clamp(0.85rem, 2.5vw, 1.5rem); background: white; border: var(--frame); }
 .panel[hidden] { display: none; }
 .panel > h2:focus { outline: none; } /* Focus moves here when switching tabs; no ring needed. */
 .panel p { max-width: 70ch; line-height: 1.6; }
@@ -138,6 +138,40 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
   .side-tabs { display: grid; }
   .side-tab { place-items: center start; padding-inline: 1rem; font-size: 1rem; }
 }
+/* History article: a magazine layout inside the History panel. Navy chapter bands, dated entries in two
+   columns, navy number tiles, a pull quote, and framed photo boxes with captions. One column on phones. */
+.article { gap: 1.5rem; }
+.article-head { display: grid; gap: 0.6rem; }
+.article-head .eyebrow { margin: 0; color: var(--red); }
+.article-head h2 { font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1; }
+.article-head h2:focus { outline: none; }
+.standfirst { font-size: clamp(1.1rem, 2.5vw, 1.3rem); font-weight: 500; line-height: 1.45; }
+.chapter { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.1rem; scroll-margin-top: 1rem; }
+.chapter-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 1rem; padding: 0.7rem 1rem; background: var(--navy); color: white; }
+.chapter-head span { font-size: clamp(1.6rem, 4vw, 2.3rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+.chapter-head h3 { margin: 0; font-size: 1.05rem; font-weight: 500; }
+.panel .chapter-lead { max-width: 65ch; font-size: 1.1rem; }
+.entries { columns: 2 17rem; column-gap: 2rem; }
+.entry { break-inside: avoid; padding-bottom: 1.1rem; }
+.entry h4 { margin: 0 0 0.25rem; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+.entry p { line-height: 1.55; }
+.entry p + p { margin-top: 0.5rem; }
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: 1px; margin: 0; padding: 0; list-style: none; }
+.stat-row li { display: grid; align-content: start; gap: 0.4rem; padding: 1rem; background: var(--navy); color: white; }
+.stat-row strong { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+.stat-row span { font-size: 0.92rem; line-height: 1.4; }
+.pullquote { margin: 0; padding: clamp(1rem, 3vw, 1.75rem); background: var(--paper); border: var(--frame); }
+.panel .pullquote p { max-width: 32ch; font-size: clamp(1.3rem, 3.5vw, 1.9rem); font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
+.pullquote footer { margin-top: 0.75rem; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+.photo-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 1rem; }
+.photo { display: grid; gap: 1px; margin: 0; background: var(--steel); border: var(--frame); }
+.photo img, .photo-slot { width: 100%; aspect-ratio: 3 / 2; }
+.photo img { display: block; object-fit: cover; }
+.photo-slot { display: grid; place-content: center; gap: 0.35rem; padding: 1rem; background: var(--paper); text-align: center; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+.photo-slot span { max-width: 26ch; font-size: 0.9rem; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); }
+.photo figcaption { padding: 0.6rem 0.8rem; background: white; font-size: 0.9rem; line-height: 1.4; color: var(--muted); }
+.article .archive-table { font-size: 0.92rem; }
+.article .archive-table tbody th { background: white; color: var(--ink); white-space: nowrap; }
 /* Division pop-up: each division's schools, side by side when there is room. */
 .division-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 1rem; margin-block: 1rem; }
 .division-groups h3 { margin: 0 0 0.3rem; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }

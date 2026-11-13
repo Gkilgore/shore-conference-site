@@ -17,13 +17,15 @@
 
   // Tabs: the address hash names the open panel, so each tab can be shared. Anything else opens About.
   function show(focus) {
-    const current = panels.find(panel => '#' + panel.id === location.hash) || panels[0];
+    const target = document.getElementById(location.hash.slice(1));
+    const current = panels.find(panel => panel === target || panel.contains(target)) || panels[0];
     panels.forEach((panel, index) => {
       panel.hidden = panel !== current;
       if (panel === current) tabs[index].setAttribute('aria-current', 'true');
       else tabs[index].removeAttribute('aria-current');
     });
     if (focus) current.querySelector('h2').focus();
+    return target !== current && current.contains(target) ? target : null; // A chapter inside the panel.
   }
   for (const tab of tabs) {
     tab.addEventListener('click', event => {
@@ -35,8 +37,9 @@
   for (const panel of panels) panel.querySelector('h2').tabIndex = -1;
   addEventListener('hashchange', () => show());
   addEventListener('popstate', () => show());
-  show();
-  if (location.hash) scrollTo(0, 0);
+  const chapter = show();
+  if (chapter) chapter.scrollIntoView();
+  else if (location.hash) scrollTo(0, 0);
 
   // Divisions: one button per team, by season. A button opens that sport's divisions in a pop-up.
   const dialog = node('dialog', '', 'game-details division-details');

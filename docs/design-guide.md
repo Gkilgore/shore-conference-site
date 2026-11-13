@@ -45,6 +45,7 @@ Hovers change the whole background to a different solid color, with no movement.
 - Game lists: `.game-list`.
 - Pop-ups: `<dialog class="game-details">`.
 - Public pages with sub-pages: `.side-layout` with `.side-tabs` on the left and one `.panel` per tab on the right (see `resources.html`). Lists of saved files use `.doc-list`.
+- Long articles: `.article` in a panel, with `.chapter` bands, `.entries` (dated items in two columns), `.stat-row` number tiles, `.pullquote`, and `.photo` boxes with a caption (see the History tab).
 - Staff pages: `.staff-panel` for framed sections and `.staff-tab` (with `aria-current`) for sidebar tabs. Game status colors are in `staff.css`.
 
 ## Every page
