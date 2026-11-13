@@ -11,6 +11,8 @@ const schoolSlug = schoolQuery ?? (Object.hasOwn(schoolDirectory, subdomain) ? s
 (async () => {
 if (Object.hasOwn(schoolDirectory, schoolSlug)) {
   const school = schoolDirectory[schoolSlug];
+  const divisionLink = document.getElementById('school-divisions-link');
+  if (divisionLink) divisionLink.href = 'divisions.html?school=' + encodeURIComponent(schoolSlug);
   const title = school.name + ' Athletics';
   document.title = title + ' | The Shore Conference';
   const emphasis = document.createElement('em');

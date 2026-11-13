@@ -1,15 +1,21 @@
-// Facts copied by hand from theshoreconference.com: division lists, school athletics links and
+// Facts copied by hand from the conference's own lists: division lists, school athletics links and
 // tournament sources. Greg updates this file through a pull request; docs/conference-resources.md says how.
-// Every entry carries its official URL, a review status and the date it was last checked.
+// Every entry links to a copy saved on this site, with a review status and the date it was last checked.
+// The old conference site will go away, so nothing here links to it.
+// PDFs are saved in assets/documents/. Web pages are saved in data/archived-resources.js and shown by archive.html.
+const savedCopy = path => {
+  const name = path.split('?')[0].split('/').pop();
+  return name.endsWith('.pdf') ? 'assets/documents/' + name : 'archive.html?page=' + encodeURIComponent(name.replace(/\.aspx$/, ''));
+};
+
 const shoreConferenceResources = (() => {
-  const site = 'https://theshoreconference.com';
   const reviewed = '2026-11-10';
   // The official lists do not name a level. They are recorded, and shown, as varsity only.
   // year: the fall calendar year for Fall and Winter, the spring calendar year for Spring.
   // complete: every division listed here has its full member list. Divisions with no pilot school are left out.
   // Members are directory slugs. A name with no single matching school stays as the list prints it.
   const list = (sports, genders, season, year, title, path, complete, divisions) => ({
-    sports, genders, level: 'Varsity', season, year, title, url: site + path, status: 'verified', reviewed, complete, divisions });
+    sports, genders, level: 'Varsity', season, year, title, url: savedCopy(path), status: 'verified', reviewed, complete, divisions });
 
   const divisionLists = [
     list(['Soccer'], ['Boys'], 'Fall', 2026, '2026 Boys’ Soccer Divisions', '/sports/2026/6/24/MSOC_2026-divisions.aspx', true, {
@@ -167,13 +173,13 @@ const shoreConferenceResources = (() => {
 
   // What the conference has posted for a tournament. A conference admin can copy this into a
   // tournament's "Rules and dates" section. Dates the sources disagree on stay unconfirmed.
-  const chart = site + '/documents/2026/9/24/Shore_Conference_Quick_Chart_2025_2028_Fall.pdf';
+  const chart = savedCopy('/documents/2026/9/24/Shore_Conference_Quick_Chart_2025_2028_Fall.pdf');
   const cutoff = { label: 'Qualification cutoff', date: '', confirmed: false,
     note: 'Regulations say Oct 10, 2026. Quick chart says Oct 11.' };
   const tournamentSources = [{
     sports: ['Soccer'], genders: ['Boys', 'Girls'], season: 'Fall', year: 2026, reviewed,
     rules_title: '2026 SCT Soccer Rules and Regulations',
-    rules_url: site + '/documents/2026/9/24/2026_SCT_Soccer_Rules_and_Regulations.pdf',
+    rules_url: savedCopy('/documents/2026/9/24/2026_SCT_Soccer_Rules_and_Regulations.pdf'),
     chart_url: chart,
     // Named in the 2026 regulations. The conference's director list is still the 2025-26 one.
     director: 'Josh Mehl and Ted Gillen',
@@ -195,3 +201,134 @@ const shoreConferenceResources = (() => {
 
   return { divisionLists, schoolSites, tournamentSources };
 })();
+
+// Public resource index: saved copies only. Source labels do not assert that a document is current.
+const shorePublicResources = {
+  "documents": [
+    {
+      "title": "History of the Shore Conference",
+      "url": "assets/documents/HISTORY_OF_THE_SHORE_CONFERENCE.pdf",
+      "description": "The conference history, from its founding in 1936 through later membership and organizational changes.",
+      "category": "History",
+      "version": "Official history; posted 2022",
+      "format": "PDF",
+      "reviewed": "2026-11-12"
+    },
+    {
+      "title": "Shore Conference Constitution",
+      "url": "assets/documents/SC_Constitution_2024_.pdf",
+      "description": "The adopted conference constitution. Consult the original for the full governing text.",
+      "category": "Governance",
+      "version": "Revised June 2024",
+      "format": "PDF",
+      "reviewed": "2026-11-12",
+      "note": "This is the linked edition; confirm any later amendments with the conference office."
+    },
+    {
+      "title": "Executive Committee",
+      "url": "assets/documents/SC_Exec_Comm_26.pdf",
+      "description": "The published executive committee roster for 2025-26.",
+      "category": "Leadership",
+      "version": "2025-26",
+      "format": "PDF",
+      "reviewed": "2026-11-12",
+      "note": "Past-season roster. Current appointments have not been confirmed."
+    },
+    {
+      "title": "Tournament Directors",
+      "url": "archive.html?page=GEN_sct-directors-26",
+      "description": "Sport-by-sport tournament director information for 2025-26.",
+      "category": "Leadership",
+      "version": "2025-26",
+      "format": "Web page",
+      "reviewed": "2026-11-12",
+      "note": "Past-season list. Check the current competition regulations before contacting a director."
+    },
+    {
+      "title": "Professional Service and Lifetime Award Forms",
+      "url": "assets/documents/PROFESSIONAL_SERVICE_and_LIFETIME_AWARD.pdf",
+      "description": "Award criteria and blank nomination forms. Completed nominations go to the conference, not this public page.",
+      "category": "Forms",
+      "version": "Posted November 2022",
+      "format": "PDF",
+      "reviewed": "2026-11-12",
+      "note": "Confirm the deadline and recipient with the conference office before submitting."
+    }
+  ],
+  "tournaments": [
+    {
+      "title": "2026 Field Hockey SCT Bracket",
+      "url": "assets/documents/FH_SCT_2026_SCT_2026.pdf",
+      "description": "Official tournament bracket file for the field hockey SCT.",
+      "category": "Bracket",
+      "version": "2026",
+      "format": "PDF",
+      "reviewed": "2026-11-12",
+      "sport": "Field Hockey",
+      "competition": "SCT",
+      "year": 2026
+    },
+    {
+      "title": "2026 Field Hockey Coaches Cup Bracket",
+      "url": "assets/documents/FH_Coaches_Cup_2026_Coaches_Cup_2026.pdf",
+      "description": "Separate field hockey competition, with its own seeded bracket.",
+      "category": "Bracket",
+      "version": "2026",
+      "format": "PDF",
+      "reviewed": "2026-11-12",
+      "sport": "Field Hockey",
+      "competition": "Coaches Cup",
+      "year": 2026,
+      "note": "The source includes a spreadsheet error. Confirm unclear bracket details with the conference office."
+    },
+    {
+      "title": "2026 Field Hockey Tournament Regulations",
+      "url": "assets/documents/Shore_Conference_Field_Hockey_Tournament_Regulations.pdf",
+      "description": "Official entry and competition regulations for the field hockey tournament.",
+      "category": "Regulations",
+      "version": "2026",
+      "format": "PDF",
+      "reviewed": "2026-11-12",
+      "sport": "Field Hockey",
+      "competition": "SCT",
+      "year": 2026
+    },
+    {
+      "title": "2026 Soccer Rules and Entry Information",
+      "url": "assets/documents/2026_SCT_Soccer_Rules_and_Regulations.pdf",
+      "description": "Boys' and girls' SCT regulations and entry information.",
+      "category": "Regulations",
+      "version": "2026",
+      "format": "PDF",
+      "reviewed": "2026-11-12",
+      "sport": "Soccer",
+      "competition": "SCT",
+      "year": 2026,
+      "note": "Some dates disagree with the quick chart. Confirm dates with the conference office; this page does not resolve the discrepancy."
+    },
+    {
+      "title": "2026 Girls Volleyball SCT Bracket",
+      "url": "assets/documents/2026_SCT_GVB_Bracket.pdf",
+      "description": "The official girls' volleyball SCT bracket.",
+      "category": "Bracket",
+      "version": "2026",
+      "format": "PDF",
+      "reviewed": "2026-11-12",
+      "sport": "Volleyball",
+      "competition": "SCT",
+      "year": 2026
+    },
+    {
+      "title": "2026 Girls Volleyball Kim Cole Cup Bracket",
+      "url": "assets/documents/2026_Girls_Volleyball_Kim_Cole_Cup_Bracket.pdf",
+      "description": "The Kim Cole Cup is listed separately from the girls' volleyball SCT.",
+      "category": "Bracket",
+      "version": "2026",
+      "format": "PDF",
+      "reviewed": "2026-11-12",
+      "sport": "Volleyball",
+      "competition": "Kim Cole Cup",
+      "year": 2026
+    }
+  ]
+};

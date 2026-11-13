@@ -69,7 +69,7 @@ function renderTournamentInfo(tournament, target) {
     row.append(name, content);
     items.push(row);
   };
-  if (/^https:\/\/\S+$/.test(info.rules_url || '')) {
+  if (/^(https:\/\/\S+|assets\/documents\/[\w.-]+\.pdf)$/.test(info.rules_url || '')) {
     const link = document.createElement('a');
     link.href = info.rules_url;
     link.target = '_blank';

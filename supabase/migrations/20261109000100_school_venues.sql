@@ -1,4 +1,5 @@
--- DRAFT for Greg's review: each school's list of venues, picked from a dropdown in the game editor.
+-- Applied and permission-tested in test project jrtcyihpdrcnhxgproyw on November 12, 2026.
+-- Each school's list of venues, picked from a dropdown in the game editor.
 -- Venue names are public (they already appear on public calendars), so anyone can read every school's
 -- list. That lets an AD pick from the home school's list for an away game. Only the school's AD and
 -- site admins can change a list.

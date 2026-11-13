@@ -258,7 +258,7 @@ function startStaffTournaments(client, { schools = () => [] } = {}) {
         changed();renderInfo();
       });
       fill.id = 'tournament-info-fill';
-      sources.replaceChildren(node('span', 'On the conference site for ' + [working.gender, working.sport, working.season, working.season_year].join(' ') + ':'),
+      sources.replaceChildren(node('span', 'Saved conference files for ' + [working.gender, working.sport, working.season, working.season_year].join(' ') + ':'),
         link('Tournament rules', source.rules_url), link('Quick chart of dates', source.chart_url), fill);
     }
     const fields = el('tournament-info-fields');

@@ -55,11 +55,12 @@ Each school keeps a venue list under **School settings**. In the game editor, Ve
 
 "Other venue…" is always there for one-off locations. Picking from the home school's list keeps both schools' locations spelled the same, which the match check needs.
 
-`supabase/migrations/20261109000100_school_venues.sql` is a draft for Greg:
+`supabase/migrations/20261109000100_school_venues.sql` was applied to test project `jrtcyihpdrcnhxgproyw` on November 12, 2026:
 
 - **Who can read and change lists:** anyone can read every school's list (venue names are already public on the calendars). Only the school's AD and site admins can change it.
 - **What games store:** games still store the venue name as text, so renaming or deleting a venue doesn't change saved games.
-- **To enable venue management:** apply this migration to the test Supabase project. Until then, ADs can see sample venues in the game dropdown, but cannot add, rename or delete venues. No one should apply it to the live project as part of agent work.
+- **Venue management is enabled:** refresh the AD dashboard and open School settings, then Venues. ADs can add a name and optional address, edit either field and choose Save, or choose Delete and confirm. Eight initial venue entries were installed for the three pilot schools. The production database was not touched.
+- **Verification:** `supabase/tests/school-venues.sql` returned PASS for own-school add/edit/delete, duplicate-name rejection, rejection of other-school insert/edit/delete/reassignment, read-only conference-office access, and public reading without anonymous writing. The test rolled back; a separate check confirmed no test accounts or venue fixtures remained. Database access rules are enabled. The authenticated browser journey has not been exercised with a real AD login.
 
 ## Sample games for testing
 

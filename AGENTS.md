@@ -28,6 +28,7 @@ Read [the rebuild plan](docs/rebuild-plan.md) before making changes. Greg and Al
 - `css/site.css` holds shared styles. `js/site.js` builds the school directory and upcoming-game previews. `js/calendar.js` configures FullCalendar and its filters. `js/school.js` and `js/conference.js` prepare each page's games.
 - `data/sample-data.js` holds fictional school and game data. `assets/logos/` holds the school marks.
 - `data/conference-resources.js` holds facts copied from the official conference site: division lists, school athletics links and tournament sources. `js/team-info.js` shows them. Follow [conference resources](docs/conference-resources.md) when updating them.
+- Never link to theshoreconference.com; it will go away. Link to saved copies: PDFs in `assets/documents/`, web pages in `data/archived-resources.js`, shown by `archive.html?page=…`.
 
 ## Working together
 

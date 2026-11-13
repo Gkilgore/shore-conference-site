@@ -15,7 +15,7 @@ const find = (sport, gender, season, year) => resources.divisionLists.find(list 
 
 test('every division list names its source, level, season and review', () => {
   for (const list of resources.divisionLists) {
-    assert.match(list.url, /^https:\/\/theshoreconference\.com\//, list.title);
+    assert.match(list.url, /^(assets\/documents\/[\w.-]+\.pdf|archive\.html\?page=[\w.-]+)$/, list.title);
     assert.equal(list.status, 'verified');
     assert.match(list.reviewed, isoDate);
     assert.equal(list.level, 'Varsity');
@@ -63,7 +63,7 @@ test('school links are https, reviewed and only for real schools', () => {
 
 test('tournament sources keep disputed dates unconfirmed', () => {
   const [soccer] = resources.tournamentSources;
-  assert.match(soccer.rules_url, /^https:\/\/theshoreconference\.com\//);
+  assert.match(soccer.rules_url, /^assets\/documents\/[\w.-]+\.pdf$/);
   for (const gender of ['Boys', 'Girls']) {
     const dates = Object.fromEntries(soccer.dates[gender].map(row => [row.label, row]));
     for (const label of ['Qualification cutoff', 'Quarterfinals', 'Semifinals']) {

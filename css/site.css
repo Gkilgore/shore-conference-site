@@ -54,7 +54,8 @@ h2 { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.1; }
 .skip-link:focus { top: 1rem; z-index: 5; background: var(--hover); color: var(--ink); padding: 0.75rem; border: var(--frame); }
 
 /* Masthead: brand, main navigation, and the staff sign-in link. */
-.masthead { background: white; border-bottom: var(--frame); view-transition-name: masthead; }
+/* Raised above the page bands so nothing in the header slips behind them. */
+.masthead { position: relative; z-index: 10; background: white; border-bottom: var(--frame); view-transition-name: masthead; }
 .site-header {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -100,6 +101,29 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
   .staff-link { grid-row: 1; grid-column: 2; min-height: 2.25rem; padding-inline: 0.6rem; font-size: 0.85rem; }
   .site-header nav { grid-row: 2; }
 }
+
+/* Public resource pages use existing colors and full frames; lists reflow on phones. */
+.resource-page { display: grid; gap: 1.25rem; }
+.resource-page > p { max-width: 75ch; line-height: 1.55; }
+.resource-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr)); gap: 1rem; margin-top: 1rem; }
+.resource-card { display: flex; flex-direction: column; align-items: flex-start; gap: 0.75rem; padding: 1rem; border: var(--frame); background: white; min-width: 0; overflow-wrap: anywhere; }
+.resource-card h2 { font-size: 1.4rem; line-height: 1.25; }
+.resource-card h3 { margin: 0; font-size: 1.15rem; }
+.resource-card p { line-height: 1.5; }
+.resource-card ul { margin: 0; padding-left: 1.4rem; line-height: 1.7; }
+.resource-card a { text-decoration: underline; }
+.resource-card a:hover { color: var(--ink); background: var(--hover); }
+.resource-meta { color: var(--muted); font-size: 0.9rem; }
+.resource-filters { align-items: end; }
+.resource-filters label { min-width: 0; }
+.resource-filters :is(input, select) { width: 100%; min-width: 0; }
+.intro h1 + p { margin-top: 0.75rem; }
+/* Saved copies of conference lists: full-frame tables that scroll sideways on phones. */
+.archive-content { display: grid; gap: 1rem; }
+.archive-scroll { overflow-x: auto; border: var(--frame); background: white; }
+.archive-table { width: 100%; border-collapse: collapse; }
+.archive-table :is(th, td) { padding: 0.5rem 0.75rem; border: 1px solid var(--steel); text-align: left; vertical-align: top; }
+.archive-table th { background: var(--navy); color: white; font-weight: 700; }
 
 .hero { background: var(--paper); color: var(--ink); border-bottom: var(--frame); }
 .hero-inner { padding-block: clamp(2rem, 7vw, 5rem); }

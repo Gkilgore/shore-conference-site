@@ -1,0 +1,40 @@
+<!-- Shows a saved copy of a conference web page, such as a division list, from data/archived-resources.js. -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link id="page-icon" rel="icon" href="assets/logos/shore-conference.svg">
+  <title>Saved list | The Shore Conference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700;800&display=swap">
+  <link rel="stylesheet" href="css/site.css">
+  <script defer src="data/conference-resources.js"></script>
+  <script defer src="data/archived-resources.js"></script>
+  <script defer src="js/archive.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="masthead">
+    <div class="site-header wrap">
+      <a class="brand" href="index.html">The Shore Conference</a>
+      <nav aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="schools.html">Schools</a>
+        <a href="calendar.html">Calendar</a>
+        <a href="about.html" class="section-active">About</a>
+      </nav>
+      <a class="staff-link" href="admin.html">Staff sign-in</a>
+    </div>
+  </header>
+  <main id="main">
+    <section class="intro"><div class="wrap"><h1 id="archive-title">Saved list</h1><p id="archive-meta">A copy saved on this site.</p></div></section>
+    <div class="wrap section resource-page">
+      <div class="actions"><a class="button secondary" href="divisions.html">All divisions</a><a class="button secondary" href="inside.html">Documents</a></div>
+      <div id="archive-content" class="archive-content"><noscript><p>Enable JavaScript to show this list.</p></noscript></div>
+    </div>
+  </main>
+  <footer class="site-footer"><div class="wrap">The Shore Conference <span>New Jersey Athletics</span></div></footer>
+</body>
+</html>

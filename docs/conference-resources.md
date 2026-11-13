@@ -1,6 +1,29 @@
 # Conference resources
 
-Facts this site copies from the official conference site, [theshoreconference.com](https://theshoreconference.com/). Everything here links back to its source. Nothing syncs automatically.
+## Public resource hubs (November 13, 2026)
+
+The approved first expansion adds [Divisions](../divisions.html), [Tournaments](../tournaments.html) and [Inside the Conference](../inside.html). They read the existing alignment data and the `shorePublicResources` index in [conference-resources.js](../data/conference-resources.js). The index links to copies saved on this site. Nothing syncs automatically.
+
+- A division's `complete` flag describes the membership copied for that division, not coverage of every conference division. Missing schools get an unknown-assignment message and the link to the saved list. Partial memberships are not presented as complete lists.
+- Public document records carry their edition label, review date, format and limitations. Past-season leadership remains labeled as such. Link summaries are not full accessible transcriptions of original files.
+- Tournament source records do not create games. The existing conference-office upload and publish workflow stays unchanged; generator and bracket-discovery tools remain hidden.
+- Resource filters use query parameters so selections can be shared. Navigation and saved-file links work without JavaScript.
+
+### Approved next-phase permissions
+
+Conference admins and site admins may manage and approve conference content themselves. AD content controls are limited to their own school's social media; general school news, photo or document submissions are not approved. This first phase does not implement or grant new database permissions.
+
+Use attributed links to approved sources first. Hosted photos or connected social feeds require recorded permission, a named conference contact for removal requests, and a removal/disconnection procedure before rollout. Do not copy publisher text/images or scrape school accounts. These measures reduce exposure but do not establish that content has been licensed or eliminate risk.
+
+Administrator editing, version storage, uploads, news archives and social-account controls remain later phases. Development uses the test Supabase project; Greg handles production.
+
+Facts this site copies from the conference's own files. The old conference site will go away, so **nothing on this site links to it**. Every list and document links to a copy saved here:
+
+- PDFs are saved in `assets/documents/` under their original file names.
+- Web pages (division lists and the tournament director list) are saved in `data/archived-resources.js` and shown by [archive.html](../archive.html) (`archive.html?page=MSOC_2026-divisions`).
+- `docs/source-archive/manifest.json` records where each copy came from, its size, checksum and capture date.
+
+In `data/conference-resources.js`, `list(...)` and `savedCopy(...)` take the old address and turn it into the saved copy's address. Save the file first, then add the entry. A tournament's rules link may be a saved file (`assets/documents/…pdf`) or an https link.
 
 ## Where each fact lives
 
@@ -17,10 +40,10 @@ A file is enough for now: about 25 lists and 48 links that change once or twice 
 
 Each summer the conference posts new division lists under "Alignments" on its home page.
 
-1. Open the new list. Add a `list(...)` entry with the sport, the teams it covers, the season, the year and the list's address. Keep last year's entry. The site picks the entry for the school year on screen, so older seasons keep their own divisions.
+1. Open the new list. Save a copy (a PDF goes in `assets/documents/`; a web page goes in `data/archived-resources.js`). Add a `list(...)` entry with the sport, the teams it covers, the season, the year and the list's old address; the site links to the saved copy. Keep last year's entry. The site picks the entry for the school year on screen, so older seasons keep their own divisions.
 2. Copy each division that includes Colts Neck, Marlboro or Shore Regional, with every school in it. If you copy only some schools, set `complete` to `false`; the site then shows the division without a member list.
 3. Write schools as directory slugs (`middletown-south`). If a name could mean more than one school ("Brick", "Middletown"), keep it as printed.
-4. For a list you have not read, pass `null` for the divisions. The site links to it and names no division.
+4. For a list you have not read, pass `null` for the divisions. The site links to the saved copy and names no division.
 5. Run `node --test tests/*.test.mjs`. The tests catch a misspelled slug, a school in two divisions and a missing source.
 
 Years: fall and winter use the year the season starts (winter 2026–27 is `2026`); spring uses the year it is played.
