@@ -13,6 +13,7 @@ function startStaffVenues(client, { currentSchool, schools, fields }) {
   let editable = false;
   let active = true;
   let request = 0;
+  let loadErrorMessage = '';
 
   function namesFor(slug) {
     return venues.filter(venue => venue.school_id === slug).map(venue => venue.name)
@@ -32,6 +33,11 @@ function startStaffVenues(client, { currentSchool, schools, fields }) {
     if (!active || current !== request) return;
     editable = !error;
     venues = error ? demoVenues() : data;
+    loadErrorMessage = error
+      ? ['42P01', 'PGRST205'].includes(error.code)
+        ? 'Venue editing is unavailable until the school venues table is set up in Supabase. Ask the site admin to apply the venue migration in the test project, then refresh.'
+        : 'Venue lists could not load. Check your connection or access, then refresh.'
+      : '';
     showSettings();
     syncPicker(fields.location.value);
   }
@@ -102,8 +108,7 @@ function startStaffVenues(client, { currentSchool, schools, fields }) {
     const school = currentSchool();
     if (!school) return;
     addForm.hidden = !editable;
-    status.textContent = editable ? status.textContent
-      : 'Venue lists aren’t set up yet.';
+    if (!editable) status.textContent = loadErrorMessage;
     const own = venues.filter(venue => venue.school_id === school.slug).sort((a, b) => a.name.localeCompare(b.name));
     list.replaceChildren(...(own.length ? own.map(venue => {
       const item = document.createElement('li');

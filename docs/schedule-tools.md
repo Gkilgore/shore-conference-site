@@ -59,7 +59,7 @@ Each school keeps a venue list under **School settings**. In the game editor, Ve
 
 - **Who can read and change lists:** anyone can read every school's list (venue names are already public on the calendars). Only the school's AD and site admins can change it.
 - **What games store:** games still store the venue name as text, so renaming or deleting a venue doesn't change saved games.
-- **Before the migration is applied:** the dropdowns use the sample venues in `data/sample-data.js`.
+- **To enable venue management:** apply this migration to the test Supabase project. Until then, ADs can see sample venues in the game dropdown, but cannot add, rename or delete venues. No one should apply it to the live project as part of agent work.
 
 ## Sample games for testing
 
