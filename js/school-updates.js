@@ -64,10 +64,45 @@ function schoolPublicChanges(before, after, schoolNames = {}) {
   });
 }
 
+// Saving posts straight away, so fixing a typo right after adding a game would otherwise show twice.
+// Changes to the same game within 12 hours become one entry showing where it started and where it ended up;
+// an entry whose net change is nothing (or a game added and removed again) is dropped.
+function mergePublicUpdates(updates, schoolNames = {}) {
+  const span = 12 * 60 * 60 * 1000;
+  const merged = [];
+  const latest = new Map();
+  const status = game => game?.status ?? 'Scheduled';
+  for (const update of [...updates].sort((first, second) => Date.parse(first.occurred_at) - Date.parse(second.occurred_at))) {
+    const game = update.game_id ?? null;
+    const previous = game ? latest.get(game) : null;
+    const gameKind = /^game_/.test(update.kind);
+    if (!gameKind || !previous || previous.kind === 'game_removed' ||
+        Date.parse(update.occurred_at) - Date.parse(previous.occurred_at) > span) {
+      const entry = { ...update };
+      merged.push(entry);
+      if (game && gameKind) latest.set(game, entry);
+      continue;
+    }
+    previous.occurred_at = update.occurred_at;
+    previous.after = update.after;
+    if (update.kind === 'game_removed') {
+      previous.kind = previous.kind === 'game_added' ? 'dropped' : 'game_removed';
+      continue;
+    }
+    if (previous.kind === 'game_added') continue;
+    const before = previous.before, after = update.after;
+    previous.kind = status(after) === 'Canceled' && status(before) !== 'Canceled' ? 'game_canceled'
+      : status(after) === 'Postponed' && status(before) !== 'Postponed' ? 'game_postponed'
+      : schoolPublicChanges(before, after, schoolNames).length ? 'game_changed' : 'dropped';
+  }
+  return merged.filter(update => update.kind !== 'dropped');
+}
+
 function schoolPublicUpdates(schedule, schoolNames = {}) {
   const kinds = { team_posted: 'Team schedule posted', team_unpublished: 'Team schedule withdrawn',
     game_added: 'Game added', game_changed: 'Game updated', game_removed: 'Game removed', game_canceled: 'Game canceled', game_postponed: 'Game postponed' };
-  return (schedule.updates ?? []).filter(update => Object.hasOwn(kinds, update.kind) && Number.isFinite(Date.parse(update.occurred_at)))
+  const valid = (schedule.updates ?? []).filter(update => Object.hasOwn(kinds, update.kind) && Number.isFinite(Date.parse(update.occurred_at)));
+  return mergePublicUpdates(valid, schoolNames)
     .sort((first, second) => Date.parse(second.occurred_at) - Date.parse(first.occurred_at)).slice(0, 20)
     .map(update => {
       const game = update.after ?? update.before;

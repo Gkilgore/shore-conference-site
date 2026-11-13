@@ -6,7 +6,7 @@ November 5, 2026 · Greg Kilgore and Alexa
 
 - **One database of games.** Every calendar is built from it: each school's page, the conference calendar, and the subscribe links parents add to their phones. Nobody edits a calendar file by hand.
 - **Each school owns its schedule.** Only that school's Athletic Director (AD) can add, import or edit its games. Nothing one school enters appears on another school's calendar.
-- **Review before publishing (Greg's November 6 update).** Saves and imports are working drafts. Publish each sport/gender/level/season-year schedule separately, or select several to review and publish together. Later edits can be reviewed and published per game or per selected team. Posted calendars and subscriptions keep the last approved version until publication. Existing subscription URLs stay the same.
+- **Saving posts the game (Greg's November 12 update).** For school schedules, saving a game or completing an import posts it to the public schedule; there is no draft or Publish step. This replaces the November 6 "review before publishing" decision. Games that were private before the change stay private until an AD posts them. See `posting-on-save.md`.
 - **The conference calendar is built by matching.** When two member schools publish the same game and the details agree, it appears on the conference calendar automatically.
 - **Tournaments are the one exception** (Greg's November 9 update). Conference admins import or generate a bracket, schedule its games, review and publish. Conference publication places each game on the conference calendar and confirmed participating schools' calendars. ADs manage their own tournament transportation. See `tournaments-design.md` for the implemented workflow.
 
@@ -23,7 +23,7 @@ November 5, 2026 · Greg Kilgore and Alexa
 
 **Staff access (Greg's November 6 update):** Several invited AD/staff accounts may share a school, and several accounts may be conference admins. Conference admins can add, reassign or remove AD access. Site admins can also manage conference admins. These tools cannot grant site-admin access or change the signed-in administrator's own access. Every change checks current permissions and the reviewed account version. Removing an invitation blocks future school database access even with an existing login token.
 
-**Public updates:** Each school page identifies the season, year and teams actually posted, followed by recent published game changes. Draft edits stay private until approved. Withdrawing a schedule hides its old game details from public history, including after reposting.
+**Public updates:** Each school page identifies the season, year and teams actually posted, followed by recent published game changes. A saved change is public straight away. Withdrawing a schedule hides its old game details from public history, including after reposting.
 
 **School branding:** ADs upload their logo and pick two colors in the admin area. The site chooses black or white text automatically so it stays readable, and the AD previews the page before saving.
 

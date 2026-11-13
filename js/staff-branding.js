@@ -15,7 +15,7 @@ function schoolColors(school) {
 }
 
 function schoolLogoUrl(client, school) {
-  if (!school) return '';
+  if (!school) return 'assets/logos/shore-conference.svg';
   if (school.logo_path) return client.storage.from('school-logos').getPublicUrl(school.logo_path).data.publicUrl;
   return typeof shoreSchools !== 'undefined' ? shoreSchools[school.slug]?.logo ?? 'assets/logos/shore-conference.svg'
     : 'assets/logos/' + school.slug + '.png';
@@ -37,7 +37,7 @@ function applySchoolTheme(client, school) {
   const workspace = document.getElementById('workspace');
   const heading = workspace.querySelector('.staff-heading');
   const logo = document.getElementById('workspace-logo');
-  const colors = schoolColors(school);
+  const colors = school ? schoolColors(school) : { primary: '#002857', accent: '#9aadbc' };
   setSchoolColors(workspace, colors.primary, colors.accent);
   const url = schoolLogoUrl(client, school);
   heading.querySelector('.logo-wall')?.remove();

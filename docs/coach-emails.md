@@ -1,5 +1,7 @@
 # Coach emails
 
+> **Tabled on November 12, 2026.** The Coaches tab is hidden and coach emails are off. See `posting-on-save.md`.
+
 ADs manage their coach list on the dashboard's **Coaches** tab. Each coach has an email, an optional name, and one or more teams (sport, gender, and level). A coach can be on several teams, and a team can have several coaches.
 
 ## What gets queued

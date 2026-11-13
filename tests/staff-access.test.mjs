@@ -42,6 +42,40 @@ function mount(rpc, invite = {role: 'site_admin', email: site.email}) {
   return {controller, element, fill, review, buttons};
 }
 
+test('access list filters and sorts without clearing an access edit or making requests', async () => {
+  let calls = 0;
+  const ui = mount(async () => { calls++; return {data: {actor_role: 'site_admin', accounts: [
+    {...ad(), name: 'Zoe'}, {...ad('amy@school.org'), name: 'Amy', school_id: 'colts-neck'}, office, site,
+  ]}}; });
+  await ui.controller.load();
+  const names = () => ui.element('list').children.map(row => row.children[0].textContent);
+  assert.deepEqual(names(), ['Admin', 'Amy', 'Office', 'Zoe']);
+  assert.equal(ui.element('submit').textContent, 'Add');
+  assert.equal(ui.element('arrow-name').textContent, '\u2191');
+  assert.equal(ui.element('arrow-school').textContent, '\u2193');
+  ui.buttons()[0].onclick();
+  ui.element('search').value = '  MARLBORO ';
+  ui.element('search').oninput();
+  assert.deepEqual(names(), ['Zoe']);
+  assert.equal(ui.element('email').value, 'amy@school.org');
+  ui.element('search').value = '';
+  ui.element('sort-school').onclick();
+  assert.deepEqual(names(), ['Amy', 'Zoe', 'Admin', 'Office']);
+  ui.element('sort-school').onclick();
+  assert.deepEqual(names(), ['Office', 'Admin', 'Zoe', 'Amy']);
+  assert.equal(ui.element('heading-school')['aria-sort'], 'descending');
+  assert.equal(ui.element('arrow-school').textContent, '\u2193');
+  ui.element('sort-school').onclick();
+  assert.equal(ui.element('arrow-school').textContent, '\u2191');
+  ui.element('search').value = 'Colts Neck';
+  ui.element('search').oninput();
+  assert.deepEqual(names(), ['Amy']);
+  ui.element('search').value = 'no match';
+  ui.element('search').oninput();
+  assert.match(ui.element('list').children[0].children[0].textContent, /No people match/);
+  assert.equal(calls, 1);
+});
+
 test('AD users never load or see invited-access controls', async () => {
   let calls = 0;
   const ui = mount(async () => { calls++; }, {role: 'ad'});

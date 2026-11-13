@@ -3,11 +3,19 @@
 <html lang="en">
 <head><meta charset="utf-8"><title>Calendar phone layout check</title></head>
 <body>
-  <p>390px phone layout · <a href="?settings=1">Team publishing</a> · <a href="?">Subscription instructions</a></p>
+  <p>390px phone layout · <a href="?admin=1">Staff workspace</a> · <a href="?">Subscription instructions</a></p>
   <iframe title="390px calendar preview" width="390" height="844" style="border:0"></iframe>
   <script>
-    document.querySelector('iframe').src = location.search.includes('settings')
-      ? 'publication-preview.html' : '../subscribe.html?school=marlboro';
+    const frame = document.querySelector('iframe');
+    frame.src = location.search.includes('admin')
+      ? 'admin-workspace-preview.html' : '../subscribe.html?school=marlboro';
+    frame.onload = () => {
+      if (!location.search.includes('admin')) return;
+      const poll = setInterval(() => {
+        const result = frame.contentDocument.getElementById('qa-results');
+        if (result) { document.body.append(result.cloneNode(true)); clearInterval(poll); }
+      }, 100);
+    };
   </script>
 </body>
 </html>
