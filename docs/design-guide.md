@@ -17,7 +17,7 @@ The conference palette comes from the Shore Conference logo: navy, maroon, steel
 | Color | Variable | Meaning |
 | --- | --- | --- |
 | Navy | `--navy` | Current page, selected tab, page header bands |
-| Maroon | `--red` | Main action button, today, canceled games |
+| Maroon | `--red` | Main action button, today, canceled games; in articles, the years, dates and pull quotes |
 | Steel | `--steel` | Frames and dividers; also `--hover`, the hover fill |
 | Deep steel | `--steel-dark` | Edges of form fields and buttons |
 | Yellow | `--yellow` | Off-logo on purpose: postponed games and warnings, including "you are previewing" |
@@ -45,7 +45,7 @@ Hovers change the whole background to a different solid color, with no movement.
 - Game lists: `.game-list`.
 - Pop-ups: `<dialog class="game-details">`.
 - Public pages with sub-pages: `.side-layout` with `.side-tabs` on the left and one `.panel` per tab on the right (see `resources.html`). Lists of saved files use `.doc-list`.
-- Long articles: `.article` in a panel, with `.chapter` bands, `.entries` (dated items in two columns), `.stat-row` number tiles, `.pullquote`, and `.photo` boxes with a caption (see the History tab).
+- Long articles: `.article` in a panel, with `.chapter` bands, `.entries` (dated items in two columns), `.stat-row` number tiles, `.pullquote`, and column-size `.photo` boxes with a caption, set beside the text in a `.spread` and alternating sides with `.photo-left` (see the History tab).
 - Staff pages: `.staff-panel` for framed sections and `.staff-tab` (with `aria-current`) for sidebar tabs. Game status colors are in `staff.css`.
 
 ## Every page
