@@ -72,9 +72,11 @@ function startStaffAccess(client, invite, schoolsFn) {
       const row = document.createElement('li');
       const heading = document.createElement('strong');
       heading.textContent = account.name || account.email;
-      const details = document.createElement('p');
-      details.textContent = account.email + ' · ' + assignment(account);
-      row.append(heading, details);
+      const mail = document.createElement('span');
+      mail.textContent = account.name ? account.email : '';
+      const details = document.createElement('span');
+      details.textContent = assignment(account);
+      row.append(heading, mail, details);
       if (canManage(account)) {
         const actions = document.createElement('div');
         actions.className = 'staff-actions';

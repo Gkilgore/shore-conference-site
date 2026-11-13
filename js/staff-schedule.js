@@ -41,6 +41,7 @@ function startStaffSchedule(client, invite) {
   const teamsPanel = document.getElementById('staff-teams-panel');
   // Where the game editor was opened from, so closing it returns there.
   let editorOrigin = 'schedule';
+  let conferenceTheme = false;
   const schedulePanel = document.getElementById('staff-schedule-panel');
   const scheduleTitle = document.getElementById('schedule-title');
   const scheduleFeedback = document.getElementById('schedule-feedback');
@@ -51,16 +52,15 @@ function startStaffSchedule(client, invite) {
   const settingsTab = document.getElementById('staff-settings-tab');
   const settingsPanel = document.getElementById('staff-settings-panel');
   const settingsTitle = document.getElementById('settings-title');
-  const overviewTab = document.getElementById('staff-overview-tab');
-  const overviewPanel = document.getElementById('staff-overview-panel');
-  const overviewTitle = document.getElementById('overview-title');
   const filterForm = document.getElementById('staff-filters');
   const filterFields = filterForm.elements;
   const filterCount = document.getElementById('staff-filter-count');
   const filtersToggle = document.getElementById('staff-filters-toggle');
   const currentSchool = () => schools.find(school => school.slug === selector.value);
   const overview = startStaffOverview(client, {
-    currentSchool, gameTitle, canEdit: () => canEdit, openEditor: game => openEditor(game),
+    currentSchool, gameTitle, canEdit: () => canEdit,
+    // Editing from the match checks returns to Games; from Transportation's bus list, to Schedule.
+    openEditor: game => openEditor(game, null, gamesPanel.hidden ? 'schedule' : 'games'),
   });
   const coachesTab = document.getElementById('staff-coaches-tab');
   const coachesPanel = document.getElementById('staff-coaches-panel');
@@ -261,12 +261,10 @@ function startStaffSchedule(client, invite) {
   function selectSchool() {
     const showContact = canEdit && !transportationPanel.hidden;
     const showSettings = canEdit && !settingsPanel.hidden;
-    const showOverview = !overviewPanel.hidden;
     const showTournaments = !tournamentsPanel.hidden;
     const showCoaches = canEdit && !coachesPanel.hidden;
     const showTeams = canEdit && !teamsPanel.hidden;
-    const showGames = canEdit && !gamesPanel.hidden;
-    gamesTab.hidden = !canEdit;
+    const showGames = !gamesPanel.hidden;
     showImport(false);
     gamesFeedback.textContent = '';
     gamesNext.hidden = true;
@@ -301,9 +299,8 @@ function startStaffSchedule(client, invite) {
     if (showCoaches) openCoaches(false);
     if (showTeams) openTeams(false);
     if (showGames) openGames(false);
-    else if (!canEdit && !(teamsPanel.hidden && gamesPanel.hidden)) showSchedule();
+    else if (!canEdit && !teamsPanel.hidden) showSchedule();
     if (showSettings) openSettings(false);
-    if (showOverview) openOverview(false);
     if (showTournaments) openTournaments(false);
     loadGames(null, true);
   }
@@ -489,7 +486,7 @@ function startStaffSchedule(client, invite) {
 
   // Hides every panel and clears the selected tab; each opener then shows its own panel.
   function hidePanels() {
-    for (const [panel, tab] of [[schedulePanel, scheduleTab], [gamesPanel, gamesTab], [teamsPanel, teamsTab], [overviewPanel, overviewTab],
+    for (const [panel, tab] of [[schedulePanel, scheduleTab], [gamesPanel, gamesTab], [teamsPanel, teamsTab],
       [transportationPanel, transportationTab], [coachesPanel, coachesTab], [settingsPanel, settingsTab], [tournamentsPanel, tournamentsTab]]) {
       panel.hidden = true;
       tab.removeAttribute('aria-current');
@@ -498,6 +495,8 @@ function startStaffSchedule(client, invite) {
     accessTab.removeAttribute('aria-current');
     access.reset();
     tournaments.reset();
+    // Leaving Tournaments or Staff access puts the school's colors back.
+    if (conferenceTheme) { conferenceTheme = false; applySchoolTheme(client, currentSchool()); }
     selector.parentElement.hidden = false;
     addGame.hidden = !canEdit;
     importButton.hidden = !canEdit;
@@ -526,12 +525,14 @@ function startStaffSchedule(client, invite) {
     teams.render();
     if (focus) (document.getElementById('team-title') ?? document.getElementById('teams-title')).focus();
   }
-  // Games: the two ways to enter games. The import section opens in place when chosen.
+  // Games: adding and importing games, then the match checks. Conference admins see only the match checks.
   function openGames(focus = true) {
-    if (!canEdit || !selector.value) return;
+    if (!selector.value) return;
     hidePanels();
     gamesPanel.hidden = false;
     gamesTab.setAttribute('aria-current', 'true');
+    filterForm.hidden = false;
+    overview.render(visibleGames());
     if (focus) document.getElementById('games-title').focus();
   }
   function showImport(open) {
@@ -540,14 +541,6 @@ function startStaffSchedule(client, invite) {
   }
   const leaveEditor = () => editorOrigin === 'teams' ? openTeams(true) : editorOrigin === 'games' ? openGames(true) : showSchedule(true);
 
-  function openOverview(focus = true) {
-    hidePanels();
-    overviewPanel.hidden = false;
-    overviewTab.setAttribute('aria-current', 'true');
-    filterForm.hidden = false;
-    overview.render(visibleGames());
-    if (focus) overviewTitle.focus();
-  }
 
   function openTransportation(focus = true) {
     if (!canEdit || !selector.value) return;
@@ -601,6 +594,8 @@ function startStaffSchedule(client, invite) {
     addGame.hidden = true;
     importButton.hidden = true;
     title.textContent = 'Shore Conference';
+    applySchoolTheme(client, null);
+    conferenceTheme = true;
     publicLink.hidden = true;
     tournaments.load();
     if (focus) document.getElementById('tournaments-title').focus();
@@ -616,6 +611,8 @@ function startStaffSchedule(client, invite) {
     addGame.hidden = true;
     importButton.hidden = true;
     title.textContent = 'Shore Conference';
+    applySchoolTheme(client, null);
+    conferenceTheme = true;
     publicLink.hidden = true;
     access.load();
     document.getElementById('staff-access-title').focus();
@@ -623,7 +620,6 @@ function startStaffSchedule(client, invite) {
   accessTab.onclick = openStaffAccess;
 
   transportationTab.onclick = () => openTransportation();
-  overviewTab.onclick = () => openOverview();
   coachesTab.onclick = () => openCoaches();
   teamsTab.onclick = () => openTeams();
   filterForm.onsubmit = event => event.preventDefault();
@@ -723,7 +719,6 @@ function startStaffSchedule(client, invite) {
     fieldsets.forEach(fieldset => fieldset.disabled = true);
     closeEditor.disabled = true;
     scheduleTab.disabled = true;
-    overviewTab.disabled = true;
     coachesTab.disabled = true;
     addGame.disabled = true;
     transportationTab.disabled = true;
@@ -747,7 +742,6 @@ function startStaffSchedule(client, invite) {
     fieldsets.forEach(fieldset => fieldset.disabled = false);
     closeEditor.disabled = false;
     scheduleTab.disabled = false;
-    overviewTab.disabled = false;
     coachesTab.disabled = false;
     addGame.disabled = false;
     transportationTab.disabled = false;
@@ -795,8 +789,6 @@ function startStaffSchedule(client, invite) {
     teamsTab.onclick = null;
     gamesTab.onclick = null;
     coachesTab.disabled = false;
-    overviewTab.onclick = null;
-    overviewTab.disabled = false;
     filterForm.oninput = filterForm.onreset = filterForm.onsubmit = null;
     transportationTab.onclick = null;
     settingsTab.onclick = null;

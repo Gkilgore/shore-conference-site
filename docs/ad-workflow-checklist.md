@@ -117,3 +117,12 @@ Greg asked for the draft and publish step to go. Details and the plan for older 
 - Went live on `main`. The dashboard posts after each save; the database migration that posts inside the save is written but not run (`docs/posting-on-save.md`).
 - Coaches tabled: the Coaches tab and the Coaches section in Teams are hidden. Tabs for an AD are Schedule, Games, Teams, Match checks, Transportation, School settings.
 - School pages merge changes to one game made within 12 hours into a single entry in "Schedule changes".
+
+### November 13: Match checks into Games, Staff access layout
+
+- Match checks is no longer its own tab. Its totals and the list of games that don't match the other school sit at the bottom of Games, under the same filters as Schedule. Edit on one of those games returns to Games.
+- Conference admins now get the Games tab too, showing only Match checks (no Add game or Import games).
+- Tabs for an AD: Schedule, Games, Teams, Transportation, School settings. Conference admin: Schedule, Games, Tournaments, Staff access.
+- Staff access: "Add a person" form on one row with its button, then "People with access" with one line per person (name, email, access, Edit and Remove). On a phone, name and buttons share the first line.
+- Tournaments and Staff access now show the conference colors instead of the last school picked.
+- Checked with fictional data at 1280px and 375px.
