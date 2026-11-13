@@ -1,4 +1,4 @@
-// Teams tab: one team's schedule, unmatched games, coaches and whether it is posted, in one place.
+// Teams tab: one team's schedule, unmatched games and whether it is posted (plus coaches, when switched on).
 // It reads what the other controllers already loaded and sends every change through their existing steps.
 function startStaffTeams({ games, groups, states, links, coaches, schoolName, filterValues,
   openGame, addGame, reviewTeam, unpublishTeam, editCoach, addCoach }) {
@@ -157,6 +157,9 @@ function startStaffTeams({ games, groups, states, links, coaches, schoolName, fi
       : [node('li', 'No games yet.', 'staff-empty')]));
     parts.push(section('Schedule', schedule));
 
+    // Coaches are shown only while coach lists are switched on.
+    detail.replaceChildren(...parts);
+    if (!coaches()) return;
     const assigned = coaches().filter(coach => coach.coach_teams.some(item => sameTeam(item, team)));
     const coachList = node('ul', undefined, 'team-coaches');
     coachList.append(...(assigned.length ? assigned.map(coach => {

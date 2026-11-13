@@ -192,3 +192,12 @@ test('a late response after a school change is ignored',async()=>{
   assert.equal(await loading,false);
   assert.equal(controller.groups().length,0);
 });
+
+test('a game the server already posted inside the save sends nothing more',async()=>{
+  // After the post-on-save migration, a first save into a team with older private games posts the team with just that game.
+  const api=server(()=>[group('Soccer',true,[entry('g1','posted'),entry('old','draft')]),group('Tennis',true,[entry('t','posted')])]);
+  const result=await mount(api.rpc).controller.post(['g1']);
+  assert.equal(result.ok,true);
+  assert.deepEqual(plain(result.held),[]);
+  assert.equal(api.sent.length,0);
+});

@@ -167,3 +167,43 @@ test('production school pages use the complete directory and never read fictiona
   assert.equal(element('school-postings').hidden,true);
   assert.equal(element('recent-updates').hidden,true);
 });
+
+test('several saves to one game close together read as one public change', () => {
+  const base = {...team,season:'Spring',season_year:2027,game_id:'g1'};
+  const game = {game_date:'2027-04-02',start_time:'15:00:00',location:'Home feild',status:'Scheduled',home_away:'Home',opponent_name:'Visitor'};
+  const at = hours => new Date(Date.parse('2027-02-01T12:00:00Z') + hours * 3600000).toISOString();
+  // Added, then a typo fixed an hour later: one "Game added" with the fixed venue.
+  let result = context.schoolPublicUpdates({updates:[
+    {...base,id:'1',kind:'game_added',occurred_at:at(0),before:null,after:game},
+    {...base,id:'2',kind:'game_changed',occurred_at:at(1),before:game,after:{...game,location:'Home field'}}]});
+  assert.equal(result.length,1);
+  assert.equal(result[0].headline,'Game added');
+  assert.match(result[0].details,/Home field/);
+  // Two edits that undo each other leave nothing.
+  result = context.schoolPublicUpdates({updates:[
+    {...base,id:'3',kind:'game_changed',occurred_at:at(0),before:game,after:{...game,start_time:'16:00:00'}},
+    {...base,id:'4',kind:'game_changed',occurred_at:at(2),before:{...game,start_time:'16:00:00'},after:game}]});
+  assert.equal(result.length,0);
+  // A time change, then postponed: one entry headed Postponed, showing both changes.
+  result = context.schoolPublicUpdates({updates:[
+    {...base,id:'5',kind:'game_changed',occurred_at:at(0),before:game,after:{...game,start_time:'16:00:00'}},
+    {...base,id:'6',kind:'game_postponed',occurred_at:at(1),before:{...game,start_time:'16:00:00'},after:{...game,start_time:'16:00:00',status:'Postponed'}}]});
+  assert.equal(result.length,1);
+  assert.equal(result[0].headline,'Game postponed');
+  assert.deepEqual(Array.from(result[0].changes),['Start time: 3:00 PM → 4:00 PM','Status: Scheduled → Postponed']);
+  // Added then deleted the same morning: nothing shows.
+  result = context.schoolPublicUpdates({updates:[
+    {...base,id:'7',kind:'game_added',occurred_at:at(0),after:game},
+    {...base,id:'8',kind:'game_removed',occurred_at:at(1),before:game}]});
+  assert.equal(result.length,0);
+  // A day apart, both changes stay.
+  result = context.schoolPublicUpdates({updates:[
+    {...base,id:'9',kind:'game_changed',occurred_at:at(0),before:game,after:{...game,start_time:'16:00:00'}},
+    {...base,id:'10',kind:'game_changed',occurred_at:at(30),before:{...game,start_time:'16:00:00'},after:{...game,start_time:'17:00:00'}}]});
+  assert.equal(result.length,2);
+  // Different games never merge.
+  result = context.schoolPublicUpdates({updates:[
+    {...base,id:'11',kind:'game_added',occurred_at:at(0),after:game},
+    {...base,game_id:'g2',id:'12',kind:'game_added',occurred_at:at(1),after:game}]});
+  assert.equal(result.length,2);
+});

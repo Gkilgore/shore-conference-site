@@ -54,6 +54,8 @@ function startStaffPublication(client, currentSchool, { canEdit = () => true, sc
     const selections = [], held = [];
     for (const group of affected) {
       const mine = group.games.filter(entry => want.has(entry.id));
+      // Already public as saved (the server posts inside the save once its migration has run).
+      if (!mine.some(entry => waiting(group, entry))) continue;
       const others = group.games.some(entry => !want.has(entry.id) && waiting(group, entry));
       const whole = { team_id: group.team_id, season_year: group.season_year, token: group.token };
       if (!others) selections.push(whole);

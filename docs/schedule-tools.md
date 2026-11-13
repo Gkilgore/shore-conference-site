@@ -83,3 +83,5 @@ It works whether or not the newer draft migrations are applied. Bus confirmation
 `supabase/migrations/20261126000100_tournament_info.sql` is also a draft for Greg. It lets a tournament keep its "Rules and dates" section (see `docs/tournaments-design.md`). Run it in the test project, then save a tournament with a rules link and one unconfirmed date, review it, publish it, and confirm the public tournament page shows the link and no unconfirmed date. Confirm a tournament saved before the migration does not show as changed.
 
 Since November 12, saving or importing posts the game; see `posting-on-save.md`. Anything above that mentions drafts or publishing describes the earlier workflow.
+
+**Database steps, in order (test project `jrtcyihpdrcnhxgproyw`, not yet run as of November 12):** `20261125000100_delete_staff_game.sql`, then `20261127000100_post_on_save.sql`, then the check `supabase/tests/post-on-save.sql`.

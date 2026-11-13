@@ -111,3 +111,9 @@ Greg asked for the draft and publish step to go. Details and the plan for older 
 - **Teams:** status reads Posted or Not posted. "Post schedule" and "Take down…" are the two reviewed actions left.
 - **Older private games** are not exposed. A save into a team that still holds them is saved and held, with a message naming the team.
 - Checked with fictional data at 1280px and 375px: add, edit, postpone, delete, a held team, posting it from Teams, an import with a posted team, a held team and a bad row, taking a schedule down, a failed post with retry, and a failed save. Not checked against the Supabase project or the public pages.
+
+### Follow-up the same day
+
+- Went live on `main`. The dashboard posts after each save; the database migration that posts inside the save is written but not run (`docs/posting-on-save.md`).
+- Coaches tabled: the Coaches tab and the Coaches section in Teams are hidden. Tabs for an AD are Schedule, Games, Teams, Match checks, Transportation, School settings.
+- School pages merge changes to one game made within 12 hours into a single entry in "Schedule changes".

@@ -87,7 +87,7 @@ function startStaffSchedule(client, invite) {
   });
   const teams = startStaffTeams({
     games: () => allGames, groups: () => canEdit ? publication.groups() : [], states: () => publication.states(),
-    links: () => overview.links(), coaches: () => coachList.coaches(),
+    links: () => overview.links(), coaches: () => null,
     schoolName: slug => schools.find(school => school.slug === slug)?.name,
     filterValues: () => Object.fromEntries(new FormData(filterForm)),
     openGame: game => openEditor(game, null, 'teams'),
@@ -295,7 +295,8 @@ function startStaffSchedule(client, invite) {
     importButton.hidden = !canEdit;
     transportationTab.hidden = !canEdit;
     settingsTab.hidden = !canEdit;
-    coachesTab.hidden = !canEdit;
+    // Coaches are tabled for now (Greg, November 12): no tab, no coach lists, no coach emails.
+    coachesTab.hidden = true;
     if (showContact) openTransportation(false);
     if (showCoaches) openCoaches(false);
     if (showTeams) openTeams(false);
@@ -523,7 +524,6 @@ function startStaffSchedule(client, invite) {
     teamsTab.setAttribute('aria-current', 'true');
     filterForm.hidden = false;
     teams.render();
-    coachList.load().then(() => { if (!stopped) teams.render(); });
     if (focus) (document.getElementById('team-title') ?? document.getElementById('teams-title')).focus();
   }
   // Games: the two ways to enter games. The import section opens in place when chosen.

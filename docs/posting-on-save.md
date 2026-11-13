@@ -2,7 +2,7 @@
 
 Greg's November 12 decision: for school schedules, saving a game or completing an import posts it to the public schedule. There is no Publish tab and no draft step. This replaces "Review before publishing" in the rebuild plan for AD-managed games. Tournament games keep their own review and publish steps.
 
-Status: built on branch `feature/post-on-save`, checked with fictional data only. Not merged, not run against the Supabase project.
+Status: live on `main` since November 12 (dashboard side). The database migration below is written but not yet run.
 
 ## What an AD sees
 
@@ -45,9 +45,27 @@ Once a team has been posted this way it has no private games left, and every lat
 2. Decide per school: have the AD post each held team from Teams, or delete what was only ever a test.
 3. Only the three pilot schools have games, so this is a short list.
 
-## Still to decide
+## Database step (Greg, with ChatGPT)
 
-1. **Make it one step on the server.** A database change could post inside `save_staff_game` itself, so a save can never succeed without posting and a first-time team would not need the holding rule. It needs a migration, written and tested in the test project. Until then the browser does it in two requests.
-2. **Run `20261125000100_delete_staff_game.sql`.** Deleting still depends on it.
-3. **Coach emails.** The email queue was built around drafts. Sending is not connected; when it is, it should send on posting.
-4. **Recent changes on school pages.** Every save now creates a public change entry. A typo fix will show as a schedule change.
+`supabase/migrations/20261127000100_post_on_save.sql` makes the database post inside `save_staff_game` and `delete_staff_game`, so a save can never succeed without posting. It is written but has not been run anywhere. Run in the test project, in this order:
+
+1. `20261125000100_delete_staff_game.sql` (delete was waiting on this already).
+2. `20261127000100_post_on_save.sql`.
+3. `supabase/tests/post-on-save.sql`. It should end with a PASS line and roll back.
+
+What it changes once run:
+
+- A save into a team that was never posted posts that team with just the saved game. Its other private games stay private, so the holding rule above mostly goes away.
+- A save into a team that was taken down is still held: posting it would bring back the team's earlier public games.
+- Deleting removes the public copy in the same step.
+- The coach email queue is switched off (`games_queue_coach_emails` trigger disabled). The migration has the line to switch it back on.
+
+The dashboard's own posting step stays as a fallback. After the migration it finds nothing left to post and sends nothing.
+
+## Public "Schedule changes"
+
+Every save now reaches the public change list. To keep a typo fix from showing as a second change, the school page merges changes to the same game made within 12 hours into one entry showing where it started and where it ended up. Changes that cancel out, and a game added and deleted again, are dropped. The stored history is unchanged; this is only how the page shows it.
+
+## Coaches
+
+Tabled for now (Greg, November 12). The Coaches tab and the Coaches section in Teams are hidden, nothing loads coach lists, and no coach is emailed. The coach code and tables are untouched.
