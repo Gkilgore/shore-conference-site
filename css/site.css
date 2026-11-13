@@ -83,43 +83,32 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
 .brand { color: var(--ink); font-weight: 800; font-size: 1.1rem; letter-spacing: -0.01em; padding: 0.3rem 0; }
 .brand:is(:hover, :focus-visible) { color: var(--red); }
 
-/* Phones: brand and staff link on top, navigation below. */
-@media (max-width: 640px) {
-  .site-header { grid-template-columns: 1fr auto; gap: 0.5rem; padding-block: 0.5rem 0; }
-  .site-header nav {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-    margin-inline: -1rem;
-    border-top: var(--frame);
-  }
-  .site-header nav a { min-height: 3rem; padding-inline: 0.25rem; border: 0; font-size: 0.95rem; }
-  .site-header nav a + a { box-shadow: inset 1px 0 var(--steel); }
-  .site-header nav a:is(:hover, :focus-visible) { outline-offset: -3px; }
-  .staff-link { grid-row: 1; grid-column: 2; min-height: 2.25rem; padding-inline: 0.6rem; font-size: 0.85rem; }
-  .site-header nav { grid-row: 2; }
-}
-
-/* Resource navigation: a disclosure in normal document flow, never a focus-trapping overlay. */
-.site-header .main-navigation { flex-wrap: wrap; align-items: center; }
-.nav-more { display: flex; flex-wrap: wrap; gap: 0.25rem; }
-.nav-toggle { font: inherit; color: var(--ink); background: white; border: var(--control-frame); min-height: 3rem; cursor: pointer; }
+/* One-row desktop navigation; Resources uses a native disclosure dropdown. */
+.site-header { grid-template-columns: auto minmax(0, 1fr); gap: 1rem; }
+.site-header .main-navigation { display: flex; align-items: center; justify-content: flex-end; gap: 0.35rem; }
+.site-header nav .staff-link { border: var(--control-frame); font-weight: 700; font-size: 0.9rem; }
+.nav-primary { display: flex; gap: 0.25rem; }
+.nav-resources { position: relative; }
+.nav-resources summary { cursor: pointer; padding: 0.4rem 0.75rem; min-height: 2.6rem; align-content: center; font-weight: 500; }
+.nav-resources summary:hover { background: var(--hover); }
+.nav-resources summary.section-active { background: var(--navy); color: white; }
+.nav-resources summary.section-active:hover { background: var(--red); }
+.resource-menu { position: absolute; right: 0; top: calc(100% + 0.4rem); z-index: 20; min-width: 13rem; padding: 0.35rem; border: var(--control-frame); background: white; }
+.site-header .resource-menu a { justify-content: start; min-height: 2.75rem; }
+.nav-toggle { font: inherit; font-weight: 700; color: var(--ink); background: white; border: var(--control-frame); min-height: 2.75rem; padding: 0.4rem 0.8rem; cursor: pointer; }
 .nav-toggle:hover { background: var(--hover); }
 .nav-toggle:focus-visible, summary:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; box-shadow: 0 0 0 3px white; }
-@media (min-width: 801px) {
-  .nav-home { display: none !important; }
-  .site-header { grid-template-columns: 1fr auto; }
-  .site-header .main-navigation { grid-column: 1 / -1; grid-row: 2; justify-content: flex-start; }
-  .staff-link { grid-column: 2; grid-row: 1; }
-}
-@media (max-width: 800px) {
-  .site-header { grid-template-columns: minmax(0, 1fr) auto; }
-  .site-header .main-navigation { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-column: 1 / -1; grid-row: 2; margin: 0; border: 0; gap: 0.35rem; }
-  .site-header .main-navigation a { min-height: 3rem; border: var(--control-frame); box-shadow: none; padding: 0.5rem; }
-  .main-navigation .nav-more { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.35rem; }
-  .staff-link { grid-column: 2; grid-row: 1; }
-  .nav-toggle { min-width: 0; }
+@media (max-width: 960px) {
+  .site-header { grid-template-columns: minmax(0, 1fr) auto; gap: 0.6rem; }
+  .nav-toggle { grid-column: 2; grid-row: 1; }
+  .site-header .main-navigation { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: stretch; gap: 0.5rem; }
+  .nav-primary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.2rem; }
+  .site-header .nav-primary a { padding: 0.5rem 0.15rem; font-size: 0.95rem; min-height: 2.75rem; }
+  .nav-resources { border: var(--control-frame); }
+  .nav-resources summary { min-height: 2.75rem; }
+  .resource-menu { position: static; min-width: 0; border: 0; padding: 0.35rem; }
+  .site-header .resource-menu a { min-height: 2.75rem; }
+  .site-header .staff-link { align-self: flex-start; min-height: 2.75rem; }
 }
 
 /* Public resource pages use existing colors and full frames; lists reflow on phones. */

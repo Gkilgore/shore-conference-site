@@ -48,3 +48,9 @@
 - Completed November 13: 181 Node tests pass. Headless Chrome checks passed at 320, 390 and 1280px, including keyboard menu activation/Escape, focus across breakpoints, filters/reset, unknown selections, shareable URLs, 200% text and no-JavaScript navigation/source fallbacks.
 - Specialist heading/contrast and keyboard/ARIA reviews completed. Fixed the reported resize focus issue and added a regression test. The forms/live-region specialist hit a usage limit; native labels, status counts, retained control focus and form behavior were checked directly. No screen-reader session was run.
 - Final static review found no additional material functional or safety issues. Existing schedules and school pages were included in phone-width smoke checks, with no observed browser errors.
+
+## Navigation revision (November 13)
+- Restored the original single-row desktop layout: Home, Schools, Calendar, About, Resources dropdown, Staff sign-in.
+- Resources holds Divisions, Tournaments and Documents; Documents retains the existing inside.html URL.
+- Phones use one Menu button, then native Resources expansion. Keyboard, Escape, focus across breakpoints, no-JavaScript use and 320/390/768px layouts passed in Chrome; all 181 tests pass.
+

@@ -51,24 +51,34 @@ test('public resource records retain official sources, edition labels and review
   }
 });
 
-test('responsive navigation moves focus before hiding either control', () => {
-  let resize;
-  const toggle = { hidden: true, attrs: {}, setAttribute(k,v) { this.attrs[k] = v; }, addEventListener() {},
-    focus() { if (!this.hidden) doc.activeElement = this; } };
-  const first = { focus() { doc.activeElement = this; }, classList: { contains: () => false } };
-  const secondary = { classList: { contains: () => false } };
-  const links = { hidden: false, contains: el => el === secondary };
-  const nav = { querySelector: query => query === '.nav-toggle' ? toggle : query === '.nav-more' ? links : first, addEventListener() {} };
-  const doc = { querySelector: () => nav, activeElement: secondary };
-  const media = { matches: false, addEventListener: (_, fn) => { resize = fn; } };
-  vm.runInNewContext(read('js/navigation.js'), { document: doc, matchMedia: () => media });
-  media.matches = true;
-  resize();
+test('phone navigation and resource disclosure preserve focus when closed', () => {
+  const handlers = {};
+  const doc = { activeElement: null, addEventListener: (name, fn) => { handlers[name] = fn; } };
+  const toggle = { hidden: true, setAttribute() {}, focus() { doc.activeElement = this; },
+    addEventListener: (_, fn) => { handlers.toggle = fn; } };
+  const first = { focus() { doc.activeElement = this; } };
+  const summary = { focus() { doc.activeElement = this; } };
+  const resourceLink = {};
+  const resources = { open: false, querySelector: () => summary,
+    contains: element => element === resourceLink || element === summary };
+  const nav = { hidden: false, querySelector: selector => selector === 'a' ? first : resources,
+    contains: element => element === first || resources.contains(element), addEventListener() {} };
+  doc.querySelector = selector => selector === '.nav-toggle' ? toggle : nav;
+  const media = { matches: true, addEventListener: (_, fn) => { handlers.resize = fn; } };
+  vm.runInNewContext(read('js/navigation.js'), { document: doc, matchMedia: () => media, setTimeout });
+  assert.equal(nav.hidden, true);
+  handlers.toggle();
+  assert.equal(nav.hidden, false);
+  resources.open = true;
+  doc.activeElement = resourceLink;
+  handlers.keydown({ key: 'Escape' });
+  assert.equal(resources.open, false);
+  assert.equal(doc.activeElement, summary);
+  handlers.keydown({ key: 'Escape' });
+  assert.equal(nav.hidden, true);
   assert.equal(doc.activeElement, toggle);
-  assert.equal(links.hidden, true);
   media.matches = false;
-  resize();
+  handlers.resize();
+  assert.equal(nav.hidden, false);
   assert.equal(doc.activeElement, first);
-  assert.equal(toggle.hidden, true);
-  assert.equal(links.hidden, false);
 });

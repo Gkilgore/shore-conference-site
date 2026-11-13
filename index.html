@@ -24,18 +24,15 @@
   <header class="masthead">
     <div class="site-header wrap">
       <a class="brand" href="index.html">The Shore Conference</a>
-      <nav class="main-navigation" aria-label="Main navigation">
-        <a href="schools.html">Schools</a>
-        <a href="calendar.html">Schedules</a>
-        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-more" hidden>Menu</button>
-        <div class="nav-more" id="nav-more">
-          <a href="index.html" class="nav-home" aria-current="page">Home</a>
-          <a href="divisions.html">Divisions</a>
-          <a href="tournaments.html">Tournaments</a>
-          <a href="inside.html">Inside the Conference</a>
-        </div>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-navigation" hidden>Menu</button>
+      <nav class="main-navigation" id="main-navigation" aria-label="Main navigation">
+        <div class="nav-primary"><a href="index.html" aria-current="page">Home</a><a href="schools.html">Schools</a><a href="calendar.html">Calendar</a><a href="about.html">About</a></div>
+        <details class="nav-resources">
+          <summary>Resources</summary>
+          <div class="resource-menu"><a href="divisions.html">Divisions</a><a href="tournaments.html">Tournaments</a><a href="inside.html">Documents</a></div>
+        </details>
+        <a class="staff-link" href="admin.html">Staff sign-in</a>
       </nav>
-      <a class="staff-link" href="admin.html">Staff sign-in</a>
     </div>
   </header>
   <main id="main">
@@ -61,7 +58,7 @@
       <div class="resource-grid">
         <article class="resource-card"><h3>Divisions</h3><p>Find sport and season alignments, with links to the official lists.</p><a href="divisions.html">Browse divisions</a></article>
         <article class="resource-card"><h3>Tournaments</h3><p>SCT and cup brackets, entry information and regulations.</p><a href="tournaments.html">Find tournament resources</a></article>
-        <article class="resource-card"><h3>Inside the Conference</h3><p>History, leadership, documents and official news and photo links.</p><a href="inside.html">Explore the conference</a></article>
+        <article class="resource-card"><h3>Documents</h3><p>History, leadership, documents and official news and photo links.</p><a href="inside.html">Browse conference documents</a></article>
       </div>
     </section>
   </main>
