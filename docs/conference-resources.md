@@ -1,13 +1,13 @@
 # Conference resources
 
-## Public resource hubs (November 13, 2026)
+## Resources page (November 13, 2026)
 
-The approved first expansion adds [Divisions](../divisions.html), [Tournaments](../tournaments.html) and [Inside the Conference](../inside.html). They read the existing alignment data and the `shorePublicResources` index in [conference-resources.js](../data/conference-resources.js). The index links to copies saved on this site. Nothing syncs automatically.
+[Resources](../resources.html) replaces About in the main navigation. Its left-hand tabs are About, History, Divisions, Tournaments and Documents; the old page addresses forward to the matching tab. Divisions lists each team by season, and a team opens a pop-up with that sport's divisions. The tabs read the existing alignment data and the `shorePublicResources` index in [conference-resources.js](../data/conference-resources.js). The index links to copies saved on this site. Nothing syncs automatically.
 
 - A division's `complete` flag describes the membership copied for that division, not coverage of every conference division. Missing schools get an unknown-assignment message and the link to the saved list. Partial memberships are not presented as complete lists.
 - Public document records carry their edition label, review date, format and limitations. Past-season leadership remains labeled as such. Link summaries are not full accessible transcriptions of original files.
 - Tournament source records do not create games. The existing conference-office upload and publish workflow stays unchanged; generator and bracket-discovery tools remain hidden.
-- Resource filters use query parameters so selections can be shared. Navigation and saved-file links work without JavaScript.
+- Each tab has its own address (`resources.html#divisions`). Navigation and the About and History text work without JavaScript.
 
 ### Approved next-phase permissions
 

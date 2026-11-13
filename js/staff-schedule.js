@@ -74,7 +74,10 @@ function startStaffSchedule(client, invite) {
     onImported: date => { feedback(''); gamesNext.hidden = false; loadGames(date); },
     post: ids => publication.post(ids),
   });
-  const workspaceSchool = () => isSiteAdmin && !preview.value ? null : currentSchool();
+  // Conference admins and site admins keep the Shore Conference logo and colors on every tab.
+  let viewRole = invite.role;
+  const conferenceView = () => viewRole === 'conference_office' || (isSiteAdmin && !preview.value);
+  const workspaceSchool = () => conferenceView() ? null : currentSchool();
   const settings = startStaffSettings(client, currentSchool, () => applySchoolTheme(client, workspaceSchool()));
   const publication = startStaffPublication(client, currentSchool, {
     canEdit: () => canEdit, schools: () => schools,
@@ -178,7 +181,7 @@ function startStaffSchedule(client, invite) {
   function selectView() {
     const choice = isSiteAdmin ? preview.value : '';
     const schoolId = choice.startsWith('ad:') ? choice.slice(3) : invite.school_id;
-    const role = choice === 'office' ? 'conference_office' : choice.startsWith('ad:') ? 'ad' : invite.role;
+    const role = viewRole = choice === 'office' ? 'conference_office' : choice.startsWith('ad:') ? 'ad' : invite.role;
     accessTab.hidden = !mayManageAccess || Boolean(choice);
     // Not for ADs, and not for a site admin looking at a school. A site admin reaches it through the Conference office view.
     tournamentsTab.hidden = role !== 'conference_office';
@@ -248,7 +251,7 @@ function startStaffSchedule(client, invite) {
   }
 
   function setHeading() {
-    title.textContent = isSiteAdmin && !preview.value ? 'Shore Conference' : currentSchool()?.name ?? roleLabel.textContent;
+    title.textContent = conferenceView() ? 'Shore Conference' : currentSchool()?.name ?? roleLabel.textContent;
     publicLink.hidden = !selector.value;
     if (selector.value) publicLink.href = 'school.html?school=' + encodeURIComponent(selector.value);
   }

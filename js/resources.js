@@ -1,117 +1,102 @@
-// Renders public division and document lists from reviewed sources, with shareable filters.
+// Runs the Resources page: left-hand tabs, the division pop-up, and the tournament and document lists.
 (() => {
-  const form = document.getElementById('resource-filters');
-  if (!form) return;
-  const kind = form.dataset.kind;
-  const results = document.getElementById('resource-results');
-  const count = document.getElementById('resource-count');
-  const isDivisions = kind === 'divisions';
-  const records = isDivisions ? shoreConferenceResources.divisionLists : shorePublicResources[kind];
-  const node = (tag, value, className) => {
+  const tabs = [...document.querySelectorAll('.side-tab')];
+  if (!tabs.length) return;
+  const panels = tabs.map(tab => document.getElementById(tab.hash.slice(1)));
+  const node = (tag, text, className) => {
     const element = document.createElement(tag);
-    element.textContent = value;
+    if (text) element.textContent = text;
     if (className) element.className = className;
     return element;
   };
-  const link = (title, href) => {
-    const element = node('a', title);
-    element.href = href;
-    return element;
+  const link = (text, href, className) => {
+    const anchor = node('a', text, className);
+    anchor.href = href;
+    return anchor;
   };
-  const names = values => [...new Set(values)].sort((a, b) => String(a).localeCompare(String(b)));
-  for (const field of form.querySelectorAll('select')) {
-    let options;
-    if (field.name === 'school') {
-      options = Object.entries(shoreSchools).map(([slug, school]) => [slug, school.name])
-        .sort((a, b) => a[1].localeCompare(b[1]));
-    } else {
-      const key = isDivisions && field.name === 'sport' ? 'sports' :
-        isDivisions && field.name === 'gender' ? 'genders' : field.name;
-      options = names(records.flatMap(record => record[key] || [])).map(value => [value, value]);
-      if (field.name === 'year') options.reverse();
-    }
-    for (const [value, title] of options) field.add(new Option(title, value));
+
+  // Tabs: the address hash names the open panel, so each tab can be shared. Anything else opens About.
+  function show(focus) {
+    const current = panels.find(panel => '#' + panel.id === location.hash) || panels[0];
+    panels.forEach((panel, index) => {
+      panel.hidden = panel !== current;
+      if (panel === current) tabs[index].setAttribute('aria-current', 'true');
+      else tabs[index].removeAttribute('aria-current');
+    });
+    if (focus) current.querySelector('h2').focus();
   }
-  const loadQuery = () => {
-    const query = new URLSearchParams(location.search);
-    for (const field of form.querySelectorAll('select, input')) {
-      const value = query.get(field.name) || '';
-      if (field.tagName === 'SELECT' && value && ![...field.options].some(option => option.value === value)) {
-        // Keep an unavailable selection visible rather than quietly showing unrelated results.
-        field.add(new Option('Unavailable: ' + value, value));
-      }
-      field.value = value;
-    }
-  };
-  const filters = () => Object.fromEntries(new FormData(form));
-  const members = values => {
-    const list = document.createElement('ul');
-    for (const slug of values) {
-      const item = document.createElement('li');
-      item.append(shoreSchools[slug] ? link(shoreSchools[slug].name, 'school.html?school=' + encodeURIComponent(slug)) : node('span', slug + ' (name in source)'));
-      list.append(item);
-    }
+  for (const tab of tabs) {
+    tab.addEventListener('click', event => {
+      event.preventDefault(); // Swap the panel in place instead of jumping down the page.
+      if (tab.hash !== location.hash) history.pushState(null, '', tab.hash);
+      show(true);
+    });
+  }
+  for (const panel of panels) panel.querySelector('h2').tabIndex = -1;
+  addEventListener('hashchange', () => show());
+  addEventListener('popstate', () => show());
+  show();
+  if (location.hash) scrollTo(0, 0);
+
+  // Divisions: one button per team, by season. A button opens that sport's divisions in a pop-up.
+  const dialog = node('dialog', '', 'game-details division-details');
+  dialog.setAttribute('aria-labelledby', 'division-details-title');
+  dialog.innerHTML = `
+    <p class="eyebrow"></p>
+    <h2 id="division-details-title"></h2>
+    <div class="division-groups"></div>
+    <p class="doc-meta"></p>
+    <div class="actions"><a class="button dark">Official list</a><form method="dialog"><button class="button secondary" autofocus>Close</button></form></div>`;
+  document.body.append(dialog);
+  const members = schools => {
+    const list = node('ul');
+    list.append(...schools.map(slug => {
+      const item = node('li');
+      if (Object.hasOwn(shoreSchools, slug)) item.append(link(shoreSchools[slug].name, 'school.html?school=' + encodeURIComponent(slug)));
+      else item.textContent = slug;
+      return item;
+    }));
     return list;
   };
-  function divisionCard(record, school) {
-    const card = node('article', '', 'resource-card');
-    card.append(node('h2', record.title));
-    const label = record.season === 'Winter' ? 'Winter ' + record.year + '–' + String(record.year + 1).slice(2) : record.season + ' ' + record.year;
-    card.append(node('p', label + ' · Shown for varsity · Reviewed ' + record.reviewed, 'resource-meta'));
-    if (school) {
-      const coverage = divisionCoverage(record, school);
-      const name = shoreSchools[school]?.name || school;
-      card.append(node('p', coverage.division ? name + ': ' + coverage.division :
-        name + ': assignment not on file here. Check the official list.'));
-      if (coverage.state === 'partial') card.append(node('p', 'Only part of this division has been checked. The full membership is in the official list.'));
-      if (coverage.members.length) card.append(members(coverage.members));
-    } else if (record.divisions) {
-      card.append(node('p', 'Selected divisions only; this is not the full conference list.', 'resource-meta'));
-      for (const [division, schools] of Object.entries(record.divisions)) {
-        card.append(node('h3', division));
-        if (record.complete) card.append(members(schools));
-        else card.append(node('p', 'Membership is only partly checked. See the official list.'));
-      }
-    } else card.append(node('p', 'Source available; school assignments have not been copied here.'));
-    card.append(link(record.title + ' — full list', record.url));
-    return card;
+  function openDivisions(team, season) {
+    const list = team.list;
+    const names = Object.keys(list.divisions || {});
+    dialog.querySelector('.eyebrow').textContent = season + ' · ' + list.level;
+    dialog.querySelector('h2').textContent = team.label;
+    dialog.querySelector('.division-groups').replaceChildren(...names.map(name => {
+      const group = node('section');
+      group.append(node('h3', name), list.complete ? members(list.divisions[name])
+        : node('p', 'Schools not copied here yet. See the official list.'));
+      return group;
+    }));
+    dialog.querySelector('.doc-meta').textContent = (names.length
+      ? 'Only some divisions are copied here so far. The official list has them all.'
+      : 'Divisions are not copied here yet. The official list has them all.') + ' Checked ' + list.reviewed + '.';
+    dialog.querySelector('a').href = list.url;
+    dialog.showModal();
   }
-  function resourceCard(record) {
-    const card = node('article', '', 'resource-card');
-    card.append(node(kind === 'documents' ? 'h3' : 'h2', record.title), node('p', record.description));
-    card.append(node('p', [record.category, record.sport, record.competition, record.year,
-      'Source label: ' + record.version, 'Checked ' + record.reviewed].filter(Boolean).join(' · '), 'resource-meta'));
-    if (record.note) card.append(node('p', record.note));
-    card.append(link(record.title + ' (' + record.format + ')', record.url));
-    return card;
+  dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+  document.getElementById('division-teams').replaceChildren(...divisionGroups(shoreConferenceResources.divisionLists).flatMap(group => {
+    const buttons = node('div', '', 'division-teams');
+    buttons.append(...group.teams.map(team => {
+      const button = node('button', team.label, 'button secondary');
+      button.type = 'button';
+      button.setAttribute('aria-haspopup', 'dialog');
+      button.addEventListener('click', () => openDivisions(team, group.label));
+      return button;
+    }));
+    return [node('h3', group.label, 'eyebrow'), buttons];
+  }));
+
+  // Tournament files and conference documents: one framed row each, linking to the copy saved on this site.
+  for (const kind of ['tournaments', 'documents']) {
+    document.getElementById(kind + '-list').replaceChildren(...shorePublicResources[kind].map(record => {
+      const item = node('li');
+      item.append(link(record.title, record.url),
+        node('span', [record.format, record.category, record.version].join(' · '), 'doc-meta'),
+        node('p', record.description));
+      if (record.note) item.append(node('p', record.note, 'doc-meta'));
+      return item;
+    }));
   }
-  const render = () => {
-    const chosen = filters();
-    const found = isDivisions ? selectDivisionLists(records, chosen) : selectPublicResources(records, chosen);
-    const invalidSchool = isDivisions && chosen.school && !Object.hasOwn(shoreSchools, chosen.school);
-    const shown = invalidSchool ? [] : found;
-    results.replaceChildren(...shown.map(record => isDivisions ? divisionCard(record, chosen.school) : resourceCard(record)));
-    count.textContent = shown.length + (isDivisions ? (shown.length === 1 ? ' division list' : ' division lists') :
-      (shown.length === 1 ? ' resource' : ' resources')) + ' shown.';
-    if (!shown.length) results.append(node('p', 'No resources match these filters. Clear filters to see what is on file.', 'resource-card'));
-  };
-  const update = () => {
-    const query = new URLSearchParams();
-    for (const [key, value] of Object.entries(filters())) if (value) query.set(key, value);
-    history.replaceState(null, '', location.pathname + (query.size ? '?' + query : '') + location.hash);
-    render();
-  };
-  form.addEventListener('submit', event => { event.preventDefault(); update(); });
-  form.addEventListener('change', update);
-  let searchTimer;
-  form.addEventListener('input', event => {
-    if (event.target.type !== 'search') return;
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(update, 200);
-  });
-  form.addEventListener('reset', () => setTimeout(update, 0));
-  window.addEventListener('popstate', () => { loadQuery(); render(); });
-  loadQuery();
-  render();
-  form.hidden = false;
 })();

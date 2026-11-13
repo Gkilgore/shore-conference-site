@@ -75,6 +75,15 @@ get('view-as').value = 'ad:marlboro';
 get('view-as').dispatchEvent(new Event('change'));
 await new Promise(resolve => setTimeout(resolve, 100));
 check('AD preview uses school logo', get('workspace-logo').src.includes('marlboro'));
+get('view-as').value = 'office';
+get('view-as').dispatchEvent(new Event('change'));
+await new Promise(resolve => setTimeout(resolve, 100));
+for (const tab of ['staff-schedule-tab', 'staff-games-tab']) {
+  get(tab).click();
+  await new Promise(resolve => setTimeout(resolve, 100));
+  check('conference admin ' + tab + ' keeps SC logo and name', get('workspace-logo').src.endsWith('/shore-conference.svg') &&
+    get('workspace-title').textContent === 'Shore Conference' && document.querySelector('.staff-heading .logo-wall'));
+}
 get('view-as').value = '';
 get('view-as').dispatchEvent(new Event('change'));
 await new Promise(resolve => setTimeout(resolve, 100));

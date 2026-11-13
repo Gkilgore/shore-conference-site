@@ -46,7 +46,7 @@
   // Skip the old page's "PDF version" prompt and stray spreadsheet styles.
   const text = page.paragraphs.filter(line => line.trim() && !/PDF version/i.test(line) && !line.includes('{'));
   if (text.length) {
-    const card = node('div', '', 'resource-card');
+    const card = node('div', '', 'panel');
     card.append(...text.map(line => node('p', line)));
     parts.push(card);
   }

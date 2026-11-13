@@ -102,24 +102,55 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
   .site-header nav { grid-row: 2; }
 }
 
-/* Public resource pages use existing colors and full frames; lists reflow on phones. */
-.resource-page { display: grid; gap: 1.25rem; }
-.resource-page > p { max-width: 75ch; line-height: 1.55; }
-.resource-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr)); gap: 1rem; margin-top: 1rem; }
-.resource-card { display: flex; flex-direction: column; align-items: flex-start; gap: 0.75rem; padding: 1rem; border: var(--frame); background: white; min-width: 0; overflow-wrap: anywhere; }
-.resource-card h2 { font-size: 1.4rem; line-height: 1.25; }
-.resource-card h3 { margin: 0; font-size: 1.15rem; }
-.resource-card p { line-height: 1.5; }
-.resource-card ul { margin: 0; padding-left: 1.4rem; line-height: 1.7; }
-.resource-card a { text-decoration: underline; }
-.resource-card a:hover { color: var(--ink); background: var(--hover); }
-.resource-meta { color: var(--muted); font-size: 0.9rem; }
-.resource-filters { align-items: end; }
-.resource-filters label { min-width: 0; }
-.resource-filters :is(input, select) { width: 100%; min-width: 0; }
-.intro h1 + p { margin-top: 0.75rem; }
+/* Resources page: tabs on the left swap the framed panel on the right, like the staff workspace.
+   The tabs become a row on phones. Dividers are 1px gaps over steel, so every box keeps a full frame. */
+.side-layout { display: grid; gap: 1rem; align-items: start; }
+.side-tabs { display: flex; flex-wrap: wrap; gap: 1px; background: var(--steel); border: var(--frame); }
+.side-tab {
+  flex: 1 1 30%;
+  display: grid;
+  place-items: center;
+  min-height: 3rem;
+  padding: 0.5rem 0.3rem;
+  background: white;
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.side-tab:is(:hover, :focus-visible) { background: var(--hover); }
+.side-tab[aria-current] { background: var(--navy); color: white; }
+.side-tab[aria-current]:is(:hover, :focus-visible) { background: var(--red); }
+.side-tab:focus-visible { outline-offset: -5px; outline-color: white; }
+.side-panels { display: grid; gap: 1rem; min-width: 0; }
+.panel { display: grid; gap: 1rem; min-width: 0; padding: clamp(0.85rem, 2.5vw, 1.5rem); background: white; border: var(--frame); }
+.panel[hidden] { display: none; }
+.panel > h2:focus { outline: none; } /* Focus moves here when switching tabs; no ring needed. */
+.panel p { max-width: 70ch; line-height: 1.6; }
+.panel .about-top p + p { margin-top: 0.6rem; }
+.panel .about-links li { background: var(--paper); }
+.panel-list { display: grid; gap: 0.6rem; }
+.panel-list .eyebrow { margin: 0.6rem 0 0; color: var(--red); }
+.division-teams { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr)); gap: 0.5rem; }
+.division-teams .button { width: 100%; text-align: center; }
+@media (min-width: 840px) {
+  .side-layout { grid-template-columns: 14rem minmax(0, 1fr); }
+  .side-tabs { display: grid; }
+  .side-tab { place-items: center start; padding-inline: 1rem; font-size: 1rem; }
+}
+/* Division pop-up: each division's schools, side by side when there is room. */
+.division-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 1rem; margin-block: 1rem; }
+.division-groups h3 { margin: 0 0 0.3rem; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+.division-groups ul { margin: 0; padding: 0; list-style: none; line-height: 1.7; }
+.division-details .actions { margin-top: 1rem; }
+/* Tournament files and documents: one row per saved file. */
+.doc-list { display: grid; gap: 1px; margin: 0; padding: 1px; list-style: none; background: var(--steel); }
+.doc-list li { display: grid; gap: 0.25rem; padding: 0.75rem 0.9rem; background: white; overflow-wrap: anywhere; }
+.doc-list a { justify-self: start; font-size: 1.08rem; font-weight: 700; }
+.doc-list a:is(:hover, :focus-visible) { background: var(--hover); }
+.doc-meta { font-size: 0.88rem; color: var(--muted); }
 /* Saved copies of conference lists: full-frame tables that scroll sideways on phones. */
-.archive-content { display: grid; gap: 1rem; }
+.archive-page, .archive-content { display: grid; gap: 1rem; }
 .archive-scroll { overflow-x: auto; border: var(--frame); background: white; }
 .archive-table { width: 100%; border-collapse: collapse; }
 .archive-table :is(th, td) { padding: 0.5rem 0.75rem; border: 1px solid var(--steel); text-align: left; vertical-align: top; }
@@ -556,24 +587,19 @@ textarea { display: block; resize: vertical; }
 .game-details dt { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding-top: 0.15rem; }
 .game-details dd { margin: 0; overflow-wrap: anywhere; }
 
-/* About page: uses the full page width. Members beside a facts panel, the history as a row of dated
-   columns, and the note about this site in its own framed block. Everything stacks on phones. */
-.about { display: grid; gap: clamp(1.75rem, 4vw, 2.75rem); }
-.about h2 { margin-bottom: 0.5rem; }
-.about p { line-height: 1.6; }
-.about p + p { margin-top: 0.6rem; }
+/* About and History panels on the Resources page: text beside a facts box, the history as a row of dated
+   columns, and framed link boxes. Everything stacks on phones. */
 .about-top { display: grid; gap: 1.5rem 2.5rem; align-items: start; }
 .about-top p { font-size: 1.08rem; }
 .about-facts { background: white; border: var(--frame); }
-.about-facts h2 { margin: 0; padding: 0.55rem 1rem; background: var(--navy); color: white; font-size: 1.05rem; letter-spacing: 0; }
+.about-facts h3 { margin: 0; padding: 0.55rem 1rem; background: var(--navy); color: white; font-size: 1.05rem; letter-spacing: 0; }
 .about-facts dl { display: grid; grid-template-columns: max-content 1fr; margin: 0; }
 .about-facts dt, .about-facts dd { margin: 0; padding: 0.6rem 1rem; border-top: 1px solid var(--rule); }
-.about-facts dt { padding-right: 0.5rem; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; align-self: center; }
+.about-facts dt { display: grid; align-items: center; padding-right: 0.5rem; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
 .about-facts dd { font-weight: 700; }
 .about-history li { align-items: start; }
 .about-history time { font-size: 1.05rem; }
 .about-history span { line-height: 1.55; color: var(--ink); }
-.about-source { margin-top: 0.5rem; font-size: 0.88rem; color: var(--muted); }
 .about-links { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
 .about-links li { display: grid; grid-template-rows: auto 1fr auto; gap: 0.4rem; padding: 1rem; background: white; border: var(--frame); }
 .about-links h3 { margin: 0; font-size: 1.15rem; }

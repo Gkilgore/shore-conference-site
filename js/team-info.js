@@ -1,6 +1,6 @@
 // Finds a team's division in the curated official lists and draws it as one line beside the schedule.
 // It only names a division when school, sport, team, level and season all point to one.
-const allDivisions = 'divisions.html';
+const allDivisions = 'resources.html#divisions';
 
 // A school year starts July 1. Fall and winter are named by the year they start in, spring by the year it is played.
 function seasonYear(season, isoDate) {
