@@ -5,6 +5,8 @@ function startStaffAccess(client, invite, schoolsFn) {
   const email = get('email'), name = get('name'), role = get('role'), school = get('school');
   const schoolField = get('school-field'), submit = get('submit'), cancelEdit = get('cancel-edit');
   const dialog = get('review'), confirm = get('review-confirm'), cancelReview = get('review-cancel');
+  const search = get('search'), filterSchool = get('filter-school'), filterRole = get('filter-role');
+  const sort = get('sort'), direction = get('direction'), count = get('count'), clearFilters = get('clear-filters');
   let accounts = [], actorRole = null, editing = null, pending = null;
   let requestNumber = 0, busy = false, saving = false, active = true;
   const allowed = value => value === 'site_admin' || value === 'conference_office';
@@ -54,6 +56,8 @@ function startStaffAccess(client, invite, schoolsFn) {
     school.replaceChildren();
     panel.hidden = true;
     status.textContent = '';
+    search.value = filterSchool.value = filterRole.value = '';
+    sort.value = 'name'; direction.value = 'asc'; count.textContent = '';
     clearDraft();
   }
 
@@ -68,15 +72,37 @@ function startStaffAccess(client, invite, schoolsFn) {
       ...(actorRole === 'site_admin' ? [option('conference_office', 'Conference admin')] : []));
     school.replaceChildren(option('', 'Choose a school'),
       ...schoolsFn().map(item => option(item.slug, item.name)));
-    list.replaceChildren(...accounts.map(account => {
-      const row = document.createElement('li');
-      const heading = document.createElement('strong');
+    const previousSchool = filterSchool.value;
+    filterSchool.replaceChildren(option('', 'All schools'), option('none', 'No school assigned'),
+      ...schoolsFn().map(item => option(item.slug, item.name)));
+    filterSchool.value = previousSchool;
+    renderList();
+    clearDraft();
+  }
+
+  function renderList() {
+    const query = normalized(search.value);
+    const visible = accounts.filter(account =>
+      (!filterRole.value || account.role === filterRole.value) &&
+      (!filterSchool.value || (account.school_id || 'none') === filterSchool.value) &&
+      (!query || normalized([account.name, account.email, schoolName(account.school_id), labelRole(account.role)].join(' ')).includes(query)));
+    const value = account => sort.value === 'school' ? schoolName(account.school_id)
+      : sort.value === 'role' ? labelRole(account.role) : sort.value === 'email' ? account.email : account.name || account.email;
+    visible.sort((a, b) => (direction.value === 'desc' ? -1 : 1) *
+      (value(a).localeCompare(value(b), undefined, {sensitivity: 'base'}) || a.email.localeCompare(b.email)));
+    count.textContent = visible.length + ' of ' + accounts.length + ' people';
+    list.replaceChildren(...visible.map(account => {
+      const row = document.createElement('tr');
+      const heading = document.createElement('td');
       heading.textContent = account.name || account.email;
-      const mail = document.createElement('span');
-      mail.textContent = account.name ? account.email : '';
-      const details = document.createElement('span');
-      details.textContent = assignment(account);
-      row.append(heading, mail, details);
+      const mail = document.createElement('td');
+      mail.textContent = account.email;
+      const assignedSchool = document.createElement('td');
+      assignedSchool.textContent = schoolName(account.school_id) || 'No school assigned';
+      const accessRole = document.createElement('td');
+      accessRole.textContent = labelRole(account.role);
+      const actionCell = document.createElement('td');
+      row.append(heading, mail, assignedSchool, accessRole, actionCell);
       if (canManage(account)) {
         const actions = document.createElement('div');
         actions.className = 'staff-actions';
@@ -99,11 +125,17 @@ function startStaffAccess(client, invite, schoolsFn) {
           if (busy || !active || !canManage(account)) return;
           showReview({ ...account }, { ...account }, true);
         };
-        actions.append(edit, remove); row.append(actions);
+        edit.disabled = remove.disabled = busy;
+        actions.append(edit, remove); actionCell.append(actions);
       }
       return row;
     }));
-    clearDraft();
+    if (!visible.length) {
+      const row = document.createElement('tr'), cell = document.createElement('td');
+      cell.colSpan = 5;
+      cell.textContent = 'No people match these filters.';
+      row.append(cell); list.append(row);
+    }
   }
 
   async function rpc(method, args) {
@@ -173,6 +205,12 @@ function startStaffAccess(client, invite, schoolsFn) {
     showReview(draft, editing ? {...editing} : null, false);
   };
   role.onchange = syncFields;
+  search.oninput = renderList;
+  filterSchool.onchange = filterRole.onchange = sort.onchange = direction.onchange = renderList;
+  clearFilters.onclick = () => {
+    search.value = filterSchool.value = filterRole.value = '';
+    sort.value = 'name'; direction.value = 'asc'; renderList();
+  };
   cancelEdit.onclick = () => { if (!busy) { clearDraft(); status.textContent = 'Access edit canceled.'; } };
   cancelReview.onclick = () => { if (!saving) closeReview(); };
   dialog.oncancel = event => { if (saving) event.preventDefault(); else closeReview(); };
@@ -205,5 +243,6 @@ function startStaffAccess(client, invite, schoolsFn) {
     reset(); active = false;
     form.onsubmit = role.onchange = cancelEdit.onclick = cancelReview.onclick = confirm.onclick = null;
     dialog.oncancel = dialog.onclose = null;
+    search.oninput = filterSchool.onchange = filterRole.onchange = sort.onchange = direction.onchange = clearFilters.onclick = null;
   }};
 }

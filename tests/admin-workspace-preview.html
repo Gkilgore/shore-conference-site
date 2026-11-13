@@ -1,0 +1,78 @@
+<!doctype html>
+<!-- Local-only staff layout and access QA with fictional accounts; never connects to Supabase. -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="../"><title>Staff workspace preview</title></head><body>
+<script type="module">
+const errors = [];
+window.addEventListener('error', event => errors.push(event.message));
+window.addEventListener('unhandledrejection', event => errors.push(String(event.reason)));
+const source = await fetch('admin.html').then(response => response.text());
+const markup = new DOMParser().parseFromString(source, 'text/html');
+for (const link of markup.querySelectorAll('link[rel="stylesheet"]')) document.head.append(link.cloneNode());
+document.body.replaceChildren(...markup.body.childNodes);
+const get = id => document.getElementById(id);
+get('workspace').hidden = false;
+get('staff-sign-in-title').hidden = true;
+get('sign-out').hidden = false;
+document.querySelector('a.staff-link').hidden = true;
+get('workspace-account').textContent = 'Fictional site admin · local preview';
+for (const script of markup.querySelectorAll('script[src]')) {
+  const src = script.getAttribute('src');
+  if (/supabase|js\/admin.js/.test(src)) continue;
+  await new Promise((resolve, reject) => {
+    const item = document.createElement('script'); item.src = src;
+    item.onload = resolve; item.onerror = reject; document.head.append(item);
+  });
+}
+const schools = ['colts-neck', 'marlboro', 'shore-regional'].map(slug => ({slug, name: shoreSchools[slug].name}));
+const accounts = [
+  {name:'Zoe Example', email:'zoe@example.org', role:'ad', school_id:'marlboro', access_revision:1},
+  {name:'Alex Example', email:'alex@example.org', role:'ad', school_id:'colts-neck', access_revision:1},
+  {name:'Taylor Example', email:'taylor@example.org', role:'ad', school_id:'shore-regional', access_revision:1},
+  {name:'Conference Example', email:'office@example.org', role:'conference_office', school_id:null, access_revision:1},
+  {name:'Site Example', email:'admin@example.org', role:'site_admin', school_id:null, access_revision:1},
+];
+const client = {
+  from(table) {
+    const result = {data: table === 'schools' ? schools : []};
+    const query = {then: callback => Promise.resolve(result).then(callback)};
+    for (const name of ['select','order','eq','maybeSingle']) query[name] = () => query;
+    return query;
+  },
+  async rpc(name) { return {data: name === 'list_staff_access' ? {actor_role:'site_admin', accounts} : []}; },
+};
+startStaffSchedule(client, {role:'site_admin', email:'admin@example.org'});
+await new Promise(resolve => setTimeout(resolve, 500));
+const checks = [];
+const check = (name, condition) => checks.push({name, pass: Boolean(condition)});
+const beside = panel => {
+  const sidebar = document.querySelector('.staff-sidebar').getBoundingClientRect();
+  const box = panel.getBoundingClientRect();
+  return innerWidth < 840 || (box.left >= sidebar.right && box.top < sidebar.bottom);
+};
+for (const [tab, panel] of [['staff-schedule-tab','staff-schedule-panel'], ['staff-transportation-tab','staff-transportation-panel'], ['staff-settings-tab','staff-settings-panel'], ['staff-access-tab','staff-access-workspace']]) {
+  get(tab).click();
+  await new Promise(resolve => setTimeout(resolve, 100));
+  check(panel + ' stays inside content', get(panel).parentElement.classList.contains('staff-content'));
+  check(panel + ' beside tabs on desktop', beside(get(panel)));
+  check(panel + ' no page overflow', document.documentElement.scrollWidth <= innerWidth);
+  check(panel + ' SC logo', get('workspace-logo').src.endsWith('/shore-conference.svg') && !get('workspace-logo').hidden);
+}
+get('staff-access-search').value = 'marlboro';
+get('staff-access-search').dispatchEvent(new Event('input'));
+check('search matches assigned school', get('staff-access-list').rows.length === 1 && get('staff-access-list').textContent.includes('Zoe Example'));
+get('staff-access-clear-filters').click();
+get('view-as').value = 'ad:marlboro';
+get('view-as').dispatchEvent(new Event('change'));
+await new Promise(resolve => setTimeout(resolve, 100));
+check('AD preview uses school logo', get('workspace-logo').src.includes('marlboro'));
+get('view-as').value = '';
+get('view-as').dispatchEvent(new Event('change'));
+await new Promise(resolve => setTimeout(resolve, 100));
+get('staff-access-tab').click();
+await new Promise(resolve => setTimeout(resolve, 100));
+const selected = new URLSearchParams(location.search).get('tab');
+if (selected) get('staff-' + selected + '-tab').click();
+check('no script errors', errors.length === 0);
+const result = document.createElement('pre'); result.id = 'qa-results'; result.hidden = true;
+result.textContent = JSON.stringify({width:innerWidth, checks, errors}); document.body.append(result);
+</script></body></html>

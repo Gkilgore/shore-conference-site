@@ -42,6 +42,34 @@ function mount(rpc, invite = {role: 'site_admin', email: site.email}) {
   return {controller, element, fill, review, buttons};
 }
 
+test('access list filters and sorts without clearing an access edit or making requests', async () => {
+  let calls = 0;
+  const ui = mount(async () => { calls++; return {data: {actor_role: 'site_admin', accounts: [
+    {...ad(), name: 'Zoe'}, {...ad('amy@school.org'), name: 'Amy', school_id: 'colts-neck'}, office, site,
+  ]}}; });
+  await ui.controller.load();
+  const names = () => ui.element('list').children.map(row => row.children[0].textContent);
+  assert.deepEqual(names(), ['Admin', 'Amy', 'Office', 'Zoe']);
+  ui.buttons()[0].onclick();
+  ui.element('search').value = '  MARLBORO ';
+  ui.element('search').oninput();
+  assert.deepEqual(names(), ['Zoe']);
+  assert.equal(ui.element('email').value, 'amy@school.org');
+  ui.element('search').value = '';
+  ui.element('filter-role').value = 'ad';
+  ui.element('sort').value = 'school';
+  ui.element('direction').value = 'desc';
+  ui.element('sort').onchange();
+  assert.deepEqual(names(), ['Zoe', 'Amy']);
+  ui.element('filter-school').value = 'colts-neck';
+  ui.element('filter-school').onchange();
+  assert.deepEqual(names(), ['Amy']);
+  ui.element('search').value = 'no match';
+  ui.element('search').oninput();
+  assert.match(ui.element('list').children[0].children[0].textContent, /No people match/);
+  assert.equal(calls, 1);
+});
+
 test('AD users never load or see invited-access controls', async () => {
   let calls = 0;
   const ui = mount(async () => { calls++; }, {role: 'ad'});

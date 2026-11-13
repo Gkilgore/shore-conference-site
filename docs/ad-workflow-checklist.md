@@ -1,5 +1,12 @@
 # AD workflow checklist
 
+## November 12: site-admin workspace and staff layout
+
+- Removed an extra closing section tag that put Schedule and subsequent panels outside the sidebar/content grid. Schedule, Staff access, Transportation, and School settings now sit beside the tabs on desktop and below the compact tab grid on phones.
+- Added the SC mark to the staff masthead and conference banner. The site-admin workspace keeps conference branding when a school is selected; View as AD retains that school's branding.
+- People with access has separate Name, Email, School, Role, and Actions columns, text search, school/access-level filters, and ascending/descending sorting by name, email, school, or role. These controls filter the loaded list without database requests or clearing an access edit.
+- Verified with fictional accounts using `tests/admin-workspace-preview.html` at desktop width and `tests/phone-preview.html?admin=1` at 390px. All four affected panels remain in the content container, with no page overflow or script errors. All 171 Node tests pass. No access permissions or database records changed in this UI pass.
+
 Tracks the staff findings from the November 9 design review and the November 10 AD workflow pass. Checked with fictional games and a fake in-memory database in headless Chrome at 1280×900 and 375×812, as a test Marlboro AD and as a conference admin. Not yet checked with a real sign-in, the Supabase project, or a real AD.
 
 ## Fixed and verified (branch `design/ad-workflow`)

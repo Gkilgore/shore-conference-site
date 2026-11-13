@@ -74,7 +74,8 @@ function startStaffSchedule(client, invite) {
     onImported: date => { feedback(''); gamesNext.hidden = false; loadGames(date); },
     post: ids => publication.post(ids),
   });
-  const settings = startStaffSettings(client, currentSchool, school => applySchoolTheme(client, school));
+  const workspaceSchool = () => isSiteAdmin && !preview.value ? null : currentSchool();
+  const settings = startStaffSettings(client, currentSchool, () => applySchoolTheme(client, workspaceSchool()));
   const publication = startStaffPublication(client, currentSchool, {
     canEdit: () => canEdit, schools: () => schools,
     onPublished: withdrawn => {
@@ -235,7 +236,7 @@ function startStaffSchedule(client, invite) {
   }
 
   function setHeading() {
-    title.textContent = currentSchool()?.name ?? roleLabel.textContent;
+    title.textContent = isSiteAdmin && !preview.value ? 'Shore Conference' : currentSchool()?.name ?? roleLabel.textContent;
     publicLink.hidden = !selector.value;
     if (selector.value) publicLink.href = 'school.html?school=' + encodeURIComponent(selector.value);
   }
@@ -278,7 +279,7 @@ function startStaffSchedule(client, invite) {
     importer.reset();
     allGames = [];
     filterForm.reset();
-    applySchoolTheme(client, currentSchool());
+    applySchoolTheme(client, workspaceSchool());
     list.replaceChildren();
     calendar?.removeAllEvents();
     fields.opponent_school_id.replaceChildren(
@@ -496,7 +497,7 @@ function startStaffSchedule(client, invite) {
     access.reset();
     tournaments.reset();
     // Leaving Tournaments or Staff access puts the school's colors back.
-    if (conferenceTheme) { conferenceTheme = false; applySchoolTheme(client, currentSchool()); }
+    if (conferenceTheme) { conferenceTheme = false; applySchoolTheme(client, workspaceSchool()); }
     selector.parentElement.hidden = false;
     addGame.hidden = !canEdit;
     importButton.hidden = !canEdit;
