@@ -43,7 +43,7 @@ do $$ declare bus jsonb; begin
   if public.list_tournaments()->>'actor_role'<>'ad' then raise exception 'AD identity incorrect'; end if;
   begin perform public.save_tournament(current_setting('shore.tournament_id')::uuid,1,current_setting('shore.tournament_doc')::jsonb);raise exception 'AD edited tournament';exception when insufficient_privilege then null;end;
   begin perform public.review_tournament(current_setting('shore.tournament_id')::uuid);raise exception 'AD reviewed tournament drafts';exception when insufficient_privilege then null;end;
-  bus:=public.save_tournament_transport(current_setting('shore.tournament_id')::uuid,'sf1','colts-neck',0,'{"bus_departure":"08:00","pickup_location":"Gym","notes":"PRIVATE BUS NOTE","bus_confirmed":true}');
+  bus:=public.save_tournament_transport(current_setting('shore.tournament_id')::uuid,'sf1','colts-neck',0,'{"bus_departure":"08:00","pickup_location":"Gym","notes":"PRIVATE BUS NOTE"}');
   if bus->>'revision'<>'1' then raise exception 'Own-school bus save failed'; end if;
   begin perform public.save_tournament_transport(current_setting('shore.tournament_id')::uuid,'sf2','marlboro',0,'{}');raise exception 'Cross-school bus write allowed';exception when insufficient_privilege then null;end;
 end; $$;

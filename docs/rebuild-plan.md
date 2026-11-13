@@ -21,6 +21,8 @@ November 5, 2026 · Greg Kilgore and Alexa
 
 **Bus times and entered early-dismissal times** show on each game on the owning school's calendar and school-specific feeds, never on another school's calendar or the conference calendar. An early-dismissal time appears only when the AD enters one.
 
+When an AD saves a scheduled game with a bus departure time, the school transportation contact receives an email and the AD is copied. Neither the provider nor a bus-confirmation field determines the game's status.
+
 **Staff access (Greg's November 6 update):** Several invited AD/staff accounts may share a school, and several accounts may be conference admins. Conference admins can add, reassign or remove AD access. Site admins can also manage conference admins. These tools cannot grant site-admin access or change the signed-in administrator's own access. Every change checks current permissions and the reviewed account version. Removing an invitation blocks future school database access even with an existing login token.
 
 **Public updates:** Each school page identifies the season, year and teams actually posted, followed by recent published game changes. A saved change is public straight away. Withdrawing a schedule hides its old game details from public history, including after reposting.
@@ -73,7 +75,7 @@ A game's opponent is either a member school picked from a list or a typed name f
 | Data + logins    | Supabase                     | Tables, AD logins, and who-can-edit-what rules. Spreadsheet-style screen to see or fix any record.                                                    |
 | Calendar feeds   | Supabase Edge Function       | Builds the .ics feed fresh each time a phone or Google Calendar checks it                                                                             |
 | Calendar display | FullCalendar                 | Draws month, week and list views. Loaded with a script tag.                                                                                           |
-| Email            | Resend (free)                | Sends AD invites and password resets                                                                                                                  |
+| Email            | Resend (free)                | Sends scheduled school-game bus details to the school's saved contact and, when enabled, AD invites and password resets                              |
 | Domain           | To be decided                | SportsCal.com, or ShoreSportsCal.com as a fallback. One subdomain per school.                                                                         |
 
 ### Why plain HTML, CSS and JavaScript

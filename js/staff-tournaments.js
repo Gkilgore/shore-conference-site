@@ -693,7 +693,6 @@ function startStaffTournaments(client, { schools = () => [] } = {}) {
   function loadBus() {
     const row = busRow(el('tournament-bus-match').value);
     for (const name of ['bus_departure','pickup_location','return_time','notes']) el('tournament-' + name.replaceAll('_','-')).value = row?.[name] ?? '';
-    el('tournament-bus-confirmed').checked = Boolean(row?.bus_confirmed);
     el('tournament-bus-status').textContent = '';
   }
   async function saveBus(event) {
@@ -703,7 +702,6 @@ function startStaffTournaments(client, { schools = () => [] } = {}) {
     if (!ownPublishedMatches().some(match => match.id === matchId)) return;
     const transport = {};
     for (const name of ['bus_departure','pickup_location','return_time','notes']) transport[name] = el('tournament-' + name.replaceAll('_','-')).value.trim() || null;
-    transport.bus_confirmed = el('tournament-bus-confirmed').checked;
     await operation(() => request('save_tournament_transport',{p_tournament:selected.id,p_match:matchId,p_school:schoolId,p_expected_revision:busRow(matchId)?.revision ?? 0,p_transport:transport}),row => {
       transportation = transportation.filter(item => !(item.tournament_id === row.tournament_id && item.match_id === row.match_id && item.school_id === row.school_id));
       transportation.push(row);
@@ -758,7 +756,6 @@ function startStaffTournaments(client, { schools = () => [] } = {}) {
     el('tournament-selector').hidden = true;
     el('tournament-participants').value = '';
     for (const id of ['tournament-bus-departure','tournament-pickup-location','tournament-return-time','tournament-notes']) el(id).value = '';
-    el('tournament-bus-confirmed').checked = false;
     status.textContent = '';
     setBusy(false);
   }

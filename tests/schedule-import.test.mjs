@@ -8,7 +8,7 @@ vm.runInContext(readFileSync(new URL('../js/staff-import.js',import.meta.url),'u
 const header='date,start_time,sport,gender,level,home_away,opponent,location';
 const row='2031-09-01,3:00 PM,Soccer,Girls,Varsity,Home,Visitor,Field';
 
-function mountImport(existingGames = [], client = {}) {
+function mountImport(existingGames = [], client = {}, sendTransportationEmail) {
   const elements = new Map();
   const makeElement = tag => ({
     tag, children: [], hidden: false, disabled: false, textContent: '',
@@ -28,7 +28,7 @@ function mountImport(existingGames = [], client = {}) {
   vm.runInContext(readFileSync(new URL('../js/staff-import.js',import.meta.url),'utf8'), context);
   const controller = context.startStaffImport(client, {
     currentSchool: () => ({slug:'marlboro'}), schools: () => [], existingGames: () => existingGames,
-    onImported() {},
+    onImported() {}, sendTransportationEmail,
   });
   return {controller, elements};
 }
@@ -89,6 +89,24 @@ test('CSV import saves an optional early-dismissal time and flags an invalid one
   assert.equal(saved.length, 1);
   assert.equal(saved[0].early_dismissal_time, '13:30');
   assert.ok(elements.get('import-preview').tBodies[0].children.some(item => item.className === 'is-problem'));
+  controller.stop();
+});
+
+test('CSV import emails a scheduled bus and reports delivery failure without losing the saved game', async () => {
+  const {controller, elements} = mountImport([], {
+    async rpc() { return {data:'saved-game',error:null}; },
+  }, async id => {
+    assert.equal(id, 'saved-game');
+    return {ok:false,message:'Transportation contact is missing.'};
+  });
+  const input = elements.get('import-file');
+  input.files = [new File([header + ',bus_departure\n' + row + ',2:00 PM'], 'bus.csv')];
+  await input.onchange();
+  await elements.get('import-save').onclick();
+  assert.match(elements.get('import-summary').textContent, /transportation email was not sent/i);
+  assert.match(elements.get('import-preview').tBodies[0].children[0].children.at(-1).textContent,
+    /Transportation email not sent: Transportation contact is missing/);
+  assert.match(elements.get('import-preview').tBodies[0].children[0].children[2].textContent, /Posted/);
   controller.stop();
 });
 

@@ -51,7 +51,7 @@ if (Object.hasOwn(schoolDirectory, schoolSlug)) {
     level: game.level,
     status: game.status,
     classNames: game.status === 'Scheduled' ? [] : ['is-' + game.status.toLowerCase()],
-    // Bus times show only on the owning school's calendar. Whether the bus is confirmed stays staff-only.
+    // Bus times show only on the owning school's calendar.
     bus: game.transportation?.bus_departure ? 'Bus ' + formatBusTime(game.transportation.bus_departure) : '',
   })) : [];
   const status = document.getElementById('public-schedule-status');

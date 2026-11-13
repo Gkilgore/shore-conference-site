@@ -92,7 +92,8 @@ async function previewScheduleFiles(files, check) {
   return { rows, errors };
 }
 
-function startStaffImport(client, { currentSchool, schools, existingGames, onImported, post = async () => ({ ok: true, held: [], heldIds: new Set() }) }) {
+function startStaffImport(client, { currentSchool, schools, existingGames, onImported, sendTransportationEmail,
+  post = async () => ({ ok: true, held: [], heldIds: new Set() }) }) {
   const fileInput = document.getElementById('import-file');
   const template = document.getElementById('import-template');
   const summary = document.getElementById('import-summary');
@@ -175,7 +176,8 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
     clear.hidden = !rows.length && !fileErrors.length;
     save.hidden = !counts.ready;
     save.textContent = 'Import and post ' + counts.ready + (counts.ready === 1 ? ' game' : ' games');
-    const labels = { ready: 'Ready', problem: 'Needs a fix', duplicate: 'Skipped', imported: 'Posted', held: 'Saved, not posted', failed: 'Failed' };
+    const labels = { ready: 'Ready', problem: 'Needs a fix', duplicate: 'Skipped', imported: 'Posted',
+      held: 'Saved, not posted', failed: 'Failed' };
     table.tBodies[0].replaceChildren(...rows.map((row, index) => {
       const line = document.createElement('tr');
       line.className = 'is-' + row.state;
@@ -186,7 +188,9 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
         [game.gender || raw.gender, game.level || raw.level, game.sport || raw.sport].filter(Boolean).join(' '),
         [game.home_away === 'Home' ? 'vs.' : game.home_away === 'Away' ? 'at' : raw.home_away, raw.opponent]
           .filter(Boolean).join(' '),
-        game.location || raw.location, row.problems.join('; ')];
+        game.location || raw.location,
+        [row.problems.join('; '),
+          row.emailError ? 'Transportation email not sent: ' + row.emailError : ''].filter(Boolean).join('; ')];
       line.append(...cells.map(text => {
         const cell = document.createElement('td');
         cell.textContent = text;
@@ -194,13 +198,17 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
       }));
       return line;
     }));
+    const emailFailures = rows.filter(row => row.emailError);
     if (rows.length) {
       summary.textContent = [
         counts.ready && counts.ready + ' ready', counts.problem && counts.problem + (counts.problem === 1 ? ' needs a fix' : ' need a fix'),
         counts.duplicate && counts.duplicate + ' skipped', counts.imported && counts.imported + ' posted', counts.held && counts.held + ' saved but not posted',
         counts.failed && counts.failed + ' failed',
       ].filter(Boolean).join(' · ') + (counts.problem ? '. Fix those rows in the file and choose it again.' : '.') +
-        (counts.held ? ' ' + heldNote : '');
+        (counts.held ? ' ' + heldNote : '') +
+        (emailFailures.length ? ' ' + emailFailures.length +
+          (emailFailures.length === 1 ? ' transportation email was' : ' transportation emails were') +
+          ' not sent. Fix the contact or email setup and save those games again.' : '');
     }
   }
 
@@ -259,6 +267,11 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
       row.state = error ? 'failed' : 'held';
       row.id = data;
       if (error) row.problems.push('Could not be saved. Check this row and try again.');
+      else if (row.game.status === 'Scheduled' && row.game.bus_departure && sendTransportationEmail) {
+        const result = await sendTransportationEmail(data);
+        if (!active || request !== requestNumber) return;
+        if (!result.ok) row.emailError = result.message;
+      }
     }
     // Rows stay "Saved, not posted" until the server confirms they are public.
     const saved = ready.filter(row => row.state === 'held');

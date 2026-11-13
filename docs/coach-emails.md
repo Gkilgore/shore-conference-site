@@ -33,4 +33,4 @@ The queuing happens in a database trigger, so it works however a game is saved. 
 - **Access:** the coach tables use `can_manage_schedule`, so only the school's AD and site admins can see coach emails. The conference office can't.
 - **The queuing trigger:** it runs as the owner so it can write the outbox, and it only copies the game being saved.
 - **ADs can queue invites only:** they can insert invite rows themselves, but not game emails.
-- **`save_staff_game`** is redefined again to pass the import batch. It includes the bus-confirmed change from `20261107000100`, so apply both in order.
+- **`save_staff_game`** is redefined again to pass the import batch. Apply it after the post-on-save migration.

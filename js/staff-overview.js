@@ -1,4 +1,4 @@
-// Schedule totals and unlinked games, plus unconfirmed buses for the Transportation tab.
+// Schedule totals and unlinked games, plus upcoming scheduled buses for the Transportation tab.
 function startStaffOverview(client, { currentSchool, gameTitle, canEdit, openEditor }) {
   const stats = document.getElementById('overview-stats');
   const linkList = document.getElementById('link-list');
@@ -68,8 +68,8 @@ function startStaffOverview(client, { currentSchool, gameTitle, canEdit, openEdi
     const checked = links instanceof Map;
     const unlinked = checked ? conference.filter(game => links.get(game.id) && !links.get(game.id).linked) : [];
     const linked = checked ? conference.filter(game => links.get(game.id)?.linked).length : null;
-    const needsBus = upcoming.filter(game =>
-      game.status === 'Scheduled' && game.home_away === 'Away' && !game.transportation?.bus_confirmed);
+    const scheduledBuses = upcoming.filter(game =>
+      game.status === 'Scheduled' && game.home_away === 'Away' && game.transportation?.bus_departure);
 
     busSection.hidden = !canEdit();
     stats.replaceChildren(
@@ -84,9 +84,10 @@ function startStaffOverview(client, { currentSchool, gameTitle, canEdit, openEdi
       ? unlinked.map(game => row(game, links.get(game.id).reason))
       : [note('Every upcoming conference game in this view matches.')]));
 
-    busList.replaceChildren(...(needsBus.length
-      ? needsBus.map(game => row(game, game.transportation?.bus_departure ? 'Bus entered, not confirmed' : 'No bus entered yet'))
-      : [note('Every upcoming away game in this view has a confirmed bus.')]));
+    busList.replaceChildren(...(scheduledBuses.length
+      ? scheduledBuses.map(game => row(game, 'Bus departure ' +
+        timeFormat.format(new Date(game.game_date + 'T' + game.transportation.bus_departure))))
+      : [note('No upcoming away games have a bus departure scheduled.')]));
   }
 
   async function load(visible) {

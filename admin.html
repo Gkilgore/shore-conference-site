@@ -207,9 +207,9 @@
             <h3 id="transportation-title" tabindex="-1">Transportation</h3>
             <p id="transportation-school"></p>
             <section id="bus-section" class="staff-section" aria-labelledby="bus-title">
-              <h4 id="bus-title">Bus not confirmed</h4>
-              <p class="staff-hint">Away games with no confirmed bus. Open the game and check “Bus confirmed” when transportation confirms.</p>
-              <ul id="bus-list" class="game-list staff-attention"></ul>
+              <h4 id="bus-title">Scheduled buses</h4>
+              <p class="staff-hint">Upcoming away games with a bus departure entered. Saving sends the details to the saved transportation contact when email is configured.</p>
+              <ul id="bus-list" class="game-list"></ul>
             </section>
             <section class="staff-section">
             <h4>Transportation contact</h4>
@@ -412,7 +412,6 @@
                 <label>Published match<select id="tournament-bus-match"></select></label>
                 <div class="filters"><label>Bus departure<input id="tournament-bus-departure" type="time"></label><label>Pickup location<input id="tournament-pickup-location" maxlength="160"></label><label>Return time<input id="tournament-return-time" type="time"></label></div>
                 <label>Transportation notes<textarea id="tournament-notes" rows="2" maxlength="1000"></textarea></label>
-                <label class="staff-check"><input id="tournament-bus-confirmed" type="checkbox"> Bus confirmed by transportation</label>
                 <p id="tournament-bus-status" role="status"></p><button class="button primary" type="submit">Save my school’s bus details</button>
               </form>
             </section>
@@ -489,7 +488,6 @@
                 <label>Return time <input name="return_time" type="time"></label>
               </div>
               <label>Transportation notes <textarea name="transport_notes" maxlength="1000" rows="2"></textarea></label>
-              <label class="staff-check"><input name="bus_confirmed" type="checkbox" value="true"> Bus confirmed by transportation</label>
             </fieldset>
             <p class="staff-hint">Saving posts this game to the public schedule.</p>
             <p id="game-form-status" role="status"></p>

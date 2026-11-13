@@ -100,6 +100,8 @@ check('list view shows the schedule table', !get('schedule-list').hidden && sche
 check('list view has aligned schedule columns', ['Time', 'Team', 'H/A', 'Opponent', 'Facility', 'Transportation', 'Depart', 'Early Dismissal', 'Actions']
   .every(label => scheduleTable.tHead.textContent.includes(label)));
 check('AD game editor has an early dismissal time field', document.querySelector('#game-form [name="early_dismissal_time"]')?.type === 'time');
+check('game editor has no transportation confirmation field',
+  !document.querySelector('#game-form [name="bus_confirmed"]') && !document.getElementById('tournament-bus-confirmed'));
 check('list table uses the available width', scheduleTable.getBoundingClientRect().width >= get('schedule-list').clientWidth);
 document.querySelector('#calendar .fc-listDay-button').click();
 await new Promise(resolve => setTimeout(resolve, 100));

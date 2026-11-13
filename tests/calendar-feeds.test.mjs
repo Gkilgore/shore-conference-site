@@ -14,7 +14,7 @@ const home = {
   status: 'Scheduled', revision: 1, updated_at: '2026-11-06T12:00:00Z', notes: 'Arrive early.',
   teams: { sport: 'Soccer', gender: 'Girls', level: 'Varsity', season: 'Fall' },
   transportation: { bus_departure: '14:00:00', pickup_location: 'School lot', return_time: '19:00:00',
-    early_dismissal_time: '13:15:00', notes: 'PRIVATE', bus_confirmed: false },
+    early_dismissal_time: '13:15:00', notes: 'PRIVATE' },
 };
 const away = { ...home, id: 'game-two', school_id: 'colts-neck', home_away: 'Away', opponent_school_id: 'marlboro' };
 const options = { scope: 'school', school: 'marlboro' };
@@ -97,10 +97,10 @@ test('conference requires two published members and exact mirrored entries, and 
 
 test('conference omits all transportation; school projection omits staff-only fields', () => {
   const conference = JSON.stringify(project([home, away], { scope: 'conference' }));
-  assert.doesNotMatch(conference, /14:00|School lot|19:00|13:15|PRIVATE|bus_confirmed|transportation/);
+  assert.doesNotMatch(conference, /14:00|School lot|19:00|13:15|PRIVATE|transportation/);
   const own = JSON.stringify(project([home]));
   assert.match(own, /School lot|13:15/);
-  assert.doesNotMatch(own, /PRIVATE|bus_confirmed/);
+  assert.doesNotMatch(own, /PRIVATE/);
   assert.doesNotMatch(JSON.stringify(project([home], { ...options, school: 'colts-neck' })), /School lot/);
 });
 

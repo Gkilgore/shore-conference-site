@@ -1,12 +1,17 @@
-# Transportation email rollout
+# Transportation email
 
-The dashboard stores each school's coordinator contact and previews an email from saved game details. Sending is disabled until the delivery service is configured.
+When an AD saves or imports a **Scheduled** game with a bus departure time, the dashboard sends the saved details to that school's transportation contact and copies the AD's verified sign-in email. No bus confirmation is requested or used to determine the game's status. Saving the same bus details again is safe to retry; the email provider's idempotency key prevents duplicate delivery.
 
-1. Verify a sender domain in Resend and pick a From address. Add the sending key and From address as Supabase Edge Function secrets.
-2. Add a Supabase Edge Function that requires a signed-in AD and accepts only a game ID. Read the game, bus details, and coordinator contact using that user's database permissions. Use the verified AD email for the copy. Never accept email recipients supplied by the browser.
-3. Add a send confirmation showing the recipients. Use the game revision to avoid duplicate sends on retries and record whether Resend accepted the request. Show the AD the result and allow a failed request to be retried.
-4. Test delivery with approved test inboxes, then test that an AD cannot send another school's game and that a double click sends one message. Enable the send button only after those checks.
+The `transportation-email` Edge Function accepts only a saved game ID. It checks the signed-in staff invitation and uses the caller's database permissions to read the game and school contact. Email addresses are read from the database, never accepted from the browser. The service-role key is not used by this function.
 
-A Confirmed bus checkbox and email updates for reschedules or cancellations are open decisions.
+Before delivery can work:
 
-Coach emails wait on the same Resend setup. When sending is connected, finish them too: see `docs/coach-emails.md`.
+1. Verify a sender domain in Resend.
+2. Set `RESEND_API_KEY` and `TRANSPORTATION_EMAIL_FROM` as Supabase Edge Function secrets. The Supabase function environment supplies its URL and publishable/anon key.
+3. Deploy `supabase/functions/transportation-email`.
+4. In the AD dashboard, save the school's transportation contact email under **Transportation**.
+5. Test with an approved test inbox. Confirm a scheduled bus generates one email, a repeated save does not duplicate it, and an AD cannot send another school's game.
+
+If delivery is not configured, the game still saves, and the dashboard tells the AD the email was not sent. Correct the contact or email setup and save the game again to retry.
+
+Transportation emails do not yet update for later reschedules or cancellations. Coach emails are a separate feature and remain off; see `docs/coach-emails.md`.

@@ -438,7 +438,7 @@ function mountStaffSchedule(role) {
   };
   makeSelect('schedule-school');makeSelect('view-as');
   const gameForm=el('game-form');
-  const gameNames=['sport','gender','level','season','game_date','start_time','home_away','status','opponent_school_id','opponent_name','location','notes','bus_departure','pickup_location','early_dismissal_time','return_time','transport_notes','bus_confirmed'];
+  const gameNames=['sport','gender','level','season','game_date','start_time','home_away','status','opponent_school_id','opponent_name','location','notes','bus_departure','pickup_location','early_dismissal_time','return_time','transport_notes'];
   gameForm.elements=gameNames.map(name=>{
     const item=name==='opponent_school_id'?makeSelect('game-'+name):new Element('input',registry);
     item.name=name;return item;

@@ -48,10 +48,10 @@ test('posted season links open a month containing an approved game, including wi
 
 test('public updates name approved changes and ignore private fields and drafts', () => {
   const before = {game_date:'2027-04-02',start_time:'15:00:00',location:'Main field',status:'Scheduled',
-    transportation:{bus_departure:'14:00:00',pickup_location:'Gym',return_time:'18:00:00',notes:'Private',bus_confirmed:false}};
+    transportation:{bus_departure:'14:00:00',pickup_location:'Gym',return_time:'18:00:00',notes:'Private'}};
   const after = {...before,start_time:'16:00:00',location:'West field',notes:'Do not show notes',
     transportation:{...before.transportation,bus_departure:'15:00:00',early_dismissal_time:'13:15:00',
-      notes:'New private note',bus_confirmed:true}};
+      notes:'New private note'}};
   const updates = context.schoolPublicUpdates({updates:[{id:'change-1',kind:'game_changed',season:'Spring',season_year:2027,
     sport:'Baseball',gender:'Boys',level:'Varsity',occurred_at:'2027-04-01T12:00:00Z',before,after,
     draft:{location:'Draft field'},actor_email:'private@example.com'}]});
@@ -60,7 +60,7 @@ test('public updates name approved changes and ignore private fields and drafts'
   assert.deepEqual(Array.from(updates[0].changes), ['Start time: 3:00 PM → 4:00 PM', 'Venue: Main field → West field',
     'Bus departure: 2:00 PM → 3:00 PM', 'Early dismissal: To be announced → 1:15 PM']);
   const output = JSON.stringify(updates);
-  for (const privateValue of ['Private','private@','Draft field','Do not show notes','bus_confirmed']) assert.ok(!output.includes(privateValue));
+  for (const privateValue of ['Private','private@','Draft field','Do not show notes']) assert.ok(!output.includes(privateValue));
 });
 
 test('public calendar events show an entered early dismissal and omit an unset one', () => {

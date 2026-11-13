@@ -4,8 +4,8 @@
 -- TEST PROJECT ONLY. Never run this on the live project. It first DELETES every game (and its
 -- transportation) for Colts Neck, Marlboro and Shore Regional, plus their sample coaches.
 --
--- Run it in the Supabase SQL editor of the test project after the migrations. It works with or
--- without the newer draft migrations: bus confirmation and coaches load only if those tables exist.
+-- Run it in the Supabase SQL editor of the test project after the migrations. Coach fixtures load only
+-- when those optional tables exist. The legacy bus-confirmation field is not used.
 
 begin;
 
@@ -14,43 +14,43 @@ delete from public.games where school_id in ('colts-neck', 'marlboro', 'shore-re
 create temporary table sample_games (
   school_id text, sport text, gender text, level text, season text, day int, start_time time,
   home_away text, opponent_school_id text, opponent_name text, location text, status text, notes text,
-  bus_departure time, pickup_location text, return_time time, transport_notes text, bus_confirmed boolean
+  bus_departure time, pickup_location text, return_time time, transport_notes text
 ) on commit drop;
 
 insert into sample_games values
-  ('colts-neck', 'Soccer', 'Girls', 'JV', 'Fall', -3, '15:45', 'Home', 'marlboro', null, 'Colts Neck Field 2', 'Scheduled', null, null, null, null, null, false),
-  ('marlboro', 'Soccer', 'Girls', 'JV', 'Fall', -3, '15:45', 'Away', 'colts-neck', null, 'Colts Neck Field 2', 'Scheduled', null, '14:30', 'Gym lot', '18:00', null, true),
-  ('marlboro', 'Soccer', 'Girls', 'Varsity', 'Fall', 3, '15:45', 'Home', 'colts-neck', null, 'Marlboro Turf Field', 'Scheduled', 'Senior night. Players arrive by 3:00 PM.', null, null, null, null, false),
-  ('colts-neck', 'Soccer', 'Girls', 'Varsity', 'Fall', 3, '15:45', 'Away', 'marlboro', null, 'Marlboro Turf Field', 'Scheduled', null, '14:30', 'Front loop', '18:30', null, true),
-  ('colts-neck', 'Tennis', 'Girls', 'JV', 'Fall', 4, '15:30', 'Home', 'marlboro', null, 'Colts Neck Courts', 'Postponed', 'Postponed for rain. New date to come.', null, null, null, null, false),
-  ('marlboro', 'Tennis', 'Girls', 'JV', 'Fall', 4, '15:30', 'Away', 'colts-neck', null, 'Colts Neck Courts', 'Postponed', null, null, null, null, null, false),
-  ('marlboro', 'Soccer', 'Boys', 'Varsity', 'Fall', 5, '16:00', 'Away', null, 'Freehold Township', 'Freehold Township High School', 'Scheduled', null, '14:45', 'Front loop', '18:45', null, false),
-  ('colts-neck', 'Soccer', 'Boys', 'Freshman', 'Fall', 6, '14:30', 'Home', 'marlboro', null, 'Colts Neck Field 2', 'Scheduled', null, null, null, null, null, false),
-  ('marlboro', 'Soccer', 'Boys', 'Freshman', 'Fall', 6, '14:30', 'Away', 'colts-neck', null, 'Colts Neck Field 2', 'Scheduled', null, '13:30', 'Gym lot', '17:00', null, true),
-  ('marlboro', 'Volleyball', 'Girls', 'JV', 'Fall', 6, '15:00', 'Home', 'shore-regional', null, 'Marlboro Gym', 'Scheduled', null, null, null, null, null, false),
-  ('shore-regional', 'Volleyball', 'Girls', 'JV', 'Fall', 6, '15:00', 'Away', 'marlboro', null, 'Marlboro Gym', 'Scheduled', null, null, null, null, null, false),
-  ('colts-neck', 'Tennis', 'Girls', 'Varsity', 'Fall', 6, '15:30', 'Home', 'shore-regional', null, 'Colts Neck Courts', 'Scheduled', null, null, null, null, null, false),
-  ('shore-regional', 'Tennis', 'Girls', 'Varsity', 'Fall', 6, '15:30', 'Away', 'colts-neck', null, 'Colts Neck Courts', 'Scheduled', null, '14:30', 'Main lot', '18:00', null, true),
-  ('shore-regional', 'Field Hockey', 'Girls', 'JV', 'Fall', 6, '16:00', 'Home', 'marlboro', null, 'Shore Regional Turf Field', 'Scheduled', null, null, null, null, null, false),
-  ('marlboro', 'Field Hockey', 'Girls', 'JV', 'Fall', 6, '16:00', 'Away', 'shore-regional', null, 'Shore Regional Turf Field', 'Scheduled', null, '15:00', 'Gym lot', '18:15', null, false),
-  ('marlboro', 'Football', 'Boys', 'Freshman', 'Fall', 6, '16:30', 'Home', 'colts-neck', null, 'Marlboro Turf Field', 'Scheduled', null, null, null, null, null, false),
-  ('colts-neck', 'Football', 'Boys', 'Freshman', 'Fall', 6, '16:30', 'Away', 'marlboro', null, 'Marlboro Turf Field', 'Scheduled', null, null, null, null, null, false),
-  ('marlboro', 'Volleyball', 'Girls', 'Varsity', 'Fall', 6, '16:30', 'Home', 'shore-regional', null, 'Marlboro Gym', 'Scheduled', null, null, null, null, null, false),
-  ('shore-regional', 'Volleyball', 'Girls', 'Varsity', 'Fall', 6, '16:30', 'Away', 'marlboro', null, 'Marlboro Gym', 'Scheduled', null, '15:30', 'Main lot', '19:00', null, false),
-  ('shore-regional', 'Field Hockey', 'Girls', 'Varsity', 'Fall', 6, '17:30', 'Home', 'colts-neck', null, 'Shore Regional Turf Field', 'Scheduled', null, null, null, null, null, false),
-  ('colts-neck', 'Field Hockey', 'Girls', 'Varsity', 'Fall', 6, '17:30', 'Away', 'shore-regional', null, 'Shore Regional Turf Field', 'Scheduled', null, '16:30', 'Front loop', '20:00', null, true),
-  ('marlboro', 'Football', 'Boys', 'Varsity', 'Fall', 8, '18:00', 'Home', 'shore-regional', null, 'Marlboro Turf Field', 'Scheduled', 'Homecoming game.', null, null, null, null, false),
-  ('shore-regional', 'Football', 'Boys', 'Varsity', 'Fall', 8, '18:00', 'Away', 'marlboro', null, 'Marlboro High School Stadium', 'Scheduled', null, '16:15', 'Main lot', '21:30', null, false),
-  ('shore-regional', 'Soccer', 'Girls', 'Varsity', 'Fall', 9, '15:15', 'Home', 'colts-neck', null, 'Shore Regional East Field', 'Scheduled', null, null, null, null, null, false),
-  ('colts-neck', 'Soccer', 'Girls', 'Varsity', 'Fall', 9, '15:15', 'Away', 'shore-regional', null, 'Shore Regional East Field', 'Scheduled', null, '14:15', 'Front loop', '18:00', null, true),
-  ('colts-neck', 'Soccer', 'Boys', 'JV', 'Fall', 10, '15:30', 'Home', 'shore-regional', null, 'Colts Neck Field 2', 'Scheduled', null, null, null, null, null, false),
-  ('shore-regional', 'Soccer', 'Boys', 'JV', 'Fall', 10, '16:00', 'Away', 'colts-neck', null, 'Colts Neck Field 2', 'Scheduled', null, '14:50', 'Main lot', '18:30', null, false),
-  ('marlboro', 'Soccer', 'Boys', 'Varsity', 'Fall', 11, '16:00', 'Home', 'shore-regional', null, 'Marlboro Turf Field', 'Canceled', 'Canceled: field closed.', null, null, null, null, false),
-  ('shore-regional', 'Soccer', 'Boys', 'Varsity', 'Fall', 11, '16:00', 'Away', 'marlboro', null, 'Marlboro Turf Field', 'Canceled', null, null, null, null, null, false),
-  ('colts-neck', 'Field Hockey', 'Girls', 'JV', 'Fall', 12, '16:00', 'Home', null, 'Red Bank Catholic', 'Colts Neck Field 2', 'Scheduled', null, null, null, null, null, false),
-  ('marlboro', 'Soccer', 'Girls', 'JV', 'Fall', 13, '15:45', 'Away', 'shore-regional', null, 'Shore Regional Turf Field', 'Scheduled', null, null, null, null, null, false),
-  ('colts-neck', 'Basketball', 'Boys', 'Varsity', 'Winter', 34, '19:00', 'Home', 'marlboro', null, 'Colts Neck Gym', 'Scheduled', null, null, null, null, null, false),
-  ('marlboro', 'Basketball', 'Boys', 'Varsity', 'Winter', 34, '19:00', 'Away', 'colts-neck', null, 'Colts Neck Gym', 'Scheduled', null, '17:45', 'Front loop', '21:30', null, false);
+  ('colts-neck', 'Soccer', 'Girls', 'JV', 'Fall', -3, '15:45', 'Home', 'marlboro', null, 'Colts Neck Field 2', 'Scheduled', null, null, null, null, null),
+  ('marlboro', 'Soccer', 'Girls', 'JV', 'Fall', -3, '15:45', 'Away', 'colts-neck', null, 'Colts Neck Field 2', 'Scheduled', null, '14:30', 'Gym lot', '18:00', null),
+  ('marlboro', 'Soccer', 'Girls', 'Varsity', 'Fall', 3, '15:45', 'Home', 'colts-neck', null, 'Marlboro Turf Field', 'Scheduled', 'Senior night. Players arrive by 3:00 PM.', null, null, null, null),
+  ('colts-neck', 'Soccer', 'Girls', 'Varsity', 'Fall', 3, '15:45', 'Away', 'marlboro', null, 'Marlboro Turf Field', 'Scheduled', null, '14:30', 'Front loop', '18:30', null),
+  ('colts-neck', 'Tennis', 'Girls', 'JV', 'Fall', 4, '15:30', 'Home', 'marlboro', null, 'Colts Neck Courts', 'Postponed', 'Postponed for rain. New date to come.', null, null, null, null),
+  ('marlboro', 'Tennis', 'Girls', 'JV', 'Fall', 4, '15:30', 'Away', 'colts-neck', null, 'Colts Neck Courts', 'Postponed', null, null, null, null, null),
+  ('marlboro', 'Soccer', 'Boys', 'Varsity', 'Fall', 5, '16:00', 'Away', null, 'Freehold Township', 'Freehold Township High School', 'Scheduled', null, '14:45', 'Front loop', '18:45', null),
+  ('colts-neck', 'Soccer', 'Boys', 'Freshman', 'Fall', 6, '14:30', 'Home', 'marlboro', null, 'Colts Neck Field 2', 'Scheduled', null, null, null, null, null),
+  ('marlboro', 'Soccer', 'Boys', 'Freshman', 'Fall', 6, '14:30', 'Away', 'colts-neck', null, 'Colts Neck Field 2', 'Scheduled', null, '13:30', 'Gym lot', '17:00', null),
+  ('marlboro', 'Volleyball', 'Girls', 'JV', 'Fall', 6, '15:00', 'Home', 'shore-regional', null, 'Marlboro Gym', 'Scheduled', null, null, null, null, null),
+  ('shore-regional', 'Volleyball', 'Girls', 'JV', 'Fall', 6, '15:00', 'Away', 'marlboro', null, 'Marlboro Gym', 'Scheduled', null, null, null, null, null),
+  ('colts-neck', 'Tennis', 'Girls', 'Varsity', 'Fall', 6, '15:30', 'Home', 'shore-regional', null, 'Colts Neck Courts', 'Scheduled', null, null, null, null, null),
+  ('shore-regional', 'Tennis', 'Girls', 'Varsity', 'Fall', 6, '15:30', 'Away', 'colts-neck', null, 'Colts Neck Courts', 'Scheduled', null, '14:30', 'Main lot', '18:00', null),
+  ('shore-regional', 'Field Hockey', 'Girls', 'JV', 'Fall', 6, '16:00', 'Home', 'marlboro', null, 'Shore Regional Turf Field', 'Scheduled', null, null, null, null, null),
+  ('marlboro', 'Field Hockey', 'Girls', 'JV', 'Fall', 6, '16:00', 'Away', 'shore-regional', null, 'Shore Regional Turf Field', 'Scheduled', null, '15:00', 'Gym lot', '18:15', null),
+  ('marlboro', 'Football', 'Boys', 'Freshman', 'Fall', 6, '16:30', 'Home', 'colts-neck', null, 'Marlboro Turf Field', 'Scheduled', null, null, null, null, null),
+  ('colts-neck', 'Football', 'Boys', 'Freshman', 'Fall', 6, '16:30', 'Away', 'marlboro', null, 'Marlboro Turf Field', 'Scheduled', null, null, null, null, null),
+  ('marlboro', 'Volleyball', 'Girls', 'Varsity', 'Fall', 6, '16:30', 'Home', 'shore-regional', null, 'Marlboro Gym', 'Scheduled', null, null, null, null, null),
+  ('shore-regional', 'Volleyball', 'Girls', 'Varsity', 'Fall', 6, '16:30', 'Away', 'marlboro', null, 'Marlboro Gym', 'Scheduled', null, '15:30', 'Main lot', '19:00', null),
+  ('shore-regional', 'Field Hockey', 'Girls', 'Varsity', 'Fall', 6, '17:30', 'Home', 'colts-neck', null, 'Shore Regional Turf Field', 'Scheduled', null, null, null, null, null),
+  ('colts-neck', 'Field Hockey', 'Girls', 'Varsity', 'Fall', 6, '17:30', 'Away', 'shore-regional', null, 'Shore Regional Turf Field', 'Scheduled', null, '16:30', 'Front loop', '20:00', null),
+  ('marlboro', 'Football', 'Boys', 'Varsity', 'Fall', 8, '18:00', 'Home', 'shore-regional', null, 'Marlboro Turf Field', 'Scheduled', 'Homecoming game.', null, null, null, null),
+  ('shore-regional', 'Football', 'Boys', 'Varsity', 'Fall', 8, '18:00', 'Away', 'marlboro', null, 'Marlboro High School Stadium', 'Scheduled', null, '16:15', 'Main lot', '21:30', null),
+  ('shore-regional', 'Soccer', 'Girls', 'Varsity', 'Fall', 9, '15:15', 'Home', 'colts-neck', null, 'Shore Regional East Field', 'Scheduled', null, null, null, null, null),
+  ('colts-neck', 'Soccer', 'Girls', 'Varsity', 'Fall', 9, '15:15', 'Away', 'shore-regional', null, 'Shore Regional East Field', 'Scheduled', null, '14:15', 'Front loop', '18:00', null),
+  ('colts-neck', 'Soccer', 'Boys', 'JV', 'Fall', 10, '15:30', 'Home', 'shore-regional', null, 'Colts Neck Field 2', 'Scheduled', null, null, null, null, null),
+  ('shore-regional', 'Soccer', 'Boys', 'JV', 'Fall', 10, '16:00', 'Away', 'colts-neck', null, 'Colts Neck Field 2', 'Scheduled', null, '14:50', 'Main lot', '18:30', null),
+  ('marlboro', 'Soccer', 'Boys', 'Varsity', 'Fall', 11, '16:00', 'Home', 'shore-regional', null, 'Marlboro Turf Field', 'Canceled', 'Canceled: field closed.', null, null, null, null),
+  ('shore-regional', 'Soccer', 'Boys', 'Varsity', 'Fall', 11, '16:00', 'Away', 'marlboro', null, 'Marlboro Turf Field', 'Canceled', null, null, null, null, null),
+  ('colts-neck', 'Field Hockey', 'Girls', 'JV', 'Fall', 12, '16:00', 'Home', null, 'Red Bank Catholic', 'Colts Neck Field 2', 'Scheduled', null, null, null, null, null),
+  ('marlboro', 'Soccer', 'Girls', 'JV', 'Fall', 13, '15:45', 'Away', 'shore-regional', null, 'Shore Regional Turf Field', 'Scheduled', null, null, null, null, null),
+  ('colts-neck', 'Basketball', 'Boys', 'Varsity', 'Winter', 34, '19:00', 'Home', 'marlboro', null, 'Colts Neck Gym', 'Scheduled', null, null, null, null, null),
+  ('marlboro', 'Basketball', 'Boys', 'Varsity', 'Winter', 34, '19:00', 'Away', 'colts-neck', null, 'Colts Neck Gym', 'Scheduled', null, '17:45', 'Front loop', '21:30', null);
 
 insert into public.teams (school_id, sport, gender, level, season)
 select distinct school_id, sport, gender, level, season from sample_games
@@ -75,18 +75,6 @@ where s.bus_departure is not null;
 -- Newer draft migrations: fill them in only when they are installed.
 do $seed$
 begin
-  if exists (select 1 from information_schema.columns
-             where table_schema = 'public' and table_name = 'transportation' and column_name = 'bus_confirmed') then
-    execute $q$
-      update public.transportation tr set bus_confirmed = s.bus_confirmed
-      from sample_games s
-      join public.teams t on t.school_id = s.school_id and t.sport = s.sport and t.gender = s.gender
-        and t.level = s.level and t.season = s.season
-      join public.games g on g.team_id = t.id and g.game_date = current_date + s.day and g.start_time = s.start_time
-      where tr.game_id = g.id
-    $q$;
-  end if;
-
   if to_regclass('public.coaches') is not null then
     execute $q$
       delete from public.coaches where school_id in ('colts-neck', 'marlboro', 'shore-regional');

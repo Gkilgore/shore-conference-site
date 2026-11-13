@@ -64,7 +64,7 @@ The dashboard's own posting step stays as a fallback. After the migration it fin
 
 ### Database verification, November 12
 
-The test project did not have the older optional schedule-tools or coach-email setup. Before applying, the posting migration was adjusted to add `transportation.bus_confirmed` if missing and disable the coach trigger only if installed. The test checks the email outbox only when it exists. No coach tables or email features were installed.
+The test project did not have the older optional schedule-tools or coach-email setup. Before applying, the posting migration was adjusted to add the legacy `transportation.bus_confirmed` column if missing and disable the coach trigger only if installed. The legacy column is no longer used by the dashboard. The test checks the email outbox only when it exists. No coach tables or email features were installed.
 
 `supabase/tests/post-on-save.sql` returned PASS for immediate posting and edits, increasing public revisions, stale-save rejection, private-game isolation, taken-down-team protection, deletion, and cross-school refusal. The transaction rolled back; a separate check found no fixture accounts or teams. All public tables retain row-level security.
 

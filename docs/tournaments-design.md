@@ -39,7 +39,7 @@ All calls verify current verified-email invitation. Private definer helpers impl
 - `save_tournament(p_id uuid, p_expected_revision bigint, p_document jsonb)` returns a record. New client-generated UUID uses expected revision 0. Safe identical retries return current state. Stale changes fail with 40001.
 - `review_tournament(p_id uuid)` returns `{id,revision,token,draft,published,changes:[{id,before,after}],issues,affected_schools}`. token binds draft, approved state and scheduling-conflict state.
 - `publish_tournament(p_id uuid,p_token text,p_match_ids text[] default null)` returns a record. Null publishes the full schedule; initial publication is full. Later selected-match publication preserves other approved matches. Global metadata/participant edits require full publication. Result changes require publishing all affected downstream matches. Server validates the candidate and locks writes for atomic publication. Match revision counters survive removals/republication.
-- `save_tournament_transport(p_tournament uuid,p_match text,p_school text,p_expected_revision bigint,p_transport jsonb)` returns a transport row with revision. New row revision 0. Fields are bus_departure, pickup_location, return_time, notes, bus_confirmed. Current school ownership and confirmed published participation are mandatory.
+- `save_tournament_transport(p_tournament uuid,p_match text,p_school text,p_expected_revision bigint,p_transport jsonb)` returns a transport row with revision. New row revision 0. Fields are bus_departure, pickup_location, return_time and notes. Current school ownership and published participation are mandatory; transportation providers do not confirm bus details.
 
 ## Calendar projection contract
 

@@ -22,8 +22,8 @@ test('review distinguishes new and removed games and ignores private draft field
   assert.equal(typeof context.publicationChanges, 'function');
   assert.deepEqual(Array.from(context.publicationChanges({published:null,draft:{status:'Scheduled'}})), ['New game']);
   assert.deepEqual(Array.from(context.publicationChanges({published:{status:'Scheduled'},draft:null})), ['Remove from the public calendar']);
-  const before={transportation:{bus_departure:null,bus_confirmed:false,notes:'Private'}};
-  const after={transportation:{bus_departure:null,bus_confirmed:true,notes:'Private update'}};
+  const before={transportation:{bus_departure:null,notes:'Private'}};
+  const after={transportation:{bus_departure:null,notes:'Private update'}};
   assert.deepEqual(Array.from(context.publicationChanges({published:before,draft:after})), []);
 });
 

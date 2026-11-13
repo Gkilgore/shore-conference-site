@@ -1,4 +1,4 @@
-// Saves school transportation contacts and previews email from a saved game.
+// Saves school transportation contacts, previews requests, and sends them after a bus is scheduled.
 function startStaffTransportation(client, invite, selectedSchool, gameTitle) {
   const form = document.getElementById('transportation-contact-form');
   const email = document.getElementById('transportation-email');
@@ -61,10 +61,28 @@ function startStaffTransportation(client, invite, selectedSchool, gameTitle) {
     const button = fromEditor ? previewFromEditor : preview;
     clear(button);
     const bus = game?.transportation;
-    if (!bus || game.status !== 'Scheduled' ||
-        ![bus.bus_departure, bus.pickup_location, bus.return_time, bus.notes].some(Boolean)) return;
+    if (!bus?.bus_departure || game.status !== 'Scheduled') return;
     button.hidden = false;
     button.onclick = () => openDraft(game);
+  }
+
+  async function sendForSavedGame(gameId) {
+    if (!active) return { ok: false, message: 'Transportation email could not be sent because the schedule was closed.' };
+    try {
+      const { data, error } = await client.functions.invoke('transportation-email', { body: { game_id: gameId } });
+      if (error) {
+        let detail = '';
+        if (error.context && typeof error.context.json === 'function') {
+          try { detail = (await error.context.json()).error ?? ''; } catch {}
+        }
+        return { ok: false, message: detail || error.message || 'The email service could not be reached.' };
+      }
+      if (data?.sent) return { ok: true };
+      if (data?.skipped) return { ok: true, skipped: true };
+      return { ok: false, message: data?.error || 'The email service returned an unexpected response.' };
+    } catch (error) {
+      return { ok: false, message: error?.message || 'The email service could not be reached.' };
+    }
   }
 
   async function openDraft(game) {
@@ -78,9 +96,10 @@ function startStaffTransportation(client, invite, selectedSchool, gameTitle) {
     document.getElementById('transportation-draft-cc').textContent =
       invite.role === 'ad' ? invite.email : 'The school AD’s email will be copied when an AD sends it.';
     document.getElementById('transportation-draft-subject').textContent =
-      'Bus request · ' + school.name + ' · ' + gameTitle(game) + ' · ' + game.game_date;
+      'Scheduled bus · ' + school.name + ' · ' + gameTitle(game) + ' · ' + game.game_date;
     document.getElementById('transportation-draft-body').textContent = [
-      'Please add this transportation request for ' + school.name + ' to your system.',
+      'Bus transportation details for ' + school.name + '.',
+      'This is an information email; no confirmation is needed.',
       '',
       'Game: ' + gameTitle(game),
       'Date: ' + dateFormat.format(date),
@@ -88,6 +107,7 @@ function startStaffTransportation(client, invite, selectedSchool, gameTitle) {
       'Venue: ' + game.location,
       'Bus departure: ' + time(bus.bus_departure),
       'Pickup: ' + (bus.pickup_location || 'Not specified'),
+      'Early dismissal: ' + time(bus.early_dismissal_time),
       'Return: ' + time(bus.return_time),
       ...(bus.notes ? ['Transportation notes: ' + bus.notes] : []),
     ].join('\n');
@@ -101,6 +121,7 @@ function startStaffTransportation(client, invite, selectedSchool, gameTitle) {
   return {
     load,
     setPreview,
+    sendForSavedGame,
     reset() {
       requestNumber++;
       clear(preview);

@@ -1,23 +1,14 @@
 # Schedule tools
 
-The staff dashboard opens on **Games**, where ADs add, edit and import games. **Publish** lists each team's publication status and the draft match checks. Games that are not public yet are outlined on the calendar, and a yellow bar above it counts them. Unconfirmed buses are under **Transportation**. The Season, Sport, Level and Gender filters also narrow the team schedules shown for publication.
+The staff dashboard opens on **Games**, where ADs add, edit and import games. **Transportation** lists upcoming away games with a bus departure and lets an AD save the transportation contact. Saving a scheduled game with a bus departure sends the details to that contact and copies the AD. No transportation confirmation is required; bus confirmation does not determine the game's Scheduled, Postponed or Canceled status.
 
-## Save, review and publish
+## Saving and posting
 
-1. Add or edit games and choose **Save draft**, or import one or more CSV files as drafts.
-2. Open **Publish**, tick the teams that are ready, and choose **Review and publish**.
-3. Check the games and before/after changes. Choose **Publish** to post them together.
-4. For a later individual game update, choose **Save and publish…** in the editor, check the changes, then **Publish this change**. The first publication must review the whole team.
+Saving or importing a game posts it immediately when the team can be safely published; there is no draft or separate Publish step. Games from schedules that were previously taken down remain private until an AD posts that team again. Deleting a game removes its public copy. Calendar apps refresh updates on their own schedule.
 
-Draft changes never alter a posted calendar. Each sport/gender/level and season year is separate. Moving a game between teams or seasons requires reviewing both schedules. Unpublishing keeps master games saved. Existing ICS links remain valid; apps refresh published updates on their own schedule.
+## Link check
 
-## For Greg to review
-
-`supabase/migrations/20261107000100_schedule_tools.sql` is a draft. Review it before applying it to the test project.
-
-- **Bus confirmed:** adds `transportation.bus_confirmed`, and `save_staff_game` now saves it. For now the AD ticks the box. Letting the coordinator confirm from the transportation email is a later step.
-- **Link check:** `game_link_status(school)` gives each game against a member school Linked or Not linked, with a reason such as "Time doesn't match" or "Colts Neck has no matching game on this date". It never returns the other school's values. It runs as the database owner so it can read both schools' games, so it checks the caller's invitation itself instead of using `can_manage_schedule`. That helper depends on row-level security, which an owner-run function skips.
-- **Not done yet:** the link check doesn't build the conference calendar or the `conference_links` table. That's still the matching step.
+`game_link_status(school)` gives each game against a member school Linked or Not linked, with a reason such as "Time doesn't match" or "Colts Neck has no matching game on this date". It never returns the other school's values. It runs as the database owner so it can read both schools' games, so it checks the caller's invitation itself instead of using `can_manage_schedule`. That helper depends on row-level security, which an owner-run function skips.
 
 Tests on the test project:
 
@@ -68,13 +59,13 @@ Each school keeps a venue list under **School settings**. In the game editor, Ve
 
 ## Sample games for testing
 
-`data/sample-data.js` holds the prototype's public sample games: home or away, season, game notes, bus departure, pickup, return time, and bus confirmed. It contains no early-dismissal times; those appear on public schedules only when an AD enters one. Dates count from today. The games cover:
+`data/sample-data.js` holds the prototype's public sample games: home or away, season, game notes, bus departure, pickup, and return time. It contains no early-dismissal times; those appear on public schedules only when an AD enters one. Dates count from today. The games cover:
 
 - games that link to the conference calendar
 - games that don't link: a different time, a different location, or the other school never entered it
 - postponed and canceled games
 - games against schools outside the conference
-- buses that are confirmed, not confirmed, or not entered
+- scheduled buses and games with no bus entered
 - a busy day, a past game, and a winter game
 
 To give each test AD games to edit on the dashboard, load the same games into the **test** Supabase project:
@@ -83,7 +74,7 @@ To give each test AD games to edit on the dashboard, load the same games into th
 2. Run `supabase/seed/sample-games.sql`. It deletes the three test schools' games and sample coaches, then loads the sample games, buses, coaches, and a few waiting coach emails.
 3. Run it again whenever you want a fresh set. Dates move forward with the day you run it.
 
-It works whether or not the newer draft migrations are applied. Bus confirmation, coaches, and the email outbox load only if their tables exist.
+It works whether or not the newer draft migrations are applied. Coaches and the email outbox load only if their tables exist.
 
 `supabase/migrations/20261126000100_tournament_info.sql` is also a draft for Greg. It lets a tournament keep its "Rules and dates" section (see `docs/tournaments-design.md`). Run it in the test project, then save a tournament with a rules link and one unconfirmed date, review it, publish it, and confirm the public tournament page shows the link and no unconfirmed date. Confirm a tournament saved before the migration does not show as changed.
 

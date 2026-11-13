@@ -74,6 +74,7 @@ function startStaffSchedule(client, invite) {
     currentSchool, schools: () => schools, existingGames: () => allGames,
     onImported: date => { feedback(''); gamesNext.hidden = false; loadGames(date); },
     post: ids => publication.post(ids),
+    sendTransportationEmail: id => transportation.sendForSavedGame(id),
   });
   // Conference admins and site admins keep the Shore Conference logo and colors on every tab.
   let viewRole = invite.role;
@@ -862,6 +863,12 @@ function startStaffSchedule(client, invite) {
       posted = await publication.post([savedId]);
       if (stopped) return;
     }
+    let transportationEmail = null;
+    if (!error && input.status === 'Scheduled' && input.bus_departure) {
+      formStatus.textContent = 'Sending transportation email…';
+      transportationEmail = await transportation.sendForSavedGame(savedId);
+      if (stopped) return;
+    }
     saveButton.disabled = false;
     fieldsets.forEach(fieldset => fieldset.disabled = false);
     closeEditor.disabled = false;
@@ -884,9 +891,11 @@ function startStaffSchedule(client, invite) {
     }
     edit(null);
     leaveEditor();
-    feedback(!posted.ok ? 'Game saved, but it didn’t post. Open Teams and choose Post schedule for its team.'
+    const savedMessage = !posted.ok ? 'Game saved, but it didn’t post. Open Teams and choose Post schedule for its team.'
       : posted.held.length ? 'Game saved, but not posted. ' + posted.held[0] + ' has other games that aren’t public. Open Teams and choose Post schedule to post them together.'
-      : 'Game posted.');
+      : 'Game posted.';
+    feedback(savedMessage + (transportationEmail?.ok ? ' Transportation email sent.'
+      : transportationEmail ? ' Transportation email not sent: ' + transportationEmail.message : ''));
     gamesNext.hidden = false;
     list.replaceChildren();
     await loadGames(input.game_date, false, savedId);

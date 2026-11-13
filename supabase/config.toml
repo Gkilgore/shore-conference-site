@@ -1,3 +1,7 @@
 # Calendar apps subscribe without a staff login; the function enforces school publication on every read.
 [functions.public-calendar]
 verify_jwt = false
+
+# Transportation email is a staff-only write operation.
+[functions.transportation-email]
+verify_jwt = true

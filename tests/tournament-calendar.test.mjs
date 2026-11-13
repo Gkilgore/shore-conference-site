@@ -21,7 +21,7 @@ const match = {
   b: { id: 'p2', name: 'Colts Neck', school_id: 'colts-neck' },
   teams: { sport: 'Softball', gender: 'Girls', level: 'Varsity', season: 'Spring' },
   transportation: { school_id: 'marlboro', bus_departure: '08:00', pickup_location: 'Marlboro lot',
-    return_time: '12:00', notes: 'PRIVATE', bus_confirmed: true },
+    return_time: '12:00', notes: 'PRIVATE' },
 };
 const conference = { scope: 'conference' };
 const school = slug => ({ scope: 'school', school: slug });
@@ -64,7 +64,7 @@ test('tournament team filters compare all fields exactly', () => {
 test('tournament bus details stay on the owning school calendar and never expose staff fields', () => {
   const own = JSON.stringify(project([match], school('marlboro')));
   assert.match(own, /Marlboro lot/);
-  assert.doesNotMatch(own, /PRIVATE|bus_confirmed|school_id/);
+  assert.doesNotMatch(own, /PRIVATE|school_id/);
   for (const options of [conference, school('colts-neck')]) {
     const projected = project([match], options);
     assert.equal(projected.events.length, 1);
@@ -161,7 +161,7 @@ test('public bracket renders every approved root and result through safe DOM tex
   assert.match(output, /Winner of Other branch/);
   assert.match(output, /school\.html\?school=marlboro/);
   assert.match(output, /Winner/);
-  assert.doesNotMatch(output, /transportation|bus_confirmed/);
+  assert.doesNotMatch(output, /transportation/);
 });
 
 test('public bracket has a clear empty state', () => {

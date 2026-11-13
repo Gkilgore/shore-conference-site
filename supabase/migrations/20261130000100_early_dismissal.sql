@@ -64,15 +64,14 @@ begin
   end if;
 
   insert into public.transportation
-    (game_id, bus_departure, pickup_location, return_time, early_dismissal_time, notes, bus_confirmed)
+    (game_id, bus_departure, pickup_location, return_time, early_dismissal_time, notes)
   values
     (saved_game, (input ->> 'bus_departure')::time, input ->> 'pickup_location',
       (input ->> 'return_time')::time, (input ->> 'early_dismissal_time')::time,
-      input ->> 'transport_notes', coalesce((input ->> 'bus_confirmed')::boolean, false))
+      input ->> 'transport_notes')
   on conflict (game_id) do update set bus_departure = excluded.bus_departure,
     pickup_location = excluded.pickup_location, return_time = excluded.return_time,
-    early_dismissal_time = excluded.early_dismissal_time, notes = excluded.notes,
-    bus_confirmed = excluded.bus_confirmed;
+    early_dismissal_time = excluded.early_dismissal_time, notes = excluded.notes;
   perform shore_private.post_saved_game(saved_game, school);
   return saved_game;
 end;

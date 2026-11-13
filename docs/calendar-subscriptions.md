@@ -2,7 +2,7 @@
 
 Families choose a school, a team (sport, gender and level), or the conference. “Subscribe for updates” opens an app chooser with Apple Calendar, Google Calendar, and a copyable URL for Outlook or other apps. A separate download is labeled as a one-time copy. Subscriptions include every date, not just the displayed month.
 
-ADs use **Schedule → Review and publish team schedules**. Saves and imports stay private until each team/season schedule is reviewed and published. Several teams can be published together. Later individual game changes can be reviewed and published separately. Unpublishing removes that team's events on the next subscription refresh; it cannot recall copies already downloaded. Conference games require matching approved copies from both schools. Transportation appears only in the owning school's feeds. Coach information, contact emails, transportation notes and bus confirmation stay private.
+Transportation details appear only on the owning school's feeds. Coach information, contact emails and transportation notes stay private. A bus-confirmation field is not used.
 
 ## Implementation
 
