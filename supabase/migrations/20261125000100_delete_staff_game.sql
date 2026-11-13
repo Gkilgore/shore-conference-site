@@ -1,4 +1,4 @@
--- DRAFT for Greg: not yet applied or tested on the test project.
+-- Applied to the test project November 12, 2026; tested with the following post-on-save migration.
 -- Lets an AD delete a game entered by mistake. Row-level security (games_write) already limits
 -- changes to the AD's own school and site admins; this adds the missing delete permission.
 -- The approved public copy in published_games is untouched: it stays posted until the AD reviews

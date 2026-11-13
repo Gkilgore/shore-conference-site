@@ -2,7 +2,7 @@
 
 Greg's November 12 decision: for school schedules, saving a game or completing an import posts it to the public schedule. There is no Publish tab and no draft step. This replaces "Review before publishing" in the rebuild plan for AD-managed games. Tournament games keep their own review and publish steps.
 
-Status: live on `main` since November 12 (dashboard side). The database migration below is written but not yet run.
+Status: live on `main` since November 12 (dashboard side). The delete and posting-on-save migrations were applied to test project `jrtcyihpdrcnhxgproyw` on November 12, 2026. The database rollback test passed. The production database was not touched.
 
 ## What an AD sees
 
@@ -47,7 +47,7 @@ Once a team has been posted this way it has no private games left, and every lat
 
 ## Database step (Greg, with ChatGPT)
 
-`supabase/migrations/20261127000100_post_on_save.sql` makes the database post inside `save_staff_game` and `delete_staff_game`, so a save can never succeed without posting. It is written but has not been run anywhere. Run in the test project, in this order:
+`supabase/migrations/20261127000100_post_on_save.sql` makes the database post inside `save_staff_game` and `delete_staff_game`. Eligible saves and deletes update the public copy in the same transaction; taken-down teams remain held. Applied to the test project in this order:
 
 1. `20261125000100_delete_staff_game.sql` (delete was waiting on this already).
 2. `20261127000100_post_on_save.sql`.
@@ -61,6 +61,16 @@ What it changes once run:
 - The coach email queue is switched off (`games_queue_coach_emails` trigger disabled). The migration has the line to switch it back on.
 
 The dashboard's own posting step stays as a fallback. After the migration it finds nothing left to post and sends nothing.
+
+### Database verification, November 12
+
+The test project did not have the older optional schedule-tools or coach-email setup. Before applying, the posting migration was adjusted to add `transportation.bus_confirmed` if missing and disable the coach trigger only if installed. The test checks the email outbox only when it exists. No coach tables or email features were installed.
+
+`supabase/tests/post-on-save.sql` returned PASS for immediate posting and edits, increasing public revisions, stale-save rejection, private-game isolation, taken-down-team protection, deletion, and cross-school refusal. The transaction rolled back; a separate check found no fixture accounts or teams. All public tables retain row-level security.
+
+The security advisor still reports the documented platform `rls_auto_enable` execution grants ([anonymous](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable), [signed-in](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable)), [disabled leaked-password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection), and informational notices for internal tables with RLS and no direct-access policies. No finding named the new posting helper.
+
+This verifies the database operations, not the complete signed-in browser journey through the public school page, conference calendar, or a calendar subscription. Those end-to-end checks remain outstanding.
 
 ## Public "Schedule changes"
 
