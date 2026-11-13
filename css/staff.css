@@ -613,6 +613,10 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
 .access-table { width: 100%; min-width: 42rem; border-collapse: collapse; font-size: 0.9rem; }
 .access-table th, .access-table td { padding: 0.6rem; border: var(--frame); text-align: left; vertical-align: middle; overflow-wrap: anywhere; }
 .access-table th { background: var(--navy); color: white; }
+.access-table th:has(button) { padding: 0; }
+.access-table th button { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; width: 100%; min-height: 2.75rem; padding: 0.6rem; border: 0; background: var(--navy); color: white; font: inherit; font-weight: 700; cursor: pointer; }
+.access-table th button:is(:hover, :focus-visible) { background: var(--red); }
+.access-table th button:focus-visible { outline: 2px solid white; outline-offset: -4px; }
 .access-table td:first-child { font-weight: 700; }
 .access-table .staff-actions { flex-wrap: nowrap; gap: 0.4rem; margin: 0; }
 .access-table .button { min-height: 2.25rem; padding: 0.25rem 0.6rem; }

@@ -416,16 +416,11 @@
               <h4 id="staff-access-list-title">People with access</h4>
               <div class="filters access-filters" role="search" aria-label="Find people with access">
                 <label>Search<input id="staff-access-search" type="search" placeholder="Name, email, school or role"></label>
-                <label>School<select id="staff-access-filter-school"><option value="">All schools</option></select></label>
-                <label>Access level<select id="staff-access-filter-role"><option value="">All roles</option><option value="ad">School AD</option><option value="conference_office">Conference admin</option><option value="site_admin">Site admin</option></select></label>
-                <label>Sort by<select id="staff-access-sort"><option value="name">Name</option><option value="school">School</option><option value="role">Role</option><option value="email">Email</option></select></label>
-                <label>Order<select id="staff-access-direction"><option value="asc">A–Z</option><option value="desc">Z–A</option></select></label>
-                <button id="staff-access-clear-filters" class="button secondary" type="button">Clear filters</button>
               </div>
               <p id="staff-access-count" class="staff-hint" role="status"></p>
               <div class="access-table-wrap" tabindex="0" role="region" aria-label="People with access">
                 <table class="access-table">
-                  <thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">School</th><th scope="col">Role</th><th scope="col">Actions</th></tr></thead>
+                  <thead><tr><th scope="col" id="staff-access-heading-name" aria-sort="ascending"><button id="staff-access-sort-name" type="button">Name <span id="staff-access-arrow-name" aria-hidden="true">?</span></button></th><th scope="col" id="staff-access-heading-email" aria-sort="none"><button id="staff-access-sort-email" type="button">Email <span id="staff-access-arrow-email" aria-hidden="true">?</span></button></th><th scope="col" id="staff-access-heading-school" aria-sort="none"><button id="staff-access-sort-school" type="button">School <span id="staff-access-arrow-school" aria-hidden="true">?</span></button></th><th scope="col" id="staff-access-heading-role" aria-sort="none"><button id="staff-access-sort-role" type="button">Role <span id="staff-access-arrow-role" aria-hidden="true">?</span></button></th><th scope="col">Actions</th></tr></thead>
                   <tbody id="staff-access-list"></tbody>
                 </table>
               </div>
