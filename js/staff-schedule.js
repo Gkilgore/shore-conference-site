@@ -71,7 +71,7 @@ function startStaffSchedule(client, invite) {
   });
   const importer = startStaffImport(client, {
     currentSchool, schools: () => schools, existingGames: () => allGames,
-    onImported: date => { gamesNext.hidden = false; loadGames(date); },
+    onImported: date => { feedback(''); gamesNext.hidden = false; loadGames(date); },
     post: ids => publication.post(ids),
   });
   const settings = startStaffSettings(client, currentSchool, school => applySchoolTheme(client, school));
