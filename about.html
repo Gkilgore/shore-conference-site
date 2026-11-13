@@ -12,22 +12,19 @@
   <link rel="stylesheet" href="css/site.css">
   <script defer src="js/site.js"></script>
 
-  <script defer src="js/navigation.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="masthead">
     <div class="site-header wrap">
       <a class="brand" href="index.html">The Shore Conference</a>
-      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-navigation" hidden>Menu</button>
-      <nav class="main-navigation" id="main-navigation" aria-label="Main navigation">
-        <div class="nav-primary"><a href="index.html">Home</a><a href="schools.html">Schools</a><a href="calendar.html">Calendar</a><a href="about.html" aria-current="page">About</a></div>
-        <details class="nav-resources">
-          <summary>Resources</summary>
-          <div class="resource-menu"><a href="divisions.html">Divisions</a><a href="tournaments.html">Tournaments</a><a href="inside.html">Documents</a></div>
-        </details>
-        <a class="staff-link" href="admin.html">Staff sign-in</a>
+      <nav aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="schools.html">Schools</a>
+        <a href="calendar.html">Calendar</a>
+        <a href="about.html" aria-current="page">About</a>
       </nav>
+      <a class="staff-link" href="admin.html">Staff sign-in</a>
     </div>
   </header>
   <main id="main">
@@ -59,7 +56,7 @@
           <li><time datetime="1956">1956</time><strong>Sixteen schools</strong><span>Asbury Park, Central Regional and Long Branch join.</span></li>
           <li><time>Today</time><strong>48 schools</strong><span>Public and private schools across both counties.</span></li>
         </ul>
-        <p class="about-source">From the conference’s own history: <a href="https://theshoreconference.com/documents/2022/11/3/HISTORY_OF_THE_SHORE_CONFERENCE.pdf" rel="noopener">History of the Shore Conference (PDF)</a></p>
+        <p class="about-source">From the conference’s own history: <a href="assets/documents/HISTORY_OF_THE_SHORE_CONFERENCE.pdf">History of the Shore Conference (PDF)</a></p>
       </section>
       <section aria-labelledby="about-site">
         <h2 id="about-site">On this site</h2>
@@ -68,7 +65,14 @@
           <li><h3>Conference calendar</h3><p>Games between member schools, in one place.</p><a class="button dark" href="calendar.html">Open the calendar</a></li>
           <li><h3>Calendar updates</h3><p>Put a team’s schedule on your phone. Changes show up on their own.</p><a class="button dark" href="subscribe.html">Subscribe</a></li>
         </ul>
-        <p class="about-source">News, standings and scores: <a href="https://theshoreconference.com/" rel="noopener">theshoreconference.com</a></p>
+      </section>
+      <section aria-labelledby="about-resources">
+        <h2 id="about-resources">Resources</h2>
+        <ul class="about-links">
+          <li><h3>Divisions</h3><p>Which schools play in each division, by sport and season.</p><a class="button dark" href="divisions.html">Browse divisions</a></li>
+          <li><h3>Tournaments</h3><p>Brackets and rules for conference tournaments.</p><a class="button dark" href="tournaments.html">See tournaments</a></li>
+          <li><h3>Documents</h3><p>Constitution, leadership, history and award forms.</p><a class="button dark" href="inside.html">Open documents</a></li>
+        </ul>
       </section>
     </div>
   </main>

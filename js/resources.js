@@ -73,7 +73,7 @@
         else card.append(node('p', 'Membership is only partly checked. See the official list.'));
       }
     } else card.append(node('p', 'Source available; school assignments have not been copied here.'));
-    card.append(link(record.title + ' — official source', record.url));
+    card.append(link(record.title + ' — full list', record.url));
     return card;
   }
   function resourceCard(record) {
@@ -82,7 +82,7 @@
     card.append(node('p', [record.category, record.sport, record.competition, record.year,
       'Source label: ' + record.version, 'Checked ' + record.reviewed].filter(Boolean).join(' · '), 'resource-meta'));
     if (record.note) card.append(node('p', record.note));
-    card.append(link(record.title + ' (' + record.format + ', official site)', record.url));
+    card.append(link(record.title + ' (' + record.format + ')', record.url));
     return card;
   }
   const render = () => {

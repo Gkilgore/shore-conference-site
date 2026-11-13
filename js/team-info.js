@@ -1,6 +1,6 @@
 // Finds a team's division in the curated official lists and draws it as one line beside the schedule.
 // It only names a division when school, sport, team, level and season all point to one.
-const conferenceSite = 'https://theshoreconference.com/';
+const allDivisions = 'divisions.html';
 
 // A school year starts July 1. Fall and winter are named by the year they start in, spring by the year it is played.
 function seasonYear(season, isoDate) {
@@ -88,7 +88,7 @@ function renderTeamInfo(target, selection, { quietWhenAll = false } = {}) {
     }
   } else if (result.state === 'all') {
     parts.push(part('span', 'Choose a sport and team to see its division.'),
-      link('Official conference site', conferenceSite));
+      link('All division lists', allDivisions));
   } else if (result.state === 'choose-team') {
     parts.push(part('span', 'Choose a team. Each has its own division list.'),
       ...result.lists.map(list => link(list.title, list.url)));
@@ -98,7 +98,7 @@ function renderTeamInfo(target, selection, { quietWhenAll = false } = {}) {
     parts.push(part('span', 'Not on file for this team, ' + result.label + '.'), official(result.list));
   } else {
     parts.push(part('span', 'No division list on file for ' + result.sport + (result.label ? ', ' + result.label : '') + '.'),
-      link('Official conference site', conferenceSite));
+      link('All division lists', allDivisions));
   }
   target.replaceChildren(...parts);
   target.hidden = false;

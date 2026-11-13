@@ -11,31 +11,30 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700;800&display=swap">
   <link rel="stylesheet" href="css/site.css">
   <script defer src="data/school-directory.js"></script>
-  <script defer src="js/navigation.js"></script>
   <script defer src="data/conference-resources.js"></script>
   <script defer src="js/resource-filters.js"></script>
   <script defer src="js/resources.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
-  <header class="masthead"><div class="site-header wrap">
-    <a class="brand" href="index.html">The Shore Conference</a>
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-navigation" hidden>Menu</button>
-      <nav class="main-navigation" id="main-navigation" aria-label="Main navigation">
-        <div class="nav-primary"><a href="index.html">Home</a><a href="schools.html">Schools</a><a href="calendar.html">Calendar</a><a href="about.html">About</a></div>
-        <details class="nav-resources">
-          <summary class="section-active">Resources</summary>
-          <div class="resource-menu"><a href="divisions.html" aria-current="page">Divisions</a><a href="tournaments.html">Tournaments</a><a href="inside.html">Documents</a></div>
-        </details>
-        <a class="staff-link" href="admin.html">Staff sign-in</a>
+  <header class="masthead">
+    <div class="site-header wrap">
+      <a class="brand" href="index.html">The Shore Conference</a>
+      <nav aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="schools.html">Schools</a>
+        <a href="calendar.html">Calendar</a>
+        <a href="about.html" class="section-active">About</a>
       </nav>
-  </div></header>
+      <a class="staff-link" href="admin.html">Staff sign-in</a>
+    </div>
+  </header>
   <main id="main">
-    <section class="intro"><div class="wrap"><h1>Divisions</h1><p>Official alignment sources, with the assignments checked so far.</p></div></section>
+    <section class="intro"><div class="wrap"><h1>Divisions</h1><p>Conference alignments, with the assignments checked so far.</p></div></section>
     <div class="wrap section resource-page"><p>Browse the division lists by sport and season. Copied assignments cover selected divisions, mainly those with Colts Neck, Marlboro and Shore Regional. A missing assignment here does not mean a school has no division.</p>
 <p>These lists are shown for varsity only; the sources do not state a level. Winter uses its starting year (2026 means 2026-27). Spring uses the year played.</p>
 <div class="actions"><a class="button secondary" href="calendar.html">View schedules</a><a class="button secondary" href="schools.html">Find a school</a></div>
-<form hidden id="resource-filters" class="filters resource-filters" data-kind="divisions" aria-label="Filter divisions"><label>Sport<select name="sport"><option value="">All sports</option></select></label><label>Team<select name="gender"><option value="">All teams</option></select></label><label>Season<select name="season"><option value="">All seasons</option></select></label><label>Season year<select name="year"><option value="">All years</option></select></label><label>School<select name="school"><option value="">All schools</option></select></label><button class="button secondary" type="reset">Clear filters</button></form><p id="resource-count" class="filter-count" role="status" aria-atomic="true"></p><div id="resource-results" class="resource-grid"></div><noscript><p>Enable JavaScript to filter the copied lists. <a href="https://theshoreconference.com/">Browse the official conference alignment sources</a>.</p></noscript></div>
+<form hidden id="resource-filters" class="filters resource-filters" data-kind="divisions" aria-label="Filter divisions"><label>Sport<select name="sport"><option value="">All sports</option></select></label><label>Team<select name="gender"><option value="">All teams</option></select></label><label>Season<select name="season"><option value="">All seasons</option></select></label><label>Season year<select name="year"><option value="">All years</option></select></label><label>School<select name="school"><option value="">All schools</option></select></label><button class="button secondary" type="reset">Clear filters</button></form><p id="resource-count" class="filter-count" role="status" aria-atomic="true"></p><div id="resource-results" class="resource-grid"></div><noscript><p>Enable JavaScript to filter the division lists.</p></noscript></div>
   </main>
   <footer class="site-footer"><div class="wrap">The Shore Conference <span>New Jersey Athletics</span></div></footer>
 </body>

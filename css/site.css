@@ -54,7 +54,8 @@ h2 { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.1; }
 .skip-link:focus { top: 1rem; z-index: 5; background: var(--hover); color: var(--ink); padding: 0.75rem; border: var(--frame); }
 
 /* Masthead: brand, main navigation, and the staff sign-in link. */
-.masthead { background: white; border-bottom: var(--frame); view-transition-name: masthead; }
+/* Raised above the page bands so nothing in the header slips behind them. */
+.masthead { position: relative; z-index: 10; background: white; border-bottom: var(--frame); view-transition-name: masthead; }
 .site-header {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -83,32 +84,22 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
 .brand { color: var(--ink); font-weight: 800; font-size: 1.1rem; letter-spacing: -0.01em; padding: 0.3rem 0; }
 .brand:is(:hover, :focus-visible) { color: var(--red); }
 
-/* One-row desktop navigation; Resources uses a native disclosure dropdown. */
-.site-header { grid-template-columns: auto minmax(0, 1fr); gap: 1rem; }
-.site-header .main-navigation { display: flex; align-items: center; justify-content: flex-end; gap: 0.35rem; }
-.site-header nav .staff-link { border: var(--control-frame); font-weight: 700; font-size: 0.9rem; }
-.nav-primary { display: flex; gap: 0.25rem; }
-.nav-resources { position: relative; }
-.nav-resources summary { cursor: pointer; padding: 0.4rem 0.75rem; min-height: 2.6rem; align-content: center; font-weight: 500; }
-.nav-resources summary:hover { background: var(--hover); }
-.nav-resources summary.section-active { background: var(--navy); color: white; }
-.nav-resources summary.section-active:hover { background: var(--red); }
-.resource-menu { position: absolute; right: 0; top: calc(100% + 0.4rem); z-index: 20; min-width: 13rem; padding: 0.35rem; border: var(--control-frame); background: white; }
-.site-header .resource-menu a { justify-content: start; min-height: 2.75rem; }
-.nav-toggle { font: inherit; font-weight: 700; color: var(--ink); background: white; border: var(--control-frame); min-height: 2.75rem; padding: 0.4rem 0.8rem; cursor: pointer; }
-.nav-toggle:hover { background: var(--hover); }
-.nav-toggle:focus-visible, summary:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; box-shadow: 0 0 0 3px white; }
-@media (max-width: 960px) {
-  .site-header { grid-template-columns: minmax(0, 1fr) auto; gap: 0.6rem; }
-  .nav-toggle { grid-column: 2; grid-row: 1; }
-  .site-header .main-navigation { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: stretch; gap: 0.5rem; }
-  .nav-primary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.2rem; }
-  .site-header .nav-primary a { padding: 0.5rem 0.15rem; font-size: 0.95rem; min-height: 2.75rem; }
-  .nav-resources { border: var(--control-frame); }
-  .nav-resources summary { min-height: 2.75rem; }
-  .resource-menu { position: static; min-width: 0; border: 0; padding: 0.35rem; }
-  .site-header .resource-menu a { min-height: 2.75rem; }
-  .site-header .staff-link { align-self: flex-start; min-height: 2.75rem; }
+/* Phones: brand and staff link on top, then four equal tabs across the full width. */
+@media (max-width: 640px) {
+  .site-header { grid-template-columns: 1fr auto; gap: 0.5rem; padding-block: 0.5rem 0; }
+  .site-header nav {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin-inline: -1rem;
+    border-top: var(--frame);
+  }
+  .site-header nav a { min-height: 3rem; padding-inline: 0.25rem; border: 0; font-size: 0.95rem; }
+  .site-header nav a + a { box-shadow: inset 1px 0 var(--steel); }
+  .site-header nav a:is(:hover, :focus-visible) { outline-offset: -3px; }
+  .staff-link { grid-row: 1; grid-column: 2; min-height: 2.25rem; padding-inline: 0.6rem; font-size: 0.85rem; }
+  .site-header nav { grid-row: 2; }
 }
 
 /* Public resource pages use existing colors and full frames; lists reflow on phones. */
@@ -127,6 +118,12 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
 .resource-filters label { min-width: 0; }
 .resource-filters :is(input, select) { width: 100%; min-width: 0; }
 .intro h1 + p { margin-top: 0.75rem; }
+/* Saved copies of conference lists: full-frame tables that scroll sideways on phones. */
+.archive-content { display: grid; gap: 1rem; }
+.archive-scroll { overflow-x: auto; border: var(--frame); background: white; }
+.archive-table { width: 100%; border-collapse: collapse; }
+.archive-table :is(th, td) { padding: 0.5rem 0.75rem; border: 1px solid var(--steel); text-align: left; vertical-align: top; }
+.archive-table th { background: var(--navy); color: white; font-weight: 700; }
 
 .hero { background: var(--paper); color: var(--ink); border-bottom: var(--frame); }
 .hero-inner { padding-block: clamp(2rem, 7vw, 5rem); }

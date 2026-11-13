@@ -42,43 +42,11 @@ test('competitions within a sport remain separate and searchable', () => {
   assert.equal(selectPublicResources(resources.documents, { search: ' CONSTITUTION ' }).length, 1);
 });
 
-test('public resource records retain official sources, edition labels and review dates', () => {
+test('public resource records link to saved copies, with edition labels and review dates', () => {
   for (const record of Object.values(context.api.resources).flat()) {
-    assert.equal(new URL(record.url).hostname, 'theshoreconference.com');
+    assert.match(record.url, /^(assets\/documents\/[\w.-]+\.pdf|archive\.html\?page=[\w.-]+)$/);
     assert.match(record.reviewed, /^\d{4}-\d{2}-\d{2}$/);
     assert.ok(record.version && record.description && record.format);
     assert.equal('matches' in record, false, 'a resource cannot create calendar matches');
   }
-});
-
-test('phone navigation and resource disclosure preserve focus when closed', () => {
-  const handlers = {};
-  const doc = { activeElement: null, addEventListener: (name, fn) => { handlers[name] = fn; } };
-  const toggle = { hidden: true, setAttribute() {}, focus() { doc.activeElement = this; },
-    addEventListener: (_, fn) => { handlers.toggle = fn; } };
-  const first = { focus() { doc.activeElement = this; } };
-  const summary = { focus() { doc.activeElement = this; } };
-  const resourceLink = {};
-  const resources = { open: false, querySelector: () => summary,
-    contains: element => element === resourceLink || element === summary };
-  const nav = { hidden: false, querySelector: selector => selector === 'a' ? first : resources,
-    contains: element => element === first || resources.contains(element), addEventListener() {} };
-  doc.querySelector = selector => selector === '.nav-toggle' ? toggle : nav;
-  const media = { matches: true, addEventListener: (_, fn) => { handlers.resize = fn; } };
-  vm.runInNewContext(read('js/navigation.js'), { document: doc, matchMedia: () => media, setTimeout });
-  assert.equal(nav.hidden, true);
-  handlers.toggle();
-  assert.equal(nav.hidden, false);
-  resources.open = true;
-  doc.activeElement = resourceLink;
-  handlers.keydown({ key: 'Escape' });
-  assert.equal(resources.open, false);
-  assert.equal(doc.activeElement, summary);
-  handlers.keydown({ key: 'Escape' });
-  assert.equal(nav.hidden, true);
-  assert.equal(doc.activeElement, toggle);
-  media.matches = false;
-  handlers.resize();
-  assert.equal(nav.hidden, false);
-  assert.equal(doc.activeElement, first);
 });

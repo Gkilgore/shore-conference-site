@@ -54,3 +54,10 @@
 - Resources holds Divisions, Tournaments and Documents; Documents retains the existing inside.html URL.
 - Phones use one Menu button, then native Resources expansion. Keyboard, Escape, focus across breakpoints, no-JavaScript use and 320/390/768px layouts passed in Chrome; all 181 tests pass.
 
+
+## Stand-alone revision (November 13)
+- The old conference site will go away, so nothing on this site links to it. Lists and documents open saved copies: PDFs in `assets/documents/`, web pages in `data/archived-resources.js` shown by `archive.html?page=…`. `docs/source-archive/manifest.json` records each copy's source, checksum and capture date.
+- Removed the "Stories and photos" card (Documents) and the news link (About); that content only exists on the old site.
+- Tournament rules links may now be a saved file in `assets/documents/`. Draft migration `20261128000100_saved_rules_links.sql` makes the database accept them; not yet run in the test project.
+- Removed the Resources dropdown. The header is back to Home, Schools, Calendar, About and Staff sign-in, with Sign out in its old place. Divisions, Tournaments and Documents are a Resources section on About; those pages highlight the About tab.
+- 180 Node tests pass. Headless Chrome checks at 375 and 1280px.

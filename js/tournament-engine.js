@@ -180,6 +180,10 @@
   }
   // Rules and dates are reference details for a tournament. They are kept apart from matches,
   // so a deadline can never turn into a game on a calendar or feed.
+  // A saved file on this site (assets/documents/…pdf) or an https link.
+  function rulesLink(url) {
+    return /^https:\/\/\S+$/.test(url) || /^assets\/documents\/[\w.-]+\.pdf$/.test(url);
+  }
   function cleanInfo(info) {
     const source = info && typeof info === 'object' ? info : {};
     const text = (value, max) => String(value ?? '').trim().slice(0, max);
@@ -195,7 +199,7 @@
   }
   function infoProblems(info) {
     const clean = cleanInfo(info), problems = [];
-    if (clean.rules_url && !/^https:\/\/\S+$/.test(clean.rules_url)) problems.push('The tournament rules link must start with https://.');
+    if (clean.rules_url && !rulesLink(clean.rules_url)) problems.push('The tournament rules link must start with https:// or be a saved file in assets/documents/.');
     if (clean.reviewed_on && !validDate(clean.reviewed_on)) problems.push('“Sources last checked” needs a valid date.');
     if (clean.director_confirmed && !clean.director) problems.push('A confirmed director needs a name.');
     if (clean.dates.length > 20) problems.push('List no more than 20 key dates.');

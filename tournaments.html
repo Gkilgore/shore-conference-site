@@ -11,31 +11,30 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700;800&display=swap">
   <link rel="stylesheet" href="css/site.css">
   <script defer src="data/school-directory.js"></script>
-  <script defer src="js/navigation.js"></script>
   <script defer src="data/conference-resources.js"></script>
   <script defer src="js/resource-filters.js"></script>
   <script defer src="js/resources.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
-  <header class="masthead"><div class="site-header wrap">
-    <a class="brand" href="index.html">The Shore Conference</a>
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-navigation" hidden>Menu</button>
-      <nav class="main-navigation" id="main-navigation" aria-label="Main navigation">
-        <div class="nav-primary"><a href="index.html">Home</a><a href="schools.html">Schools</a><a href="calendar.html">Calendar</a><a href="about.html">About</a></div>
-        <details class="nav-resources">
-          <summary class="section-active">Resources</summary>
-          <div class="resource-menu"><a href="divisions.html">Divisions</a><a href="tournaments.html" aria-current="page">Tournaments</a><a href="inside.html">Documents</a></div>
-        </details>
-        <a class="staff-link" href="admin.html">Staff sign-in</a>
+  <header class="masthead">
+    <div class="site-header wrap">
+      <a class="brand" href="index.html">The Shore Conference</a>
+      <nav aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="schools.html">Schools</a>
+        <a href="calendar.html">Calendar</a>
+        <a href="about.html" class="section-active">About</a>
       </nav>
-  </div></header>
+      <a class="staff-link" href="admin.html">Staff sign-in</a>
+    </div>
+  </header>
   <main id="main">
     <section class="intro"><div class="wrap"><h1>Tournaments</h1><p>Brackets, entry information and competition rules.</p></div></section>
     <div class="wrap section resource-page"><p>Find official brackets and regulations by competition. SCT, Coaches Cup and Kim Cole Cup are separate competitions. This is a selected resource list, not a complete tournament archive.</p>
 <p>Bracket files may be visual or difficult to read with assistive technology. The descriptions below identify each resource; they do not transcribe the full bracket. Ask the conference office for a readable copy or clarification.</p>
 <div class="actions"><a class="button secondary" href="calendar.html">View posted games</a><a class="button secondary" href="divisions.html">View divisions</a></div>
-<form hidden id="resource-filters" class="filters resource-filters" data-kind="tournaments" aria-label="Filter tournaments"><label>Sport<select name="sport"><option value="">All sports</option></select></label><label>Competition<select name="competition"><option value="">All competitions</option></select></label><label>Year<select name="year"><option value="">All years</option></select></label><label>Resource<select name="category"><option value="">All resources</option></select></label><button class="button secondary" type="reset">Clear filters</button></form><p id="resource-count" class="filter-count" role="status" aria-atomic="true"></p><div id="resource-results" class="resource-grid"></div><noscript><p><a href="https://theshoreconference.com/">Browse official tournament resources</a>. Enable JavaScript to filter the selected resources here.</p></noscript></div>
+<form hidden id="resource-filters" class="filters resource-filters" data-kind="tournaments" aria-label="Filter tournaments"><label>Sport<select name="sport"><option value="">All sports</option></select></label><label>Competition<select name="competition"><option value="">All competitions</option></select></label><label>Year<select name="year"><option value="">All years</option></select></label><label>Resource<select name="category"><option value="">All resources</option></select></label><button class="button secondary" type="reset">Clear filters</button></form><p id="resource-count" class="filter-count" role="status" aria-atomic="true"></p><div id="resource-results" class="resource-grid"></div><noscript><p>Enable JavaScript to filter the tournament resources.</p></noscript></div>
   </main>
   <footer class="site-footer"><div class="wrap">The Shore Conference <span>New Jersey Athletics</span></div></footer>
 </body>
