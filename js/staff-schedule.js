@@ -89,7 +89,8 @@ function startStaffSchedule(client, invite) {
       teams.render();
     },
   });
-  const teams = startStaffTeams({
+  const teams = startStaffTeams(client, {
+    currentSchool,
     games: () => allGames, groups: () => canEdit ? publication.groups() : [], states: () => publication.states(),
     links: () => overview.links(), coaches: () => null,
     schoolName: slug => schools.find(school => school.slug === slug)?.name,
@@ -353,6 +354,8 @@ function startStaffSchedule(client, invite) {
     if (canEdit) await publication.load();
     if (stopped || request !== loadNumber) return;
     showUnpublished();
+    if (canEdit) await teams.load();
+    if (stopped || request !== loadNumber) return;
     teams.render();
     showCalendar(visible, focusDate ?? (newSchool ? new Date() : null));
     if (!calendar) showList(visible);
@@ -802,6 +805,7 @@ function startStaffSchedule(client, invite) {
     accessTab.onclick = null;
     accessTab.disabled = false;
     overview.stop();
+    teams.stop();
     importer.stop();
     coachList.stop();
     venues.stop();

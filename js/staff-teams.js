@@ -1,15 +1,22 @@
-// Teams tab: one team's schedule, unmatched games and whether it is posted (plus coaches, when switched on).
+// Teams tab: manage school teams and levels, then see each team's schedule and posting status.
 // It reads what the other controllers already loaded and sends every change through their existing steps.
-function startStaffTeams({ games, groups, states, links, coaches, schoolName, filterValues,
+function startStaffTeams(client, { currentSchool, games, groups, states, links, coaches, schoolName, filterValues,
   openGame, addGame, reviewTeam, unpublishTeam, editCoach, addCoach }) {
   const list = document.getElementById('team-list');
   const detail = document.getElementById('team-detail');
   const status = document.getElementById('teams-status');
+  const form = document.getElementById('team-form');
+  const saveTeam = document.getElementById('team-save');
   const dateFormat = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   const shortDate = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
   const timeFormat = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' });
   const seasons = ['Fall', 'Winter', 'Spring'];
   let selected = null;
+  let selectedId = null;
+  let teamRecords = [];
+  let teamRequest = 0;
+  let teamsLoaded = false;
+  let active = true;
 
   function node(tag, text, className) {
     const item = document.createElement(tag);
@@ -29,24 +36,65 @@ function startStaffTeams({ games, groups, states, links, coaches, schoolName, fi
   }
   const when = game => new Date(game.game_date + 'T12:00');
 
+  async function load() {
+    const request = ++teamRequest;
+    const school = currentSchool();
+    if (!school) return;
+    teamsLoaded = false;
+    saveTeam.disabled = true;
+    status.textContent = 'Loading teams…';
+    const { data, error } = await client.from('teams')
+      .select('id,sport,gender,level,season').eq('school_id', school.slug)
+      .order('season').order('sport').order('gender').order('level');
+    if (!active || request !== teamRequest) return;
+    if (error) {
+      teamsLoaded = false;
+      teamRecords = [];
+      status.textContent = 'Teams could not load. Team changes are unavailable; refresh to try again.';
+    } else {
+      teamsLoaded = true;
+      teamRecords = data;
+      if (status.textContent === 'Loading teams…' ||
+          status.textContent === 'Teams could not load. Team changes are unavailable; refresh to try again.') {
+        status.textContent = '';
+      }
+    }
+    saveTeam.disabled = !teamsLoaded;
+    render();
+  }
+
   // A team is one sport, gender, level and season. The publish records also carry its year.
   // If those have not loaded, teams are still listed from the saved games, without a publish status.
   function teams() {
     const all = games();
     const byId = new Map(all.map(game => [game.id, game]));
+    const knownIds = new Set();
+    const registered = teamRecords.map(team => ({
+      id: team.id, key: 'team:' + team.id, group: null, ...team,
+      label: [team.gender, team.level, team.sport].join(' ') + ' · ' + team.season,
+      games: all.filter(game => game.team_id === team.id),
+    }));
     const fromGroups = groups().map(group => ({
-      key: group.team_id + '|' + group.season_year, group, label: publicationTeamLabel(group),
+      id: group.team_id, key: group.team_id + '|' + group.season_year, group, label: publicationTeamLabel(group),
       sport: group.sport, gender: group.gender, level: group.level, season: group.season,
       games: group.games.filter(entry => entry.draft).map(entry => byId.get(entry.id)).filter(Boolean),
     }));
-    if (fromGroups.length) return sort(fromGroups);
+    if (fromGroups.length) {
+      for (const team of fromGroups) knownIds.add(team.id);
+      return sort([...fromGroups, ...registered.filter(team => !knownIds.has(team.id))]);
+    }
     const derived = new Map();
     for (const game of all) {
       const team = game.teams;
       const key = [team.sport, team.gender, team.level, team.season].join('|');
-      if (!derived.has(key)) derived.set(key, { key, group: null, ...team,
-        label: [team.gender, team.level, team.sport].join(' ') + ' · ' + team.season, games: [] });
+      if (!derived.has(key)) {
+        derived.set(key, { id: game.team_id, key: 'team:' + game.team_id, group: null, ...team,
+          label: [team.gender, team.level, team.sport].join(' ') + ' · ' + team.season, games: [] });
+      }
       derived.get(key).games.push(game);
+    }
+    for (const team of registered) {
+      if (!derived.has([team.sport, team.gender, team.level, team.season].join('|'))) derived.set(team.key, team);
     }
     return sort([...derived.values()]);
   }
@@ -87,11 +135,17 @@ function startStaffTeams({ games, groups, states, links, coaches, schoolName, fi
       if (misses) tags.append(node('span', misses + ' not matched', 'team-tag is-problem'));
       if (state.text) tags.append(node('span', state.text, 'team-tag ' + state.tone));
       open.append(node('strong', team.label), node('span', count + (next ? ' · next ' + shortDate.format(when(next)) : ''), 'team-meta'), tags);
-      open.onclick = () => { selected = team.key; status.textContent = ''; render(); document.getElementById('team-title').focus(); };
+      open.onclick = () => {
+        selected = team.key;
+        selectedId = team.id;
+        status.textContent = '';
+        render();
+        document.getElementById('team-title').focus();
+      };
       row.append(open);
       return row;
     }));
-    if (!all.length) list.append(node('li', 'No teams yet. A team shows up here once it has a game.', 'staff-empty'));
+    if (!all.length) list.append(node('li', 'No teams yet. Add the school’s first team above.', 'staff-empty'));
     else if (!visible.length) list.append(node('li', 'No teams match these filters.', 'staff-empty'));
   }
 
@@ -122,8 +176,11 @@ function startStaffTeams({ games, groups, states, links, coaches, schoolName, fi
     const group = team.group;
     const back = button('← All teams', 'secondary', () => {
       const key = selected;
-      selected = null; status.textContent = ''; render();
-      [...list.querySelectorAll('.team-row')].find(row => row.dataset.team === key)?.focus();
+      const id = selectedId;
+      selected = selectedId = null;
+      status.textContent = '';
+      render();
+      [...list.querySelectorAll('.team-row')].find(row => row.dataset.team === key || row.dataset.team === id)?.focus();
     });
     back.id = 'team-back';
     const heading = node('h4', team.label, 'team-heading');
@@ -140,6 +197,25 @@ function startStaffTeams({ games, groups, states, links, coaches, schoolName, fi
       publish.disabled = Boolean(group.published_at && !group.pending_count);
       actions.append(publish);
       if (group.published_at) actions.append(button('Take down…', 'secondary', () => unpublishTeam(team.key)));
+    }
+    if (team.id) {
+      const remove = button('Remove team', 'secondary', () => {
+        if (team.games.length || team.group) return;
+        if (remove.dataset.confirm !== 'yes') {
+          remove.dataset.confirm = 'yes';
+          remove.textContent = 'Confirm removal';
+          remove.classList.add('is-danger');
+          return;
+        }
+        remove.disabled = true;
+        return removeTeam(team);
+      });
+      remove.disabled = !teamsLoaded || Boolean(team.games.length || group);
+      remove.setAttribute('aria-label', 'Remove ' + team.label);
+      actions.append(remove);
+      if (team.games.length || group) {
+        actions.append(node('span', 'Remove its games and take down its posted schedule before removing this team.', 'team-remove-hint'));
+      }
     }
     const head = node('div', undefined, 'team-head');
     head.append(back, heading, stateLine, actions);
@@ -179,17 +255,88 @@ function startStaffTeams({ games, groups, states, links, coaches, schoolName, fi
 
   function render() {
     const all = teams();
-    const team = all.find(item => item.key === selected);
-    if (!team) selected = null;
+    const team = all.find(item => item.key === selected) ?? all.find(item => item.id === selectedId);
+    if (team) selected = team.key;
+    else selected = selectedId = null;
     list.hidden = Boolean(team);
     detail.hidden = !team;
     if (team) renderDetail(team);
     else { detail.replaceChildren(); renderList(all); }
   }
 
+  async function removeTeam(team) {
+    const school = currentSchool();
+    if (!school || !teamsLoaded) return;
+    const { data, error } = await client.from('teams').delete()
+      .eq('id', team.id).eq('school_id', school.slug).select('id');
+    if (!active || currentSchool()?.slug !== school.slug) return;
+    if (error || !data?.length) {
+      status.textContent = error?.code === '23503'
+        ? 'This team still has games or a posted schedule. Remove its games and take down its schedule first.'
+        : error
+          ? 'The team could not be removed. Check its schedule or refresh and try again.'
+          : 'The team was not removed. Refresh the list and try again.';
+      return;
+    }
+    selected = selectedId = null;
+    await load();
+    if (teamsLoaded) status.textContent = team.label + ' was removed.';
+  }
+
+  form.onsubmit = async event => {
+    event.preventDefault();
+    if (!teamsLoaded || !currentSchool()) return;
+    const sport = form.elements.sport.value.trim().replace(/\s+/g, ' ');
+    const gender = form.elements.gender.value;
+    const season = form.elements.season.value;
+    const levels = [...form.querySelectorAll('[name="level"]:checked')].map(input => input.value);
+    if (!levels.length) {
+      status.textContent = 'Select at least one level.';
+      return;
+    }
+    const duplicates = levels.filter(level => teamRecords.some(team =>
+      team.sport.trim().toLocaleLowerCase() === sport.toLocaleLowerCase() &&
+      team.gender === gender && team.level === level && team.season === season));
+    if (duplicates.length) {
+      status.textContent = 'Already on the team list for this season: ' + duplicates.join(', ') + '.';
+      return;
+    }
+    saveTeam.disabled = true;
+    const school = currentSchool();
+    const { error } = await client.from('teams').insert(levels.map(level => ({
+      school_id: school.slug, sport, gender, level, season,
+    })));
+    if (!active || currentSchool()?.slug !== school.slug) return;
+    if (error) {
+      saveTeam.disabled = false;
+      status.textContent = error.code === '23505'
+        ? 'One of those teams was already added. Refresh the list and try again.'
+        : 'The teams could not be added. Check the entries and try again.';
+      return;
+    }
+    form.reset();
+    await load();
+    if (teamsLoaded) status.textContent = levels.length === 1 ? 'Team added.' : levels.length + ' teams added.';
+  };
+
   return {
     render,
+    load,
     setStatus(text) { status.textContent = text; },
-    reset() { selected = null; status.textContent = ''; list.replaceChildren(); detail.replaceChildren(); },
+    reset() {
+      teamRequest++;
+      teamsLoaded = false;
+      teamRecords = [];
+      saveTeam.disabled = true;
+      selected = selectedId = null;
+      status.textContent = '';
+      list.replaceChildren();
+      detail.replaceChildren();
+    },
+    stop() {
+      active = false;
+      teamRequest++;
+      form.onsubmit = null;
+    },
   };
 }

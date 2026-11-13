@@ -157,6 +157,30 @@
           <section id="staff-teams-panel" class="staff-panel" aria-labelledby="teams-title" hidden>
             <h3 id="teams-title" tabindex="-1">Teams</h3>
             <p id="teams-status" role="status"></p>
+            <form id="team-form" class="staff-section team-form">
+              <h4>Add a team</h4>
+              <p class="staff-hint">Choose a sport, gender and season, then select every level the school offers.</p>
+              <div class="filters">
+                <label>Sport <input name="sport" maxlength="60" required autocomplete="off" placeholder="e.g. Soccer"></label>
+                <label>Gender
+                  <select name="gender" required>
+                    <option value="Boys">Boys</option><option value="Girls">Girls</option><option value="Coed">Coed</option>
+                  </select>
+                </label>
+                <label>Season
+                  <select name="season" required>
+                    <option value="Fall">Fall</option><option value="Winter">Winter</option><option value="Spring">Spring</option>
+                  </select>
+                </label>
+              </div>
+              <fieldset class="team-levels">
+                <legend>Levels</legend>
+                <label><input type="checkbox" name="level" value="Varsity"> Varsity</label>
+                <label><input type="checkbox" name="level" value="JV"> JV</label>
+                <label><input type="checkbox" name="level" value="Freshman"> Freshman</label>
+              </fieldset>
+              <div class="actions"><button id="team-save" class="button primary" type="submit">Add team</button></div>
+            </form>
             <ul id="team-list" class="team-list"></ul>
             <div id="team-detail" hidden></div>
           </section>
