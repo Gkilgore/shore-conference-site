@@ -112,6 +112,7 @@ function startStaffSchedule(client, invite) {
   const form = document.getElementById('game-form');
   const formStatus = document.getElementById('game-form-status');
   const fields = form.elements;
+  const startTimeMode = document.getElementById('start-time-mode');
   const saveButton = form.querySelector('#save-draft');
   const venues = startStaffVenues(client, { currentSchool, schools: () => schools, fields });
   let canEdit = invite.role !== 'conference_office';
@@ -165,6 +166,15 @@ function startStaffSchedule(client, invite) {
     selectView();
   }
 
+  function syncStartTime() {
+    const isTbd = startTimeMode.value === 'tbd';
+    fields.start_time.disabled = isTbd;
+    fields.start_time.required = !isTbd;
+    if (isTbd) fields.start_time.value = '';
+  }
+
+  startTimeMode.onchange = syncStartTime;
+
   function selectView() {
     const choice = isSiteAdmin ? preview.value : '';
     const schoolId = choice.startsWith('ad:') ? choice.slice(3) : invite.school_id;
@@ -209,7 +219,7 @@ function startStaffSchedule(client, invite) {
     const state = game ? unpublished.get(game.id) : null;
     document.getElementById('game-form-context').textContent = [currentSchool()?.name,
       game ? gameTitle(game) : 'New game',
-      game ? weekdayFormat.format(new Date(game.game_date + 'T' + game.start_time)) : '',
+      game ? weekdayFormat.format(new Date(game.game_date + 'T12:00')) : '',
       !game ? '' : state === 'Draft' ? 'Not posted' : state === 'Changed' ? 'Has a change that isn’t posted' : 'Posted',
     ].filter(Boolean).join(' · ');
     dirty = false;
@@ -223,6 +233,8 @@ function startStaffSchedule(client, invite) {
         else field.value = values[field.name] ?? '';
       }
     }
+    startTimeMode.value = game && !game.start_time ? 'tbd' : 'set';
+    syncStartTime();
     syncOpponent();
     syncStatusHint();
     venues.sync(game?.location ?? '');
@@ -389,13 +401,14 @@ function startStaffSchedule(client, invite) {
       const date = document.createElement('time');
       const title = document.createElement('strong');
       const details = document.createElement('span');
-      const start = new Date(game.game_date + 'T' + game.start_time);
+      const start = new Date(game.game_date + 'T12:00');
       date.dateTime = game.game_date;
       date.textContent = dateFormat.format(start);
       title.textContent = gameTitle(game);
       const departure = game.transportation?.bus_departure;
       const bus = departure ? 'Bus ' + timeFormat.format(new Date(game.game_date + 'T' + departure)) : '';
-      details.textContent = [timeFormat.format(start), game.location, game.status, bus].filter(Boolean).join(' · ');
+      details.textContent = [game.start_time ? timeFormat.format(new Date(game.game_date + 'T' + game.start_time)) : 'TBD',
+        game.location, game.status, bus].filter(Boolean).join(' · ');
       row.append(date, title, details);
       if (canEdit) {
         const button = document.createElement('button');
@@ -418,8 +431,9 @@ function startStaffSchedule(client, invite) {
     if (!calendar && !window.FullCalendar) return;
     const events = entries.map(game => ({
       id: game.id,
-      start: game.game_date + 'T' + game.start_time,
-      title: gameTitle(game) + (game.status === 'Scheduled' ? '' : ' · ' + game.status),
+      start: game.start_time ? game.game_date + 'T' + game.start_time : game.game_date,
+      title: gameTitle(game) + (game.start_time ? '' : ' · TBD') +
+        (game.status === 'Scheduled' ? '' : ' · ' + game.status),
       classNames: ['staff-game', 'staff-game-' + game.status.toLowerCase(), ...(unpublished.has(game.id) ? ['staff-unpublished'] : [])],
       extendedProps: { game, location: game.location, status: game.status, unpublished: unpublished.get(game.id) },
     }));
@@ -678,7 +692,7 @@ function startStaffSchedule(client, invite) {
   document.getElementById('delete-game').onclick = () => {
     if (!activeGame || !canEdit) return;
     document.getElementById('delete-game-summary').textContent = gameTitle(activeGame) + ' · ' +
-      dateFormat.format(new Date(activeGame.game_date + 'T' + activeGame.start_time));
+      dateFormat.format(new Date(activeGame.game_date + 'T12:00'));
     deleteStatus.textContent = '';
     deleteConfirm.disabled = false;
     deleteDialog.showModal();
@@ -711,7 +725,10 @@ function startStaffSchedule(client, invite) {
   form.onsubmit = async event => {
     event.preventDefault();
     const input = Object.fromEntries(new FormData(form));
-    for (const name of Object.keys(input)) input[name] = input[name].trim() || null;
+    for (const name of Object.keys(input)) {
+      if (typeof input[name] === 'string') input[name] = input[name].trim() || null;
+    }
+    input.start_time = startTimeMode.value === 'tbd' ? null : fields.start_time.value || null;
     input.school_id = selector.value;
     input.id = activeGame?.id ?? null;
     input.revision = activeGame?.revision ?? null;

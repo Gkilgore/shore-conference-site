@@ -53,7 +53,7 @@ function renderCalendar(events) {
     const filtered = ['school', 'sport', 'gender', 'level', 'search'].some(name => fields[name]?.value);
     const next = matches.map(game => game.start).filter(start => start.slice(0, 10) >= afterLastDay).sort()[0];
     if (next) {
-      const day = monthDay.format(new Date(next));
+      const day = monthDay.format(new Date(next.slice(0, 10) + 'T12:00'));
       emptyText.textContent = 'No games in this view. Next game: ' + day + '.';
       emptyAction.textContent = 'Go to ' + day;
       emptyAction.onclick = () => calendar.gotoDate(next.slice(0, 10));
@@ -133,10 +133,11 @@ function renderCalendar(events) {
       const title = document.createElement('span');
       title.className = 'game-title';
       title.textContent = event.title;
-      if (!inList && timeText) {
+      const displayedTime = event.allDay ? 'TBD' : timeText;
+      if (displayedTime && (!inList || event.allDay)) {
         const time = document.createElement('span');
         time.className = 'game-time';
-        time.textContent = timeText;
+        time.textContent = displayedTime;
         content.append(time);
       }
       content.append(title);
@@ -177,10 +178,12 @@ function createGameDetails(calendar) {
   calendar.after(dialog);
 
   const dateFormat = new Intl.DateTimeFormat('en-US', { dateStyle: 'full', timeStyle: 'short' });
+  const dateOnlyFormat = new Intl.DateTimeFormat('en-US', { dateStyle: 'full' });
   return event => {
     const details = event.extendedProps;
     const rows = [
-      ['When', event.start ? dateFormat.format(event.start) + ' ET' : 'Time to be announced'],
+      ['When', event.start ? event.allDay ? dateOnlyFormat.format(event.start) + ' · TBD'
+        : dateFormat.format(event.start) + ' ET' : 'Time to be announced'],
       ['Venue', details.location || 'To be announced'],
       ['Status', details.status || 'Scheduled'],
     ];

@@ -186,9 +186,10 @@ function startStaffCoaches(client, { currentSchool, schools, existingGames }) {
   }
 
   function gameLine(game) {
-    const start = new Date(game.game_date + 'T' + game.start_time);
+    const start = new Date(game.game_date + 'T12:00');
     return coachTeamLabel(game.teams) + (game.home_away === 'Home' ? ' vs. ' : ' at ') + opponentName(game) +
-      ' · ' + dateFormat.format(start) + ', ' + timeFormat.format(start) + ' · ' + game.location;
+      ' · ' + dateFormat.format(start) + ', ' +
+      (game.start_time ? timeFormat.format(new Date('2000-01-01T' + game.start_time)) : 'TBD') + ' · ' + game.location;
   }
 
   function changeLines(entry) {
@@ -198,7 +199,8 @@ function startStaffCoaches(client, { currentSchool, schools, existingGames }) {
     const day = value => dateFormat.format(new Date(value + 'T12:00'));
     return [
       before.game_date !== game.game_date && 'Date: ' + day(before.game_date) + ' → ' + day(game.game_date),
-      before.start_time !== game.start_time && 'Time: ' + time(before.start_time) + ' → ' + time(game.start_time),
+      before.start_time !== game.start_time && 'Time: ' + (before.start_time ? time(before.start_time) : 'TBD') +
+        ' → ' + (game.start_time ? time(game.start_time) : 'TBD'),
       before.location !== game.location && 'Location: ' + before.location + ' → ' + game.location,
       before.home_away !== game.home_away && 'Home or away: ' + before.home_away + ' → ' + game.home_away,
       before.status !== game.status && 'Status: ' + before.status + ' → ' + game.status,

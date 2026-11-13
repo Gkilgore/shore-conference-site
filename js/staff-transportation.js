@@ -84,7 +84,7 @@ function startStaffTransportation(client, invite, selectedSchool, gameTitle) {
       '',
       'Game: ' + gameTitle(game),
       'Date: ' + dateFormat.format(date),
-      'Start: ' + time(game.start_time),
+      'Start: ' + (game.start_time ? time(game.start_time) : 'TBD'),
       'Venue: ' + game.location,
       'Bus departure: ' + time(bus.bus_departure),
       'Pickup: ' + (bus.pickup_location || 'Not specified'),
