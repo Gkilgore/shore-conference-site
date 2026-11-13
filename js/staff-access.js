@@ -33,7 +33,7 @@ function startStaffAccess(client, invite, schoolsFn) {
     name.disabled = role.disabled = submit.disabled = busy || !actorRole;
     cancelEdit.disabled = busy;
     cancelEdit.hidden = !editing;
-    submit.textContent = editing ? 'Review access change' : 'Review access';
+    submit.textContent = editing ? 'Save changes' : 'Add';
     list.querySelectorAll('button').forEach(button => button.disabled = busy);
   }
 
@@ -81,7 +81,7 @@ function startStaffAccess(client, invite, schoolsFn) {
     for (const key of columns) {
       const selected = key === sortKey;
       get('heading-' + key).setAttribute('aria-sort', selected ? (descending ? 'descending' : 'ascending') : 'none');
-      get('arrow-' + key).textContent = selected ? (descending ? '?' : '?') : '?';
+      get('arrow-' + key).textContent = selected && !descending ? '\u2191' : '\u2193';
       get('sort-' + key).setAttribute('aria-label', 'Sort by ' + key + (selected && !descending ? ', Z to A' : ', A to Z'));
     }
   }

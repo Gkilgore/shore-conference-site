@@ -58,13 +58,19 @@ for (const [tab, panel] of [['staff-schedule-tab','staff-schedule-panel'], ['sta
   check(panel + ' SC logo', get('workspace-logo').src.endsWith('/shore-conference.svg') && !get('workspace-logo').hidden);
 }
 get('staff-access-search').value = 'marlboro';
+const controls = ['email', 'name', 'role', 'school', 'submit'].map(id => get('staff-access-' + id).getBoundingClientRect());
+check('access controls aligned on desktop', innerWidth < 1100 || controls.every(box => Math.abs(box.bottom - controls[0].bottom) < 1));
+check('add button label', get('staff-access-submit').textContent === 'Add');
+check('unsorted column has down arrow', get('staff-access-arrow-school').textContent === '\u2193');
 get('staff-access-search').dispatchEvent(new Event('input'));
 check('search matches assigned school', get('staff-access-list').rows.length === 1 && get('staff-access-list').textContent.includes('Zoe Example'));
 get('staff-access-search').value = '';
 get('staff-access-search').dispatchEvent(new Event('input'));
 get('staff-access-sort-name').click();
 check('header toggles descending', get('staff-access-heading-name').getAttribute('aria-sort') === 'descending' && get('staff-access-list').rows[0].textContent.includes('Zoe Example'));
+check('descending arrow', get('staff-access-arrow-name').textContent === '\u2193');
 get('staff-access-sort-name').click();
+check('ascending arrow', get('staff-access-arrow-name').textContent === '\u2191');
 get('view-as').value = 'ad:marlboro';
 get('view-as').dispatchEvent(new Event('change'));
 await new Promise(resolve => setTimeout(resolve, 100));

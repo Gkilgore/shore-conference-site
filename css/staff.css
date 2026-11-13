@@ -602,9 +602,18 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
 #games-next, #games-unpublished { margin-top: 0.75rem; }
 
 /* Staff access: the add form on one row with its button, then one line per person. */
-.access-fields > label { flex: 1 1 11rem; min-width: 0; }
+.access-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; }
+.access-fields > label { min-width: 0; margin: 0; }
+.access-fields :is(input, select) { height: 2.75rem; margin: 0; }
 .access-submit { display: flex; gap: 0.5rem; flex: 0 0 auto; }
-.access-submit .button { min-height: 2.9rem; }
+.access-submit .button { min-height: 2.75rem; white-space: nowrap; }
+@media (min-width: 1100px) {
+  .access-fields { grid-template-columns: repeat(4, minmax(0, 1fr)) auto; }
+  .access-submit { flex-wrap: wrap; max-width: 10rem; }
+}
+@media (max-width: 540px) {
+  .access-fields { grid-template-columns: minmax(0, 1fr); }
+}
 /* Keep the five access columns aligned; narrow screens scroll within the frame. */
 .access-filters { margin-top: 0.5rem; }
 .access-filters > label { flex: 1 1 8rem; min-width: 0; }
