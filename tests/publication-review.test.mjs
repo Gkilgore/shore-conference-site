@@ -10,10 +10,12 @@ catch (error) { if (error.code !== 'ENOENT') throw error; }
 test('review names the exact date, time, status and bus changes', () => {
   const before = { game_date:'2031-09-01',start_time:'15:00:00',status:'Scheduled',location:'Main field',
     transportation:{bus_departure:'14:00:00',pickup_location:'Gym',return_time:'18:00:00'} };
-  const after = { ...before,start_time:'16:30:00',status:'Postponed',transportation:{...before.transportation,bus_departure:'15:00:00'} };
+  const after = { ...before,start_time:'16:30:00',status:'Postponed',
+    transportation:{...before.transportation,bus_departure:'15:00:00',early_dismissal_time:'13:15:00'} };
   assert.equal(typeof context.publicationChanges, 'function');
   const lines = Array.from(context.publicationChanges({ published:before,draft:after }));
-  assert.deepEqual(lines, ['Start time: 3:00 PM → 4:30 PM','Status: Scheduled → Postponed','Bus departure: 2:00 PM → 3:00 PM']);
+  assert.deepEqual(lines, ['Start time: 3:00 PM → 4:30 PM','Status: Scheduled → Postponed',
+    'Bus departure: 2:00 PM → 3:00 PM','Early dismissal: Not entered → 1:15 PM']);
 });
 
 test('review distinguishes new and removed games and ignores private draft fields', () => {

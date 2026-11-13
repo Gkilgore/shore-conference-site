@@ -64,7 +64,8 @@ function renderUpcoming(events, { showChanged = false } = {}) {
     if (scheduled(game)) {
       title.textContent = game.title;
       details.textContent = [game.start.includes('T') ? timeFormat.format(new Date(game.start)) : 'TBD',
-        game.location, game.bus].filter(Boolean).join(' · ');
+        game.location, game.bus,
+        game.earlyDismissal && 'Early dismissal ' + game.earlyDismissal].filter(Boolean).join(' · ');
     } else {
       // Calendar titles end with " · Postponed"; here the status leads, so drop that ending.
       const label = document.createElement('em');
@@ -74,7 +75,7 @@ function renderUpcoming(events, { showChanged = false } = {}) {
       matchup.textContent = game.title.endsWith(' · ' + game.status) ? game.title.slice(0, -game.status.length - 3) : game.title;
       title.append(label, ' ', matchup);
       details.textContent = ['Was ' + (game.start.includes('T') ? timeFormat.format(new Date(game.start)) : 'TBD'),
-        game.location].filter(Boolean).join(' · ');
+        game.location, game.earlyDismissal && 'Early dismissal ' + game.earlyDismissal].filter(Boolean).join(' · ');
     }
     row.append(date, title, details);
     return row;

@@ -141,7 +141,8 @@ function renderCalendar(events) {
         content.append(time);
       }
       content.append(title);
-      const details = [event.extendedProps.location, event.extendedProps.bus].filter(Boolean);
+      const details = [event.extendedProps.location, event.extendedProps.bus,
+        event.extendedProps.earlyDismissal && 'Early dismissal ' + event.extendedProps.earlyDismissal].filter(Boolean);
       content.title = 'View details: ' + event.title;
       if (inList && details.length) {
         const line = document.createElement('small');
@@ -188,6 +189,7 @@ function createGameDetails(calendar) {
       ['Status', details.status || 'Scheduled'],
     ];
     if (details.bus) rows.push(['Transportation', details.bus]);
+    if (details.earlyDismissal) rows.push(['Early dismissal', details.earlyDismissal]);
     const bracket = dialog.querySelector('[data-tournament-bracket]');
     // The bracket page is switched off for now. Use "!details.tournament_id" here to bring the link back.
     bracket.hidden = true;

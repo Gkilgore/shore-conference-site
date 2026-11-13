@@ -37,9 +37,9 @@ Use **Import games** on the Games tab, then **Download template**. The columns a
 
 `date, start_time, sport, gender, level, season, home_away, opponent, location, status, bus_departure, pickup_location, early_dismissal_time, return_time, transport_notes, notes`
 
-Early Dismissal is optional, can be entered in the game editor or CSV, and appears in the AD's List and Day tables. Return time remains available in the game editor and CSV.
+Early Dismissal is optional, can be entered in the game editor or CSV, and appears in the AD's List and Day tables. When entered, it also appears on that school's public calendar and school-specific feed, but not on the conference calendar or another school's calendar. Return time remains available in the game editor and CSV.
 
-`supabase/migrations/20261130000100_early_dismissal.sql` adds the private time field and updates game saving. Apply it only to the test project; it has not been applied to any Supabase project.
+`supabase/migrations/20261130000100_early_dismissal.sql` adds the time field and updates game saving and school-only public calendars. Apply it only to the test project; it has not been applied to any Supabase project.
 
 - **Required:** date, start time, sport, gender, level, home or away, opponent, and location.
 - **Dates:** 2026-11-09 or 11/9/2026.
@@ -47,7 +47,7 @@ Early Dismissal is optional, can be entered in the game editor or CSV, and appea
 - **Season:** if blank, the season comes from the sport.
 - **Opponent:** an opponent that matches a conference school's name becomes a linked conference opponent. Any other name is saved as written.
 - **Files:** choose up to 20 CSVs, up to 1 MB each and 500 games total. Each file may contain several teams.
-- **Preview:** rows are grouped by team with the source file and row number. Missing columns and invalid rows are flagged. Games already saved, or repeated across selected files, are skipped. Ready rows save only as drafts; publication is a separate review step.
+- **Preview:** rows are grouped by team with the source file and row number. Missing columns and invalid rows are flagged. Games already saved, or repeated across selected files, are skipped. Saving a ready row posts it immediately.
 
 ## Venues
 
@@ -68,7 +68,7 @@ Each school keeps a venue list under **School settings**. In the game editor, Ve
 
 ## Sample games for testing
 
-`data/sample-data.js` holds the prototype's public sample games: home or away, season, game notes, bus departure, pickup, return time, and bus confirmed. Early-dismissal times are AD-only and are not included in public prototype data. Dates count from today. The games cover:
+`data/sample-data.js` holds the prototype's public sample games: home or away, season, game notes, bus departure, pickup, return time, and bus confirmed. It contains no early-dismissal times; those appear on public schedules only when an AD enters one. Dates count from today. The games cover:
 
 - games that link to the conference calendar
 - games that don't link: a different time, a different location, or the other school never entered it

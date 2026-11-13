@@ -56,6 +56,7 @@ function schoolPublicChanges(before, after, schoolNames = {}) {
     ['Team', game => game.teams?.gender], ['Level', game => game.teams?.level], ['Season', game => game.teams?.season],
     ['Bus departure', game => schoolPublicTime(game.transportation?.bus_departure)],
     ['Pickup', game => game.transportation?.pickup_location],
+    ['Early dismissal', game => schoolPublicTime(game.transportation?.early_dismissal_time)],
     ['Return time', game => schoolPublicTime(game.transportation?.return_time)],
   ];
   return fields.flatMap(([label, read]) => {

@@ -38,8 +38,9 @@ begin
   saved := public.save_staff_game(base);
   if (select early_dismissal_time from public.transportation where game_id=saved) is distinct from '13:15'::time then
     raise exception 'Early dismissal was not saved'; end if;
-  if (select payload->'transportation' ? 'early_dismissal_time' from public.published_games where id=saved) then
-    raise exception 'Early dismissal was exposed in the public schedule'; end if;
+  if (select payload->'transportation'->>'early_dismissal_time' from public.published_games where id=saved)
+      is distinct from '13:15:00' then
+    raise exception 'Early dismissal was not added to the owning school public schedule'; end if;
   if not exists(select 1 from public.published_games where id=saved and payload->>'start_time'='16:00:00') then
     raise exception 'A new game was not posted'; end if;
   if not exists(select 1 from public.team_publications p join public.games g on g.team_id=p.team_id
@@ -65,8 +66,10 @@ begin
 
   -- Saving into a never-posted team posts only that game.
   second := public.save_staff_game(base || jsonb_build_object('sport','Post Test Lacrosse','gender','Girls','level','JV',
-    'season','Spring','game_date','2031-04-08'));
+    'season','Spring','game_date','2031-04-08','early_dismissal_time',null));
   if not exists(select 1 from public.published_games where id=second) then raise exception 'The game was not posted'; end if;
+  if (select payload->'transportation' ? 'early_dismissal_time' from public.published_games where id=second) then
+    raise exception 'An unset early dismissal appeared in the public schedule'; end if;
   if exists(select 1 from public.published_games where id=current_setting('shore.t_old')::uuid) then
     raise exception 'An older private game was exposed'; end if;
 

@@ -18,11 +18,14 @@ async function loadPublicCalendar(options) {
 }
 
 function publicCalendarEvents(schedule) {
+  const formatTime = time => new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' })
+    .format(new Date('2000-01-01T' + time));
   return schedule.events.map(game => ({ ...game,
     classNames: game.status === 'Scheduled' ? [] : ['is-' + game.status.toLowerCase()],
     bus: game.transportation?.bus_departure
-      ? 'Bus ' + new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' })
-        .format(new Date('2000-01-01T' + game.transportation.bus_departure)) : '',
+      ? 'Bus ' + formatTime(game.transportation.bus_departure) : '',
+    earlyDismissal: game.transportation?.early_dismissal_time
+      ? formatTime(game.transportation.early_dismissal_time) : '',
   }));
 }
 

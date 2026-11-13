@@ -19,7 +19,7 @@ November 5, 2026 · Greg Kilgore and Alexa
 | Conference admin  | Every school calendar, the conference calendar, the list of unlinked games | AD invitations, school assignments and conference-owned tournaments; school schedules stay read-only |
 | Site admin        | Everything (Greg and Alexa)                                                | Schools, AD accounts, conference-admin access, fixes               |
 
-**Bus times** show on each game on the school's own calendar and in that school's subscribe feeds, never on another school's calendar or the conference calendar.
+**Bus times and entered early-dismissal times** show on each game on the owning school's calendar and school-specific feeds, never on another school's calendar or the conference calendar. An early-dismissal time appears only when the AD enters one.
 
 **Staff access (Greg's November 6 update):** Several invited AD/staff accounts may share a school, and several accounts may be conference admins. Conference admins can add, reassign or remove AD access. Site admins can also manage conference admins. These tools cannot grant site-admin access or change the signed-in administrator's own access. Every change checks current permissions and the reviewed account version. Removing an invitation blocks future school database access even with an existing login token.
 
@@ -31,7 +31,7 @@ November 5, 2026 · Greg Kilgore and Alexa
 
 A game goes on the public conference calendar only when both schools have published it and all of these match: sport, gender and level; date; start time; location; home and away mirrored; each school lists the other as its opponent. Transportation is ignored for matching.
 
-If a published update stops matching, the game comes off the conference calendar until both published entries agree again. A matched game that either school publishes as postponed or canceled stays on the conference calendar with that status, so visitors can see what changed (Greg's November 9 update). A game entered by mistake can be deleted; the removal reaches public calendars when the AD reviews and publishes it. Draft checks may run on save or import, but draft edits never change posted calendars. Public matching is checked against approved copies on each calendar/feed read.
+If a published update stops matching, the game comes off the conference calendar until both published entries agree again. A matched game that either school publishes as postponed or canceled stays on the conference calendar with that status, so visitors can see what changed (Greg's November 9 update). Saving or importing a game publishes it immediately; deleting a game removes its public copy immediately. Public matching is checked against the saved public copies on each calendar/feed read.
 
 **AD status line.** Each game against a member school shows its status in the AD's admin screen:
 
@@ -50,7 +50,7 @@ It names the field that differs but never shows the other school's values.
 | schools          | Name, short name, subdomain, logo, two colors, conference member yes/no                          |
 | teams            | School, sport, gender, level (Varsity, JV, Freshman), season                                     |
 | games            | Owning school, team, date, start time, opponent, home/away, location, status, notes              |
-| transportation   | Game, bus departure, pickup location, return time, notes                                         |
+| transportation   | Game, bus departure, pickup location, return time, optional early dismissal, notes                |
 | team_publications | Which team/season-year schedules have been published and when                                   |
 | published_games  | Last approved public game values, kept separate from working drafts, with stable calendar IDs    |
 | publication_updates | Approved season notices and recent public game changes; withdrawn game history stays private |

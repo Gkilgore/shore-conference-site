@@ -1,8 +1,22 @@
--- Adds an optional school-only early-dismissal time to transportation details.
+-- Adds an optional early-dismissal time that is public only on its owning school's schedule and feed.
 -- Apply after 20261129000100_staff_team_removal.sql in the TEST project. Do not apply to the live project.
 --
--- The public game payload is intentionally unchanged; only the owning school's AD can read this value.
+-- The conference projection intentionally omits this school-specific value.
 alter table public.transportation add column early_dismissal_time time;
+
+create or replace function shore_private.public_game_payload(g public.games)
+returns jsonb language sql stable set search_path = '' as $$
+  select jsonb_build_object('id',g.id,'school_id',g.school_id,'team_id',g.team_id,
+    'game_date',g.game_date,'start_time',g.start_time,'home_away',g.home_away,
+    'opponent_school_id',g.opponent_school_id,'opponent_name',g.opponent_name,
+    'location',g.location,'status',g.status,'notes',g.notes,
+    'teams',jsonb_build_object('sport',t.sport,'gender',t.gender,'level',t.level,'season',t.season),
+    'transportation',jsonb_build_object('bus_departure',tr.bus_departure,'pickup_location',tr.pickup_location,
+      'return_time',tr.return_time) ||
+      case when tr.early_dismissal_time is null then '{}'::jsonb
+        else jsonb_build_object('early_dismissal_time',tr.early_dismissal_time) end)
+  from public.teams t left join public.transportation tr on tr.game_id=g.id where t.id=g.team_id;
+$$;
 
 -- Keep the current save-on-save behavior while storing the new optional value atomically with the game.
 create or replace function public.save_staff_game(input jsonb)

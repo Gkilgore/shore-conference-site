@@ -57,7 +57,8 @@ function tournamentEvents(games, options) {
       const rows = Array.isArray(game.transportation) ? game.transportation : [game.transportation];
       const bus = rows.find(row => row && (!row.school_id || row.school_id === options.school));
       if (bus) event.transportation = {
-        bus_departure: bus.bus_departure, pickup_location: bus.pickup_location, return_time: bus.return_time,
+        bus_departure: bus.bus_departure, pickup_location: bus.pickup_location,
+        return_time: bus.return_time, early_dismissal_time: bus.early_dismissal_time,
       };
     }
     return [event];
@@ -115,9 +116,12 @@ export function publicSchedule(schools, games, options, tournamentGames = []) {
     };
     if (!isConference) {
       const bus = Array.isArray(game.transportation) ? game.transportation[0] : game.transportation;
-      if (bus) event.transportation = {
-        bus_departure: bus.bus_departure, pickup_location: bus.pickup_location, return_time: bus.return_time,
-      };
+      if (bus) {
+        event.transportation = {
+          bus_departure: bus.bus_departure, pickup_location: bus.pickup_location, return_time: bus.return_time,
+        };
+        if (bus.early_dismissal_time) event.transportation.early_dismissal_time = bus.early_dismissal_time;
+      }
     }
     return event;
   }).concat(tournaments).filter(event => (!options.school || event.schools.includes(options.school)) &&
@@ -170,6 +174,7 @@ export function buildCalendar(schedule) {
       if (bus.bus_departure) description.push('Bus departure: ' + time(bus.bus_departure));
       if (bus.pickup_location) description.push('Pickup: ' + bus.pickup_location);
       if (bus.return_time) description.push('Return: ' + time(bus.return_time));
+      if (bus.early_dismissal_time) description.push('Early dismissal: ' + time(bus.early_dismissal_time));
     }
     const modified = new Date(game.updated_at).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
     // A repeated Eastern clock hour needs its checked UTC instant to preserve the chosen occurrence.

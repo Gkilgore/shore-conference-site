@@ -29,6 +29,7 @@ function publicationChanges(entry, schoolNames = {}) {
     ['Level', game=>game.teams?.level], ['Season', game=>game.teams?.season],
     ['Bus departure', game=>publicationTime(game.transportation?.bus_departure)],
     ['Pickup', game=>game.transportation?.pickup_location],
+    ['Early dismissal', game=>publicationTime(game.transportation?.early_dismissal_time)],
     ['Return time', game=>publicationTime(game.transportation?.return_time)],
   ];
   if (Boolean(before.opponent_school_id) !== Boolean(after.opponent_school_id)) {

@@ -13,7 +13,8 @@ const home = {
   home_away: 'Home', opponent_school_id: 'colts-neck', opponent_name: null, location: 'Marlboro Turf',
   status: 'Scheduled', revision: 1, updated_at: '2026-11-06T12:00:00Z', notes: 'Arrive early.',
   teams: { sport: 'Soccer', gender: 'Girls', level: 'Varsity', season: 'Fall' },
-  transportation: { bus_departure: '14:00:00', pickup_location: 'School lot', return_time: '19:00:00', notes: 'PRIVATE', bus_confirmed: false },
+  transportation: { bus_departure: '14:00:00', pickup_location: 'School lot', return_time: '19:00:00',
+    early_dismissal_time: '13:15:00', notes: 'PRIVATE', bus_confirmed: false },
 };
 const away = { ...home, id: 'game-two', school_id: 'colts-neck', home_away: 'Away', opponent_school_id: 'marlboro' };
 const options = { scope: 'school', school: 'marlboro' };
@@ -29,6 +30,20 @@ test('rescheduling updates the same UID and sequence, with Eastern daylight-savi
   assert.match(after, /DTSTART;TZID=America\/New_York:20270315T163000/);
   assert.match(after, /RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU/);
   assert.match(after, /RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU/);
+});
+
+test('early dismissal appears on the owning school calendar and feed only when entered', () => {
+  const schoolSchedule = project([home]);
+  assert.equal(schoolSchedule.events[0].transportation.early_dismissal_time, '13:15:00');
+  assert.match(buildCalendar(schoolSchedule), /Early dismissal: 1:15 PM ET/);
+
+  const noEarlyDismissal = project([{ ...home, transportation: { ...home.transportation, early_dismissal_time: null } }]);
+  assert.equal(Object.hasOwn(noEarlyDismissal.events[0].transportation, 'early_dismissal_time'), false);
+  assert.doesNotMatch(buildCalendar(noEarlyDismissal), /Early dismissal/);
+
+  const conferenceSchedule = project([home, away], { scope: 'conference' });
+  assert.equal(Object.hasOwn(conferenceSchedule.events[0], 'transportation'), false);
+  assert.doesNotMatch(buildCalendar(conferenceSchedule), /Early dismissal/);
 });
 
 test('cancellation and postponement preserve event identity', () => {
@@ -82,9 +97,9 @@ test('conference requires two published members and exact mirrored entries, and 
 
 test('conference omits all transportation; school projection omits staff-only fields', () => {
   const conference = JSON.stringify(project([home, away], { scope: 'conference' }));
-  assert.doesNotMatch(conference, /14:00|School lot|19:00|PRIVATE|bus_confirmed|transportation/);
+  assert.doesNotMatch(conference, /14:00|School lot|19:00|13:15|PRIVATE|bus_confirmed|transportation/);
   const own = JSON.stringify(project([home]));
-  assert.match(own, /School lot/);
+  assert.match(own, /School lot|13:15/);
   assert.doesNotMatch(own, /PRIVATE|bus_confirmed/);
   assert.doesNotMatch(JSON.stringify(project([home], { ...options, school: 'colts-neck' })), /School lot/);
 });
