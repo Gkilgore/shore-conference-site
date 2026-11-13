@@ -20,7 +20,9 @@ begin
   select g.id,g.school_id,g.team_id,2031,shore_private.public_game_payload(g),1 from public.games g where g.id=down_game;
   perform set_config('shore.t_held',held::text,true); perform set_config('shore.t_down',down::text,true);
   perform set_config('shore.t_old',old_private::text,true);
-  perform set_config('shore.t_outbox',(select count(*) from public.coach_email_outbox)::text,true);
+  if to_regclass('public.coach_email_outbox') is not null then
+    perform set_config('shore.t_outbox',(select count(*) from public.coach_email_outbox)::text,true);
+  end if;
   perform set_config('request.jwt.claims',jsonb_build_object('sub',actor,'role','authenticated')::text,true);
 end;
 $$;
@@ -90,8 +92,10 @@ begin
     raise exception 'The postponement is missing from public changes'; end if;
   if not exists(select 1 from public.publication_updates where game_id=current_setting('shore.t_saved')::uuid and kind='game_removed') then
     raise exception 'The removal is missing from public changes'; end if;
-  if (select count(*) from public.coach_email_outbox) <> current_setting('shore.t_outbox')::integer then
-    raise exception 'A coach email was queued'; end if;
+  if to_regclass('public.coach_email_outbox') is not null then
+    if (select count(*) from public.coach_email_outbox) <> current_setting('shore.t_outbox')::integer then
+      raise exception 'A coach email was queued'; end if;
+  end if;
 end;
 $$;
 select 'PASS: posts on save and edit; higher revisions; stale save refused; older private games kept private; taken-down team not revived; delete removes the public copy; other school refused; no coach emails' as verification;

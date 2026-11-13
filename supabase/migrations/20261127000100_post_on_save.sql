@@ -1,4 +1,4 @@
--- DRAFT for Greg, November 12, 2026: not applied or run anywhere yet.
+-- Applied and rollback-tested in the test project on November 12, 2026; production untouched.
 -- Run after 20261125000100_delete_staff_game.sql in the test project, then run supabase/tests/post-on-save.sql.
 --
 -- Saving or deleting a school game now posts the change in the same transaction, so a save can never
@@ -14,6 +14,9 @@
 -- * Deleting a game removes its public copy.
 -- * An account that may edit but not post the school saves as before, without posting.
 -- * Coach email queueing is switched off (Greg, November 12: no coach alerts for now).
+
+-- Older test projects may not have installed the optional schedule-tools migration.
+alter table public.transportation add column if not exists bus_confirmed boolean not null default false;
 
 create function shore_private.post_saved_game(p_id uuid, p_school text)
 returns boolean language plpgsql security definer set search_path = '' as $$
@@ -137,4 +140,11 @@ revoke all on function public.delete_staff_game(uuid, integer) from public, anon
 grant execute on function public.delete_staff_game(uuid, integer) to authenticated;
 
 -- No coach alerts for now. Re-enable with: alter table public.games enable trigger games_queue_coach_emails;
-alter table public.games disable trigger games_queue_coach_emails;
+do $$
+begin
+  if exists (select 1 from pg_trigger where tgrelid = 'public.games'::regclass
+      and tgname = 'games_queue_coach_emails') then
+    alter table public.games disable trigger games_queue_coach_emails;
+  end if;
+end;
+$$;

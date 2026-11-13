@@ -1,5 +1,12 @@
 # AD workflow checklist
 
+## November 12: site-admin workspace and staff layout
+
+- Removed an extra closing section tag that put Schedule and subsequent panels outside the sidebar/content grid. Schedule, Staff access, Transportation, and School settings now sit beside the tabs on desktop and below the compact tab grid on phones.
+- Added the SC mark to the staff masthead and conference banner. The site-admin workspace keeps conference branding when a school is selected; View as AD retains that school's branding.
+- People with access has separate Name, Email, School, Role, and Actions columns, text search, school/access-level filters, and ascending/descending sorting by name, email, school, or role. These controls filter the loaded list without database requests or clearing an access edit.
+- Verified with fictional accounts using `tests/admin-workspace-preview.html` at desktop width and `tests/phone-preview.html?admin=1` at 390px. All four affected panels remain in the content container, with no page overflow or script errors. All 171 Node tests pass. No access permissions or database records changed in this UI pass.
+
 Tracks the staff findings from the November 9 design review and the November 10 AD workflow pass. Checked with fictional games and a fake in-memory database in headless Chrome at 1280×900 and 375×812, as a test Marlboro AD and as a conference admin. Not yet checked with a real sign-in, the Supabase project, or a real AD.
 
 ## Fixed and verified (branch `design/ad-workflow`)
@@ -117,3 +124,12 @@ Greg asked for the draft and publish step to go. Details and the plan for older 
 - Went live on `main`. The dashboard posts after each save; the database migration that posts inside the save is written but not run (`docs/posting-on-save.md`).
 - Coaches tabled: the Coaches tab and the Coaches section in Teams are hidden. Tabs for an AD are Schedule, Games, Teams, Match checks, Transportation, School settings.
 - School pages merge changes to one game made within 12 hours into a single entry in "Schedule changes".
+
+### November 13: Match checks into Games, Staff access layout
+
+- Match checks is no longer its own tab. Its totals and the list of games that don't match the other school sit at the bottom of Games, under the same filters as Schedule. Edit on one of those games returns to Games.
+- Conference admins now get the Games tab too, showing only Match checks (no Add game or Import games).
+- Tabs for an AD: Schedule, Games, Teams, Transportation, School settings. Conference admin: Schedule, Games, Tournaments, Staff access.
+- Staff access: "Add a person" form on one row with its button, then "People with access" with one line per person (name, email, access, Edit and Remove). On a phone, name and buttons share the first line.
+- Tournaments and Staff access now show the conference colors instead of the last school picked.
+- Checked with fictional data at 1280px and 375px.

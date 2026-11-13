@@ -84,4 +84,4 @@ It works whether or not the newer draft migrations are applied. Bus confirmation
 
 Since November 12, saving or importing posts the game; see `posting-on-save.md`. Anything above that mentions drafts or publishing describes the earlier workflow.
 
-**Database steps, in order (test project `jrtcyihpdrcnhxgproyw`, not yet run as of November 12):** `20261125000100_delete_staff_game.sql`, then `20261127000100_post_on_save.sql`, then the check `supabase/tests/post-on-save.sql`.
+**Database steps completed November 12 in test project `jrtcyihpdrcnhxgproyw`:** `20261125000100_delete_staff_game.sql`, then `20261127000100_post_on_save.sql`, then `supabase/tests/post-on-save.sql` (PASS, rolled back). See `posting-on-save.md` for compatibility changes and verification limits. Earlier draft instructions above describe the previous workflow.
