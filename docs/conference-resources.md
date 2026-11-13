@@ -1,5 +1,22 @@
 # Conference resources
 
+## Public resource hubs (November 13, 2026)
+
+The approved first expansion adds [Divisions](../divisions.html), [Tournaments](../tournaments.html) and [Inside the Conference](../inside.html). They read the existing alignment data and the `shorePublicResources` index in [conference-resources.js](../data/conference-resources.js). The index links to official files; it does not upload, copy or automatically synchronize their contents.
+
+- A division's `complete` flag describes the membership copied for that division, not coverage of every conference division. Missing schools get an unknown-assignment message and the source link. Partial memberships are not presented as complete lists.
+- Public document records carry their edition label, review date, format and limitations. Past-season leadership remains labeled as such. Link summaries are not full accessible transcriptions of original files.
+- Tournament source records do not create games. The existing conference-office upload and publish workflow stays unchanged; generator and bracket-discovery tools remain hidden.
+- Resource filters use query parameters so selections can be shared. Navigation and official-source links work without JavaScript.
+
+### Approved next-phase permissions
+
+Conference admins and site admins may manage and approve conference content themselves. AD content controls are limited to their own school's social media; general school news, photo or document submissions are not approved. This first phase does not implement or grant new database permissions.
+
+Use attributed links to approved sources first. Hosted photos or connected social feeds require recorded permission, a named conference contact for removal requests, and a removal/disconnection procedure before rollout. Do not copy publisher text/images or scrape school accounts. These measures reduce exposure but do not establish that content has been licensed or eliminate risk.
+
+Administrator editing, version storage, uploads, news archives and social-account controls remain later phases. Development uses the test Supabase project; Greg handles production.
+
 Facts this site copies from the official conference site, [theshoreconference.com](https://theshoreconference.com/). Everything here links back to its source. Nothing syncs automatically.
 
 ## Where each fact lives

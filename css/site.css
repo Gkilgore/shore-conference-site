@@ -83,7 +83,7 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
 .brand { color: var(--ink); font-weight: 800; font-size: 1.1rem; letter-spacing: -0.01em; padding: 0.3rem 0; }
 .brand:is(:hover, :focus-visible) { color: var(--red); }
 
-/* Phones: brand and staff link on top, then four equal tabs across the full width. */
+/* Phones: brand and staff link on top, navigation below. */
 @media (max-width: 640px) {
   .site-header { grid-template-columns: 1fr auto; gap: 0.5rem; padding-block: 0.5rem 0; }
   .site-header nav {
@@ -100,6 +100,44 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
   .staff-link { grid-row: 1; grid-column: 2; min-height: 2.25rem; padding-inline: 0.6rem; font-size: 0.85rem; }
   .site-header nav { grid-row: 2; }
 }
+
+/* Resource navigation: a disclosure in normal document flow, never a focus-trapping overlay. */
+.site-header .main-navigation { flex-wrap: wrap; align-items: center; }
+.nav-more { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.nav-toggle { font: inherit; color: var(--ink); background: white; border: var(--control-frame); min-height: 3rem; cursor: pointer; }
+.nav-toggle:hover { background: var(--hover); }
+.nav-toggle:focus-visible, summary:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; box-shadow: 0 0 0 3px white; }
+@media (min-width: 801px) {
+  .nav-home { display: none !important; }
+  .site-header { grid-template-columns: 1fr auto; }
+  .site-header .main-navigation { grid-column: 1 / -1; grid-row: 2; justify-content: flex-start; }
+  .staff-link { grid-column: 2; grid-row: 1; }
+}
+@media (max-width: 800px) {
+  .site-header { grid-template-columns: minmax(0, 1fr) auto; }
+  .site-header .main-navigation { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-column: 1 / -1; grid-row: 2; margin: 0; border: 0; gap: 0.35rem; }
+  .site-header .main-navigation a { min-height: 3rem; border: var(--control-frame); box-shadow: none; padding: 0.5rem; }
+  .main-navigation .nav-more { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.35rem; }
+  .staff-link { grid-column: 2; grid-row: 1; }
+  .nav-toggle { min-width: 0; }
+}
+
+/* Public resource pages use existing colors and full frames; lists reflow on phones. */
+.resource-page { display: grid; gap: 1.25rem; }
+.resource-page > p { max-width: 75ch; line-height: 1.55; }
+.resource-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr)); gap: 1rem; margin-top: 1rem; }
+.resource-card { display: flex; flex-direction: column; align-items: flex-start; gap: 0.75rem; padding: 1rem; border: var(--frame); background: white; min-width: 0; overflow-wrap: anywhere; }
+.resource-card h2 { font-size: 1.4rem; line-height: 1.25; }
+.resource-card h3 { margin: 0; font-size: 1.15rem; }
+.resource-card p { line-height: 1.5; }
+.resource-card ul { margin: 0; padding-left: 1.4rem; line-height: 1.7; }
+.resource-card a { text-decoration: underline; }
+.resource-card a:hover { color: var(--ink); background: var(--hover); }
+.resource-meta { color: var(--muted); font-size: 0.9rem; }
+.resource-filters { align-items: end; }
+.resource-filters label { min-width: 0; }
+.resource-filters :is(input, select) { width: 100%; min-width: 0; }
+.intro h1 + p { margin-top: 0.75rem; }
 
 .hero { background: var(--paper); color: var(--ink); border-bottom: var(--frame); }
 .hero-inner { padding-block: clamp(2rem, 7vw, 5rem); }

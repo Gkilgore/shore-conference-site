@@ -1,0 +1,50 @@
+<!-- Browses sourced conference inside the conference resources without changing schedules. -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link id="page-icon" rel="icon" href="assets/logos/shore-conference.svg">
+  <title>Inside the Conference | The Shore Conference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700;800&display=swap">
+  <link rel="stylesheet" href="css/site.css">
+  <script defer src="data/school-directory.js"></script>
+  <script defer src="js/navigation.js"></script>
+  <script defer src="data/conference-resources.js"></script>
+  <script defer src="js/resource-filters.js"></script>
+  <script defer src="js/resources.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="masthead"><div class="site-header wrap">
+    <a class="brand" href="index.html">The Shore Conference</a>
+    <nav class="main-navigation" aria-label="Main navigation">
+        <a href="schools.html">Schools</a>
+        <a href="calendar.html">Schedules</a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-more" hidden>Menu</button>
+        <div class="nav-more" id="nav-more">
+          <a href="index.html" class="nav-home">Home</a>
+          <a href="divisions.html">Divisions</a>
+          <a href="tournaments.html">Tournaments</a>
+          <a href="inside.html" aria-current="page">Inside the Conference</a>
+        </div>
+      </nav>
+    <a class="staff-link" href="admin.html">Staff sign-in</a>
+  </div></header>
+  <main id="main">
+    <section class="intro"><div class="wrap"><h1>Inside the Conference</h1><p>History, leadership, documents and useful links.</p></div></section>
+    <div class="wrap section resource-page"><div class="resource-grid">
+<section class="resource-card"><h2>About the conference</h2><p>Conference history, member schools and how this site works.</p><a href="about.html">Read about the Shore Conference</a></section>
+<section class="resource-card"><h2>Schedules and divisions</h2><p>School calendars, conference games and sport-by-sport alignments.</p><a href="divisions.html">Browse division lists</a><a href="subscribe.html">Subscribe to a calendar</a></section>
+<section class="resource-card"><h2>Stories and photos</h2><p>Visit the official conference archive, student-photographer galleries and publisher coverage.</p><a href="https://theshoreconference.com/archives.aspx">Official story archive</a><a href="https://theshoreconference.com/sports/2026/5/18/photo-center-refresh.aspx">Official Photo Center</a><a href="https://theshoreconference.com/clippings.aspx">In the Press - publisher links</a></section>
+</div>
+<h2>Documents and leadership</h2><p>Original files stay on the official conference site. Check each edition's date; a listed source is not a claim that it is the latest version. Older leadership lists are labeled by season.</p>
+<form hidden id="resource-filters" class="filters resource-filters" data-kind="documents" aria-label="Filter conference documents"><label>Search documents<input type="search" name="search" placeholder="Title or topic"></label><label>Category<select name="category"><option value="">All categories</option></select></label><button class="button secondary" type="reset">Clear filters</button></form>
+<p id="resource-count" class="filter-count" role="status" aria-atomic="true"></p><div id="resource-results" class="resource-grid document-results"></div>
+<noscript><p><a href="https://theshoreconference.com/">Browse the official conference documents</a>. Enable JavaScript to search this index.</p></noscript></div>
+  </main>
+  <footer class="site-footer"><div class="wrap">The Shore Conference <span>New Jersey Athletics</span></div></footer>
+</body>
+</html>

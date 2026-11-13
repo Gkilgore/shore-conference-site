@@ -22,17 +22,23 @@
   <script defer src="data/conference-resources.js"></script>
   <script defer src="js/team-info.js"></script>
   <script defer src="js/school.js"></script>
+  <script defer src="js/navigation.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="masthead">
     <div class="site-header wrap">
       <a class="brand" href="index.html">The Shore Conference</a>
-      <nav aria-label="Main navigation">
-        <a href="index.html">Home</a>
-        <a href="schools.html" class="section-active">Schools</a>
-        <a href="calendar.html">Calendar</a>
-        <a href="about.html">About</a>
+      <nav class="main-navigation" aria-label="Main navigation">
+        <a href="schools.html">Schools</a>
+        <a href="calendar.html">Schedules</a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-more" hidden>Menu</button>
+        <div class="nav-more" id="nav-more">
+          <a href="index.html" class="nav-home">Home</a>
+          <a href="divisions.html">Divisions</a>
+          <a href="tournaments.html">Tournaments</a>
+          <a href="inside.html">Inside the Conference</a>
+        </div>
       </nav>
       <a class="staff-link" href="admin.html">Staff sign-in</a>
     </div>
@@ -85,6 +91,7 @@
         <ul id="school-updates" class="public-update-list" aria-live="polite"></ul>
       </section>
     </div>
+    <div class="wrap section"><a id="school-divisions-link" href="divisions.html">Browse division lists</a></div>
   </main>
   <footer class="site-footer"><div class="wrap">The Shore Conference <span>New Jersey Athletics</span></div></footer>
 </body>

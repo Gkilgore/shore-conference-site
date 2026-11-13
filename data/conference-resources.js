@@ -195,3 +195,134 @@ const shoreConferenceResources = (() => {
 
   return { divisionLists, schoolSites, tournamentSources };
 })();
+
+// Public resource index: links only. Source labels do not assert that a document is current.
+const shorePublicResources = {
+  "documents": [
+    {
+      "title": "History of the Shore Conference",
+      "url": "https://theshoreconference.com/documents/2022/11/3/HISTORY_OF_THE_SHORE_CONFERENCE.pdf",
+      "description": "The conference history, from its founding in 1936 through later membership and organizational changes.",
+      "category": "History",
+      "version": "Official history; posted 2022",
+      "format": "PDF",
+      "reviewed": "2026-11-12"
+    },
+    {
+      "title": "Shore Conference Constitution",
+      "url": "https://theshoreconference.com/documents/2025/4/3/SC_Constitution_2024_.pdf",
+      "description": "The adopted conference constitution. Consult the original for the full governing text.",
+      "category": "Governance",
+      "version": "Revised June 2024",
+      "format": "PDF",
+      "reviewed": "2026-11-12",
+      "note": "This is the linked edition; confirm any later amendments with the conference office."
+    },
+    {
+      "title": "Executive Committee",
+      "url": "https://theshoreconference.com/documents/2025/8/1/SC_Exec_Comm_26.pdf",
+      "description": "The published executive committee roster for 2025-26.",
+      "category": "Leadership",
+      "version": "2025-26",
+      "format": "PDF",
+      "reviewed": "2026-11-12",
+      "note": "Past-season roster. Current appointments have not been confirmed."
+    },
+    {
+      "title": "Tournament Directors",
+      "url": "https://theshoreconference.com/sports/2025/8/1/GEN_sct-directors-26.aspx",
+      "description": "Sport-by-sport tournament director information for 2025-26.",
+      "category": "Leadership",
+      "version": "2025-26",
+      "format": "Web page",
+      "reviewed": "2026-11-12",
+      "note": "Past-season list. Check the current competition regulations before contacting a director."
+    },
+    {
+      "title": "Professional Service and Lifetime Award Forms",
+      "url": "https://theshoreconference.com/documents/2022/11/3/PROFESSIONAL_SERVICE_and_LIFETIME_AWARD.pdf",
+      "description": "Award criteria and blank nomination forms. Completed nominations go to the conference, not this public page.",
+      "category": "Forms",
+      "version": "Posted November 2022",
+      "format": "PDF",
+      "reviewed": "2026-11-12",
+      "note": "Confirm the deadline and recipient with the conference office before submitting."
+    }
+  ],
+  "tournaments": [
+    {
+      "title": "2026 Field Hockey SCT Bracket",
+      "url": "https://theshoreconference.com/documents/2026/10/21/FH_SCT_2026_SCT_2026.pdf",
+      "description": "Official tournament bracket file for the field hockey SCT.",
+      "category": "Bracket",
+      "version": "2026",
+      "format": "PDF",
+      "reviewed": "2026-11-12",
+      "sport": "Field Hockey",
+      "competition": "SCT",
+      "year": 2026
+    },
+    {
+      "title": "2026 Field Hockey Coaches Cup Bracket",
+      "url": "https://theshoreconference.com/documents/2026/10/21/FH_Coaches_Cup_2026_Coaches_Cup_2026.pdf",
+      "description": "Separate field hockey competition, with its own seeded bracket.",
+      "category": "Bracket",
+      "version": "2026",
+      "format": "PDF",
+      "reviewed": "2026-11-12",
+      "sport": "Field Hockey",
+      "competition": "Coaches Cup",
+      "year": 2026,
+      "note": "The source includes a spreadsheet error. Confirm unclear bracket details with the conference office."
+    },
+    {
+      "title": "2026 Field Hockey Tournament Regulations",
+      "url": "https://theshoreconference.com/documents/2026/9/30/Shore_Conference_Field_Hockey_Tournament_Regulations.pdf",
+      "description": "Official entry and competition regulations for the field hockey tournament.",
+      "category": "Regulations",
+      "version": "2026",
+      "format": "PDF",
+      "reviewed": "2026-11-12",
+      "sport": "Field Hockey",
+      "competition": "SCT",
+      "year": 2026
+    },
+    {
+      "title": "2026 Soccer Rules and Entry Information",
+      "url": "https://theshoreconference.com/documents/2026/9/24/2026_SCT_Soccer_Rules_and_Regulations.pdf",
+      "description": "Boys' and girls' SCT regulations and entry information.",
+      "category": "Regulations",
+      "version": "2026",
+      "format": "PDF",
+      "reviewed": "2026-11-12",
+      "sport": "Soccer",
+      "competition": "SCT",
+      "year": 2026,
+      "note": "Some dates disagree with the quick chart. Confirm dates with the conference office; this page does not resolve the discrepancy."
+    },
+    {
+      "title": "2026 Girls Volleyball SCT Bracket",
+      "url": "https://theshoreconference.com/documents/2026/10/30/2026_SCT_GVB_Bracket.pdf",
+      "description": "The official girls' volleyball SCT bracket.",
+      "category": "Bracket",
+      "version": "2026",
+      "format": "PDF",
+      "reviewed": "2026-11-12",
+      "sport": "Volleyball",
+      "competition": "SCT",
+      "year": 2026
+    },
+    {
+      "title": "2026 Girls Volleyball Kim Cole Cup Bracket",
+      "url": "https://theshoreconference.com/documents/2026/10/30/2026_Girls_Volleyball_Kim_Cole_Cup_Bracket.pdf",
+      "description": "The Kim Cole Cup is listed separately from the girls' volleyball SCT.",
+      "category": "Bracket",
+      "version": "2026",
+      "format": "PDF",
+      "reviewed": "2026-11-12",
+      "sport": "Volleyball",
+      "competition": "Kim Cole Cup",
+      "year": 2026
+    }
+  ]
+};

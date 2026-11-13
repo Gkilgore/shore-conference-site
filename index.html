@@ -17,17 +17,23 @@
   <script defer src="js/supabase-config.js"></script>
   <script defer src="js/public-calendar.js"></script>
   <script defer src="js/conference.js"></script>
+  <script defer src="js/navigation.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="masthead">
     <div class="site-header wrap">
       <a class="brand" href="index.html">The Shore Conference</a>
-      <nav aria-label="Main navigation">
-        <a href="index.html" aria-current="page">Home</a>
+      <nav class="main-navigation" aria-label="Main navigation">
         <a href="schools.html">Schools</a>
-        <a href="calendar.html">Calendar</a>
-        <a href="about.html">About</a>
+        <a href="calendar.html">Schedules</a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-more" hidden>Menu</button>
+        <div class="nav-more" id="nav-more">
+          <a href="index.html" class="nav-home" aria-current="page">Home</a>
+          <a href="divisions.html">Divisions</a>
+          <a href="tournaments.html">Tournaments</a>
+          <a href="inside.html">Inside the Conference</a>
+        </div>
       </nav>
       <a class="staff-link" href="admin.html">Staff sign-in</a>
     </div>
@@ -36,7 +42,7 @@
     <section class="hero home-hero" data-logo-wall="assets/logos/shore-conference.svg">
       <div class="wrap hero-inner">
         <h1><img class="conference-logo" src="assets/logos/shore-conference.svg" alt="The Shore Conference" width="380" height="224"></h1>
-        <p class="hero-copy">Game schedules for every Shore Conference school.</p>
+        <p class="hero-copy">Schedules, divisions and resources for Shore Conference schools.</p>
         <div class="actions">
           <a class="button primary" href="schools.html">Find your school</a>
           <a class="button secondary" href="calendar.html">View calendar</a>
@@ -49,6 +55,14 @@
         <a href="calendar.html">Full calendar →</a>
       </div>
       <ul class="game-list" id="upcoming"></ul>
+    </section>
+    <section class="wrap section" aria-labelledby="resources-title">
+      <h2 id="resources-title">Conference resources</h2>
+      <div class="resource-grid">
+        <article class="resource-card"><h3>Divisions</h3><p>Find sport and season alignments, with links to the official lists.</p><a href="divisions.html">Browse divisions</a></article>
+        <article class="resource-card"><h3>Tournaments</h3><p>SCT and cup brackets, entry information and regulations.</p><a href="tournaments.html">Find tournament resources</a></article>
+        <article class="resource-card"><h3>Inside the Conference</h3><p>History, leadership, documents and official news and photo links.</p><a href="inside.html">Explore the conference</a></article>
+      </div>
     </section>
   </main>
   <footer class="site-footer"><div class="wrap">The Shore Conference <span>New Jersey Athletics</span></div></footer>
