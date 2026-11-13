@@ -30,6 +30,7 @@ function startStaffSchedule(client, invite) {
   const status = document.getElementById('schedule-status');
   const list = document.getElementById('schedule-games');
   const calendarTarget = document.getElementById('calendar');
+  const scheduleList = document.getElementById('schedule-list');
   const addGame = document.getElementById('add-calendar-game');
   const scheduleTab = document.getElementById('staff-schedule-tab');
   const gamesTab = document.getElementById('staff-games-tab');
@@ -122,9 +123,12 @@ function startStaffSchedule(client, invite) {
   let canEdit = invite.role !== 'conference_office';
   const options = (schools) => schools.map(school => new Option(school.name, school.slug));
   const dateFormat = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const scheduleDateFormat = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
   const weekdayFormat = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   const timeFormat = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' });
   let calendar;
+  let showDetails;
+  let calendarGames = [];
   let stopFollowingView = () => {};
   let schools = [];
   let allGames = [];
@@ -435,6 +439,8 @@ function startStaffSchedule(client, invite) {
 
   function showCalendar(entries, focusDate) {
     if (!calendar && !window.FullCalendar) return;
+    calendarGames = entries;
+    renderScheduleList();
     const events = entries.map(game => ({
       id: game.id,
       start: game.start_time ? game.game_date + 'T' + game.start_time : game.game_date,
@@ -444,7 +450,7 @@ function startStaffSchedule(client, invite) {
       extendedProps: { game, location: game.location, status: game.status, unpublished: unpublished.get(game.id) },
     }));
     if (!calendar) {
-      const showDetails = createGameDetails(calendarTarget);
+      showDetails = createGameDetails(calendarTarget);
       calendar = new FullCalendar.Calendar(calendarTarget, {
         initialView: preferredCalendarView(),
         headerToolbar: {
@@ -461,6 +467,12 @@ function startStaffSchedule(client, invite) {
         navLinkDayClick: 'listDay',
         eventInteractive: true,
         noEventsText: 'No saved games in this view.',
+        datesSet({ view }) {
+          const isList = view.type === 'listMonth';
+          calendarTarget.classList.toggle('staff-list-mode', isList);
+          scheduleList.hidden = !isList;
+          if (isList) renderScheduleList(view);
+        },
         eventDidMount({ el, event }) {
           el.tabIndex = 0;
           el.setAttribute('role', 'button');
@@ -497,6 +509,94 @@ function startStaffSchedule(client, invite) {
       calendar.addEventSource(events);
       if (focusDate) calendar.gotoDate(focusDate);
     });
+    if (calendar.view.type === 'listMonth') renderScheduleList(calendar.view);
+  }
+
+  function renderScheduleList(view = calendar?.view) {
+    if (!view || view.type !== 'listMonth') return;
+    const startDate = dateKey(view.activeStart);
+    const endDate = dateKey(view.activeEnd);
+    const games = calendarGames.filter(game => game.game_date >= startDate && game.game_date < endDate);
+    const table = document.createElement('table');
+    table.className = 'staff-schedule-table';
+    table.setAttribute('aria-label', 'Games by date');
+    const columns = document.createElement('colgroup');
+    for (const width of ['8%', '12%', '7%', '15%', '17%', '14%', '8%', '8%', '11%']) {
+      const column = document.createElement('col');
+      column.style.width = width;
+      columns.append(column);
+    }
+    table.innerHTML = '<thead><tr><th scope="col">Time</th><th scope="col">Team</th><th scope="col">H/A</th>' +
+      '<th scope="col">Opponent</th><th scope="col">Facility</th><th scope="col">Transportation</th>' +
+      '<th scope="col">Depart</th><th scope="col">Return</th><th scope="col">Actions</th></tr></thead>';
+    table.prepend(columns);
+    const body = document.createElement('tbody');
+    const grouped = new Map();
+    for (const game of games) {
+      if (!grouped.has(game.game_date)) grouped.set(game.game_date, []);
+      grouped.get(game.game_date).push(game);
+    }
+    for (const [date, dayGames] of grouped) {
+      const heading = document.createElement('tr');
+      heading.className = 'schedule-list-day';
+      const label = document.createElement('th');
+      label.scope = 'rowgroup';
+      label.colSpan = 9;
+      const count = document.createElement('span');
+      count.textContent = dayGames.length + (dayGames.length === 1 ? ' event' : ' events');
+      label.append(scheduleDateFormat.format(new Date(date + 'T12:00')), count);
+      heading.append(label);
+      body.append(heading);
+      for (const game of dayGames) {
+        const row = document.createElement('tr');
+        row.className = 'schedule-list-game staff-game-' + game.status.toLowerCase();
+        const opponent = schools.find(item => item.slug === game.opponent_school_id)?.name ?? game.opponent_name;
+        const values = [
+          game.start_time ? timeFormat.format(new Date(game.game_date + 'T' + game.start_time)) : 'TBD',
+          [game.teams.gender, game.teams.level, game.teams.sport].filter(Boolean).join(' '),
+          game.home_away,
+          (game.home_away === 'Home' ? 'vs ' : 'at ') + opponent,
+          game.location,
+          game.transportation?.pickup_location || '—',
+          game.transportation?.bus_departure
+            ? timeFormat.format(new Date(game.game_date + 'T' + game.transportation.bus_departure)) : '—',
+          game.transportation?.return_time
+            ? timeFormat.format(new Date(game.game_date + 'T' + game.transportation.return_time)) : '—',
+        ];
+        for (const [index, value] of values.entries()) {
+          const cell = document.createElement('td');
+          cell.textContent = value || '—';
+          if (index === 1 && unpublished.has(game.id)) {
+            const tag = document.createElement('span');
+            tag.className = 'staff-tag';
+            tag.textContent = unpublished.get(game.id) === 'Draft' ? 'Not posted' : 'Change not posted';
+            cell.append(document.createElement('br'), tag);
+          }
+          if (index === 5 && game.transportation?.notes) cell.title = game.transportation.notes;
+          row.append(cell);
+        }
+        const actions = document.createElement('td');
+        const actionButton = document.createElement('button');
+        actionButton.type = 'button';
+        actionButton.className = 'button secondary';
+        actionButton.textContent = canEdit ? 'Edit' : 'View';
+        actionButton.setAttribute('aria-label', (canEdit ? 'Edit ' : 'View ') + gameTitle(game));
+        actionButton.onclick = () => {
+          if (canEdit) openEditor(game);
+          else showDetails(calendar.getEventById(game.id));
+        };
+        actions.append(actionButton);
+        row.append(actions);
+        body.append(row);
+      }
+    }
+    table.append(body);
+    scheduleList.replaceChildren(table);
+  }
+
+  function dateKey(date) {
+    return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') +
+      '-' + String(date.getDate()).padStart(2, '0');
   }
 
   function gameTitle(game) {
