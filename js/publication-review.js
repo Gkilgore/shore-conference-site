@@ -22,7 +22,7 @@ function publicationChanges(entry, schoolNames = {}) {
   const before = entry.published, after = entry.draft;
   const opponent = game => schoolNames[game.opponent_school_id] ?? game.opponent_school_id ?? game.opponent_name ?? '';
   const fields = [
-    ['Date', game=>publicationDate(game.game_date)], ['Start time', game=>publicationTime(game.start_time)],
+    ['Date', game=>publicationDate(game.game_date)], ['Start time', game=>game.start_time ? publicationTime(game.start_time) : 'TBD'],
     ['Opponent', opponent], ['Home or away', game=>game.home_away], ['Venue', game=>game.location],
     ['Status', game=>game.status], ['Game notes', game=>game.notes],
     ['Sport', game=>game.teams?.sport], ['Team', game=>game.teams?.gender],

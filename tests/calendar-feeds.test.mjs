@@ -40,6 +40,16 @@ test('cancellation and postponement preserve event identity', () => {
   assert.match(postponed, /Postponed/);
 });
 
+test('TBD game times appear as all-day entries in school feeds', () => {
+  const schedule = project([{ ...home, start_time: null }]);
+  assert.equal(schedule.events[0].start, '2026-11-09');
+  assert.doesNotMatch(schedule.events[0].title, / · TBD/);
+  const ics = buildCalendar(schedule);
+  assert.match(ics, /DTSTART;VALUE=DATE:20261109\r\nDTEND;VALUE=DATE:20261110/);
+  assert.match(ics, /SUMMARY:Girls Varsity Soccer vs\. Colts Neck · TBD/);
+  assert.doesNotMatch(ics, /DTSTART;TZID=America\/New_York:20261109T/);
+});
+
 test('unpublished school returns an empty calendar without leaking game or bus fields', () => {
   const result = project([{ ...home, school_id: 'shore-regional' }], { scope: 'school', school: 'shore-regional' });
   assert.equal(result.published, false);
@@ -67,6 +77,7 @@ test('conference requires two published members and exact mirrored entries, and 
   assert.equal(project([{ ...home, status: 'Postponed' }, { ...away, status: 'Canceled' }], opts).events[0].status, 'Canceled');
   assert.equal(project([home], opts).events.length, 0);
   assert.equal(project([home, away], opts, schools.map(s => ({ ...s, schedule_published: false }))).events.length, 0);
+  assert.equal(project([{ ...home, start_time: null }, { ...away, start_time: null }], opts).events.length, 0);
 });
 
 test('conference omits all transportation; school projection omits staff-only fields', () => {

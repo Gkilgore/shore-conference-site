@@ -29,11 +29,12 @@ function startStaffOverview(client, { currentSchool, gameTitle, canEdit, openEdi
     const date = document.createElement('time');
     const title = document.createElement('strong');
     const details = document.createElement('span');
-    const start = new Date(game.game_date + 'T' + game.start_time);
+    const start = new Date(game.game_date + 'T12:00');
     date.dateTime = game.game_date;
     date.textContent = dateFormat.format(start);
     title.textContent = gameTitle(game);
-    details.textContent = [timeFormat.format(start), game.location].join(' · ');
+    details.textContent = [game.start_time ? timeFormat.format(new Date(game.game_date + 'T' + game.start_time)) : 'TBD',
+      game.location].join(' · ');
     const flag = document.createElement('em');
     flag.className = 'staff-reason';
     flag.textContent = reason;

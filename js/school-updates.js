@@ -107,7 +107,7 @@ function schoolPublicUpdates(schedule, schoolNames = {}) {
     .map(update => {
       const game = update.after ?? update.before;
       const opponent = schoolNames[game?.opponent_school_id]?.name ?? game?.opponent_name;
-      const details = game ? [schoolPublicDate(game.game_date), game.start_time ? schoolPublicTime(game.start_time) + ' ET' : '',
+      const details = game ? [schoolPublicDate(game.game_date), game.start_time ? schoolPublicTime(game.start_time) + ' ET' : 'TBD',
         opponent ? (game.home_away === 'Away' ? 'at ' : 'vs. ') + opponent : '', game.location].filter(Boolean).join(' · ') : '';
       return { id: update.id, headline: kinds[update.kind], occurred_at: update.occurred_at,
         team: schoolPublicTeam(update) + ' · ' + schoolSeasonLabel(update.season, update.season_year),

@@ -27,7 +27,7 @@ function startStaffTeams({ games, groups, states, links, coaches, schoolName, fi
     const now = new Date();
     return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
   }
-  const when = game => new Date(game.game_date + 'T' + game.start_time);
+  const when = game => new Date(game.game_date + 'T12:00');
 
   // A team is one sport, gender, level and season. The publish records also carry its year.
   // If those have not loaded, teams are still listed from the saved games, without a publish status.
@@ -103,7 +103,8 @@ function startStaffTeams({ games, groups, states, links, coaches, schoolName, fi
     const state = states().map.get(game.id);
     if (state) title.append(' ', node('span', state === 'Draft' ? 'Not posted' : 'Change not posted', 'staff-tag'));
     if (game.status !== 'Scheduled') title.append(' ', node('span', game.status, 'staff-tag is-' + game.status.toLowerCase()));
-    const details = node('span', [dateFormat.format(when(game)).split(',')[0], timeFormat.format(when(game)), game.location].filter(Boolean).join(' · '));
+    const time = game.start_time ? timeFormat.format(new Date(game.game_date + 'T' + game.start_time)) : 'TBD';
+    const details = node('span', [dateFormat.format(when(game)).split(',')[0], time, game.location].filter(Boolean).join(' · '));
     if (reason) details.append(node('em', reason, 'staff-reason'));
     const edit = button('Edit', 'secondary', () => openGame(game));
     edit.setAttribute('aria-label', 'Edit ' + shortDate.format(when(game)) + ' ' + opponent(game));

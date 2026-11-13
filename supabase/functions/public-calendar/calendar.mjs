@@ -18,6 +18,7 @@ export function parseOptions(url) {
 }
 
 function matchKey(game) {
+  if (!game.start_time) return null;
   const home = game.home_away === 'Home';
   return JSON.stringify([home ? game.school_id : game.opponent_school_id,
     home ? game.opponent_school_id : game.school_id, game.game_date, game.start_time, game.location,
@@ -72,7 +73,7 @@ export function publicSchedule(schools, games, options, tournamentGames = []) {
   const publicGames = games.filter(game => directory.get(game.school_id)?.schedule_published === true && game.teams);
   let selected;
   if (isConference) {
-    const members = publicGames.filter(game => directory.get(game.school_id).is_conference_member &&
+    const members = publicGames.filter(game => game.start_time && directory.get(game.school_id).is_conference_member &&
       directory.get(game.opponent_school_id)?.is_conference_member && game.school_id !== game.opponent_school_id);
     const awayByKey = new Map();
     for (const game of [...members].sort((a, b) => a.id.localeCompare(b.id))) {
@@ -107,7 +108,7 @@ export function publicSchedule(schools, games, options, tournamentGames = []) {
     const event = {
       id: game.feed_id ?? game.id, revision: game.revision, updated_at: game.updated_at,
       title: title + (game.status === 'Scheduled' ? '' : ' · ' + game.status),
-      start: game.game_date + 'T' + game.start_time, location: game.location,
+      start: game.start_time ? game.game_date + 'T' + game.start_time : game.game_date, location: game.location,
       status: game.status, notes: game.notes ?? '', school: game.school_id,
       schools: [game.school_id, game.opponent_school_id].filter(Boolean),
       sport: team.sport, gender: team.gender, level: team.level, season: team.season,
@@ -172,11 +173,16 @@ export function buildCalendar(schedule) {
     }
     const modified = new Date(game.updated_at).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
     // A repeated Eastern clock hour needs its checked UTC instant to preserve the chosen occurrence.
+    const allDay = !game.start.includes('T');
+    const nextDay = new Date(game.start.slice(0, 10) + 'T00:00:00Z');
+    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
     lines.push('BEGIN:VEVENT', 'UID:' + schedule.scope + '-' + game.id + '@shore-calendar',
       'DTSTAMP:' + modified, 'LAST-MODIFIED:' + modified, 'SEQUENCE:' + game.revision,
-      game.ics_start_utc ? 'DTSTART:' + game.ics_start_utc
-        : 'DTSTART;TZID=America/New_York:' + (game.start.length === 16 ? game.start + ':00' : game.start).replace(/[-:]/g, '').slice(0, 15),
-      'SUMMARY:' + escapeText(game.title), 'LOCATION:' + escapeText(game.location),
+      allDay ? 'DTSTART;VALUE=DATE:' + game.start.replace(/-/g, '')
+        : game.ics_start_utc ? 'DTSTART:' + game.ics_start_utc
+          : 'DTSTART;TZID=America/New_York:' + (game.start.length === 16 ? game.start + ':00' : game.start).replace(/[-:]/g, '').slice(0, 15),
+      ...(allDay ? ['DTEND;VALUE=DATE:' + nextDay.toISOString().slice(0, 10).replace(/-/g, '')] : []),
+      'SUMMARY:' + escapeText(game.title + (allDay ? ' · TBD' : '')), 'LOCATION:' + escapeText(game.location),
       'DESCRIPTION:' + escapeText(description.filter(Boolean).join('\n')),
       'STATUS:' + (game.status === 'Canceled' ? 'CANCELLED' : game.status === 'Postponed' ? 'TENTATIVE' : 'CONFIRMED'),
       'END:VEVENT');

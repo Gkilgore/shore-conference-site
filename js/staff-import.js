@@ -112,8 +112,9 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
 
     game.game_date = need('date', 'Date') && importDate(raw.date);
     if (raw.date && !game.game_date) problems.push('Use a date like 2026-11-09 or 11/9/2026');
-    game.start_time = need('start_time', 'Start time') && importTime(raw.start_time);
-    if (raw.start_time && !game.start_time) problems.push('Use a time like 3:45 PM or 15:45');
+    const timeIsTbd = raw.start_time.toLowerCase() === 'tbd';
+    game.start_time = timeIsTbd ? null : need('start_time', 'Start time') && importTime(raw.start_time);
+    if (raw.start_time && !timeIsTbd && !game.start_time) problems.push('Use a time like 3:45 PM, 15:45 or TBD');
     game.sport = need('sport', 'Sport') && raw.sport.replace(/\s+/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase());
     if (game.sport && game.sport.length > 60) problems.push('Sport is too long');
     game.gender = need('gender', 'Gender') && pickValue(raw.gender, { Boys: ['boys', 'b', 'boy', 'mens'], Girls: ['girls', 'g', 'girl', 'womens'], Coed: ['coed', 'co-ed', 'mixed'] });
@@ -151,7 +152,7 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
     const key = [game.sport, game.gender, game.level, game.game_date, game.start_time].join('|');
     let state = problems.length ? 'problem' : 'ready';
     if (state === 'ready' && existingGames().some(saved => [saved.teams.sport, saved.teams.gender, saved.teams.level,
-      saved.game_date, saved.start_time.slice(0, 5)].join('|') === key)) {
+      saved.game_date, saved.start_time?.slice(0, 5) ?? null].join('|') === key)) {
       state = 'duplicate';
       problems.push('Already on the schedule');
     } else if (state === 'ready' && seen.has(key)) {
@@ -179,7 +180,7 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
       // Show each value the way it will be saved when it could be read, otherwise as typed.
       const { game, raw } = row;
       const cells = [row.source.file, String(row.source.row), labels[row.state], game.game_date || raw.date,
-        game.start_time ? timeLabel(game.start_time) : raw.start_time,
+        game.start_time ? timeLabel(game.start_time) : 'TBD',
         [game.gender || raw.gender, game.level || raw.level, game.sport || raw.sport].filter(Boolean).join(' '),
         [game.home_away === 'Home' ? 'vs.' : game.home_away === 'Away' ? 'at' : raw.home_away, raw.opponent]
           .filter(Boolean).join(' '),

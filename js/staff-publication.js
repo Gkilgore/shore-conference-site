@@ -106,7 +106,7 @@ function startStaffPublication(client, currentSchool, { canEdit = () => true, sc
         const row = document.createElement('li');
         const title = document.createElement('strong');
         const opponent = names[game.opponent_school_id] ?? game.opponent_name ?? game.opponent_school_id ?? 'Opponent';
-        title.textContent = publicationDate(game.game_date) + ' · ' + publicationTime(game.start_time) +
+        title.textContent = publicationDate(game.game_date) + ' · ' + (game.start_time ? publicationTime(game.start_time) : 'TBD') +
           (game.home_away === 'Home' ? ' vs. ' : ' at ') + opponent;
         const venue = document.createElement('p');
         venue.textContent = [game.location, game.status].filter(Boolean).join(' · ');
