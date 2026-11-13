@@ -1,9 +1,10 @@
 // Imports games from a CSV file: reads it, previews every row, flags problems, then saves the ready rows.
 const importColumns = ['date', 'start_time', 'sport', 'gender', 'level', 'season', 'home_away', 'opponent',
-  'location', 'status', 'bus_departure', 'pickup_location', 'return_time', 'transport_notes', 'notes'];
+  'location', 'status', 'bus_departure', 'pickup_location', 'early_dismissal_time', 'return_time', 'transport_notes', 'notes'];
 const importAliases = {
   game_date: 'date', time: 'start_time', start: 'start_time', 'home/away': 'home_away', home_or_away: 'home_away',
   venue: 'location', 'bus departure': 'bus_departure', bus: 'bus_departure', pickup: 'pickup_location',
+  'early dismissal': 'early_dismissal_time', 'early dismissal time': 'early_dismissal_time',
   return: 'return_time', transportation_notes: 'transport_notes', game_notes: 'notes',
 };
 
@@ -140,7 +141,8 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
       ? pickValue(raw.status, { Scheduled: ['scheduled'], Postponed: ['postponed'], Canceled: ['canceled', 'cancelled'] })
       : 'Scheduled';
     if (!game.status) problems.push('Status must be Scheduled, Postponed or Canceled');
-    for (const [name, label] of [['bus_departure', 'Bus departure'], ['return_time', 'Return time']]) {
+    for (const [name, label] of [['bus_departure', 'Bus departure'], ['early_dismissal_time', 'Early dismissal'],
+      ['return_time', 'Return time']]) {
       game[name] = raw[name] ? importTime(raw[name]) : null;
       if (raw[name] && !game[name]) problems.push(label + ' isn’t a time');
     }
@@ -215,8 +217,8 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
 
   template.onclick = () => {
     const lines = [importColumns.join(','),
-      '2026-11-09,3:45 PM,Soccer,Girls,Varsity,Fall,Home,Colts Neck,Marlboro Turf Field,Scheduled,,,,,',
-      '2026-11-12,4:00 PM,Field Hockey,Girls,JV,Fall,Away,Shore Regional,Shore Regional Turf Field,Scheduled,3:00 PM,Front loop,6:30 PM,,'];
+      '2026-11-09,3:45 PM,Soccer,Girls,Varsity,Fall,Home,Colts Neck,Marlboro Turf Field,Scheduled,,,,,,',
+      '2026-11-12,4:00 PM,Field Hockey,Girls,JV,Fall,Away,Shore Regional,Shore Regional Turf Field,Scheduled,3:00 PM,Front loop,1:30 PM,6:30 PM,,'];
     const link = document.createElement('a');
     link.href = URL.createObjectURL(new Blob([lines.join('\r\n') + '\r\n'], { type: 'text/csv' }));
     link.download = 'game-import-template.csv';

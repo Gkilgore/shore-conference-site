@@ -174,7 +174,7 @@
 #workspace #calendar .fc-list-day-cushion { padding: 0.65rem 1rem; }
 #workspace #calendar .fc-daygrid-event.staff-game:is(:hover, :focus-visible) { background: var(--ink); color: white; }
 #workspace #calendar .fc-list-event.staff-game:is(:hover, :focus-visible) td { background: var(--school-accent); color: var(--accent-ink); }
-#workspace #calendar.staff-list-mode .fc-view-harness { display: none; }
+#workspace #calendar.staff-table-mode .fc-view-harness { display: none; }
 .schedule-list-wrap { max-width: 100%; overflow-x: auto; background: white; border: var(--frame); }
 .staff-schedule-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 0.84rem; }
 .staff-schedule-table th, .staff-schedule-table td {

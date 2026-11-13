@@ -1,5 +1,6 @@
 -- Test project only: saving and deleting post straight away, older private games stay private,
 -- a taken-down team is not brought back, other schools are refused, no coach emails queue. Rolls back.
+-- Run after 20261130000100_early_dismissal.sql.
 begin;
 do $$
 declare actor uuid := gen_random_uuid(); held uuid := gen_random_uuid(); down uuid := gen_random_uuid();
@@ -30,11 +31,15 @@ set local role authenticated;
 do $$
 declare base jsonb := jsonb_build_object('school_id','marlboro','sport','Post Test Soccer','gender','Boys','level','Varsity',
     'season','Fall','game_date','2031-09-10','start_time','16:00','home_away','Home','opponent_name','Test Visitor',
-    'location','Test field','status','Scheduled');
+    'location','Test field','status','Scheduled','early_dismissal_time','13:15');
   saved uuid; second uuid; third uuid; game_revision integer; public_revision integer; rejected boolean;
 begin
   -- A new game is public as soon as it saves, and its new team is posted.
   saved := public.save_staff_game(base);
+  if (select early_dismissal_time from public.transportation where game_id=saved) is distinct from '13:15'::time then
+    raise exception 'Early dismissal was not saved'; end if;
+  if (select payload->'transportation' ? 'early_dismissal_time' from public.published_games where id=saved) then
+    raise exception 'Early dismissal was exposed in the public schedule'; end if;
   if not exists(select 1 from public.published_games where id=saved and payload->>'start_time'='16:00:00') then
     raise exception 'A new game was not posted'; end if;
   if not exists(select 1 from public.team_publications p join public.games g on g.team_id=p.team_id

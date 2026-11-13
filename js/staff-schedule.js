@@ -468,10 +468,10 @@ function startStaffSchedule(client, invite) {
         eventInteractive: true,
         noEventsText: 'No saved games in this view.',
         datesSet({ view }) {
-          const isList = view.type === 'listMonth';
-          calendarTarget.classList.toggle('staff-list-mode', isList);
-          scheduleList.hidden = !isList;
-          if (isList) renderScheduleList(view);
+          const usesScheduleTable = view.type === 'listMonth' || view.type === 'listDay';
+          calendarTarget.classList.toggle('staff-table-mode', usesScheduleTable);
+          scheduleList.hidden = !usesScheduleTable;
+          if (usesScheduleTable) renderScheduleList(view);
         },
         eventDidMount({ el, event }) {
           el.tabIndex = 0;
@@ -509,11 +509,11 @@ function startStaffSchedule(client, invite) {
       calendar.addEventSource(events);
       if (focusDate) calendar.gotoDate(focusDate);
     });
-    if (calendar.view.type === 'listMonth') renderScheduleList(calendar.view);
+    if (calendar.view.type === 'listMonth' || calendar.view.type === 'listDay') renderScheduleList(calendar.view);
   }
 
   function renderScheduleList(view = calendar?.view) {
-    if (!view || view.type !== 'listMonth') return;
+    if (!view || (view.type !== 'listMonth' && view.type !== 'listDay')) return;
     const startDate = dateKey(view.activeStart);
     const endDate = dateKey(view.activeEnd);
     const games = calendarGames.filter(game => game.game_date >= startDate && game.game_date < endDate);
@@ -521,14 +521,14 @@ function startStaffSchedule(client, invite) {
     table.className = 'staff-schedule-table';
     table.setAttribute('aria-label', 'Games by date');
     const columns = document.createElement('colgroup');
-    for (const width of ['8%', '12%', '7%', '15%', '17%', '14%', '8%', '8%', '11%']) {
+    for (const width of ['8%', '12%', '6%', '14%', '15%', '12%', '7%', '15%', '11%']) {
       const column = document.createElement('col');
       column.style.width = width;
       columns.append(column);
     }
     table.innerHTML = '<thead><tr><th scope="col">Time</th><th scope="col">Team</th><th scope="col">H/A</th>' +
       '<th scope="col">Opponent</th><th scope="col">Facility</th><th scope="col">Transportation</th>' +
-      '<th scope="col">Depart</th><th scope="col">Return</th><th scope="col">Actions</th></tr></thead>';
+      '<th scope="col">Depart</th><th scope="col">Early Dismissal</th><th scope="col">Actions</th></tr></thead>';
     table.prepend(columns);
     const body = document.createElement('tbody');
     const grouped = new Map();
@@ -560,8 +560,8 @@ function startStaffSchedule(client, invite) {
           game.transportation?.pickup_location || '—',
           game.transportation?.bus_departure
             ? timeFormat.format(new Date(game.game_date + 'T' + game.transportation.bus_departure)) : '—',
-          game.transportation?.return_time
-            ? timeFormat.format(new Date(game.game_date + 'T' + game.transportation.return_time)) : '—',
+          game.transportation?.early_dismissal_time
+            ? timeFormat.format(new Date(game.game_date + 'T' + game.transportation.early_dismissal_time)) : '—',
         ];
         for (const [index, value] of values.entries()) {
           const cell = document.createElement('td');

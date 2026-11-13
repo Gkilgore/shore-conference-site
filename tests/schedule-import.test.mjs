@@ -8,7 +8,7 @@ vm.runInContext(readFileSync(new URL('../js/staff-import.js',import.meta.url),'u
 const header='date,start_time,sport,gender,level,home_away,opponent,location';
 const row='2031-09-01,3:00 PM,Soccer,Girls,Varsity,Home,Visitor,Field';
 
-function mountImport(existingGames = []) {
+function mountImport(existingGames = [], client = {}) {
   const elements = new Map();
   const makeElement = tag => ({
     tag, children: [], hidden: false, disabled: false, textContent: '',
@@ -24,9 +24,9 @@ function mountImport(existingGames = []) {
     },
     createElement: makeElement,
   };
-  const context = vm.createContext({document, seasonOf: () => 'Fall'});
+  const context = vm.createContext({document, seasonOf: () => 'Fall', crypto: {randomUUID: () => 'import-batch'}});
   vm.runInContext(readFileSync(new URL('../js/staff-import.js',import.meta.url),'utf8'), context);
-  const controller = context.startStaffImport({}, {
+  const controller = context.startStaffImport(client, {
     currentSchool: () => ({slug:'marlboro'}), schools: () => [], existingGames: () => existingGames,
     onImported() {},
   });
@@ -66,6 +66,29 @@ test('TBD rows are compared safely with games already saved without a time', asy
   await input.onchange();
   const [row] = elements.get('import-preview').tBodies[0].children;
   assert.equal(row.className, 'is-duplicate');
+  controller.stop();
+});
+
+test('CSV import saves an optional early-dismissal time and flags an invalid one', async () => {
+  const saved = [];
+  const {controller, elements} = mountImport([], {
+    async rpc(name, {input}) {
+      assert.equal(name, 'save_staff_game');
+      saved.push(input);
+      return {data: 'saved-game', error: null};
+    },
+  });
+  const input = elements.get('import-file');
+  const columns = header + ',early_dismissal_time';
+  input.files = [new File([
+    columns + '\n' + row + ',1:30 PM\n' +
+    '2031-09-02,4:00 PM,Tennis,Boys,Varsity,Home,Visitor,Courts,5:75 PM',
+  ], 'dismissal.csv')];
+  await input.onchange();
+  await elements.get('import-save').onclick();
+  assert.equal(saved.length, 1);
+  assert.equal(saved[0].early_dismissal_time, '13:30');
+  assert.ok(elements.get('import-preview').tBodies[0].children.some(item => item.className === 'is-problem'));
   controller.stop();
 });
 

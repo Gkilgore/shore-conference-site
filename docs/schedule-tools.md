@@ -35,7 +35,11 @@ A matched game that either school publishes as Postponed or Canceled stays on th
 
 Use **Import games** on the Games tab, then **Download template**. The columns are:
 
-`date, start_time, sport, gender, level, season, home_away, opponent, location, status, bus_departure, pickup_location, return_time, transport_notes, notes`
+`date, start_time, sport, gender, level, season, home_away, opponent, location, status, bus_departure, pickup_location, early_dismissal_time, return_time, transport_notes, notes`
+
+Early Dismissal is optional, can be entered in the game editor or CSV, and appears in the AD's List and Day tables. Return time remains available in the game editor and CSV.
+
+`supabase/migrations/20261130000100_early_dismissal.sql` adds the private time field and updates game saving. Apply it only to the test project; it has not been applied to any Supabase project.
 
 - **Required:** date, start time, sport, gender, level, home or away, opponent, and location.
 - **Dates:** 2026-11-09 or 11/9/2026.
@@ -64,7 +68,7 @@ Each school keeps a venue list under **School settings**. In the game editor, Ve
 
 ## Sample games for testing
 
-`data/sample-data.js` holds the prototype's sample games in the same shape an AD saves: home or away, season, game notes, bus departure, pickup, return time, and bus confirmed. Dates count from today. The games cover:
+`data/sample-data.js` holds the prototype's public sample games: home or away, season, game notes, bus departure, pickup, return time, and bus confirmed. Early-dismissal times are AD-only and are not included in public prototype data. Dates count from today. The games cover:
 
 - games that link to the conference calendar
 - games that don't link: a different time, a different location, or the other school never entered it

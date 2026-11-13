@@ -97,12 +97,16 @@ document.querySelector('#calendar .fc-listMonth-button').click();
 await new Promise(resolve => setTimeout(resolve, 100));
 const scheduleTable = document.querySelector('#schedule-list table');
 check('list view shows the schedule table', !get('schedule-list').hidden && scheduleTable);
-check('list view has aligned schedule columns', ['Time', 'Team', 'H/A', 'Opponent', 'Facility', 'Transportation', 'Depart', 'Return', 'Actions']
+check('list view has aligned schedule columns', ['Time', 'Team', 'H/A', 'Opponent', 'Facility', 'Transportation', 'Depart', 'Early Dismissal', 'Actions']
   .every(label => scheduleTable.tHead.textContent.includes(label)));
+check('AD game editor has an early dismissal time field', document.querySelector('#game-form [name="early_dismissal_time"]')?.type === 'time');
 check('list table uses the available width', scheduleTable.getBoundingClientRect().width >= get('schedule-list').clientWidth);
+document.querySelector('#calendar .fc-listDay-button').click();
+await new Promise(resolve => setTimeout(resolve, 100));
+check('day view uses the same schedule table', !get('schedule-list').hidden && document.querySelector('#schedule-list table')?.tHead.textContent === scheduleTable.tHead.textContent);
 document.querySelector('#calendar .fc-dayGridMonth-button').click();
 await new Promise(resolve => setTimeout(resolve, 100));
-check('month view hides the schedule table', get('schedule-list').hidden);
+check('month view hides the schedule table', get('schedule-list').hidden && !get('calendar').classList.contains('staff-table-mode'));
 check('no script errors', errors.length === 0);
 const result = document.createElement('pre'); result.id = 'qa-results'; result.hidden = true;
 result.textContent = JSON.stringify({width:innerWidth, checks, errors}); document.body.append(result);
