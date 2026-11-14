@@ -98,6 +98,28 @@ function applyUploads(publicResources, records) {
   return publicResources;
 }
 
+// One school year on the Archive tab: a closed section that opens to show its files. A year someone has
+// opened stays open if the list is drawn again.
+function archiveYear(label, list) {
+  const open = [...document.querySelectorAll('#archive-list .archive-year[open]')]
+    .some(section => section.dataset.year === label);
+  const section = document.createElement('details');
+  section.className = 'archive-year';
+  section.dataset.year = label;
+  section.open = open;
+  const summary = document.createElement('summary');
+  const count = document.createElement('span');
+  const files = list.children.length;
+  count.className = 'doc-meta';
+  count.textContent = files + (files === 1 ? ' file' : ' files');
+  const pause = document.createElement('span');
+  pause.className = 'visually-hidden';
+  pause.textContent = ', ';
+  summary.append(label, pause, count);
+  section.append(summary, list);
+  return section;
+}
+
 // On the Information page: add the new files before the tabs are drawn, then list everything by year.
 if (typeof document !== 'undefined' && document.getElementById('archive-list')) {
   const records = allDocuments(shoreDocumentArchive, shorePublicResources, shoreConferenceResources.divisionLists);
@@ -119,6 +141,6 @@ if (typeof document !== 'undefined' && document.getElementById('archive-list')) 
         list.append(item);
       }
     }
-    return [node('h3', group.label, 'eyebrow'), list];
+    return [archiveYear(group.label, list)];
   }));
 }

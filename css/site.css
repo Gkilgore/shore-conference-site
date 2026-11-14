@@ -178,6 +178,17 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
 .doc-list a { justify-self: start; font-size: 1.08rem; font-weight: 700; }
 .doc-list a:is(:hover, :focus-visible) { background: var(--hover); }
 .doc-meta { font-size: 0.88rem; color: var(--muted); }
+/* Archive tab: one closed section per school year; a click opens it to that year's files. */
+.archive-year { border: var(--frame); background: white; }
+.archive-year summary { display: flex; align-items: baseline; gap: 0.75rem; padding: 0.8rem 0.9rem; font-size: 1.1rem; font-weight: 700; cursor: pointer; list-style: none; }
+.archive-year summary::-webkit-details-marker { display: none; }
+.archive-year summary::before { content: '+'; width: 1ch; }
+.archive-year[open] summary::before { content: '\2212'; }
+.archive-year summary .doc-meta { margin-left: auto; font-weight: 400; }
+.archive-year summary:is(:hover, :focus-visible) { background: var(--hover); }
+.archive-year summary:focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; }
+.archive-year[open] summary { border-bottom: var(--frame); }
+.archive-year .doc-list { padding: 0; }
 /* Saved copies of conference lists: full-frame tables that scroll sideways on phones. */
 .archive-page, .archive-content { display: grid; gap: 1rem; }
 .archive-scroll { overflow-x: auto; border: var(--frame); background: white; }
