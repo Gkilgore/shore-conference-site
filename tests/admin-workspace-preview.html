@@ -35,15 +35,45 @@ const documents = [
   {id:'11111111-2222-3333-4444-555555555555', title:'2027 Soccer Rules and Entry Information', type:'Tournament regulations', sport:'Soccer', school_year:'2027-28', file_path:'2027-28/rules-ab12cd34.pdf', description:'SCT regulations and entry information for boys and girls soccer.', note:null, added:'2026-11-14'},
   {id:'11111111-2222-3333-4444-666666666666', title:'Executive Committee', type:'Leadership', sport:'', school_year:'2026-27', file_path:'2026-27/exec-ab12cd35.pdf', description:'The executive committee roster for 2026-27.', note:null, added:'2026-11-14'},
 ];
+const sampleDate = new Date();
+sampleDate.setDate(sampleDate.getDate() + 7);
+const sampleGame = {
+  id:'22222222-3333-4444-8555-666666666666', revision:1, school_id:'marlboro',
+  team_id:'33333333-4444-4555-8666-777777777777',
+  game_date:[sampleDate.getFullYear(), String(sampleDate.getMonth()+1).padStart(2,'0'), String(sampleDate.getDate()).padStart(2,'0')].join('-'),
+  start_time:'17:00:00', home_away:'Home', opponent_school_id:'colts-neck', opponent_name:null,
+  location:'Marlboro High School', status:'Scheduled', notes:null,
+  teams:{sport:'Soccer',gender:'Girls',level:'Varsity',season:'Fall'},
+  transportation:{bus_departure:'14:30:00',pickup_location:'Main entrance',early_dismissal_time:null,return_time:null,notes:null},
+};
+const saveCalls = [];
+const transportationEmails = [];
 const client = {
   storage: {from: () => ({upload: async () => ({}), remove: async () => ({})})},
+  functions: {invoke: async (name, options) => { transportationEmails.push({name,options}); return {data:{sent:true}}; }},
   from(table) {
-    const result = {data: table === 'schools' ? schools : table === 'conference_documents' ? documents : []};
+    const result = {data: table === 'schools' ? schools : table === 'conference_documents' ? documents : table === 'games' ? [sampleGame] : []};
     const query = {then: callback => Promise.resolve(result).then(callback)};
     for (const name of ['select','order','eq','maybeSingle','insert','delete']) query[name] = () => query;
     return query;
   },
-  async rpc(name) { return {data: name === 'list_staff_access' ? {actor_role:'site_admin', accounts} : []}; },
+  async rpc(name, args) {
+    if (name === 'list_staff_access') return {data:{actor_role:'site_admin',accounts}};
+    if (name === 'save_staff_game') {
+      saveCalls.push(args.input);
+      Object.assign(sampleGame, {
+        ...args.input,
+        revision:sampleGame.revision+1,
+        teams:{sport:args.input.sport,gender:args.input.gender,level:args.input.level,season:args.input.season},
+        transportation:{
+          bus_departure:args.input.bus_departure,pickup_location:args.input.pickup_location,
+          early_dismissal_time:args.input.early_dismissal_time,return_time:args.input.return_time,notes:args.input.transport_notes,
+        },
+      });
+      return {data:sampleGame.id};
+    }
+    return {data:[]};
+  },
 };
 startStaffSchedule(client, {role:'site_admin', email:'admin@example.org'});
 await new Promise(resolve => setTimeout(resolve, 500));
@@ -96,6 +126,9 @@ get('staff-access-tab').click();
 await new Promise(resolve => setTimeout(resolve, 100));
 const selected = new URLSearchParams(location.search).get('tab');
 if (selected) get('staff-' + selected + '-tab').click();
+get('view-as').value = 'ad:marlboro';
+get('view-as').dispatchEvent(new Event('change'));
+await new Promise(resolve => setTimeout(resolve, 200));
 get('staff-schedule-tab').click();
 await new Promise(resolve => setTimeout(resolve, 100));
 document.querySelector('#calendar .fc-listMonth-button').click();
@@ -108,6 +141,29 @@ check('AD game editor has an early dismissal time field', document.querySelector
 check('game editor has no transportation confirmation field',
   !document.querySelector('#game-form [name="bus_confirmed"]') && !document.getElementById('tournament-bus-confirmed'));
 check('list table uses the available width', scheduleTable.getBoundingClientRect().width >= get('schedule-list').clientWidth);
+const gameTimeButton = scheduleTable.querySelector('.quick-edit-time[aria-label^="Edit game time"]');
+check('AD list has an inline game-time control', Boolean(gameTimeButton));
+gameTimeButton?.click();
+const gameTimeInput = scheduleTable.querySelector('input[type="time"]');
+check('game-time control opens an inline time field', Boolean(gameTimeInput));
+if (gameTimeInput) {
+  gameTimeInput.value = '18:15';
+  gameTimeInput.parentElement.querySelector('button').click();
+  await new Promise(resolve => setTimeout(resolve, 200));
+}
+check('game-time save preserves the other game and bus details',
+  saveCalls.at(-1)?.start_time === '18:15' && saveCalls.at(-1)?.bus_departure === '14:30:00' &&
+  saveCalls.at(-1)?.location === 'Marlboro High School');
+const busTimeButton = document.querySelector('#schedule-list .quick-edit-time[aria-label^="Edit bus departure"]');
+busTimeButton?.click();
+const busTimeInput = document.querySelector('#schedule-list input[type="time"]');
+if (busTimeInput) {
+  busTimeInput.value = '15:00';
+  busTimeInput.parentElement.querySelector('button').click();
+  await new Promise(resolve => setTimeout(resolve, 200));
+}
+check('bus-time quick edit saves and sends the transportation email',
+  saveCalls.at(-1)?.bus_departure === '15:00' && transportationEmails.length === 2);
 document.querySelector('#calendar .fc-listDay-button').click();
 await new Promise(resolve => setTimeout(resolve, 100));
 check('day view uses the same schedule table', !get('schedule-list').hidden && document.querySelector('#schedule-list table')?.tHead.textContent === scheduleTable.tHead.textContent);

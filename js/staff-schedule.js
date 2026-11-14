@@ -571,7 +571,9 @@ function startStaffSchedule(client, invite) {
         ];
         for (const [index, value] of values.entries()) {
           const cell = document.createElement('td');
-          cell.textContent = value || '—';
+          if (index === 0) renderQuickTime(cell, game, 'start_time');
+          else if (index === 6 && canEdit) renderQuickTime(cell, game, 'bus_departure');
+          else cell.textContent = value || '—';
           if (index === 1 && unpublished.has(game.id)) {
             const tag = document.createElement('span');
             tag.className = 'staff-tag';
@@ -598,6 +600,143 @@ function startStaffSchedule(client, invite) {
     }
     table.append(body);
     scheduleList.replaceChildren(table);
+  }
+
+  function renderQuickTime(cell, game, field) {
+    const value = field === 'start_time' ? game.start_time : game.transportation?.bus_departure;
+    if (!canEdit) {
+      cell.textContent = value ? timeFormat.format(new Date(game.game_date + 'T' + value)) : '—';
+      return;
+    }
+    const label = field === 'start_time' ? 'game time' : 'bus departure';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'button secondary quick-edit-time';
+    button.textContent = value
+      ? timeFormat.format(new Date(game.game_date + 'T' + value))
+      : field === 'start_time' ? 'TBD' : 'Set';
+    button.setAttribute('aria-label', 'Edit ' + label + ' for ' + gameTitle(game));
+    button.onclick = () => openQuickTimeEditor(cell, game, field);
+    cell.replaceChildren(button);
+  }
+
+  function openQuickTimeEditor(cell, game, field) {
+    const label = field === 'start_time' ? 'game time' : 'bus departure';
+    const value = field === 'start_time' ? game.start_time : game.transportation?.bus_departure;
+    const input = document.createElement('input');
+    input.type = 'time';
+    input.value = value?.slice(0, 5) ?? '';
+    input.setAttribute('aria-label', label + ' for ' + gameTitle(game));
+
+    const controls = document.createElement('div');
+    controls.className = 'quick-edit-controls';
+    const save = document.createElement('button');
+    save.type = 'button';
+    save.className = 'button primary';
+    save.textContent = 'Save';
+    const cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.className = 'button secondary';
+    cancel.textContent = 'Cancel';
+    const message = document.createElement('span');
+    message.className = 'quick-edit-message';
+    message.setAttribute('role', 'status');
+    if (game.status === 'Scheduled' && game.transportation?.bus_departure) {
+      message.textContent = 'Saving may email the transportation contact.';
+    }
+    controls.append(save, cancel, message);
+    cell.replaceChildren(input, controls);
+    input.focus();
+
+    cancel.onclick = () => renderQuickTime(cell, game, field);
+    save.onclick = async () => {
+      const nextValue = input.value || null;
+      const currentValue = (field === 'start_time' ? game.start_time : game.transportation?.bus_departure)?.slice(0, 5) ?? null;
+      if (nextValue === currentValue) {
+        renderQuickTime(cell, game, field);
+        return;
+      }
+      save.disabled = true;
+      cancel.disabled = true;
+      input.disabled = true;
+      message.textContent = 'Saving…';
+      const inputValues = quickTimeSaveValues(game, field, nextValue);
+      const { data: savedId, error } = await client.rpc('save_staff_game', { input: inputValues });
+      if (stopped) return;
+      if (error) {
+        save.disabled = false;
+        cancel.disabled = false;
+        input.disabled = false;
+        message.textContent = error.code === '40001'
+          ? 'This game changed elsewhere. Refreshing the schedule…'
+          : 'The time wasn’t saved. Try again.';
+        if (error.code === '40001') {
+          await loadGames();
+          feedback('This game changed elsewhere. The schedule was refreshed; try the time edit again.');
+        }
+        return;
+      }
+
+      message.textContent = 'Posting…';
+      const completion = await finishGameSave(savedId, inputValues, () => { message.textContent = 'Sending transportation email…'; });
+      if (!completion || stopped) return;
+      await loadGames(game.game_date, false, savedId);
+      if (stopped) return;
+      const { posted, transportationEmail } = completion;
+      const savedMessage = !posted.ok ? 'Time saved, but it didn’t post. Open Teams and choose Post schedule for its team.'
+        : posted.held.length ? 'Time saved, but not posted. ' + posted.held[0] +
+          ' has other games that aren’t public. Open Teams and choose Post schedule to post them together.'
+          : 'Time updated.';
+      feedback(savedMessage + (transportationEmail?.ok ? ' Transportation email sent.'
+        : transportationEmail ? ' Transportation email not sent: ' + transportationEmail.message : ''));
+    };
+    input.onkeydown = event => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        renderQuickTime(cell, game, field);
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        save.click();
+      }
+    };
+  }
+
+  function quickTimeSaveValues(game, field, value) {
+    const transport = game.transportation ?? {};
+    return {
+      school_id: selector.value,
+      id: game.id,
+      revision: game.revision,
+      sport: game.teams.sport,
+      gender: game.teams.gender,
+      level: game.teams.level,
+      season: game.teams.season,
+      game_date: game.game_date,
+      start_time: field === 'start_time' ? value || null : game.start_time,
+      home_away: game.home_away,
+      opponent_school_id: game.opponent_school_id,
+      opponent_name: game.opponent_name,
+      location: game.location,
+      status: game.status,
+      notes: game.notes,
+      bus_departure: field === 'bus_departure' ? value || null : transport.bus_departure,
+      pickup_location: transport.pickup_location,
+      early_dismissal_time: transport.early_dismissal_time,
+      return_time: transport.return_time,
+      transport_notes: transport.notes,
+    };
+  }
+
+  async function finishGameSave(savedId, input, onEmailStart = () => {}) {
+    const posted = await publication.post([savedId]);
+    if (stopped) return null;
+    let transportationEmail = null;
+    if (input.status === 'Scheduled' && input.bus_departure) {
+      onEmailStart();
+      transportationEmail = await transportation.sendForSavedGame(savedId);
+      if (stopped) return null;
+    }
+    return { posted, transportationEmail };
   }
 
   function dateKey(date) {
@@ -879,17 +1018,11 @@ function startStaffSchedule(client, invite) {
     const { data: savedId, error } = await client.rpc('save_staff_game', { input });
     if (stopped) return;
     // Saving is only half of it: copy the saved game to the public schedule before reporting anything.
-    let posted = null;
+    let completion = null;
     if (!error) {
       formStatus.textContent = 'Posting…';
-      posted = await publication.post([savedId]);
-      if (stopped) return;
-    }
-    let transportationEmail = null;
-    if (!error && input.status === 'Scheduled' && input.bus_departure) {
-      formStatus.textContent = 'Sending transportation email…';
-      transportationEmail = await transportation.sendForSavedGame(savedId);
-      if (stopped) return;
+      completion = await finishGameSave(savedId, input, () => { formStatus.textContent = 'Sending transportation email…'; });
+      if (!completion || stopped) return;
     }
     saveButton.disabled = false;
     fieldsets.forEach(fieldset => fieldset.disabled = false);
@@ -913,6 +1046,7 @@ function startStaffSchedule(client, invite) {
     }
     edit(null);
     leaveEditor();
+    const { posted, transportationEmail } = completion;
     const savedMessage = !posted.ok ? 'Game saved, but it didn’t post. Open Teams and choose Post schedule for its team.'
       : posted.held.length ? 'Game saved, but not posted. ' + posted.held[0] + ' has other games that aren’t public. Open Teams and choose Post schedule to post them together.'
       : 'Game posted.';
