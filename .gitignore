@@ -1,2 +1,6 @@
 .env
 .DS_Store
+
+# Local editor settings and screenshots from design reviews; not site files.
+.claude/
+artifacts/
