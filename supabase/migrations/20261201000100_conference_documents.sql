@@ -1,4 +1,4 @@
--- NOT YET APPLIED. Apply and permission-test in the test project first; Greg applies it to the live project.
+-- Applied and permission-tested in test project jrtcyihpdrcnhxgproyw on 2026-11-14. Greg applies it to the live project.
 -- Conference documents: PDFs that conference admins and site admins upload from the staff Documents tab.
 -- These are public files (alignments, tournament regulations, the constitution), so anyone can read the
 -- list and open the files. Only conference admins and site admins can add, edit or remove them. ADs cannot.

@@ -73,7 +73,7 @@ Uploaded files are kept in Supabase, not in this repository:
 
 The public pages read the table when they load and add those files to the ones saved in the repository. If Supabase cannot be reached, the pages still show the saved files.
 
-**The migration has not been applied.** Until it is, the tab says uploads are off. Apply it to the test project and run the permission test first; Greg applies it to the live project.
+**Applied and permission-tested on November 14, 2026** in project `jrtcyihpdrcnhxgproyw`. Greg confirmed this is the project the published website should use. The permission test passed and rolled back its fixtures.
 
 ### Which way to add a file
 
