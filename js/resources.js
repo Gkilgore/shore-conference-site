@@ -1,4 +1,4 @@
-// Runs the Resources page: left-hand tabs, the division pop-up, and the tournament and document lists.
+// Runs the Information page (resources.html): left-hand tabs, the division pop-up, and the tournament and document lists.
 (() => {
   const tabs = [...document.querySelectorAll('.side-tab')];
   if (!tabs.length) return;

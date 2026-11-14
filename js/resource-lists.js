@@ -1,4 +1,4 @@
-// Groups and labels the division lists for the Resources page. No page access, so tests can run it.
+// Groups and labels the division lists for the Information page. No page access, so tests can run it.
 function seasonLabel(list) {
   return list.season === 'Winter' ? 'Winter ' + list.year + '–' + String(list.year + 1).slice(2) : list.season + ' ' + list.year;
 }
