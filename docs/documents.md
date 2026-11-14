@@ -54,6 +54,29 @@ node tools/check-alignment.mjs sheet.csv
 
 It flags a school that is not in the directory or is placed in two divisions, then prints each team's divisions. It changes nothing. The full division breakdowns are merged, so a checked sheet is now copied into the Divisions tab by hand, following [conference resources](conference-resources.md): one row per school there becomes one entry, and two schools that play as one team share an entry (`'brick-township/brick-memorial'`). A tool that writes the list straight from the sheet is not built yet.
 
-## Not built
+## Staff Documents tab
 
-A screen for the conference office to upload files themselves. It would need file storage, permission rules and an approval step in Supabase.
+Conference admins can upload PDFs themselves on the staff page, under **Documents**. Site admins reach it through the Conference office view, the same way as Tournaments. ADs do not see it.
+
+- The form asks for the PDF, a title, a type, an optional sport, the school year, a one-sentence description and an optional note. Files are PDF only, up to 10 MB.
+- A file shows on the public Information page as soon as it is uploaded. There is no draft step.
+- **Remove** takes two clicks and takes the file off the public site.
+- Uploaded files follow the same edition rule as imported ones: same sport and same title apart from the year.
+
+### Where uploaded files live
+
+Uploaded files are kept in Supabase, not in this repository:
+
+- The list is the `conference_documents` table. Anyone can read it. Only conference admins and site admins can add, edit or remove rows. The public cannot see who uploaded a file.
+- The PDFs are in the `conference-documents` storage bucket, in one folder per school year.
+- The rules are in `supabase/migrations/20261201000100_conference_documents.sql`, with a permission test in `supabase/tests/conference-documents.sql`.
+
+The public pages read the table when they load and add those files to the ones saved in the repository. If Supabase cannot be reached, the pages still show the saved files.
+
+**The migration has not been applied.** Until it is, the tab says uploads are off. Apply it to the test project and run the permission test first; Greg applies it to the live project.
+
+### Which way to add a file
+
+Either way works and both show in the same places. The staff tab is for the conference office and needs no deploy. The import tool keeps the file in the repository, which suits files Greg adds himself and wants under version control.
+
+Division lists are different: an uploaded alignment PDF shows in the Archive, but the schools on the Divisions tab are still typed into `data/conference-resources.js` by Greg.

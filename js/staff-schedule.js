@@ -27,6 +27,10 @@ function startStaffSchedule(client, invite) {
   tournamentsTab.hidden = true;
   const tournamentsPanel = document.getElementById('staff-tournaments-panel');
   const tournaments = startStaffTournaments(client, { schools: () => schools });
+  // Conference documents: the conference admin view only, like Tournaments.
+  const documentsTab = document.getElementById('staff-documents-tab');
+  const documentsPanel = document.getElementById('staff-documents-panel');
+  const documents = startStaffDocuments(client);
   const status = document.getElementById('schedule-status');
   const list = document.getElementById('schedule-games');
   const calendarTarget = document.getElementById('calendar');
@@ -191,7 +195,8 @@ function startStaffSchedule(client, invite) {
     accessTab.hidden = !mayManageAccess || Boolean(choice);
     // Not for ADs, and not for a site admin looking at a school. A site admin reaches it through the Conference office view.
     tournamentsTab.hidden = role !== 'conference_office';
-    if (tournamentsTab.hidden && !tournamentsPanel.hidden) showSchedule(true);
+    documentsTab.hidden = role !== 'conference_office';
+    if ((tournamentsTab.hidden && !tournamentsPanel.hidden) || (documentsTab.hidden && !documentsPanel.hidden)) showSchedule(true);
     access.reset();
     const school = schools.find(item => item.slug === schoolId);
     canEdit = role !== 'conference_office';
@@ -609,7 +614,8 @@ function startStaffSchedule(client, invite) {
   // Hides every panel and clears the selected tab; each opener then shows its own panel.
   function hidePanels() {
     for (const [panel, tab] of [[schedulePanel, scheduleTab], [gamesPanel, gamesTab], [teamsPanel, teamsTab],
-      [transportationPanel, transportationTab], [coachesPanel, coachesTab], [settingsPanel, settingsTab], [tournamentsPanel, tournamentsTab]]) {
+      [transportationPanel, transportationTab], [coachesPanel, coachesTab], [settingsPanel, settingsTab], [tournamentsPanel, tournamentsTab],
+      [documentsPanel, documentsTab]]) {
       panel.hidden = true;
       tab.removeAttribute('aria-current');
     }
@@ -723,6 +729,22 @@ function startStaffSchedule(client, invite) {
     if (focus) document.getElementById('tournaments-title').focus();
   }
   tournamentsTab.onclick = () => openTournaments();
+
+  function openDocuments() {
+    hidePanels();
+    documentsPanel.hidden = false;
+    documentsTab.setAttribute('aria-current', 'true');
+    selector.parentElement.hidden = true;
+    addGame.hidden = true;
+    importButton.hidden = true;
+    title.textContent = 'Shore Conference';
+    applySchoolTheme(client, null);
+    conferenceTheme = true;
+    publicLink.hidden = true;
+    documents.load();
+    document.getElementById('documents-title').focus();
+  }
+  documentsTab.onclick = openDocuments;
 
   function openStaffAccess() {
     if (!mayManageAccess || accessTab.hidden) return;
@@ -909,6 +931,8 @@ function startStaffSchedule(client, invite) {
     publication.stop();
     access.stop();
     tournaments.stop();
+    documents.stop();
+    documentsTab.onclick = null;
     tournamentsTab.onclick = null;
     tournamentsTab.disabled = false;
     accessTab.onclick = null;
