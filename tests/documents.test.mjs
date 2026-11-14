@@ -99,3 +99,40 @@ test('the division pop-up puts the saved list address on its own button, not on 
   assert.match(read('js/resources.js'), /dialog\.querySelector\('\.actions a'\)\.href = /);
   assert.doesNotMatch(read('js/resources.js'), /dialog\.querySelector\('a'\)\.href/);
 });
+
+// The viewer and the archive read the division lists too, so they must handle entries that name two
+// schools and the two swimming lists that share one PDF.
+const viewerContext = vm.createContext({});
+vm.runInContext(read('data/school-directory.js') + read('data/conference-resources.js') + read('data/document-archive.js') +
+  read('js/document-archive.js') + ';globalThis.api = { allDocuments, documentDivisionSets, sharedTitle, schools: shoreSchools,' +
+  ' lists: shoreConferenceResources.divisionLists, archive: shoreDocumentArchive, resources: shorePublicResources };', viewerContext);
+const viewer = viewerContext.api;
+const viewerRecords = viewer.allDocuments(viewer.archive, viewer.resources, viewer.lists);
+const savedFile = name => viewerRecords.find(record => record.url === 'assets/documents/' + name);
+
+test('division lists saved in one file share one archive record that keeps both lists', () => {
+  assert.equal(viewerRecords.filter(record => record.url.endsWith('2026_2027_Boys_and_Girls_Swimming.pdf')).length, 1);
+  const swimming = savedFile('2026_2027_Boys_and_Girls_Swimming.pdf');
+  assert.equal(swimming.title, '2026-27 Boys’ and Girls’ Swimming Divisions');
+  assert.deepEqual(copy(swimming.lists.map(list => list.genders.join())), ['Boys', 'Girls']);
+  assert.equal(viewer.sharedTitle(['2027 Baseball Divisions']), '2027 Baseball Divisions');
+  assert.equal(viewer.sharedTitle(['2027 Baseball Divisions', '2027 Baseball Divisions']), '2027 Baseball Divisions');
+  assert.equal(viewer.sharedTitle(['Boys Golf', 'Girls Golf']), 'Boys and Girls Golf');
+});
+
+test('the viewer names every school in a division list, including entries that name two', () => {
+  for (const record of viewerRecords.filter(record => record.lists)) {
+    for (const set of viewer.documentDivisionSets(record, viewer.schools)) {
+      for (const name of set.divisions.flatMap(division => division.members)) {
+        assert.doesNotMatch(name, /^[a-z-]+(\/[a-z-]+)*$/, record.title + ' shows a raw code: ' + name);
+      }
+    }
+  }
+  const [gymnastics] = copy(viewer.documentDivisionSets(savedFile('Gymnastics_2026_Divisions.pdf'), viewer.schools));
+  assert.ok(gymnastics.divisions.find(division => division.name === 'B North').members
+    .includes('Red Bank Regional / Rumson-Fair Haven Regional'));
+  const swimming = copy(viewer.documentDivisionSets(savedFile('2026_2027_Boys_and_Girls_Swimming.pdf'), viewer.schools));
+  assert.deepEqual(swimming.map(set => set.title), ['2026-27 Boys’ Swimming Divisions', '2026-27 Girls’ Swimming Divisions']);
+  assert.ok(swimming[0].divisions[0].members.includes('Christian Brothers Academy'));
+  assert.ok(swimming[1].divisions[0].members.includes('Trinity Hall'));
+});

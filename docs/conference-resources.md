@@ -1,8 +1,8 @@
 # Conference resources
 
-## Resources page (November 13, 2026)
+## Information page (November 13, 2026)
 
-[Resources](../resources.html) replaces About in the main navigation. Its left-hand tabs are About, History, Divisions, Tournaments and Documents; the old page addresses forward to the matching tab. Divisions lists each team by season, and a team opens a pop-up with that list's whole alignment: every division and every school in it. The tabs read the existing alignment data and the `shorePublicResources` index in [conference-resources.js](../data/conference-resources.js). The index links to copies saved on this site. Nothing syncs automatically.
+[Information](../resources.html) replaces About in the main navigation. Its left-hand tabs are About, History, Divisions, Tournaments, Documents and Archive; the old page addresses forward to the matching tab. [Documents](documents.md) covers the PDF viewer, the Archive tab and adding new files. Divisions lists each team by season, and a team opens a pop-up with that list's whole alignment: every division and every school in it. The pop-up's **Saved list** button opens the saved copy: [document.html](../document.html) for a PDF, [archive.html](../archive.html) for a saved web page. The tabs read the existing alignment data and the `shorePublicResources` index in [conference-resources.js](../data/conference-resources.js). The index links to copies saved on this site. Nothing syncs automatically.
 
 - `complete` means every division copied has all its members. `allDivisions` means every division on the saved list is copied. They are separate: complete divisions do not make a whole alignment. Since November 13 every list has both. The pop-up still says so plainly if a future list has only some divisions or only division names.
 - Public document records carry their edition label, review date, format and limitations. Past-season leadership remains labeled as such. Link summaries are not full accessible transcriptions of original files.
