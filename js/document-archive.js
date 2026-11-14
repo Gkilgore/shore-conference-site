@@ -18,8 +18,23 @@ function documentSeries(record) {
     .replace(/[^a-z]+/g, ' ').trim()].join('|');
 }
 
+// One title for division lists saved in the same file: the words they share, with the words that differ
+// joined by "and". "2026-27 Boys’ Swimming Divisions" and "2026-27 Girls’ Swimming Divisions" make
+// "2026-27 Boys’ and Girls’ Swimming Divisions".
+function sharedTitle(titles) {
+  const words = [...new Set(titles)].map(title => title.split(' '));
+  if (words.length === 1) return titles[0];
+  const shortest = Math.min(...words.map(list => list.length));
+  let start = 0, end = 0;
+  while (start < shortest && words.every(list => list[start] === words[0][start])) start++;
+  while (end < shortest - start && words.every(list => list.at(-1 - end) === words[0].at(-1 - end))) end++;
+  const middles = words.map(list => list.slice(start, list.length - end).join(' ')).filter(Boolean);
+  return [...words[0].slice(0, start), middles.join(' and '), ...words[0].slice(words[0].length - end)].filter(Boolean).join(' ');
+}
+
 // Every saved file as one list: files added with the import tool, the older document and tournament
-// records, and the division lists. Each address appears once.
+// records, and the division lists. Each address appears once; division lists saved in one file (boys'
+// and girls' swimming) share a record that keeps every list.
 function allDocuments(archive, publicResources, divisionLists) {
   const records = archive.uploads.map(upload => ({ ...upload, url: 'assets/documents/' + upload.school_year + '/' + upload.file,
     schoolYear: upload.school_year, uploaded: true }));
@@ -29,12 +44,25 @@ function allDocuments(archive, publicResources, divisionLists) {
         schoolYear: archive.legacyYears[record.url] || null, tab });
     }
   }
-  for (const list of divisionLists) {
-    records.push({ title: list.title, url: list.url, type: 'Alignment', sport: list.sports.join(', '),
-      schoolYear: schoolYearOf(list.season, list.year), divisions: list.complete ? list.divisions : null });
+  const byFile = new Map();
+  for (const list of divisionLists) byFile.set(list.url, [...(byFile.get(list.url) || []), list]);
+  for (const [url, lists] of byFile) {
+    records.push({ title: sharedTitle(lists.map(list => list.title)), url, type: 'Alignment',
+      sport: [...new Set(lists.flatMap(list => list.sports))].join(', '),
+      schoolYear: schoolYearOf(lists[0].season, lists[0].year), lists });
   }
   const seen = new Set();
   return records.filter(record => !seen.has(record.url) && seen.add(record.url));
+}
+
+// The divisions a saved file lists, as readers see them: one set per division list in the file, each
+// division with its schools by name ("Brick Township / Brick Memorial" for an entry naming both).
+function documentDivisionSets(record, schools) {
+  return (record?.lists || []).filter(list => list.complete && list.divisions).map(list => ({
+    title: list.title,
+    divisions: Object.entries(list.divisions).map(([name, entries]) => ({
+      name, members: entries.map(entry => divisionEntryName(entry, schools)) })),
+  }));
 }
 
 // School years, newest first, each with its files grouped by type.

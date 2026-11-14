@@ -49,18 +49,19 @@
   }
 
   // A division list also gets its schools as text, which is easier to read than the PDF on a small screen.
-  const names = Object.keys(record?.divisions || {});
-  if (names.length) {
+  // A file holding two lists (boys' and girls' swimming) gets one block per list, under that list's title.
+  const sets = documentDivisionSets(record, shoreSchools);
+  for (const set of sets) {
     const groups = node('div', '', 'division-groups');
-    for (const name of names) {
+    for (const division of set.divisions) {
       const group = node('section');
       const list = node('ul');
-      list.append(...record.divisions[name].map(slug => node('li', Object.hasOwn(shoreSchools, slug) ? shoreSchools[slug].name : slug)));
-      group.append(node('h3', name), list);
+      list.append(...division.members.map(name => node('li', name)));
+      group.append(node('h3', division.name), list);
       groups.append(group);
     }
     const card = node('section', '', 'panel');
-    card.append(node('h2', 'Divisions in this list'), groups);
+    card.append(node('h2', sets.length > 1 ? set.title : 'Divisions in this list'), groups);
     parts.push(card);
   }
   content.replaceChildren(...parts);

@@ -4,7 +4,7 @@ How saved PDFs are shown, how to add new ones, and how older editions are kept. 
 
 ## What visitors see
 
-- A link to a saved PDF opens [document.html](../document.html) (`document.html?file=name.pdf`). The page shows the file on wide screens, with **Download** and **Open in new tab**. Phones get the two buttons, because a phone shows only the first page of a PDF placed inside a page. A division list also shows its schools as text.
+- A link to a saved PDF opens [document.html](../document.html) (`document.html?file=name.pdf`). The page shows the file on wide screens, with **Download** and **Open in new tab**. Phones get the two buttons, because a phone shows only the first page of a PDF placed inside a page. A division list also shows its schools as text: an entry that names two schools shows both ("Brick Township / Brick Memorial"), and the swimming file shows the boys' and girls' lists under their own titles.
 - `js/document-links.js` sends the links there. Any page that links to a file in `assets/documents/` loads it. With JavaScript off, links open the PDF itself.
 - The Information page has an **Archive** tab: every saved file, by school year. The Documents and Tournaments tabs show only the newest edition of each file.
 
@@ -52,7 +52,7 @@ Files saved before this tool existed stay where they are in `assets/documents/`.
 node tools/check-alignment.mjs sheet.csv
 ```
 
-It flags a school that is not in the directory or is placed in two divisions, then prints each team's divisions. It does not update the Divisions tab yet. That step waits until the full division breakdown work is merged, because both change the same data file.
+It flags a school that is not in the directory or is placed in two divisions, then prints each team's divisions. It changes nothing. The full division breakdowns are merged, so a checked sheet is now copied into the Divisions tab by hand, following [conference resources](conference-resources.md): one row per school there becomes one entry, and two schools that play as one team share an entry (`'brick-township/brick-memorial'`). A tool that writes the list straight from the sheet is not built yet.
 
 ## Not built
 

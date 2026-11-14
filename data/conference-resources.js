@@ -14,6 +14,11 @@ const divisionEntrySchools = (entry, schools) => {
   const slugs = entry.split('/');
   return slugs.every(slug => Object.hasOwn(schools, slug)) ? slugs : [];
 };
+// The entry as readers see it: "Brick Township / Brick Memorial", or the printed name.
+const divisionEntryName = (entry, schools) => {
+  const slugs = divisionEntrySchools(entry, schools);
+  return slugs.length ? slugs.map(slug => schools[slug].name).join(' / ') : entry;
+};
 
 const shoreConferenceResources = (() => {
   const reviewed = '2026-11-10';
