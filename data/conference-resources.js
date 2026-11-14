@@ -395,8 +395,7 @@ const shorePublicResources = {
       "reviewed": "2026-11-12",
       "sport": "Field Hockey",
       "competition": "Coaches Cup",
-      "year": 2026,
-      "note": "The source includes a spreadsheet error. Confirm unclear bracket details with the conference office."
+      "year": 2026
     },
     {
       "title": "2026 Field Hockey Tournament Regulations",
@@ -420,8 +419,7 @@ const shorePublicResources = {
       "reviewed": "2026-11-12",
       "sport": "Soccer",
       "competition": "SCT",
-      "year": 2026,
-      "note": "Some dates disagree with the quick chart. Confirm dates with the conference office; this page does not resolve the discrepancy."
+      "year": 2026
     },
     {
       "title": "2026 Girls Volleyball SCT Bracket",
