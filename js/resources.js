@@ -69,8 +69,11 @@
         const schools = node('ul');
         schools.append(...division.members.map(member => {
           const item = node('li');
-          if (member.slug) item.append(link(member.name, 'school.html?school=' + encodeURIComponent(member.slug)));
-          else item.append(node('span', member.name, 'printed-name'));
+          if (!member.schools.length) item.append(node('span', member.name, 'printed-name'));
+          member.schools.forEach((school, index) => {
+            if (index) item.append(' / ');
+            item.append(link(school.name, 'school.html?school=' + encodeURIComponent(school.slug)));
+          });
           return item;
         }));
         group.append(schools);

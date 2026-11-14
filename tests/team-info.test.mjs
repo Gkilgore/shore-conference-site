@@ -97,6 +97,23 @@ test('schools beyond the pilot three get their division from the full lists', ()
   assert.equal(teamDivision({ school: 'trinity-hall', sport: 'Swimming', gender: 'Girls', level: 'JV', date: winter }).state, 'not-varsity');
 });
 
+test('each school named by a short or combined entry gets that division', () => {
+  const winter = '2027-01-20';
+  const division = (school, sport, gender, date) => teamDivision({ school, sport, gender, level: 'Varsity', date }).division;
+  assert.equal(division('brick-township', 'Ice Hockey', 'Boys', winter), 'Shore North');
+  assert.equal(division('brick-memorial', 'Ice Hockey', 'Boys', winter), 'Shore North');
+  assert.equal(division('rumson-fair-haven-regional', 'Ice Hockey', 'Boys', winter), 'Shore South');
+  assert.equal(division('middletown-south', 'Wrestling', 'Girls', winter), 'A North');
+  assert.equal(division('toms-river-north', 'Wrestling', 'Girls', winter), 'A South');
+  assert.equal(division('red-bank-regional', 'Football', 'Boys', fall), 'C North');
+  assert.equal(division('red-bank-catholic', 'Football', 'Boys', fall), 'A North');
+  assert.equal(division('brick-township', 'Softball', 'Girls', spring), 'Liberty');
+  assert.equal(division('brick-memorial', 'Softball', 'Girls', spring), 'Independence');
+  assert.equal(division('jackson-township', 'Gymnastics', 'Girls', fall), 'A South');
+  assert.equal(division('keyport', 'Cross Country', 'Girls', fall), 'B Central');
+  assert.equal(teamDivision({ school: 'ocean-academy', sport: 'Cross Country', gender: 'Boys', level: 'Varsity', date: fall }).state, 'list');
+});
+
 test('unknown sport has nothing on file', () => {
   assert.equal(ask({ sport: 'Fencing' }).state, 'none');
 });

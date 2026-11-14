@@ -1,5 +1,5 @@
 {
-  "about": "How printed school names in division-transcriptions.json become school directory slugs. Keys are lowercase printed names. Names in \"printed\" are shown exactly as the source prints them and are never matched to a school.",
+  "about": "How printed school names in division-transcriptions.json become school directory slugs. Keys are lowercase printed names. \"slugs\" maps a name that can only mean one school. \"ambiguous\" lists every school a short name could mean: it counts as all of them, minus any the same list names on its own, until the conference confirms. A combined entry such as \"RBR/RFH\" is split at \"/\" and each part is mapped through \"slugs\". \"printed\" names are shown exactly as printed. \"typos\" records source misspellings already mapped in \"slugs\"; the site shows the corrected name.",
   "slugs": {
     "asbury park": "asbury-park",
     "barnegat": "barnegat",
@@ -67,6 +67,7 @@
     "red bank catholic": "red-bank-catholic",
     "red bank regional": "red-bank-regional",
     "rfh": "rumson-fair-haven-regional",
+    "rumson": "rumson-fair-haven-regional",
     "rumson-fair haven": "rumson-fair-haven-regional",
     "rumson-fh reg.": "rumson-fair-haven-regional",
     "saint rose": "saint-rose",
@@ -92,17 +93,27 @@
     "wall": "wall-township",
     "wall township": "wall-township"
   },
+  "ambiguous": {
+    "brick": [
+      "brick-township",
+      "brick-memorial"
+    ],
+    "middletown": [
+      "middletown-north",
+      "middletown-south"
+    ],
+    "toms river": [
+      "toms-river-east",
+      "toms-river-north",
+      "toms-river-south"
+    ],
+    "red bank": [
+      "red-bank-regional",
+      "red-bank-catholic"
+    ]
+  },
   "printed": {
-    "Brick": "Could be Brick Township or Brick Memorial.",
-    "Middletown": "Could be Middletown North or Middletown South.",
-    "Toms River": "Could be Toms River East, North or South.",
-    "Red Bank": "Could be Red Bank Regional or Red Bank Catholic.",
-    "Rumson": "Probably Rumson-Fair Haven Regional; not confirmed.",
-    "(Ocean Academy)": "Printed in parentheses; its status in this list is not stated.",
-    "Brick Mem./Brick Twp.": "Combined team.",
-    "Manchester/Jackson": "Combined team.",
-    "RBR/RFH": "Combined team.",
-    "Henry Hudson/Keyport": "Combined team."
+    "(Ocean Academy)": "Printed in parentheses; its status in this list is not stated."
   },
   "typos": {
     "manlapan": "The list prints “Manlapan”.",

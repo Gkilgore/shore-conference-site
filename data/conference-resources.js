@@ -8,6 +8,13 @@ const savedCopy = path => {
   return name.endsWith('.pdf') ? 'assets/documents/' + name : 'archive.html?page=' + encodeURIComponent(name.replace(/\.aspx$/, ''));
 };
 
+// A division entry is a school slug, slugs joined by "/" for one entry naming several schools, or a name
+// kept exactly as the list prints it. Returns the slugs it names, or [] for a printed name.
+const divisionEntrySchools = (entry, schools) => {
+  const slugs = entry.split('/');
+  return slugs.every(slug => Object.hasOwn(schools, slug)) ? slugs : [];
+};
+
 const shoreConferenceResources = (() => {
   const reviewed = '2026-11-10';
   // The official lists do not name a level. They are recorded, and shown, as varsity only.
@@ -15,8 +22,10 @@ const shoreConferenceResources = (() => {
   // Every division on each saved list is copied with all its members, in the order the list prints them,
   // so complete and allDivisions are both true. The source transcription is
   // docs/source-archive/division-transcriptions.json; division-name-map.json turns its names into slugs.
-  // Members are directory slugs. A combined team or a name with no single matching school stays as printed,
-  // and notes say what a person should confirm.
+  // Members are directory slugs. Slugs joined by "/" are one entry naming several schools: a combined team
+  // ("RBR/RFH"), or a short name such as "Brick" that counts as every school it could mean, minus any the
+  // list names on its own, until the conference confirms. A name with no matching school stays as printed.
+  // Notes say what a person should confirm. Typos in the source are shown corrected.
   const listsReviewed = '2026-11-13';
   const list = (sports, genders, season, year, title, path, divisions, notes = []) => ({
     sports, genders, level: 'Varsity', season, year, title, url: savedCopy(path), status: 'verified',
@@ -64,30 +73,30 @@ const shoreConferenceResources = (() => {
       'A South': ['donovan-catholic', 'jackson-township', 'pinelands-regional', 'southern-regional', 'toms-river-south'],
       'B South': ['barnegat', 'brick-memorial', 'brick-township', 'lacey-township', 'manasquan', 'toms-river-north'],
       'C South': ['central-regional', 'lakewood', 'manchester-township', 'point-pleasant-beach', 'toms-river-east', 'wall-township'],
-    }, ['The list prints “TRINTIY HALL”. Read as Trinity Hall.']),
+    }),
     list(['Cross Country'], ['Boys', 'Girls'], 'Fall', 2026, '2026 Boys and Girls’ Cross Country Divisions', '/sports/2026/6/24/xc-2026-divisions.aspx', {
       'A South': ['southern-regional', 'toms-river-north', 'toms-river-south', 'toms-river-east', 'brick-township', 'brick-memorial', 'central-regional', 'jackson-township'],
       'A Central': ['rumson-fair-haven-regional', 'monmouth-regional', 'raritan', 'wall-township', 'red-bank-catholic', 'trinity-hall', 'shore-regional', 'manasquan'],
       'A North': ['howell', 'freehold-township', 'christian-brothers-academy', 'marlboro', 'manalapan', 'colts-neck', 'red-bank-regional', 'long-branch'],
       'B South': ['pinelands-regional', 'manchester-township', 'lacey-township', 'barnegat', 'point-pleasant-borough', 'donovan-catholic', 'lakewood', '(Ocean Academy)'],
-      'B Central': ['asbury-park', 'keansburg', 'point-pleasant-beach', 'saint-rose', 'ranney-school', 'Henry Hudson/Keyport', 'new-egypt'],
+      'B Central': ['asbury-park', 'keansburg', 'point-pleasant-beach', 'saint-rose', 'ranney-school', 'henry-hudson-regional/keyport', 'new-egypt'],
       'B North': ['neptune', 'matawan-regional', 'ocean-township', 'saint-john-vianney', 'holmdel', 'middletown-north', 'middletown-south', 'freehold-boro'],
-    }, ['“(Ocean Academy)” is shown as printed. Printed in parentheses; its status in this list is not stated.', '“Henry Hudson/Keyport” is shown as printed. Combined team.']),
+    }, ['“(Ocean Academy)” is shown as printed. Printed in parentheses; its status in this list is not stated.']),
     list(['Football'], ['Boys'], 'Fall', 2026, '2026 Football Divisions', '/documents/2026/6/22/sc_football_26.pdf', {
       'A North': ['holmdel', 'manalapan', 'red-bank-catholic', 'rumson-fair-haven-regional', 'saint-john-vianney', 'wall-township'],
       'B North': ['freehold-township', 'manasquan', 'matawan-regional', 'middletown-north', 'middletown-south', 'shore-regional'],
-      'C North': ['howell', 'marlboro', 'neptune', 'ocean-township', 'raritan', 'Red Bank'],
+      'C North': ['howell', 'marlboro', 'neptune', 'ocean-township', 'raritan', 'red-bank-regional'],
       'D North': ['asbury-park', 'barnegat', 'colts-neck', 'long-branch', 'manchester-township', 'monmouth-regional'],
       'A South': ['brick-memorial', 'donovan-catholic', 'jackson-township', 'point-pleasant-borough', 'southern-regional', 'toms-river-north'],
       'B South': ['brick-township', 'central-regional', 'lacey-township', 'pinelands-regional', 'toms-river-east', 'toms-river-south'],
       'C South': ['freehold-boro', 'keansburg', 'keyport', 'lakewood', 'new-egypt', 'point-pleasant-beach'],
-    }, ['“Red Bank” is shown as printed. Could be Red Bank Regional or Red Bank Catholic.']),
+    }),
     list(['Gymnastics'], ['Girls'], 'Fall', 2026, '2026 Gymnastics Divisions', '/documents/2026/9/2/Gymnastics_2026_Divisions.pdf', {
       'A North': ['middletown-south', 'saint-john-vianney', 'marlboro', 'howell', 'freehold-township', 'ocean-township', 'colts-neck'],
-      'A South': ['Brick Mem./Brick Twp.', 'Manchester/Jackson', 'southern-regional', 'central-regional', 'manasquan', 'lacey-township'],
-      'B North': ['trinity-hall', 'manalapan', 'holmdel', 'red-bank-catholic', 'RBR/RFH', 'freehold-boro', 'middletown-north'],
+      'A South': ['brick-memorial/brick-township', 'manchester-township/jackson-township', 'southern-regional', 'central-regional', 'manasquan', 'lacey-township'],
+      'B North': ['trinity-hall', 'manalapan', 'holmdel', 'red-bank-catholic', 'red-bank-regional/rumson-fair-haven-regional', 'freehold-boro', 'middletown-north'],
       'B South': ['toms-river-south', 'neptune', 'point-pleasant-borough', 'toms-river-east', 'wall-township', 'toms-river-north', 'donovan-catholic'],
-    }, ['Filed as Fall 2026. The list says only “2026”; confirm the season.', '“Brick Mem./Brick Twp.” is shown as printed. Combined team.', '“Manchester/Jackson” is shown as printed. Combined team.', 'The list prints “Manlapan”. Read as Manalapan.', '“RBR/RFH” is shown as printed. Combined team.']),
+    }, ['Filed as Fall 2026. The list says only “2026”; confirm the season.']),
 
     list(['Basketball'], ['Boys'], 'Winter', 2026, '2026-27 Boys’ Basketball Divisions', '/documents/2026/6/25/sc_boys_basketball_27.pdf', {
       'A North': ['christian-brothers-academy', 'howell', 'manasquan', 'marlboro', 'red-bank-catholic', 'wall-township'],
@@ -110,9 +119,9 @@ const shoreConferenceResources = (() => {
       'C North': ['asbury-park', 'henry-hudson-regional', 'keyport', 'long-branch', 'monmouth-regional', 'raritan'],
     }),
     list(['Ice Hockey'], ['Boys', 'Coed'], 'Winter', 2026, '2026-27 Ice Hockey Divisions', '/sports/2026/6/25/MHOCKEY_27-divisions.aspx?path=mhockey', {
-      'Shore North': ['Brick', 'christian-brothers-academy', 'freehold-township', 'howell', 'manalapan', 'manasquan', 'marlboro', 'middletown-north', 'red-bank-catholic', 'toms-river-east'],
-      'Shore South': ['central-regional', 'freehold-boro', 'lacey-township', 'middletown-south', 'ocean-township', 'red-bank-regional', 'Rumson', 'southern-regional', 'saint-john-vianney', 'wall-township'],
-    }, ['“Brick” is shown as printed. Could be Brick Township or Brick Memorial.', '“Rumson” is shown as printed. Probably Rumson-Fair Haven Regional; not confirmed.']),
+      'Shore North': ['brick-township/brick-memorial', 'christian-brothers-academy', 'freehold-township', 'howell', 'manalapan', 'manasquan', 'marlboro', 'middletown-north', 'red-bank-catholic', 'toms-river-east'],
+      'Shore South': ['central-regional', 'freehold-boro', 'lacey-township', 'middletown-south', 'ocean-township', 'red-bank-regional', 'rumson-fair-haven-regional', 'southern-regional', 'saint-john-vianney', 'wall-township'],
+    }, ['“Brick” on the list is shown as Brick Township and Brick Memorial until confirmed.']),
     list(['Wrestling'], ['Boys'], 'Winter', 2026, '2026-27 Boys’ Wrestling Divisions', '/sports/2026/6/25/WREST_27-divisions.aspx', {
       American: ['christian-brothers-academy', 'howell', 'red-bank-catholic', 'southern-regional', 'toms-river-east'],
       Constitution: ['holmdel', 'middletown-north', 'middletown-south', 'rumson-fair-haven-regional', 'wall-township'],
@@ -124,9 +133,9 @@ const shoreConferenceResources = (() => {
       United: ['donovan-catholic', 'keyport', 'lakewood', 'manchester-township', 'neptune', 'new-egypt'],
     }),
     list(['Wrestling'], ['Girls'], 'Winter', 2026, '2026-27 Girls’ Wrestling Divisions', '/sports/2026/6/25/WWREST_27-divisions.aspx', {
-      'A North': ['freehold-boro', 'howell', 'manalapan', 'marlboro', 'Middletown', 'raritan'],
-      'A South': ['Brick', 'central-regional', 'jackson-township', 'lakewood', 'manchester-township', 'southern-regional', 'Toms River'],
-    }, ['“Middletown” is shown as printed. Could be Middletown North or Middletown South.', '“Brick” is shown as printed. Could be Brick Township or Brick Memorial.', '“Toms River” is shown as printed. Could be Toms River East, North or South.']),
+      'A North': ['freehold-boro', 'howell', 'manalapan', 'marlboro', 'middletown-north/middletown-south', 'raritan'],
+      'A South': ['brick-township/brick-memorial', 'central-regional', 'jackson-township', 'lakewood', 'manchester-township', 'southern-regional', 'toms-river-east/toms-river-north/toms-river-south'],
+    }, ['“Middletown” on the list is shown as Middletown North and Middletown South until confirmed.', '“Brick” on the list is shown as Brick Township and Brick Memorial until confirmed.', '“Toms River” on the list is shown as Toms River East, Toms River North and Toms River South until confirmed.']),
     list(['Swimming'], ['Boys'], 'Winter', 2026, '2026-27 Boys’ Swimming Divisions', '/documents/2026/6/25/2026_2027_Boys_and_Girls_Swimming.pdf', {
       'A North': ['christian-brothers-academy', 'holmdel', 'manasquan', 'middletown-south', 'red-bank-regional', 'rumson-fair-haven-regional'],
       'B North': ['freehold-township', 'marlboro', 'ocean-township', 'red-bank-catholic', 'saint-rose', 'wall-township'],
@@ -160,8 +169,8 @@ const shoreConferenceResources = (() => {
       Colonial: ['colts-neck', 'shore-regional', 'middletown-north', 'howell', 'matawan-regional', 'manalapan'],
       Independence: ['jackson-township', 'new-egypt', 'toms-river-south', 'point-pleasant-borough', 'brick-memorial', 'toms-river-north'],
       Constitution: ['freehold-boro', 'freehold-township', 'ocean-township', 'saint-rose', 'wall-township', 'trinity-hall', 'manasquan'],
-      Liberty: ['manchester-township', 'Brick', 'point-pleasant-beach', 'lacey-township', 'monmouth-regional', 'henry-hudson-regional'],
-    }, ['“Brick” is shown as printed. Could be Brick Township or Brick Memorial.']),
+      Liberty: ['manchester-township', 'brick-township', 'point-pleasant-beach', 'lacey-township', 'monmouth-regional', 'henry-hudson-regional'],
+    }),
     list(['Golf'], ['Boys'], 'Spring', 2027, '2027 Boys’ Golf Divisions', '/documents/2026/6/22/sc_boys_golf_27.pdf', {
       Nicklaus: ['christian-brothers-academy', 'saint-john-vianney', 'manasquan', 'holmdel', 'wall-township', 'middletown-south'],
       Woods: ['central-regional', 'point-pleasant-beach', 'donovan-catholic', 'lacey-township', 'toms-river-north'],

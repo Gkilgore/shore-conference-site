@@ -33,7 +33,12 @@ All 25 lists now carry every division and school. Boys' and girls' swimming are 
 Three files work together:
 
 - `docs/source-archive/division-transcriptions.json` holds each list exactly as printed, one key per saved page or PDF (`swimming-boys` and `swimming-girls` for the two swimming pages).
-- `docs/source-archive/division-name-map.json` turns printed names into directory slugs. Names under `printed` are combined teams or names that could mean more than one school. They are shown as printed, without a link, and each one adds a "To confirm" note to its list. Names under `typos` are source misspellings with an obvious school.
+- `docs/source-archive/division-name-map.json` turns printed names into directory slugs:
+  - `slugs`: a name that can only mean one school, including source typos such as "Manlapan". The site shows the corrected name; `typos` lists which ones were misspelled.
+  - Combined entries such as "RBR/RFH" are split at "/" and each part goes through `slugs`. The site shows one team line naming both schools, and each school's page gets the division.
+  - `ambiguous`: a short name such as "Brick" counts as every school it could mean, minus any the same list names on its own, until the conference confirms (decided by Greg, November 13). Softball names Brick Memorial on its own, so its "Brick" is Brick Township; football names Red Bank Catholic on its own, so its "Red Bank" is Red Bank Regional. When more than one school remains, the pop-up adds a "To confirm" note.
+  - `printed`: shown exactly as printed, without a link, with a "To confirm" note. Only "(Ocean Academy)" is left.
+- Entries in `data/conference-resources.js` are slugs, or slugs joined by "/" for one entry naming several schools (`'brick-township/brick-memorial'`).
 - `data/conference-resources.js` holds what the site shows. `tests/division-breakdowns.test.mjs` fails if it stops matching the transcription run through the name map.
 
 How each list was checked on November 13:
@@ -60,8 +65,8 @@ Each summer the conference posts new division lists under "Alignments" on its ho
 
 1. Open the new list. Save a copy (a PDF goes in `assets/documents/`; a web page goes in `data/archived-resources.js`). Add a `list(...)` entry with the sport, the teams it covers, the season, the year and the list's old address; the site links to the saved copy. Keep last year's entry. The site picks the entry for the school year on screen, so older seasons keep their own divisions.
 2. Type every division into `division-transcriptions.json` exactly as printed, in the list's order. For an image-only PDF, read the page itself.
-3. Add any new printed name to `division-name-map.json`: under `slugs` when it can only mean one school, under `printed` with a short reason when it is a combined team or could mean more than one.
-4. Copy the divisions into the `list(...)` entry as slugs, keeping printed names as printed, and add a note for each printed name. A list that is not fully copied must not use `list(...)`; set `complete` or `allDivisions` to `false` so the pop-up says what is missing.
+3. Add any new printed name to `division-name-map.json`: under `slugs` when it can only mean one school, under `ambiguous` with every school it could mean, or under `printed` with a short reason when it names no school.
+4. Copy the divisions into the `list(...)` entry as slugs, joining with "/" for a combined entry or a short name, and add a note for each assumption and each printed name. A list that is not fully copied must not use `list(...)`; set `complete` or `allDivisions` to `false` so the pop-up says what is missing.
 5. Run `node --test tests/*.test.mjs`. The tests catch a misspelled slug, a school in two divisions, a list that no longer matches its transcription and any link to the old site.
 
 Years: fall and winter use the year the season starts (winter 2026–27 is `2026`); spring uses the year it is played.
@@ -85,11 +90,11 @@ For a school link, open it. If it shows that school's athletics, use `ok(url)`. 
 
 ## Open questions from the full division lists, November 13, 2026
 
-These are shown on the site as printed, with a "To confirm" note in the pop-up. Each needs the conference office or the tournament director.
+Greg is getting these confirmed. The lists are as of fall 2026, and the conference may change them each year.
 
-7. **Names that could mean more than one school.** "Brick" (ice hockey, girls' wrestling, softball), "Middletown" and "Toms River" (girls' wrestling), and "Red Bank" (football C North).
-8. **Rumson.** The ice hockey list prints "Rumson". It is probably Rumson-Fair Haven Regional; confirm before linking it.
-9. **Combined teams.** Gymnastics lists "Brick Mem./Brick Twp.", "Manchester/Jackson" and "RBR/RFH"; cross country lists "Henry Hudson/Keyport". Confirm whether each is one co-op team. School pages do not show a division for a school that appears only inside a combined entry.
-10. **Ocean Academy in cross country.** It appears in parentheses in B South. Its status is not stated.
+7. **Short names counted as several schools for now.** Ice hockey "Brick" is shown as Brick Township and Brick Memorial. Girls' wrestling "Brick", "Middletown" (North and South) and "Toms River" (East, North and South) are shown as every school they could mean. Each pop-up says so in a "To confirm" note.
+8. **Short names resolved to one school.** Softball "Brick" is shown as Brick Township and football "Red Bank" as Red Bank Regional, because each list names the other school on its own. Ice hockey "Rumson" is shown as Rumson-Fair Haven Regional, the only school it can mean.
+9. **Combined teams.** Gymnastics lists "Brick Mem./Brick Twp.", "Manchester/Jackson" and "RBR/RFH"; cross country lists "Henry Hudson/Keyport". Each is shown as one team naming both schools.
+10. **Ocean Academy in cross country.** It appears in parentheses in B South. Its status is not stated, so it is shown as printed.
 11. **Gymnastics season.** The list is titled "Gymnastics 2026 Divisions" and is filed as Fall 2026. Confirm the season it covers.
-12. **Source typos read as one school.** Gymnastics prints "Manlapan" (read as Manalapan); girls' volleyball prints "TRINTIY HALL" (read as Trinity Hall).
+12. **Typos.** Shown corrected: "Manlapan" (gymnastics) as Manalapan and "TRINTIY HALL" (girls' volleyball) as Trinity Hall. The saved tournament director page shows "Boy's Lacrosse" as "Boys' Lacrosse" and "B/T Winter Track" as "B/G Winter Track", and two dashes are tidied. The fixes are listed in `js/archive.js`; the saved text and the original PDFs are unchanged.
