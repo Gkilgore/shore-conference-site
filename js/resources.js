@@ -84,7 +84,7 @@
     notes.hidden = !breakdown.notes.length;
     notes.querySelector('ul').replaceChildren(...breakdown.notes.map(note => node('li', note)));
     dialog.querySelector('.doc-meta').textContent = 'From the saved conference list. Checked ' + breakdown.reviewed + '.';
-    dialog.querySelector('a').href = team.list.url;
+    dialog.querySelector('.actions a').href = team.list.url;
     opener = button;
     dialog.showModal();
     dialog.scrollTop = 0;

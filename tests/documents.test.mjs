@@ -95,3 +95,7 @@ test('the alignment template passes, and the check catches unknown and doubled s
 test('every added file exists on the site', () => {
   for (const item of archive.uploads) assert.ok(existsSync(new URL('../assets/documents/' + item.school_year + '/' + item.file, import.meta.url)), item.file);
 });
+test('the division pop-up puts the saved list address on its own button, not on a school link', () => {
+  assert.match(read('js/resources.js'), /dialog\.querySelector\('\.actions a'\)\.href = /);
+  assert.doesNotMatch(read('js/resources.js'), /dialog\.querySelector\('a'\)\.href/);
+});
