@@ -338,8 +338,7 @@ const shorePublicResources = {
       "category": "Governance",
       "version": "Revised June 2024",
       "format": "PDF",
-      "reviewed": "2026-11-12",
-      "note": "This is the linked edition; confirm any later amendments with the conference office."
+      "reviewed": "2026-11-12"
     },
     {
       "title": "Executive Committee",
@@ -348,8 +347,7 @@ const shorePublicResources = {
       "category": "Leadership",
       "version": "2025-26",
       "format": "PDF",
-      "reviewed": "2026-11-12",
-      "note": "Past-season roster. Current appointments have not been confirmed."
+      "reviewed": "2026-11-12"
     },
     {
       "title": "Tournament Directors",
@@ -358,8 +356,7 @@ const shorePublicResources = {
       "category": "Leadership",
       "version": "2025-26",
       "format": "Web page",
-      "reviewed": "2026-11-12",
-      "note": "Past-season list. Check the current competition regulations before contacting a director."
+      "reviewed": "2026-11-12"
     },
     {
       "title": "Professional Service and Lifetime Award Forms",
@@ -368,8 +365,7 @@ const shorePublicResources = {
       "category": "Forms",
       "version": "Posted November 2022",
       "format": "PDF",
-      "reviewed": "2026-11-12",
-      "note": "Confirm the deadline and recipient with the conference office before submitting."
+      "reviewed": "2026-11-12"
     }
   ],
   "tournaments": [
