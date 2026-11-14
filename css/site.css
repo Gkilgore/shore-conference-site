@@ -127,8 +127,6 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
 .panel[hidden] { display: none; }
 .panel > h2:focus { outline: none; } /* Focus moves here when switching tabs; no ring needed. */
 .panel p { max-width: 70ch; line-height: 1.6; }
-.panel .about-top p + p { margin-top: 0.6rem; }
-.panel .about-links li { background: var(--paper); }
 .panel-list { display: grid; gap: 0.6rem; }
 .panel-list .eyebrow { margin: 0.6rem 0 0; color: var(--red); }
 .division-teams { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr)); gap: 0.5rem; }
@@ -138,9 +136,8 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
   .side-tabs { display: grid; }
   .side-tab { place-items: center start; padding-inline: 1rem; font-size: 1rem; }
 }
-/* History article: a magazine layout inside the History panel. Chapter bands with the years in red, dated
-   entries in two columns, navy number tiles, a red pull quote, and column-size photo boxes that alternate
-   sides beside the text. One column on phones. */
+/* History article inside the History panel: chapter bands with the years in red, navy number tiles, a red
+   pull quote, and framed photo boxes with a caption. The dated lists are under Information stories. */
 .article { gap: 1.5rem; }
 .article-head { display: grid; gap: 0.6rem; }
 .article-head .eyebrow { margin: 0; color: var(--red); }
@@ -152,13 +149,6 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
 .chapter-head span { padding: 0.7rem 1rem; background: var(--red); font-size: clamp(1.6rem, 4vw, 2.3rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
 .chapter-head h3 { flex: 1 1 12rem; align-self: center; margin: 0; padding: 0.6rem 1rem; font-size: 1.1rem; font-weight: 700; }
 .panel .chapter-lead { max-width: 65ch; font-size: 1.1rem; }
-.entries { columns: 2 17rem; column-gap: 2rem; }
-.entries.single { columns: auto; max-width: 65ch; }
-.spread { display: grid; gap: 0 2rem; align-items: start; }
-.entry { break-inside: avoid; padding-bottom: 1.1rem; }
-.entry h4 { margin: 0 0 0.25rem; color: var(--red); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
-.entry p { line-height: 1.55; }
-.entry p + p { margin-top: 0.5rem; }
 .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: 1px; margin: 0; padding: 0; list-style: none; }
 .stat-row li { display: grid; align-content: start; gap: 0.4rem; padding: 1rem; background: var(--navy); color: white; }
 .stat-row strong { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
@@ -167,16 +157,8 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
 .panel .pullquote p { max-width: 32ch; font-size: clamp(1.3rem, 3.5vw, 1.9rem); font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
 .pullquote footer { margin-top: 0.75rem; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
 .photo { display: grid; gap: 1px; margin: 0 0 1.1rem; background: var(--steel); border: var(--frame); }
-.photo img, .photo-slot { width: 100%; aspect-ratio: 3 / 2; }
-.photo img { display: block; object-fit: cover; }
-.photo-slot { display: grid; place-content: center; gap: 0.35rem; padding: 1rem; background: var(--paper); text-align: center; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
-.photo-slot span { max-width: 26ch; font-size: 0.9rem; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); }
+.photo img { display: block; width: 100%; height: auto; }
 .photo figcaption { padding: 0.6rem 0.8rem; background: white; font-size: 0.9rem; line-height: 1.4; color: var(--muted); }
-@media (min-width: 700px) {
-  .spread { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-.article .archive-table { font-size: 0.92rem; }
-.article .archive-table tbody th { background: white; color: var(--ink); white-space: nowrap; }
 /* Division pop-up: each division's schools, side by side when there is room. */
 .division-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 1rem; margin-block: 1rem; }
 .division-groups h3 { margin: 0 0 0.3rem; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
@@ -626,24 +608,35 @@ textarea { display: block; resize: vertical; }
 .game-details dt { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding-top: 0.15rem; }
 .game-details dd { margin: 0; overflow-wrap: anywhere; }
 
-/* About panel on the Resources page: text beside a facts box, then framed link boxes. Stacks on phones. */
-.about-top { display: grid; gap: 1.5rem 2.5rem; align-items: start; }
-.about-top p { font-size: 1.08rem; }
-.about-facts { background: white; border: var(--frame); }
-.about-facts h3 { margin: 0; padding: 0.55rem 1rem; background: var(--navy); color: white; font-size: 1.05rem; letter-spacing: 0; }
-.about-facts dl { display: grid; grid-template-columns: max-content 1fr; margin: 0; }
-.about-facts dt, .about-facts dd { margin: 0; padding: 0.6rem 1rem; border-top: 1px solid var(--rule); }
-.about-facts dt { display: grid; align-items: center; padding-right: 0.5rem; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
-.about-facts dd { font-weight: 700; }
-.about-links { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
-.about-links li { display: grid; grid-template-rows: auto 1fr auto; gap: 0.4rem; padding: 1rem; background: white; border: var(--frame); }
-.about-links h3 { margin: 0; font-size: 1.15rem; }
-.about-links p { margin: 0; }
-.about-links .button { justify-self: start; margin-top: 0.5rem; }
-@media (min-width: 860px) {
-  .about-top { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
-  .about-links { grid-template-columns: repeat(3, 1fr); }
+/* Information stories: the About and History tabs. About is the logo beside a short description, a row of
+   facts, then four link boxes. History is three eras, each a list of dated milestones. All stack on phones. */
+.about-story { display: grid; gap: 1.25rem; align-items: center; }
+.about-logo { width: min(100%, 15rem); height: auto; justify-self: center; }
+.about-text { display: grid; gap: 0.6rem; }
+.about-facts, .about-next, .history-timeline { display: grid; gap: 1px; margin: 0; padding: 0; list-style: none; background: var(--steel); border: var(--frame); }
+.about-facts li { display: grid; align-content: start; gap: 0.3rem; padding: 0.9rem 1rem; background: var(--paper); }
+.about-facts strong { font-size: 1.1rem; line-height: 1.25; }
+.about-facts span { color: var(--muted); }
+.about-facts a { justify-self: start; }
+.about-next a { display: grid; align-content: start; gap: 0.3rem; height: 100%; padding: 0.9rem 1rem; background: white; color: var(--ink); text-decoration: none; }
+.about-next a:is(:hover, :focus-visible) { background: var(--hover); }
+.about-next a:focus-visible { outline-offset: -4px; }
+.about-next strong { font-size: 1.1rem; }
+.about-next span { line-height: 1.4; }
+.history-timeline li { display: grid; gap: 0.25rem; padding: 0.8rem 1rem; background: white; }
+.history-timeline h4 { margin: 0; color: var(--red); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; line-height: 1.7; }
+.history-timeline p { line-height: 1.55; }
+.history-era .photo { max-width: 34rem; margin: 0; }
+@media (min-width: 700px) {
+  .about-story { grid-template-columns: 15rem minmax(0, 1fr); gap: 2rem; }
+  .about-facts { grid-template-columns: repeat(3, 1fr); }
+  .about-next { grid-template-columns: repeat(2, 1fr); }
+  .history-timeline li { grid-template-columns: 11rem minmax(0, 1fr); gap: 1rem; }
 }
+@media (min-width: 1100px) {
+  .about-next { grid-template-columns: repeat(4, 1fr); }
+}
+/* End of Information stories. */
 
 /* One framed line under the filters: the selected team's division and its official source. */
 .team-info { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.9rem; margin-block: 0.75rem; padding: 0.5rem 0.75rem; background: var(--paper); border: var(--frame); font-size: 0.95rem; }
