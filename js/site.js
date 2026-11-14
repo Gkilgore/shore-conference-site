@@ -1,4 +1,30 @@
 // Builds school directories, logo backdrops and upcoming-game previews.
+// Sport names are normalized here so public pages share one small icon set.
+const sportIconNames = new Set(['football', 'basketball', 'baseball', 'soccer', 'lacrosse', 'wrestling', 'track', 'swimming', 'volleyball', 'tennis', 'hockey', 'golf']);
+function sportIconName(sport) {
+  const name = String(sport || '').toLowerCase();
+  if (name.includes('field hockey') || name.includes('ice hockey')) return 'hockey';
+  if (name.includes('cross country') || name.includes('track')) return 'track';
+  if (name.includes('softball')) return 'baseball';
+  if (name.includes('bowling')) return null;
+  for (const icon of sportIconNames) if (name.includes(icon)) return icon;
+  return null;
+}
+function createSportIcon(sport) {
+  const name = sportIconName(sport);
+  if (!name) return null;
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  const use = document.createElementNS(ns, 'use');
+  svg.classList.add('sport-icon');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('focusable', 'false');
+  use.setAttribute('href', 'assets/icons/sports.svg#' + name);
+  svg.append(use);
+  return svg;
+}
+
 function teamLabel(game) {
   return [game.gender, game.level, game.sport].join(' ');
 }
@@ -77,6 +103,8 @@ function renderUpcoming(events, { showChanged = false } = {}) {
       details.textContent = ['Was ' + (game.start.includes('T') ? timeFormat.format(new Date(game.start)) : 'TBD'),
         game.location, game.earlyDismissal && 'Early dismissal ' + game.earlyDismissal].filter(Boolean).join(' · ');
     }
+    const icon = createSportIcon(game.sport);
+    if (icon) title.prepend(icon);
     row.append(date, title, details);
     return row;
   }));
