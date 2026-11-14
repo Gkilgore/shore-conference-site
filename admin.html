@@ -38,6 +38,8 @@
   <script defer src="js/team-info.js"></script>
   <script defer src="js/staff-schedule.js"></script>
   <script defer src="js/staff-access.js"></script>
+  <script defer src="js/document-archive.js"></script>
+  <script defer src="js/staff-documents.js"></script>
   <script defer src="js/admin.js"></script>
 </head>
 <body>
@@ -98,6 +100,7 @@
             <button id="staff-coaches-tab" class="staff-tab" type="button" hidden>Coaches</button>
             <button id="staff-settings-tab" class="staff-tab" type="button" hidden>School settings</button>
             <button id="staff-tournaments-tab" class="staff-tab" type="button">Tournaments</button>
+            <button id="staff-documents-tab" class="staff-tab" type="button" hidden>Documents</button>
             <button id="staff-access-tab" class="staff-tab" type="button" hidden>Staff access</button>
           </nav>
           <div>
@@ -414,6 +417,29 @@
                 <label>Transportation notes<textarea id="tournament-notes" rows="2" maxlength="1000"></textarea></label>
                 <p id="tournament-bus-status" role="status"></p><button class="button primary" type="submit">Save my school’s bus details</button>
               </form>
+            </section>
+          </section>
+          <section id="staff-documents-panel" class="staff-panel" aria-labelledby="documents-title" hidden>
+            <h3 id="documents-title" tabindex="-1">Documents</h3>
+            <p class="staff-hint">Upload alignments, tournament regulations, entry forms and other conference PDFs. A file shows on the public Information page as soon as you upload it.</p>
+            <p id="document-status" role="status" aria-live="polite"></p>
+            <form id="document-form" class="staff-section" aria-labelledby="document-form-title">
+              <h4 id="document-form-title">Upload a file</h4>
+              <div class="filters document-fields">
+                <label class="document-wide">PDF file<input name="file" type="file" accept=".pdf,application/pdf" required></label>
+                <label class="document-wide">Title<input name="title" maxlength="160" autocomplete="off" placeholder="2027 Soccer Rules and Entry Information" required></label>
+                <label>Type<select name="type" required></select></label>
+                <label>Sport, if any<input name="sport" maxlength="60" autocomplete="off"></label>
+                <label>School year<select name="school_year" required></select></label>
+                <label class="document-wide">Description<input name="description" maxlength="300" autocomplete="off" placeholder="One sentence shown under the title" required></label>
+                <label class="document-wide">Note, if any<input name="note" maxlength="300" autocomplete="off"></label>
+              </div>
+              <p class="staff-hint">Use the same title each year and change only the year. The new file then replaces last year’s on the public page, and last year’s moves to the Archive.</p>
+              <div class="actions"><button id="document-submit" class="button primary" type="submit">Upload and post</button></div>
+            </form>
+            <section class="staff-section" aria-labelledby="document-list-title">
+              <h4 id="document-list-title">Uploaded files</h4>
+              <div id="document-list" class="panel-list"></div>
             </section>
           </section>
           <section id="staff-access-workspace" class="staff-panel" aria-labelledby="staff-access-title" hidden>

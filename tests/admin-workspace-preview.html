@@ -31,11 +31,16 @@ const accounts = [
   {name:'Conference Example', email:'office@example.org', role:'conference_office', school_id:null, access_revision:1},
   {name:'Site Example', email:'admin@example.org', role:'site_admin', school_id:null, access_revision:1},
 ];
+const documents = [
+  {id:'11111111-2222-3333-4444-555555555555', title:'2027 Soccer Rules and Entry Information', type:'Tournament regulations', sport:'Soccer', school_year:'2027-28', file_path:'2027-28/rules-ab12cd34.pdf', description:'SCT regulations and entry information for boys and girls soccer.', note:null, added:'2026-11-14'},
+  {id:'11111111-2222-3333-4444-666666666666', title:'Executive Committee', type:'Leadership', sport:'', school_year:'2026-27', file_path:'2026-27/exec-ab12cd35.pdf', description:'The executive committee roster for 2026-27.', note:null, added:'2026-11-14'},
+];
 const client = {
+  storage: {from: () => ({upload: async () => ({}), remove: async () => ({})})},
   from(table) {
-    const result = {data: table === 'schools' ? schools : []};
+    const result = {data: table === 'schools' ? schools : table === 'conference_documents' ? documents : []};
     const query = {then: callback => Promise.resolve(result).then(callback)};
-    for (const name of ['select','order','eq','maybeSingle']) query[name] = () => query;
+    for (const name of ['select','order','eq','maybeSingle','insert','delete']) query[name] = () => query;
     return query;
   },
   async rpc(name) { return {data: name === 'list_staff_access' ? {actor_role:'site_admin', accounts} : []}; },
