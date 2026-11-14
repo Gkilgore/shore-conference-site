@@ -715,3 +715,6 @@ textarea { display: block; resize: vertical; }
 .game-list strong .sport-icon { color: var(--navy); }
 #calendar .game-title { display: block; }
 #calendar .game-title .sport-icon { width: 1em; height: 1em; margin-right: 0.35em; }
+
+/* Document viewer (document.html): the saved PDF in a full frame, tall enough to read a page. */
+.doc-frame { display: block; width: 100%; height: min(85vh, 70rem); border: var(--frame); background: white; }

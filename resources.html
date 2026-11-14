@@ -1,4 +1,4 @@
-<!-- Information: about the conference, its history, divisions, tournament files and documents, one tab each. -->
+<!-- Information: about the conference, its history, divisions, tournament files, documents and the archive, one tab each. -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -14,7 +14,10 @@
   <script defer src="data/school-directory.js"></script>
   <script defer src="data/conference-resources.js"></script>
   <script defer src="js/resource-lists.js"></script>
+  <script defer src="data/document-archive.js"></script>
+  <script defer src="js/document-archive.js"></script>
   <script defer src="js/resources.js"></script>
+  <script defer src="js/document-links.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -39,6 +42,7 @@
         <a class="side-tab" href="#divisions">Divisions</a>
         <a class="side-tab" href="#tournaments">Tournaments</a>
         <a class="side-tab" href="#documents">Documents</a>
+        <a class="side-tab" href="#archive">Archive</a>
       </nav>
       <div class="side-panels">
         <section class="panel" id="about" aria-labelledby="about-title">
@@ -135,6 +139,11 @@
           <h2 id="documents-title">Documents</h2>
           <p>Conference files, saved on this site. Check each file’s date; a newer edition may exist.</p>
           <ul id="documents-list" class="doc-list"><noscript><li>Turn on JavaScript to see the documents.</li></noscript></ul>
+        </section>
+        <section class="panel" id="archive" aria-labelledby="archive-title">
+          <h2 id="archive-title">Archive</h2>
+          <p>Every file saved on this site, by school year.</p>
+          <div id="archive-list" class="panel-list"><noscript><p>Turn on JavaScript to see the archive.</p></noscript></div>
         </section>
       </div>
     </div>
