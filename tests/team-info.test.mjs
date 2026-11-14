@@ -76,9 +76,25 @@ test('a school missing from the divisions on file gets the list only', () => {
 });
 
 test('incomplete list shows no member list', () => {
-  const result = teamDivision({ school: 'marlboro', sport: 'Track', gender: 'Boys', level: 'Varsity', date: spring });
+  vm.runInContext(`shoreConferenceResources.divisionLists.push({ sports: ['Fencing'], genders: ['Girls'], level: 'Varsity',
+    season: 'Winter', year: 2026, title: 'Test list', url: 'archive.html?page=test', complete: false, divisions: { 'A North': ['marlboro'] } })`, context);
+  const result = teamDivision({ school: 'marlboro', sport: 'Fencing', gender: 'Girls', level: 'Varsity', date: '2027-01-20' });
+  vm.runInContext('shoreConferenceResources.divisionLists.pop()', context);
   assert.equal(result.division, 'A North');
   assert.equal(result.members, null);
+});
+
+test('schools beyond the pilot three get their division from the full lists', () => {
+  const result = teamDivision({ school: 'toms-river-east', sport: 'Soccer', gender: 'Boys', level: 'Varsity', date: fall });
+  assert.equal(result.division, 'A South');
+  assert.ok(result.members.includes('southern-regional'));
+  const track = teamDivision({ school: 'marlboro', sport: 'Track', gender: 'Boys', level: 'Varsity', date: spring });
+  assert.equal(track.division, 'A North');
+  assert.equal(track.members.length, 8);
+  const winter = '2027-01-20';
+  assert.equal(teamDivision({ school: 'trinity-hall', sport: 'Swimming', gender: 'Girls', level: 'Varsity', date: winter }).division, 'A North');
+  assert.equal(teamDivision({ school: 'trinity-hall', sport: 'Swimming', gender: 'Boys', level: 'Varsity', date: winter }).state, 'list');
+  assert.equal(teamDivision({ school: 'trinity-hall', sport: 'Swimming', gender: 'Girls', level: 'JV', date: winter }).state, 'not-varsity');
 });
 
 test('unknown sport has nothing on file', () => {

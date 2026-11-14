@@ -1,0 +1,1260 @@
+{
+  "divs-26-girls-soccer": {
+    "A North": [
+      "HOWELL",
+      "MANALAPAN",
+      "MIDD SOUTH",
+      "RBC",
+      "RFH",
+      "SJV",
+      "TRINITY HALL"
+    ],
+    "B North": [
+      "COLTS NECK",
+      "HOLMDEL",
+      "MONMOUTH",
+      "NEPTUNE",
+      "OCEAN",
+      "RBR",
+      "SHORE"
+    ],
+    "A Central": [
+      "FREEHOLD BORO",
+      "FREEHOLD TWP.",
+      "MANASQUAN",
+      "MARLBORO",
+      "MIDD NORTH",
+      "RARITAN",
+      "WALL"
+    ],
+    "B Central": [
+      "ASBURY PARK",
+      "KEYPORT",
+      "LONG BRANCH",
+      "MATAWAN",
+      "RANNEY",
+      "ST. ROSE"
+    ],
+    "A South": [
+      "CENTRAL",
+      "JACKSON",
+      "POINT BORO",
+      "SOUTHERN",
+      "TR EAST",
+      "TR SOUTH"
+    ],
+    "B South": [
+      "BARNEGAT",
+      "BRICK MEMORIAL",
+      "LACEY",
+      "MANCHESTER",
+      "POINT BEACH",
+      "TR NORTH"
+    ],
+    "C South": [
+      "BRICK TWP.",
+      "DONOVAN CATHOLIC",
+      "LAKEWOOD",
+      "NEW EGYPT",
+      "PINELANDS"
+    ]
+  },
+  "FH_2026_divisions": {
+    "A North": [
+      "Freehold Township",
+      "Manalapan",
+      "Middletown South",
+      "Ocean Township",
+      "Rumson-Fair Haven",
+      "Shore",
+      "Trinity Hall"
+    ],
+    "B North": [
+      "Colts Neck",
+      "Holmdel",
+      "Middletown North",
+      "Monmouth",
+      "Red Bank Catholic",
+      "Red Bank Regional",
+      "St. John Vianney"
+    ],
+    "C North": [
+      "Freehold Borough",
+      "Henry Hudson",
+      "Long Branch",
+      "Matawan",
+      "Neptune",
+      "Ranney",
+      "Raritan"
+    ],
+    "A South": [
+      "Howell",
+      "Manasquan",
+      "Point Pleasant Boro",
+      "Southern",
+      "St. Rose",
+      "Toms River North",
+      "Wall"
+    ],
+    "B South": [
+      "Barnegat",
+      "Central Regional",
+      "Jackson Township",
+      "Lacey",
+      "Toms River East",
+      "Toms River South"
+    ],
+    "C South": [
+      "Brick Memorial",
+      "Brick Township",
+      "Donovan Catholic",
+      "Lakewood",
+      "Manchester Township",
+      "New Egypt",
+      "Pinelands"
+    ]
+  },
+  "MHOCKEY_27-divisions": {
+    "Shore North": [
+      "Brick",
+      "CBA",
+      "Freehold Township",
+      "Howell",
+      "Manalapan",
+      "Manasquan",
+      "Marlboro",
+      "Middletown North",
+      "RBC",
+      "Toms River East"
+    ],
+    "Shore South": [
+      "Central",
+      "Freehold Boro",
+      "Lacey",
+      "Middletown South",
+      "Ocean",
+      "Red Bank Regional",
+      "Rumson",
+      "Southern",
+      "St. John Vianney",
+      "Wall"
+    ]
+  },
+  "MSOC_2026-divisions": {
+    "A North": [
+      "COLTS NECK",
+      "CBA",
+      "MIDD SOUTH",
+      "MARLBORO",
+      "MANALAPAN",
+      "SJV",
+      "FREEHOLD TWP."
+    ],
+    "B North": [
+      "WALL",
+      "FREEHOLD BORO",
+      "RBR",
+      "ASBURY PARK",
+      "HOWELL",
+      "MIDD NORTH",
+      "KEYPORT"
+    ],
+    "A Central": [
+      "HOLMDEL",
+      "SHORE",
+      "OCEAN",
+      "LONG BRANCH",
+      "MANASQUAN",
+      "RFH",
+      "RANNEY"
+    ],
+    "B Central": [
+      "MATAWAN",
+      "RARITAN",
+      "NEPTUNE",
+      "MONMOUTH",
+      "RBC",
+      "ST. ROSE",
+      "HENRY HUDSON"
+    ],
+    "A South": [
+      "TR EAST",
+      "SOUTHERN",
+      "POINT BORO",
+      "TR SOUTH",
+      "BRICK MEMORIAL",
+      "TR NORTH"
+    ],
+    "B South": [
+      "BRICK TWP.",
+      "LACEY",
+      "POINT BEACH",
+      "CENTRAL",
+      "JACKSON",
+      "MANCHESTER"
+    ],
+    "C South": [
+      "BARNEGAT",
+      "PINELANDS",
+      "LAKEWOOD",
+      "DONOVAN CATHOLIC",
+      "NEW EGYPT"
+    ]
+  },
+  "WREST_27-divisions": {
+    "American": [
+      "Christian Brothers",
+      "Howell",
+      "Red Bank Catholic",
+      "Southern Regional",
+      "Toms River East"
+    ],
+    "Constitution": [
+      "Holmdel",
+      "Middletown North",
+      "Middletown South",
+      "Rumson-Fair Haven",
+      "Wall"
+    ],
+    "Freedom": [
+      "Brick Memorial",
+      "Jackson Township",
+      "Lacey",
+      "Ocean Township",
+      "Point Boro"
+    ],
+    "Independence": [
+      "Colts Neck",
+      "Manasquan",
+      "Matawan",
+      "Raritan",
+      "St. John Vianney"
+    ],
+    "Federal": [
+      "Central Regional",
+      "Long Branch",
+      "Marlboro",
+      "Toms River North",
+      "Toms River South"
+    ],
+    "Royal": [
+      "Barnegat",
+      "Brick Township",
+      "Manalapan",
+      "Point Beach",
+      "Pinelands",
+      "Shore Regional"
+    ],
+    "Centennial": [
+      "Asbury Park",
+      "Freehold Borough",
+      "Freehold Township",
+      "Keansburg",
+      "Monmouth Regional",
+      "Red Bank Regional"
+    ],
+    "United": [
+      "Donovan Catholic",
+      "Keyport",
+      "Lakewood",
+      "Manchester",
+      "Neptune",
+      "New Egypt"
+    ]
+  },
+  "WTEN_2026-divisions": {
+    "A North": [
+      "COLTS NECK",
+      "HOLMDEL",
+      "MANALAPAN",
+      "MIDD SOUTH",
+      "RBC",
+      "RBR",
+      "RFH"
+    ],
+    "B North": [
+      "FREEHOLD TWP.",
+      "MARLBORO",
+      "MONMOUTH",
+      "OCEAN",
+      "RANNEY",
+      "SHORE",
+      "TRINITY HALL"
+    ],
+    "C North": [
+      "FREEHOLD BORO",
+      "HENRY HUDSON",
+      "KEANSBURG",
+      "LONG BRANCH",
+      "MATAWAN",
+      "MIDD NORTH",
+      "RARITAN",
+      "SJV"
+    ],
+    "A South": [
+      "BARNEGAT",
+      "CENTRAL",
+      "DONOVAN CATHOLIC",
+      "JACKSON",
+      "MANASQUAN",
+      "SOUTHERN",
+      "TR EAST"
+    ],
+    "B South": [
+      "HOWELL",
+      "LACEY",
+      "PINELANDS",
+      "POINT BORO",
+      "SAINT ROSE",
+      "TR NORTH",
+      "WALL"
+    ],
+    "C South": [
+      "BRICK TWP.",
+      "BRICK MEMORIAL",
+      "LAKEWOOD",
+      "MANCHESTER",
+      "NEPTUNE",
+      "NEW EGYPT",
+      "POINT BEACH",
+      "TR SOUTH"
+    ]
+  },
+  "WVB_-2026-divisions": {
+    "A North": [
+      "HOLMDEL",
+      "HOWELL",
+      "MARLBORO",
+      "RARITAN",
+      "SJV",
+      "TRINTIY HALL"
+    ],
+    "B North": [
+      "COLTS NECK",
+      "MIDD NORTH",
+      "MIDD SOUTH",
+      "RFH",
+      "SHORE",
+      "ST. ROSE"
+    ],
+    "C North": [
+      "ASBURY PARK",
+      "FREEHOLD BORO",
+      "KEYPORT",
+      "LONG BRANCH",
+      "RBC",
+      "RBR"
+    ],
+    "A South": [
+      "DONOVAN CATHOLIC",
+      "JACKSON",
+      "PINELANDS",
+      "SOUTHERN",
+      "TR SOUTH"
+    ],
+    "B South": [
+      "BARNEGAT",
+      "BRICK MEMORIAL",
+      "BRICK TWP",
+      "LACEY",
+      "MANASQUAN",
+      "TR NORTH"
+    ],
+    "C South": [
+      "CENTRAL",
+      "LAKEWOOD",
+      "MANCHESTER",
+      "POINT BEACH",
+      "TR EAST",
+      "WALL"
+    ]
+  },
+  "WWREST_27-divisions": {
+    "A North": [
+      "Freehold Boro",
+      "Howell",
+      "Manalapan",
+      "Marlboro",
+      "Middletown",
+      "Raritan"
+    ],
+    "A South": [
+      "Brick",
+      "Central",
+      "Jackson",
+      "Lakewood",
+      "Manchester",
+      "Southern",
+      "Toms River"
+    ]
+  },
+  "xc-2026-divisions": {
+    "A South": [
+      "Southern Regional",
+      "Toms River North",
+      "Toms River South",
+      "Toms River East",
+      "Brick Township",
+      "Brick Memorial",
+      "Central Regional",
+      "Jackson"
+    ],
+    "A Central": [
+      "Rumson-Fair Haven",
+      "Monmouth Regional",
+      "Raritan",
+      "Wall Township",
+      "Red Bank Catholic",
+      "Trinity Hall",
+      "Shore Regional",
+      "Manasquan"
+    ],
+    "A North": [
+      "Howell",
+      "Freehold Township",
+      "Christian Brothers Academy",
+      "Marlboro",
+      "Manalapan",
+      "Colts Neck",
+      "Red Bank Regional",
+      "Long Branch"
+    ],
+    "B South": [
+      "Pinelands",
+      "Manchester",
+      "Lacey Township",
+      "Barnegat",
+      "Point Boro",
+      "Donovan Catholic",
+      "Lakewood",
+      "(Ocean Academy)"
+    ],
+    "B Central": [
+      "Asbury Park",
+      "Keansburg",
+      "Point Beach",
+      "St. Rose",
+      "Ranney",
+      "Henry Hudson/Keyport",
+      "New Egypt"
+    ],
+    "B North": [
+      "Neptune",
+      "Matawan",
+      "Ocean Township",
+      "St. John Vianney",
+      "Holmdel",
+      "Middletown North",
+      "Middletown South",
+      "Freehold Boro"
+    ]
+  },
+  "2027_flag_divisions": {
+    "American": [
+      "Keansburg",
+      "Raritan",
+      "Matawan",
+      "Midd. North",
+      "SJV",
+      "Holmdel",
+      "RFH",
+      "Midd. South",
+      "RBC"
+    ],
+    "Constitution": [
+      "Neptune",
+      "Howell",
+      "Manasquan",
+      "Brick Mem.",
+      "Brick Twp.",
+      "Central",
+      "Barnegat",
+      "Pinelands"
+    ],
+    "Colonial": [
+      "Marlboro",
+      "Ranney",
+      "Trinity Hall",
+      "Shore",
+      "Long Branch",
+      "Manalapan",
+      "Colts Neck",
+      "Freehold Boro",
+      "Freehold Twp."
+    ]
+  },
+  "SC_Baseball_Div_27": {
+    "American": [
+      "RBC",
+      "CBA",
+      "Colts Neck",
+      "RFH",
+      "Howell",
+      "Ranney"
+    ],
+    "Freedom": [
+      "Brick Memorial",
+      "TRE",
+      "TRS",
+      "Wall",
+      "Jackson",
+      "Point Beach"
+    ],
+    "Patriot": [
+      "Henry Hudson",
+      "Long Branch",
+      "Keyport",
+      "Keansburg",
+      "Lakewood",
+      "Asbury Park",
+      "Neptune"
+    ],
+    "Colonial": [
+      "Manalapan",
+      "Freehold Twp.",
+      "Raritan",
+      "SJV",
+      "Shore",
+      "Midd. North",
+      "RBR"
+    ],
+    "Independence": [
+      "Point Boro",
+      "Lacey",
+      "Manasquan",
+      "Central",
+      "Southern",
+      "TRN"
+    ],
+    "Constitution": [
+      "Ocean",
+      "Marlboro",
+      "Holmdel",
+      "Monmouth",
+      "Midd. South",
+      "Matawan",
+      "Freehold Boro"
+    ],
+    "Liberty": [
+      "St. Rose",
+      "Barnegat",
+      "Brick Twp.",
+      "Donovan",
+      "Manchester",
+      "Pinelands",
+      "New Egypt"
+    ]
+  },
+  "sc_boys_golf_27": {
+    "Nicklaus": [
+      "CBA",
+      "SJV",
+      "Manasquan",
+      "Holmdel",
+      "Wall",
+      "Midd. South"
+    ],
+    "Woods": [
+      "Central",
+      "Point Beach",
+      "Donovan",
+      "Lacey",
+      "TRN"
+    ],
+    "Snead": [
+      "Ocean",
+      "Shore",
+      "Freehold Boro",
+      "Neptune",
+      "Long Branch"
+    ],
+    "Palmer": [
+      "Point Boro",
+      "Southern",
+      "TRE",
+      "TRS",
+      "Barnegat"
+    ],
+    "Mickelson": [
+      "Freehold Township",
+      "Monmouth",
+      "Colts Neck",
+      "Midd. North",
+      "Manalapan",
+      "Howell"
+    ],
+    "Hogan": [
+      "Ranney",
+      "St. Rose",
+      "RFH",
+      "RBC",
+      "RBR",
+      "Marlboro"
+    ],
+    "Nelson": [
+      "Brick Memorial",
+      "Jackson",
+      "Brick Twp.",
+      "Manchester",
+      "Pinelands"
+    ]
+  },
+  "sc_boys_lax_27": {
+    "American": [
+      "RFH",
+      "CBA",
+      "Southern",
+      "Manasquan",
+      "Holmdel",
+      "Midd. South",
+      "RBR",
+      "TRE"
+    ],
+    "Constitution": [
+      "Barnegat",
+      "Lacey",
+      "Midd. North",
+      "Jackson",
+      "TRN",
+      "Marlboro",
+      "SJV",
+      "Colts Neck"
+    ],
+    "Colonial": [
+      "Wall",
+      "Manalapan",
+      "Shore",
+      "RBC",
+      "Point Boro",
+      "Brick Memorial",
+      "Ocean",
+      "Howell"
+    ],
+    "Freedom": [
+      "Freehold Twp.",
+      "TRS",
+      "New Egypt",
+      "Donovan",
+      "Brick Twp.",
+      "Central",
+      "Neptune",
+      "Long Branch",
+      "St. Rose"
+    ]
+  },
+  "sc_boys_tennis_27": {
+    "American": [
+      "CBA",
+      "Marlboro",
+      "Ocean",
+      "Holmdel",
+      "Ranney",
+      "Wall",
+      "RFH",
+      "Colts Neck"
+    ],
+    "Freedom": [
+      "Southern",
+      "Point Boro",
+      "Pinelands",
+      "Point Beach",
+      "Brick Twp.",
+      "Lacey",
+      "TRE",
+      "Central"
+    ],
+    "Colonial": [
+      "Manasquan",
+      "Manalapan",
+      "Midd. South",
+      "RBR",
+      "Neptune",
+      "Matawan",
+      "Henry Hudson",
+      "Freehold Boro"
+    ],
+    "Independence": [
+      "Barnegat",
+      "Jackson",
+      "Brick Memorial",
+      "Donovan",
+      "Lakewood",
+      "TRS",
+      "TRN",
+      "Manchester"
+    ],
+    "Constitution": [
+      "Raritan",
+      "Howell",
+      "Shore",
+      "Freehold Twp.",
+      "SJV",
+      "Monmouth",
+      "Keansburg",
+      "Long Branch"
+    ]
+  },
+  "sc_boys_volleyball_27": {
+    "American": [
+      "SJV",
+      "Howell",
+      "Holmdel",
+      "CBA",
+      "Freehold Boro",
+      "Marlboro",
+      "Colts Neck"
+    ],
+    "Constitution": [
+      "Wall",
+      "Midd. South",
+      "Long Branch",
+      "Asbury Park",
+      "Midd. North",
+      "RBC"
+    ],
+    "Colonial": [
+      "Southern",
+      "Barnegat",
+      "Pinelands",
+      "Jackson",
+      "Lacey"
+    ],
+    "Freedom": [
+      "Central",
+      "Manchester",
+      "TRS",
+      "TRN",
+      "TRE",
+      "Lakewood"
+    ]
+  },
+  "sc_girls_golf_27": {
+    "Sorrenstam": [
+      "Trinity Hall",
+      "Holmdel",
+      "SJV",
+      "Colts Neck",
+      "RFH",
+      "St. Rose"
+    ],
+    "Wright": [
+      "Pinelands",
+      "Southern",
+      "Central",
+      "Barnegat",
+      "Jackson"
+    ],
+    "Whitworth": [
+      "Midd. South",
+      "Midd. North",
+      "Marlboro",
+      "RBC",
+      "Freehold Boro",
+      "Ranney",
+      "Wall"
+    ],
+    "Lopez": [
+      "TRN",
+      "TRE",
+      "TRS",
+      "Manchester",
+      "Donovan",
+      "Lacey"
+    ]
+  },
+  "sc_girls_lax_27": {
+    "American": [
+      "Trinity Hall",
+      "RFH",
+      "Southern",
+      "RBR",
+      "Midd. South",
+      "Barnegat",
+      "Shore"
+    ],
+    "Constitution": [
+      "Freehold Twp.",
+      "TRS",
+      "Howell",
+      "RBC",
+      "Wall",
+      "Marlboro",
+      "TRN",
+      "Lacey"
+    ],
+    "Independence": [
+      "Midd. North",
+      "Point Beach",
+      "St. Rose",
+      "Ranney",
+      "Neptune",
+      "Monmouth Reg.",
+      "Pinelands",
+      "Manchester"
+    ],
+    "Colonial": [
+      "Manasquan",
+      "Point Boro",
+      "Central",
+      "Holmdel",
+      "Manalapan",
+      "TRE",
+      "Brick Twp."
+    ],
+    "Freedom": [
+      "New Egypt",
+      "SJV",
+      "Colts Neck",
+      "Ocean",
+      "Donovan",
+      "Brick Memorial",
+      "Long Branch",
+      "Jackson"
+    ]
+  },
+  "sc_softball_div_27": {
+    "American": [
+      "SJV",
+      "Middletown South",
+      "RBC",
+      "Marlboro",
+      "Raritan",
+      "Holmdel"
+    ],
+    "Freedom": [
+      "Donovan",
+      "Barnegat",
+      "Southern",
+      "Central",
+      "Pinelands",
+      "Toms River East"
+    ],
+    "Patriot": [
+      "Keansburg",
+      "Red Bank Regional",
+      "Keyport",
+      "RFH",
+      "Neptune",
+      "Lakewood",
+      "Long Branch"
+    ],
+    "Colonial": [
+      "Colts Neck",
+      "Shore Regional",
+      "Middletown North",
+      "Howell",
+      "Matawan",
+      "Manalapan"
+    ],
+    "Independence": [
+      "Jackson",
+      "New Egypt",
+      "Toms River South",
+      "Point Boro",
+      "Brick Memorial",
+      "Toms River North"
+    ],
+    "Constitution": [
+      "Freehold Boro",
+      "Freehold Township",
+      "Ocean",
+      "St. Rose",
+      "Wall",
+      "Trinity Hall",
+      "Manasquan"
+    ],
+    "Liberty": [
+      "Manchester",
+      "Brick",
+      "Point Beach",
+      "Lacey",
+      "Monmouth",
+      "Henry Hudson"
+    ]
+  },
+  "sc_boys_basketball_27": {
+    "A North": [
+      "CBA",
+      "Howell",
+      "Manasquan",
+      "Marlboro",
+      "RBC",
+      "Wall"
+    ],
+    "A South": [
+      "Brick Memorial",
+      "Central",
+      "Jackson",
+      "Point Beach",
+      "Point Boro",
+      "Southern"
+    ],
+    "B North": [
+      "Freehold Twp.",
+      "Holmdel",
+      "Ocean",
+      "Ranney",
+      "RBR",
+      "RFH"
+    ],
+    "B South": [
+      "Barnegat",
+      "Pinelands",
+      "TRE",
+      "TRN",
+      "TRS"
+    ],
+    "A Central": [
+      "Colts Neck",
+      "Henry Hudson",
+      "Midd. South",
+      "Monmouth",
+      "Shore",
+      "St. Rose"
+    ],
+    "C South": [
+      "Brick Twp.",
+      "Donovan",
+      "Lacey",
+      "Lakewood",
+      "Manchester",
+      "New Egypt"
+    ],
+    "B Central": [
+      "Freehold Boro",
+      "Manalapan",
+      "Matawan",
+      "Midd. North",
+      "SJV"
+    ],
+    "C North": [
+      "Asbury Park",
+      "Keansburg",
+      "Keyport",
+      "Long Branch",
+      "Neptune",
+      "Raritan"
+    ]
+  },
+  "sc_girls_basketball_27": {
+    "A North": [
+      "Howell",
+      "Manasquan",
+      "RBC",
+      "RFH",
+      "SJV",
+      "Trinity Hall"
+    ],
+    "A South": [
+      "Brick Twp.",
+      "Jackson",
+      "Point Boro",
+      "Southern",
+      "TRE",
+      "TRS"
+    ],
+    "B North": [
+      "Colts Neck",
+      "Midd. South",
+      "Neptune",
+      "RBR",
+      "Shore",
+      "St. Rose"
+    ],
+    "B South": [
+      "Barnegat",
+      "Brick Memorial",
+      "Central",
+      "Donovan",
+      "Lacey",
+      "Manchester"
+    ],
+    "A Central": [
+      "Freehold Boro",
+      "Freehold Twp.",
+      "Holmdel",
+      "Keansburg",
+      "Marlboro",
+      "Midd. North"
+    ],
+    "C South": [
+      "Lakewood",
+      "New Egypt",
+      "Pinelands",
+      "Point Beach",
+      "TRN"
+    ],
+    "B Central": [
+      "Manalapan",
+      "Matawan",
+      "Ocean",
+      "Ranney",
+      "Wall"
+    ],
+    "C North": [
+      "Asbury Park",
+      "Henry Hudson",
+      "Keyport",
+      "Long Branch",
+      "Monmouth",
+      "Raritan"
+    ]
+  },
+  "Gymnastics_2026_Divisions": {
+    "A North": [
+      "Midd South",
+      "SJV",
+      "Marlboro",
+      "Howell",
+      "Freehold Twp",
+      "Ocean",
+      "Colts Neck"
+    ],
+    "A South": [
+      "Brick Mem./Brick Twp.",
+      "Manchester/Jackson",
+      "Southern Reg.",
+      "Central Reg",
+      "Manasquan",
+      "Lacey"
+    ],
+    "B North": [
+      "Trinity Hall",
+      "Manlapan",
+      "Holmdel",
+      "RBC",
+      "RBR/RFH",
+      "Freehold Boro",
+      "Midd North"
+    ],
+    "B South": [
+      "Toms River South",
+      "Neptune",
+      "Point Boro",
+      "Toms River East",
+      "Wall",
+      "Toms River North",
+      "Donovan Catholic"
+    ]
+  },
+  "Track_2027": {
+    "A North": [
+      "Marlboro",
+      "Freehold Twp.",
+      "Colts Neck",
+      "Manalapan",
+      "Howell",
+      "CBA",
+      "Long Branch",
+      "Red Bank Regional"
+    ],
+    "A South": [
+      "Toms River North",
+      "Toms River South",
+      "Toms River East",
+      "Southern",
+      "Brick Memorial",
+      "Brick Township",
+      "Jackson",
+      "Central Regional"
+    ],
+    "A Central": [
+      "Rumson-Fair Haven",
+      "Monmouth Regional",
+      "Raritan",
+      "Wall",
+      "Manasquan",
+      "RBC",
+      "Shore",
+      "Trinity Hall"
+    ],
+    "B North": [
+      "Middletown South",
+      "Middletown North",
+      "Freehold Boro",
+      "Neptune",
+      "Matawan",
+      "Ocean Township",
+      "Holmdel",
+      "St. John Vianney"
+    ],
+    "B South": [
+      "Lacey",
+      "Point Boro",
+      "Pinelands",
+      "Manchester",
+      "Barnegat",
+      "Donovan Catholic",
+      "Lakewood"
+    ],
+    "B Central": [
+      "St. Rose",
+      "Ranney",
+      "Keyport",
+      "Point Beach",
+      "Asbury Park",
+      "Henry Hudson",
+      "New Egypt"
+    ]
+  },
+  "sc_football_26": {
+    "A North": [
+      "Holmdel",
+      "Manalapan",
+      "Red Bank Catholic",
+      "Rumson-FH Reg.",
+      "St. John Vianney",
+      "Wall Township"
+    ],
+    "B North": [
+      "Freehold Township",
+      "Manasquan",
+      "Matawan",
+      "Middletown North",
+      "Middletown South",
+      "Shore Regional"
+    ],
+    "C North": [
+      "Howell",
+      "Marlboro",
+      "Neptune",
+      "Ocean Township",
+      "Raritan",
+      "Red Bank"
+    ],
+    "D North": [
+      "Asbury Park",
+      "Barnegat",
+      "Colts Neck",
+      "Long Branch",
+      "Manchester",
+      "Monmouth Reg."
+    ],
+    "A South": [
+      "Brick Memorial",
+      "Donovan Catholic",
+      "Jackson Twp",
+      "Pt. Pleasant Boro",
+      "Southern Reg.",
+      "TR North"
+    ],
+    "B South": [
+      "Brick Township",
+      "Central Regional",
+      "Lacey Township",
+      "Pinelands",
+      "TR East",
+      "TR South"
+    ],
+    "C South": [
+      "Freehold Boro",
+      "Keansburg",
+      "Keyport",
+      "Lakewood",
+      "New Egypt",
+      "Pt. Pleasant Beach"
+    ]
+  },
+  "swimming-boys": {
+    "A North": [
+      "CBA",
+      "Holmdel",
+      "Manasquan",
+      "Middletown South",
+      "Red Bank Regional",
+      "RFH"
+    ],
+    "B North": [
+      "Freehold Twp.",
+      "Marlboro",
+      "Ocean",
+      "RBC",
+      "St. Rose",
+      "Wall"
+    ],
+    "A Central": [
+      "Colts Neck",
+      "Howell",
+      "Manalapan",
+      "Neptune",
+      "Ranney",
+      "Shore"
+    ],
+    "B Central": [
+      "Freehold Boro",
+      "Long Branch",
+      "Middletown North",
+      "Monmouth",
+      "Raritan",
+      "SJV"
+    ],
+    "A South": [
+      "Central",
+      "Jackson",
+      "Lacey",
+      "Southern",
+      "Toms River East",
+      "Toms River South"
+    ],
+    "B South": [
+      "Barnegat",
+      "Brick Memorial",
+      "Brick Twp.",
+      "Donovan",
+      "Manchester",
+      "Point Boro",
+      "Toms River North"
+    ]
+  },
+  "swimming-girls": {
+    "A North": [
+      "Trinity Hall",
+      "Holmdel",
+      "Manasquan",
+      "Middletown South",
+      "Red Bank Regional",
+      "RFH"
+    ],
+    "B North": [
+      "Freehold Twp.",
+      "Marlboro",
+      "Ocean",
+      "RBC",
+      "St. Rose",
+      "Wall"
+    ],
+    "A Central": [
+      "Colts Neck",
+      "Howell",
+      "Manalapan",
+      "Neptune",
+      "Ranney",
+      "Shore"
+    ],
+    "B Central": [
+      "Freehold Boro",
+      "Long Branch",
+      "Middletown North",
+      "Monmouth",
+      "Raritan",
+      "SJV"
+    ],
+    "A South": [
+      "Central",
+      "Jackson",
+      "Lacey",
+      "Southern",
+      "Toms River East",
+      "Toms River South"
+    ],
+    "B South": [
+      "Barnegat",
+      "Brick Memorial",
+      "Brick Twp.",
+      "Donovan",
+      "Manchester",
+      "Point Boro",
+      "Toms River North"
+    ]
+  }
+}
