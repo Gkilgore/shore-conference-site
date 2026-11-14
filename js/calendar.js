@@ -133,6 +133,8 @@ function renderCalendar(events) {
       const title = document.createElement('span');
       title.className = 'game-title';
       title.textContent = event.title;
+      const icon = typeof createSportIcon === 'function' ? createSportIcon(event.extendedProps.sport) : null;
+      if (icon) title.prepend(icon);
       const displayedTime = event.allDay ? 'TBD' : timeText;
       if (displayedTime && (!inList || event.allDay)) {
         const time = document.createElement('span');

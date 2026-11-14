@@ -708,3 +708,9 @@ textarea { display: block; resize: vertical; }
 .school-page .brand:is(:hover, :focus-visible) { color: var(--school-color); }
 .school-page .site-header :is(nav a, .staff-link):is([aria-current], .section-active):is(:hover, :focus-visible) { background: var(--ink); border-color: var(--ink); }
 .school-page #calendar { --fc-today-bg-color: color-mix(in srgb, var(--school-color) 12%, white); }
+
+/* Small sport identifiers on game previews and calendar titles; no badge or accent color. */
+.sport-icon { display: inline-block; flex: none; width: 1.15em; height: 1.15em; margin-right: 0.4em; vertical-align: -0.17em; color: inherit; }
+.game-list strong .sport-icon { color: var(--navy); }
+#calendar .game-title { display: block; }
+#calendar .game-title .sport-icon { width: 1em; height: 1em; margin-right: 0.35em; }

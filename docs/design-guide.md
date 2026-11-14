@@ -53,3 +53,9 @@ Hovers change the whole background to a different solid color, with no movement.
 - A skip link, the shared masthead (brand, main nav, and the `.staff-link`), and the shared footer.
 - Relative links only.
 - Check the page at phone width (390px) and desktop width before calling it done.
+
+## Sport icons
+
+- The shared 24 × 24 outline icon sprite is `assets/icons/sports.svg`; `createSportIcon(sport)` in `js/site.js` maps common sport labels to an SVG `<use>` reference.
+- Show sport icons only beside an existing sport or game label in public schedules. Do not replace school logos, headings, calendar status indicators, or accessible text with icons.
+- Icons are monochrome and inherit text color. Unknown sports display without an icon; do not guess a sport or show a broken graphic.
