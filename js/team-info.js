@@ -39,7 +39,9 @@ function teamDivision({ school, sport, gender, level, date }) {
   const [list] = lists;
   const label = seasonLabel(list.season, list.year);
   if (level && level !== list.level) return { state: 'not-varsity', list, level, label };
-  const division = Object.keys(list.divisions ?? {}).find(name => list.divisions[name].includes(school));
+  // An entry such as "brick-township/brick-memorial" places each of its schools in that division.
+  const division = Object.keys(list.divisions ?? {}).find(name =>
+    list.divisions[name].some(entry => entry.split('/').includes(school)));
   if (!division) return { state: 'list', list, label };
   return { state: 'assigned', list, label, division, level: list.level,
     members: list.complete ? list.divisions[division] : null };
@@ -77,11 +79,13 @@ function renderTeamInfo(target, selection, { quietWhenAll = false } = {}) {
       details.append(part('summary', 'Schools in ' + result.division), names);
       names.append(...result.members.map(member => {
         const item = document.createElement('li');
-        if (Object.hasOwn(schools, member)) {
-          const anchor = part('a', schools[member].name);
-          anchor.href = 'school.html?school=' + encodeURIComponent(member);
-          item.append(anchor);
-        } else item.textContent = member;
+        const slugs = divisionEntrySchools(member, schools);
+        if (!slugs.length) item.textContent = member;
+        slugs.forEach((slug, index) => {
+          const anchor = part('a', schools[slug].name);
+          anchor.href = 'school.html?school=' + encodeURIComponent(slug);
+          item.append(...(index ? [' / ', anchor] : [anchor]));
+        });
         return item;
       }));
       parts.push(details);

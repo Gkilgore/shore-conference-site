@@ -160,10 +160,18 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
 .photo img { display: block; width: 100%; height: auto; }
 .photo figcaption { padding: 0.6rem 0.8rem; background: white; font-size: 0.9rem; line-height: 1.4; color: var(--muted); }
 /* Division pop-up: each division's schools, side by side when there is room. */
-.division-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 1rem; margin-block: 1rem; }
+.division-groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 1fr)); gap: 0.75rem; margin-block: 1rem; }
+.division-groups section { padding: 0.75rem; border: var(--frame); min-width: 0; }
 .division-groups h3 { margin: 0 0 0.3rem; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
-.division-groups ul { margin: 0; padding: 0; list-style: none; line-height: 1.7; }
-.division-details .actions { margin-top: 1rem; }
+.division-groups ul { margin: 0; padding: 0; list-style: none; line-height: 1.7; overflow-wrap: anywhere; }
+/* Wide enough for several divisions across on desktop; scrolls inside, with Close kept in reach. */
+.game-details.division-details { width: min(60rem, calc(100% - 2rem)); overflow-y: auto; overscroll-behavior: contain; padding-bottom: 0; }
+.division-summary { margin-top: 0.4rem; }
+.division-notes { padding: 0.75rem; border: var(--frame); background: var(--paper); }
+.division-notes h3 { margin: 0 0 0.3rem; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+.division-notes ul { margin: 0; padding-left: 1.2rem; line-height: 1.5; }
+.division-details .doc-meta { margin-top: 0.75rem; }
+.division-details .actions { position: sticky; bottom: 0; margin-top: 0.75rem; padding-block: 0.75rem 1.25rem; background: white; }
 /* Tournament files and documents: one row per saved file. */
 .doc-list { display: grid; gap: 1px; margin: 0; padding: 1px; list-style: none; background: var(--steel); }
 .doc-list li { display: grid; gap: 0.25rem; padding: 0.75rem 0.9rem; background: white; overflow-wrap: anywhere; }

@@ -24,11 +24,12 @@ test('every division list names its source, level, season and review', () => {
   }
 });
 
-test('division members written as slugs are real schools', () => {
+test('division members written as slugs are real schools, including each part of a joined entry', () => {
   for (const list of resources.divisionLists) {
     for (const members of Object.values(list.divisions ?? {})) {
       for (const member of members) {
-        if (/^[a-z-]+$/.test(member)) assert.ok(Object.hasOwn(schools, member), list.title + ': ' + member);
+        if (!/^[a-z-]+(\/[a-z-]+)*$/.test(member)) continue;
+        for (const slug of member.split('/')) assert.ok(Object.hasOwn(schools, slug), list.title + ': ' + slug);
       }
     }
   }
@@ -36,7 +37,7 @@ test('division members written as slugs are real schools', () => {
 
 test('a school sits in at most one division of a list', () => {
   for (const list of resources.divisionLists) {
-    const all = Object.values(list.divisions ?? {}).flat();
+    const all = Object.values(list.divisions ?? {}).flat().flatMap(member => member.split('/'));
     assert.equal(new Set(all).size, all.length, list.title);
   }
 });

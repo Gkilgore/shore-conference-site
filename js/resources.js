@@ -41,51 +41,63 @@
   if (chapter) chapter.scrollIntoView();
   else if (location.hash) scrollTo(0, 0);
 
-  // Divisions: one button per team, by season. A button opens that sport's divisions in a pop-up.
+  // Divisions: one button per team, by season. A button opens that sport's whole alignment in a pop-up:
+  // every division and every school in it. Escape or Close returns focus to the button.
   const dialog = node('dialog', '', 'game-details division-details');
   dialog.setAttribute('aria-labelledby', 'division-details-title');
   dialog.innerHTML = `
     <p class="eyebrow"></p>
     <h2 id="division-details-title"></h2>
+    <p class="division-summary"></p>
     <div class="division-groups"></div>
+    <div class="division-notes" hidden><h3>To confirm</h3><ul></ul></div>
     <p class="doc-meta"></p>
-    <div class="actions"><a class="button dark">Official list</a><form method="dialog"><button class="button secondary" autofocus>Close</button></form></div>`;
+    <div class="actions"><a class="button dark">Saved list</a><form method="dialog"><button class="button secondary" autofocus>Close</button></form></div>`;
   document.body.append(dialog);
-  const members = schools => {
-    const list = node('ul');
-    list.append(...schools.map(slug => {
-      const item = node('li');
-      if (Object.hasOwn(shoreSchools, slug)) item.append(link(shoreSchools[slug].name, 'school.html?school=' + encodeURIComponent(slug)));
-      else item.textContent = slug;
-      return item;
-    }));
-    return list;
-  };
-  function openDivisions(team, season) {
-    const list = team.list;
-    const names = Object.keys(list.divisions || {});
-    dialog.querySelector('.eyebrow').textContent = season + ' · ' + list.level;
+  let opener = null;
+  function openDivisions(team, season, button) {
+    const breakdown = divisionBreakdown(team.list, shoreSchools);
+    dialog.querySelector('.eyebrow').textContent = season + ' · ' + team.list.level;
     dialog.querySelector('h2').textContent = team.label;
-    dialog.querySelector('.division-groups').replaceChildren(...names.map(name => {
+    dialog.querySelector('.division-summary').textContent = breakdown.summary;
+    dialog.querySelector('.division-groups').replaceChildren(...breakdown.divisions.map(division => {
       const group = node('section');
-      group.append(node('h3', name), list.complete ? members(list.divisions[name])
-        : node('p', 'Schools not copied here yet. See the official list.'));
+      group.setAttribute('aria-label', division.name);
+      group.append(node('h3', division.name));
+      if (!division.members) group.append(node('p', 'Schools not copied here yet.'));
+      else {
+        const schools = node('ul');
+        schools.append(...division.members.map(member => {
+          const item = node('li');
+          if (!member.schools.length) item.append(node('span', member.name, 'printed-name'));
+          member.schools.forEach((school, index) => {
+            if (index) item.append(' / ');
+            item.append(link(school.name, 'school.html?school=' + encodeURIComponent(school.slug)));
+          });
+          return item;
+        }));
+        group.append(schools);
+      }
       return group;
     }));
-    dialog.querySelector('.doc-meta').textContent = (names.length
-      ? 'Only some divisions are copied here so far. The official list has them all.'
-      : 'Divisions are not copied here yet. The official list has them all.') + ' Checked ' + list.reviewed + '.';
-    dialog.querySelector('a').href = list.url;
+    const notes = dialog.querySelector('.division-notes');
+    notes.hidden = !breakdown.notes.length;
+    notes.querySelector('ul').replaceChildren(...breakdown.notes.map(note => node('li', note)));
+    dialog.querySelector('.doc-meta').textContent = 'From the saved conference list. Checked ' + breakdown.reviewed + '.';
+    dialog.querySelector('a').href = team.list.url;
+    opener = button;
     dialog.showModal();
+    dialog.scrollTop = 0;
   }
   dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+  dialog.addEventListener('close', () => { if (opener?.isConnected) opener.focus(); opener = null; });
   document.getElementById('division-teams').replaceChildren(...divisionGroups(shoreConferenceResources.divisionLists).flatMap(group => {
     const buttons = node('div', '', 'division-teams');
     buttons.append(...group.teams.map(team => {
       const button = node('button', team.label, 'button secondary');
       button.type = 'button';
       button.setAttribute('aria-haspopup', 'dialog');
-      button.addEventListener('click', () => openDivisions(team, group.label));
+      button.addEventListener('click', () => openDivisions(team, group.label, button));
       return button;
     }));
     return [node('h3', group.label, 'eyebrow'), buttons];

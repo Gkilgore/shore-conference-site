@@ -76,9 +76,42 @@ test('a school missing from the divisions on file gets the list only', () => {
 });
 
 test('incomplete list shows no member list', () => {
-  const result = teamDivision({ school: 'marlboro', sport: 'Track', gender: 'Boys', level: 'Varsity', date: spring });
+  vm.runInContext(`shoreConferenceResources.divisionLists.push({ sports: ['Fencing'], genders: ['Girls'], level: 'Varsity',
+    season: 'Winter', year: 2026, title: 'Test list', url: 'archive.html?page=test', complete: false, divisions: { 'A North': ['marlboro'] } })`, context);
+  const result = teamDivision({ school: 'marlboro', sport: 'Fencing', gender: 'Girls', level: 'Varsity', date: '2027-01-20' });
+  vm.runInContext('shoreConferenceResources.divisionLists.pop()', context);
   assert.equal(result.division, 'A North');
   assert.equal(result.members, null);
+});
+
+test('schools beyond the pilot three get their division from the full lists', () => {
+  const result = teamDivision({ school: 'toms-river-east', sport: 'Soccer', gender: 'Boys', level: 'Varsity', date: fall });
+  assert.equal(result.division, 'A South');
+  assert.ok(result.members.includes('southern-regional'));
+  const track = teamDivision({ school: 'marlboro', sport: 'Track', gender: 'Boys', level: 'Varsity', date: spring });
+  assert.equal(track.division, 'A North');
+  assert.equal(track.members.length, 8);
+  const winter = '2027-01-20';
+  assert.equal(teamDivision({ school: 'trinity-hall', sport: 'Swimming', gender: 'Girls', level: 'Varsity', date: winter }).division, 'A North');
+  assert.equal(teamDivision({ school: 'trinity-hall', sport: 'Swimming', gender: 'Boys', level: 'Varsity', date: winter }).state, 'list');
+  assert.equal(teamDivision({ school: 'trinity-hall', sport: 'Swimming', gender: 'Girls', level: 'JV', date: winter }).state, 'not-varsity');
+});
+
+test('each school named by a short or combined entry gets that division', () => {
+  const winter = '2027-01-20';
+  const division = (school, sport, gender, date) => teamDivision({ school, sport, gender, level: 'Varsity', date }).division;
+  assert.equal(division('brick-township', 'Ice Hockey', 'Boys', winter), 'Shore North');
+  assert.equal(division('brick-memorial', 'Ice Hockey', 'Boys', winter), 'Shore North');
+  assert.equal(division('rumson-fair-haven-regional', 'Ice Hockey', 'Boys', winter), 'Shore South');
+  assert.equal(division('middletown-south', 'Wrestling', 'Girls', winter), 'A North');
+  assert.equal(division('toms-river-north', 'Wrestling', 'Girls', winter), 'A South');
+  assert.equal(division('red-bank-regional', 'Football', 'Boys', fall), 'C North');
+  assert.equal(division('red-bank-catholic', 'Football', 'Boys', fall), 'A North');
+  assert.equal(division('brick-township', 'Softball', 'Girls', spring), 'Liberty');
+  assert.equal(division('brick-memorial', 'Softball', 'Girls', spring), 'Independence');
+  assert.equal(division('jackson-township', 'Gymnastics', 'Girls', fall), 'A South');
+  assert.equal(division('keyport', 'Cross Country', 'Girls', fall), 'B Central');
+  assert.equal(teamDivision({ school: 'ocean-academy', sport: 'Cross Country', gender: 'Boys', level: 'Varsity', date: fall }).state, 'list');
 });
 
 test('unknown sport has nothing on file', () => {

@@ -21,3 +21,27 @@ function divisionGroups(lists) {
   }
   return groups;
 }
+
+// Everything the division pop-up shows for one list: each division with every team in it, in the
+// list's own order. An entry names one school or several ("brick-township/brick-memorial" is one team
+// line naming both); each school gets its name and page. A printed name is shown as is, with no link.
+function divisionBreakdown(list, schools) {
+  const entries = Object.entries(list.divisions || {});
+  const team = entry => {
+    const slugs = divisionEntrySchools(entry, schools);
+    if (!slugs.length) return { name: entry, schools: [] };
+    const named = slugs.map(slug => ({ slug, name: schools[slug].name }));
+    return { name: named.map(school => school.name).join(' / '), schools: named };
+  };
+  const divisions = entries.map(([name, members]) => ({
+    name,
+    members: list.complete ? members.map(team) : null,
+  }));
+  const teams = list.complete ? entries.reduce((total, [, members]) => total + members.length, 0) : 0;
+  let summary;
+  if (!entries.length) summary = 'Divisions are not copied here yet. The saved list has them all.';
+  else if (!list.complete) summary = 'Division names only. The saved list has the schools.';
+  else if (!list.allDivisions) summary = 'Only some divisions are copied here. The saved list has them all.';
+  else summary = 'All ' + entries.length + (entries.length === 1 ? ' division, ' : ' divisions, ') + teams + ' teams.';
+  return { divisions, summary, notes: list.notes || [], reviewed: list.reviewed };
+}
