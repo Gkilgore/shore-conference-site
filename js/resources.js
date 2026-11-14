@@ -104,6 +104,8 @@
   }));
 
   // Tournament files and conference documents: one framed row each, linking to the copy saved on this site.
+  // Drawn again by js/document-archive.js once files uploaded by conference staff have loaded.
+  window.drawResourceLists = () => {
   for (const kind of ['tournaments', 'documents']) {
     document.getElementById(kind + '-list').replaceChildren(...shorePublicResources[kind].map(record => {
       const item = node('li');
@@ -114,4 +116,6 @@
       return item;
     }));
   }
+  };
+  drawResourceLists();
 })();
