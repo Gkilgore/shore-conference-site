@@ -118,6 +118,18 @@ test('AD cannot add a team level twice', async () => {
   assert.match(app.status.textContent, /already on the team list/i);
 });
 
+test('Add Game sports come from the loaded school team list', async () => {
+  const app = mount({ records: [
+    { id: 'soccer-fall', school_id: 'marlboro', sport: 'Soccer', gender: 'Girls', level: 'Varsity', season: 'Fall' },
+    { id: 'soccer-spring', school_id: 'marlboro', sport: 'Soccer', gender: 'Boys', level: 'JV', season: 'Spring' },
+    { id: 'track', school_id: 'marlboro', sport: 'Track and Field', gender: 'Girls', level: 'Varsity', season: 'Spring' },
+  ] });
+  assert.equal(app.controller.loadState(), 'loading');
+  await app.controller.load();
+  assert.equal(app.controller.loadState(), 'ready');
+  assert.deepEqual(app.controller.sports(), ['Soccer', 'Track and Field']);
+});
+
 test('AD must confirm removing an unused team and cannot remove one with games', async () => {
   const unused = mount({ records: [
     { id: 'empty', school_id: 'marlboro', sport: 'Soccer', gender: 'Girls', level: 'JV', season: 'Fall' },

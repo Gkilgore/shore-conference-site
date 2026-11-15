@@ -16,6 +16,7 @@ function startStaffTeams(client, { currentSchool, games, groups, states, links, 
   let teamRecords = [];
   let teamRequest = 0;
   let teamsLoaded = false;
+  let teamLoadFailed = false;
   let active = true;
 
   function node(tag, text, className) {
@@ -41,6 +42,7 @@ function startStaffTeams(client, { currentSchool, games, groups, states, links, 
     const school = currentSchool();
     if (!school) return;
     teamsLoaded = false;
+    teamLoadFailed = false;
     saveTeam.disabled = true;
     status.textContent = 'Loading teams…';
     const { data, error } = await client.from('teams')
@@ -49,10 +51,12 @@ function startStaffTeams(client, { currentSchool, games, groups, states, links, 
     if (!active || request !== teamRequest) return;
     if (error) {
       teamsLoaded = false;
+      teamLoadFailed = true;
       teamRecords = [];
       status.textContent = 'Teams could not load. Team changes are unavailable; refresh to try again.';
     } else {
       teamsLoaded = true;
+      teamLoadFailed = false;
       teamRecords = data;
       if (status.textContent === 'Loading teams…' ||
           status.textContent === 'Teams could not load. Team changes are unavailable; refresh to try again.') {
@@ -322,10 +326,24 @@ function startStaffTeams(client, { currentSchool, games, groups, states, links, 
   return {
     render,
     load,
+    loadState() { return teamsLoaded ? 'ready' : teamLoadFailed ? 'error' : 'loading'; },
+    listedTeams() {
+      return teamRecords.map(({ sport, gender, level, season }) => ({ sport, gender, level, season }));
+    },
+    sports() {
+      const unique = new Map();
+      for (const team of teamRecords) {
+        const sport = team.sport.trim();
+        const key = sport.toLocaleLowerCase();
+        if (sport && !unique.has(key)) unique.set(key, sport);
+      }
+      return [...unique.values()].sort((first, second) => first.localeCompare(second));
+    },
     setStatus(text) { status.textContent = text; },
     reset() {
       teamRequest++;
       teamsLoaded = false;
+      teamLoadFailed = false;
       teamRecords = [];
       saveTeam.disabled = true;
       selected = selectedId = null;

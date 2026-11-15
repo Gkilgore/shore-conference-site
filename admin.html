@@ -498,11 +498,14 @@
             <fieldset class="prose">
               <legend>Team and game</legend>
               <div class="filters">
-                <label>Sport <input name="sport" required maxlength="60" placeholder="e.g. Soccer"></label>
-                <label>Gender <select name="gender"><option>Boys</option><option>Girls</option><option>Coed</option></select></label>
-                <label>Level <select name="level"><option>Varsity</option><option>JV</option><option>Freshman</option></select></label>
-                <label>Season <select name="season"><option>Fall</option><option>Winter</option><option>Spring</option></select></label>
+                <label>Sport
+                  <select name="sport" required><option value="">Loading listed sports…</option></select>
+                </label>
+                <label>Gender <select name="gender" required><option>Boys</option><option>Girls</option><option>Coed</option></select></label>
+                <label>Level <select name="level" required><option>Varsity</option><option>JV</option><option>Freshman</option></select></label>
               </div>
+              <p id="game-sport-hint" class="staff-hint" hidden></p>
+              <input name="season" type="hidden">
               <div class="filters">
                 <label>Date <input name="game_date" type="date" required></label>
                 <label>Time option <select id="start-time-mode" aria-label="Start time option"><option value="set">Set time</option><option value="tbd">TBD</option></select></label>

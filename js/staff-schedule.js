@@ -126,6 +126,7 @@ function startStaffSchedule(client, invite) {
   const form = document.getElementById('game-form');
   const formStatus = document.getElementById('game-form-status');
   const fields = form.elements;
+  const gameSportHint = document.getElementById('game-sport-hint');
   const startTimeMode = document.getElementById('start-time-mode');
   const saveButton = form.querySelector('#save-draft');
   const venues = startStaffVenues(client, { currentSchool, schools: () => schools, fields });
@@ -190,6 +191,54 @@ function startStaffSchedule(client, invite) {
     if (isTbd) fields.start_time.value = '';
   }
 
+  function refreshGameSports(preferredTeam = {}) {
+    const state = teams.loadState();
+    const listedTeams = teams.listedTeams();
+    const sports = teams.sports();
+    if (preferredTeam.sport && !sports.includes(preferredTeam.sport)) sports.push(preferredTeam.sport);
+    sports.sort((first, second) => first.localeCompare(second));
+    const prompt = state === 'error' ? 'Team list unavailable'
+      : state === 'loading' ? 'Loading listed sports…'
+        : sports.length ? 'Choose a sport' : 'Add a team on the Teams tab first';
+    fields.sport.replaceChildren(new Option(prompt, ''), ...sports.map(sport => new Option(sport, sport)));
+    fields.sport.value = preferredTeam.sport && sports.includes(preferredTeam.sport) ? preferredTeam.sport : '';
+    fields.sport.disabled = state !== 'ready' || !teams.sports().length;
+
+    const sportTeams = listedTeams.filter(team => team.sport === fields.sport.value);
+    const genders = [...new Set(sportTeams.map(team => team.gender))]
+      .sort((first, second) => ['Boys', 'Girls', 'Coed'].indexOf(first) - ['Boys', 'Girls', 'Coed'].indexOf(second));
+    fields.gender.replaceChildren(...genders.map(gender => new Option(gender, gender)));
+    fields.gender.value = genders.includes(preferredTeam.gender) ? preferredTeam.gender : genders[0] ?? '';
+    fields.gender.disabled = state !== 'ready' || !genders.length;
+
+    const levels = [...new Set(sportTeams.filter(team => team.gender === fields.gender.value).map(team => team.level))]
+      .sort((first, second) => ['Varsity', 'JV', 'Freshman'].indexOf(first) - ['Varsity', 'JV', 'Freshman'].indexOf(second));
+    fields.level.replaceChildren(...levels.map(level => new Option(level, level)));
+    fields.level.value = levels.includes(preferredTeam.level) ? preferredTeam.level : levels[0] ?? '';
+    fields.level.disabled = state !== 'ready' || !levels.length;
+
+    const seasons = sportTeams.filter(team => team.gender === fields.gender.value && team.level === fields.level.value);
+    const conventionalSeason = typeof seasonOf === 'function' ? seasonOf(fields.sport.value, fields.gender.value) : '';
+    const selectedTeam = seasons.find(team => team.season === preferredTeam.season) ??
+      seasons.find(team => team.season === conventionalSeason) ?? seasons[0];
+    fields.season.value = selectedTeam?.season ?? '';
+
+    gameSportHint.hidden = state === 'ready' && teams.sports().length > 0;
+    gameSportHint.textContent = state === 'error' ? 'Your team list could not load. Refresh before adding a game.'
+      : state === 'loading' ? 'Loading sports from your team list…'
+        : 'Add a team on the Teams tab before adding a game.';
+  }
+
+  fields.sport.addEventListener('change', () => refreshGameSports({
+    sport: fields.sport.value, gender: fields.gender.value, level: fields.level.value,
+  }));
+  fields.gender.addEventListener('change', () => refreshGameSports({
+    sport: fields.sport.value, gender: fields.gender.value, level: fields.level.value,
+  }));
+  fields.level.addEventListener('change', () => refreshGameSports({
+    sport: fields.sport.value, gender: fields.gender.value, level: fields.level.value,
+  }));
+
   startTimeMode.onchange = syncStartTime;
 
   function selectView() {
@@ -232,6 +281,7 @@ function startStaffSchedule(client, invite) {
     activeGame = game;
     form.reset();
     formStatus.textContent = '';
+    refreshGameSports(game?.teams ?? {});
     document.getElementById('game-form-title').textContent = game ? 'Edit game' : 'Add a game';
     // Say whose game this is and whether families can see it, so nobody edits the wrong record.
     const state = game ? unpublished.get(game.id) : null;
@@ -374,6 +424,7 @@ function startStaffSchedule(client, invite) {
     showUnpublished();
     if (canEdit) await teams.load();
     if (stopped || request !== loadNumber) return;
+    refreshGameSports(activeGame?.teams ?? { sport: fields.sport.value });
     teams.render();
     showCalendar(visible, focusDate ?? (newSchool ? new Date() : null));
     if (!calendar) showList(visible);
@@ -1012,6 +1063,10 @@ function startStaffSchedule(client, invite) {
 
   form.onsubmit = async event => {
     event.preventDefault();
+    if (teams.loadState() !== 'ready' || !fields.sport.value) {
+      formStatus.textContent = gameSportHint.textContent || 'Choose a sport from the Teams list.';
+      return;
+    }
     const input = Object.fromEntries(new FormData(form));
     for (const name of Object.keys(input)) {
       if (typeof input[name] === 'string') input[name] = input[name].trim() || null;
