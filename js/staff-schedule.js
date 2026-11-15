@@ -1,4 +1,4 @@
-// Runs staff schedule, transportation, settings, access tabs and the game editor.
+// Runs staff schedule, transportation, settings, social media, access tabs and the game editor.
 function startStaffSchedule(client, invite) {
   const selector = document.getElementById('schedule-school');
   const preview = document.getElementById('view-as');
@@ -57,6 +57,10 @@ function startStaffSchedule(client, invite) {
   const settingsTab = document.getElementById('staff-settings-tab');
   const settingsPanel = document.getElementById('staff-settings-panel');
   const settingsTitle = document.getElementById('settings-title');
+  // Social media links: every role can edit them, each for the schools Supabase allows.
+  const socialTab = document.getElementById('staff-social-tab');
+  const socialPanel = document.getElementById('staff-social-panel');
+  const social = startStaffSocial(client, { currentSchool: () => currentSchool() });
   const filterForm = document.getElementById('staff-filters');
   const filterFields = filterForm.elements;
   const filterCount = document.getElementById('staff-filter-count');
@@ -288,6 +292,7 @@ function startStaffSchedule(client, invite) {
   function selectSchool() {
     const showContact = canEdit && !transportationPanel.hidden;
     const showSettings = canEdit && !settingsPanel.hidden;
+    const showSocial = !socialPanel.hidden;
     const showTournaments = !tournamentsPanel.hidden;
     const showCoaches = canEdit && !coachesPanel.hidden;
     const showTeams = canEdit && !teamsPanel.hidden;
@@ -301,6 +306,7 @@ function startStaffSchedule(client, invite) {
     publication.reset();
     coachList.reset();
     coachImport.reset();
+    social.reset();
     overview.reset();
     importer.reset();
     allGames = [];
@@ -320,6 +326,7 @@ function startStaffSchedule(client, invite) {
     importButton.hidden = !canEdit;
     transportationTab.hidden = !canEdit;
     settingsTab.hidden = !canEdit;
+    socialTab.hidden = false;
     // Coaches are tabled for now (Greg, November 12): no tab, no coach lists, no coach emails.
     coachesTab.hidden = true;
     if (showContact) openTransportation(false);
@@ -328,6 +335,7 @@ function startStaffSchedule(client, invite) {
     if (showGames) openGames(false);
     else if (!canEdit && !teamsPanel.hidden) showSchedule();
     if (showSettings) openSettings(false);
+    if (showSocial) openSocial(false);
     if (showTournaments) openTournaments(false);
     loadGames(null, true);
   }
@@ -754,7 +762,7 @@ function startStaffSchedule(client, invite) {
   function hidePanels() {
     for (const [panel, tab] of [[schedulePanel, scheduleTab], [gamesPanel, gamesTab], [teamsPanel, teamsTab],
       [transportationPanel, transportationTab], [coachesPanel, coachesTab], [settingsPanel, settingsTab], [tournamentsPanel, tournamentsTab],
-      [documentsPanel, documentsTab]]) {
+      [documentsPanel, documentsTab], [socialPanel, socialTab]]) {
       panel.hidden = true;
       tab.removeAttribute('aria-current');
     }
@@ -852,6 +860,16 @@ function startStaffSchedule(client, invite) {
     venues.showSettings();
     if (focus) settingsTitle.focus();
   }
+
+  function openSocial(focus = true) {
+    if (!selector.value) return;
+    hidePanels();
+    socialPanel.hidden = false;
+    socialTab.setAttribute('aria-current', 'true');
+    social.load();
+    if (focus) document.getElementById('social-title').focus();
+  }
+  socialTab.onclick = () => openSocial();
 
   function openTournaments(focus = true) {
     hidePanels();
@@ -1066,6 +1084,8 @@ function startStaffSchedule(client, invite) {
     access.stop();
     tournaments.stop();
     documents.stop();
+    social.stop();
+    socialTab.onclick = null;
     documentsTab.onclick = null;
     tournamentsTab.onclick = null;
     tournamentsTab.disabled = false;

@@ -16,7 +16,7 @@ Conference admins and site admins may manage and approve conference content them
 
 Use attributed links to approved sources first. Hosted photos or connected social feeds require recorded permission, a named conference contact for removal requests, and a removal/disconnection procedure before rollout. Do not copy publisher text/images or scrape school accounts. These measures reduce exposure but do not establish that content has been licensed or eliminate risk.
 
-Administrator editing, version storage, uploads, news archives and social-account controls remain later phases. Development uses the test Supabase project; Greg handles production.
+Administrator editing, version storage, uploads and news archives remain later phases. Social-account links were added on November 15, 2026; see [social media](social-media.md). Development uses the test Supabase project; Greg handles production.
 
 Facts this site copies from the conference's own files. The old conference site will go away, so **nothing on this site links to it**. Every list and document links to a copy saved here:
 

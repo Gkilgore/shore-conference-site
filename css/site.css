@@ -729,3 +729,23 @@ textarea { display: block; resize: vertical; }
 
 /* Document viewer (document.html): the saved PDF in a full frame, tall enough to read a page. */
 .doc-frame { display: block; width: 100%; height: min(85vh, 70rem); border: var(--frame); background: white; }
+
+/* Social media: a school's accounts beneath its upcoming games. Posts load from the platform's own embed. */
+.social-section { margin-top: 2.5rem; }
+.section + .social-section.section { margin-top: 0; padding-top: 0; }
+.social-section .filters label { flex: 0 1 16rem; }
+.social-box { padding: clamp(0.75rem, 2.5vw, 1.25rem); background: white; border: var(--frame); }
+.social-school { margin: 0 0 0.75rem; font-size: 1.25rem; }
+.social-accounts { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+.social-embed { min-width: 0; min-height: 10rem; }
+/* Instagram sets its own rounded frame on the embed; these keep it square and inside narrow phones. */
+.social-embed iframe { display: block; min-width: min(326px, 100%) !important; max-width: 100% !important; margin: 0 !important; border: var(--frame) !important; border-radius: 0 !important; box-shadow: none !important; }
+.social-embed blockquote { margin: 0; }
+.social-links { display: flex; flex-wrap: wrap; gap: 0.65rem; margin: 0; padding: 0; list-style: none; }
+.social-links .button { overflow-wrap: anywhere; }
+.social-note { margin: 0.75rem 0 0; font-size: 0.92rem; color: var(--muted); }
+.social-note[hidden] { display: none; }
+@media (min-width: 48rem) {
+  .social-accounts:has(.social-embed) { grid-template-columns: minmax(0, 21rem) minmax(12rem, 1fr); align-items: start; }
+  .social-accounts:has(.social-embed) .social-links { flex-direction: column; align-items: stretch; }
+}

@@ -1,4 +1,4 @@
-<!-- Home: points visitors to their school or the conference calendar and previews upcoming games. -->
+<!-- Home: points visitors to their school or the conference calendar, previews upcoming games and shows school social media. -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -17,6 +17,8 @@
   <script defer src="js/supabase-config.js"></script>
   <script defer src="js/public-calendar.js"></script>
   <script defer src="js/conference.js"></script>
+  <script defer src="js/social-links.js"></script>
+  <script defer src="js/social.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -49,6 +51,17 @@
         <a href="calendar.html">Full calendar →</a>
       </div>
       <ul class="game-list" id="upcoming"></ul>
+    </section>
+    <!-- Shown only when at least one school has saved a social media account. One school shows at a time. -->
+    <section id="social" class="wrap section social-section" aria-labelledby="social-title" hidden>
+      <div class="section-heading">
+        <div><p class="eyebrow">School social media</p><h2 id="social-title">Around the Shore</h2></div>
+        <div class="filters"><label>School<select id="social-school"></select></label></div>
+      </div>
+      <div class="social-box">
+        <h3 class="social-school" aria-live="polite"><a id="social-school-link"></a></h3>
+        <div id="social-accounts" class="social-accounts"></div>
+      </div>
     </section>
   </main>
   <footer class="site-footer"><div class="wrap">The Shore Conference <span>New Jersey Athletics</span></div></footer>

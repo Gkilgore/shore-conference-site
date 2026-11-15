@@ -22,6 +22,8 @@
   <script defer src="data/conference-resources.js"></script>
   <script defer src="js/team-info.js"></script>
   <script defer src="js/school.js"></script>
+  <script defer src="js/social-links.js"></script>
+  <script defer src="js/social.js"></script>
   <script defer src="js/document-links.js"></script>
 </head>
 <body>
@@ -57,6 +59,11 @@
       <section aria-labelledby="upcoming-title">
         <div class="section-heading"><div><p id="public-schedule-status" class="eyebrow" role="status">Loading schedule…</p><h2 id="upcoming-title">Next games</h2></div></div>
         <ul class="game-list" id="upcoming"></ul>
+      </section>
+      <!-- Shown only when the school has saved a social media account. Posts load from the platform. -->
+      <section id="social" class="social-section" aria-labelledby="social-title" hidden>
+        <div class="section-heading"><div><p class="eyebrow">From the school’s accounts</p><h2 id="social-title">Social media</h2></div></div>
+        <div id="social-accounts" class="social-box social-accounts"></div>
       </section>
       <section class="school-calendar" id="school-calendar" aria-labelledby="calendar-title">
         <h2 id="calendar-title">Full schedule</h2>
