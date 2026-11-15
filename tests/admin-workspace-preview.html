@@ -176,6 +176,9 @@ check('game-time save preserves the other game and bus details',
 const busTimeButton = document.querySelector('#schedule-list .quick-edit-time[aria-label^="Edit bus departure"]');
 busTimeButton?.click();
 const busTimeInput = document.querySelector('#schedule-list input[type="time"]');
+const busTimeControls = busTimeInput?.nextElementSibling;
+check('bus-time edit keeps a native time field and compact side-by-side actions',
+  busTimeInput?.type === 'time' && busTimeControls && getComputedStyle(busTimeControls).gridTemplateColumns.split(' ').length === 2);
 if (busTimeInput) {
   busTimeInput.value = '15:00';
   busTimeInput.parentElement.querySelector('button').click();

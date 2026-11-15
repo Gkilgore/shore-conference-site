@@ -622,7 +622,7 @@ function startStaffSchedule(client, invite) {
     button.className = 'button secondary quick-edit-time';
     button.textContent = value
       ? timeFormat.format(new Date(game.game_date + 'T' + value))
-      : field === 'start_time' ? 'TBD' : 'Set';
+      : field === 'start_time' ? 'TBD' : '--:--';
     button.setAttribute('aria-label', 'Edit ' + label + ' for ' + gameTitle(game));
     button.onclick = () => openQuickTimeEditor(cell, game, field);
     cell.replaceChildren(button);
