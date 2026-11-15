@@ -8,6 +8,7 @@ November 5, 2026 · Greg Kilgore and Alexa
 - **Each school owns its schedule.** Only that school's Athletic Director (AD) can add, import or edit its games. Nothing one school enters appears on another school's calendar.
 - **Saving posts the game (Greg's November 12 update).** For school schedules, saving a game or completing an import posts it to the public schedule; there is no draft or Publish step. This replaces the November 6 "review before publishing" decision. Games that were private before the change stay private until an AD posts them. See `posting-on-save.md`.
 - **The conference calendar is built by matching.** When two member schools publish the same game and the details agree, it appears on the conference calendar automatically.
+- **Opponents come from a shared New Jersey school directory.** Each AD keeps a school-specific shortlist. A match identity exists only while the school has AD access; a matched game between nonmember schools stays on their school calendars and never enters the conference calendar.
 - **Tournaments are the one exception** (Greg's November 9 update). Conference admins import or generate a bracket, schedule its games, review and publish. Conference publication places each game on the conference calendar and confirmed participating schools' calendars. ADs manage their own tournament transportation. See `tournaments-design.md` for the implemented workflow.
 
 ## 2. Who can do what
@@ -23,7 +24,7 @@ November 5, 2026 · Greg Kilgore and Alexa
 
 When an AD saves a scheduled game with a bus departure time, the school transportation contact receives an email and the AD is copied. Neither the provider nor a bus-confirmation field determines the game's status.
 
-**Staff access (Greg's November 6 update):** Several invited AD/staff accounts may share a school, and several accounts may be conference admins. Conference admins can add, reassign or remove AD access. Site admins can also manage conference admins. These tools cannot grant site-admin access or change the signed-in administrator's own access. Every change checks current permissions and the reviewed account version. Removing an invitation blocks future school database access even with an existing login token.
+**Staff access (Greg's November 6 update):** Several invited AD/staff accounts may share a school, and several accounts may be conference admins. Conference admins can add, reassign or remove AD access. Site admins can also manage conference admins and enroll a directory school by assigning its first AD. These tools cannot grant site-admin access or change the signed-in administrator's own access. Every change checks current permissions and the reviewed account version. Removing an invitation blocks future school database access and matching identity even with an existing login token.
 
 **Public updates:** Each school page identifies the season, year and teams actually posted, followed by recent published game changes. A saved change is public straight away. Withdrawing a schedule hides its old game details from public history, including after reposting.
 
@@ -33,7 +34,7 @@ When an AD saves a scheduled game with a bus departure time, the school transpor
 
 ## 3. Matching rules
 
-A game goes on the public conference calendar only when both schools have published it and all of these match: sport, gender and level; date; start time; location; home and away mirrored; each school lists the other as its opponent. Transportation is ignored for matching.
+A game goes on the public conference calendar only when both schools are conference members, both have published it, and all of these match: sport, gender and level; date; start time; location; home and away mirrored; each school lists the other as its opponent. Games between any two schools with active AD access can match on their own schedules, but nonmember games never appear on the conference calendar. A school without an AD invitation is not a match identity. Transportation is ignored for matching.
 
 If a published update stops matching, the game comes off the conference calendar until both published entries agree again. A matched game that either school publishes as postponed or canceled stays on the conference calendar with that status, so visitors can see what changed (Greg's November 9 update). Saving or importing a game publishes it immediately; deleting a game removes its public copy immediately. Public matching is checked against the saved public copies on each calendar/feed read.
 
@@ -53,7 +54,9 @@ It names the field that differs but never shows the other school's values.
 |------------------|--------------------------------------------------------------------------------------------------|
 | schools          | Name, short name, subdomain, logo, two colors, conference member yes/no                          |
 | teams            | School, sport, gender, level (Varsity, JV, Freshman), season                                     |
-| games            | Owning school, team, date, start time, opponent, home/away, location, status, notes              |
+| games            | Owning school, team, date, start time, opponent and directory key, home/away, location, status, notes |
+| opponent_directory | Shared New Jersey school names and stable identifiers                                             |
+| school_opponents | Each school's AD-managed opponent shortlist                                                        |
 | transportation   | Game, bus departure, pickup location, return time, optional early dismissal, notes                |
 | team_publications | Which team/season-year schedules have been published and when                                   |
 | published_games  | Last approved public game values, kept separate from working drafts, with stable calendar IDs    |
@@ -66,7 +69,7 @@ It names the field that differs but never shows the other school's values.
 | school_social_accounts | The link to each school's Instagram, Facebook and X account; posts are never stored (see `social-media.md`) |
 | tournament_updates | Approved tournament match changes used by public calendar history |
 
-A game's opponent is either a member school picked from a list or a typed name for non-conference opponents. Only games with a picked member school can link.
+A game's opponent is selected from the AD's shortlist or entered as a one-off name. The shared directory can include schools outside the conference. Only two schools with current AD access and reciprocal, matching entries can link; only matched conference-member games appear on the conference calendar.
 
 ## 5. Tools
 

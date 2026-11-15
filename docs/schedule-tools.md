@@ -1,6 +1,12 @@
 # Schedule tools
 
-The staff dashboard opens on **Add Game**, where ADs add, edit and import games. The game editor offers sports from the school's team list, then limits gender and level to listed teams; it fills in the team's season automatically. **Transportation** lists upcoming away games with a bus departure and lets an AD save the transportation contact. Saving a scheduled game with a bus departure sends the details to that contact and copies the AD. No transportation confirmation is required; bus confirmation does not determine the game's Scheduled, Postponed or Canceled status.
+The staff dashboard opens on **Add Game**, where ADs add, edit and import games. The game editor offers sports from the school's team list, then limits gender and level to listed teams; it fills in the team's season automatically. Start time can be marked **TBD** until it is announced. **Transportation** lists upcoming away games with a bus departure and lets an AD save the transportation contact. Saving a scheduled game with a bus departure sends the details to that contact and copies the AD. No transportation confirmation is required; bus confirmation does not determine the game's Scheduled, Postponed or Canceled status.
+
+## Opponents
+
+Each school has its own opponent list. ADs can search the shared New Jersey school directory, add schools to their list, and remove them later; removing a school does not change games already saved. The directory begins with Shore Conference schools. A site admin can import or update the broader NJSIAA list from the **Opponents** tab using the CSV template and preview; the template is not itself a populated statewide roster.
+
+Schools outside the conference can use the platform after a site admin assigns their first AD from the directory in **Staff access**. Only schools with an AD invitation can match games. Nonconference matches stay on the participating schools' schedules; only matched member-school games appear on the conference calendar.
 
 ## Saving and posting
 
@@ -8,7 +14,7 @@ Saving or importing a game posts it immediately when the team can be safely publ
 
 ## Link check
 
-`game_link_status(school)` gives each game against a member school Linked or Not linked, with a reason such as "Time doesn't match" or "Colts Neck has no matching game on this date". It never returns the other school's values. It runs as the database owner so it can read both schools' games, so it checks the caller's invitation itself instead of using `can_manage_schedule`. That helper depends on row-level security, which an owner-run function skips.
+`game_link_status(school)` checks games against a school with active AD access and reports Linked or Not linked, with a reason such as "Time doesn't match" or "Colts Neck has no matching game on this date". It never returns the other school's values. A matched nonconference game is school-only; it does not enter the conference calendar. The function runs as the database owner so it can read both schools' games, so it checks the caller's invitation itself instead of using `can_manage_schedule`. That helper depends on row-level security, which an owner-run function skips.
 
 Tests on the test project:
 
@@ -32,11 +38,11 @@ Early Dismissal is optional, can be entered in the game editor or CSV, and appea
 
 `supabase/migrations/20261130000100_early_dismissal.sql` adds the time field and updates game saving and school-only public calendars. Apply it only to the test project; it has not been applied to any Supabase project.
 
-- **Required:** date, start time, sport, gender, level, home or away, opponent, and location.
+- **Required:** date, sport, gender, level, home or away, opponent, and location. Use `TBD` for a start time that has not been announced.
 - **Dates:** 2026-11-09 or 11/9/2026.
-- **Times:** 3:45 PM or 15:45.
+- **Times:** 3:45 PM or 15:45; use `TBD` when the start time is unknown.
 - **Season:** if blank, the season comes from the sport.
-- **Opponent:** an opponent that matches a conference school's name becomes a linked conference opponent. Any other name is saved as written.
+- **Opponent:** a name matching a school in the AD's list keeps that directory identity. A typed, unlisted name is saved as entered. A match requires active AD access for both schools; only conference-member matches can appear on the conference calendar.
 - **Files:** choose up to 20 CSVs, up to 1 MB each and 500 games total. Each file may contain several teams.
 - **Preview:** rows are grouped by team with the source file and row number. Missing columns and invalid rows are flagged. Games already saved, or repeated across selected files, are skipped. Saving a ready row posts it immediately.
 
