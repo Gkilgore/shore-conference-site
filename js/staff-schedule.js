@@ -1013,7 +1013,7 @@ function startStaffSchedule(client, invite) {
   }
   documentsTab.onclick = openDocuments;
 
-  function openStaffAccess() {
+  async function openStaffAccess() {
     if (!mayManageAccess || accessTab.hidden) return;
     hidePanels();
     accessPanel.hidden = false;
@@ -1025,7 +1025,13 @@ function startStaffSchedule(client, invite) {
     applySchoolTheme(client, null);
     conferenceTheme = true;
     publicLink.hidden = true;
-    access.load();
+    const directoryReady = await opponents.loadDirectory();
+    if (stopped) return;
+    const accessReady = await access.load();
+    if (!directoryReady && accessReady) {
+      document.getElementById('staff-access-status').textContent =
+        'The school directory could not load, so new schools cannot be enrolled right now.';
+    }
     document.getElementById('staff-access-title').focus();
   }
   accessTab.onclick = openStaffAccess;

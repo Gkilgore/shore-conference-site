@@ -41,3 +41,25 @@ test('transportation list shows scheduled away buses without a confirmation step
   assert.match(row.children[2].children[0].textContent, /Bus departure 2:00 PM/);
   assert.doesNotMatch(JSON.stringify(elements.get('bus-list')), /confirm/i);
 });
+
+test('match checks include games whose directory opponent has since enrolled', async () => {
+  const overview = context.startStaffOverview({
+    async rpc() {
+      return {data: [
+        {game_id: 'linked', linked: true, reason: 'Both schools entered the same game'},
+        {game_id: 'unlinked', linked: false, reason: 'Time doesn’t match'},
+      ]};
+    },
+  }, {
+    currentSchool: () => ({slug: 'marlboro'}), gameTitle: game => game.title,
+    canEdit: () => false, openEditor() {},
+  });
+  await overview.load([
+    {id: 'linked', title: 'Linked game', game_date: '2099-09-01', opponent_directory_slug: 'north-harbor'},
+    {id: 'unlinked', title: 'Unlinked game', game_date: '2099-09-02', opponent_directory_slug: 'north-harbor'},
+  ]);
+  assert.equal(elements.get('overview-stats').children[1].children[0].textContent, 1);
+  assert.equal(elements.get('overview-stats').children[2].children[0].textContent, 1);
+  assert.equal(elements.get('link-list').children.length, 1);
+  assert.equal(elements.get('link-list').children[0].children[1].textContent, 'Unlinked game');
+});

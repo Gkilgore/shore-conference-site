@@ -95,6 +95,22 @@ test('conference requires two published members and exact mirrored entries, and 
   assert.equal(project([{ ...home, start_time: null }, { ...away, start_time: null }], opts).events.length, 0);
 });
 
+test('an enrolled nonmember school can publish its calendar without entering the conference calendar', () => {
+  const directory = [...schools, {
+    slug: 'north-harbor', name: 'North Harbor High School',
+    is_conference_member: false, schedule_published: true,
+  }];
+  const externalHome = {
+    ...home, id: 'outside-home', school_id: 'north-harbor', opponent_school_id: 'marlboro',
+    opponent_name: null, home_away: 'Home',
+  };
+  const memberAway = {
+    ...home, id: 'member-away', opponent_school_id: 'north-harbor', home_away: 'Away',
+  };
+  assert.equal(project([externalHome], {scope: 'school', school: 'north-harbor'}, directory).events.length, 1);
+  assert.equal(project([externalHome, memberAway], {scope: 'conference'}, directory).events.length, 0);
+});
+
 test('conference omits all transportation; school projection omits staff-only fields', () => {
   const conference = JSON.stringify(project([home, away], { scope: 'conference' }));
   assert.doesNotMatch(conference, /14:00|School lot|19:00|13:15|PRIVATE|transportation/);

@@ -23,7 +23,7 @@ const ad = (email = 'ad@school.org', revision = 4) => ({email, name: 'School AD'
 const office = {email: 'office@conference.org', name: 'Office', role: 'conference_office', school_id: null, access_revision: 2};
 const site = {email: 'admin@conference.org', name: 'Admin', role: 'site_admin', school_id: null, access_revision: 1};
 
-function mount(rpc, invite = {role: 'site_admin', email: site.email}) {
+function mount(rpc, invite = {role: 'site_admin', email: site.email}, directory = []) {
   const elements = new Map();
   const document = {
     getElementById(id) { if (!elements.has(id)) elements.set(id, new Element()); return elements.get(id); },
@@ -31,7 +31,7 @@ function mount(rpc, invite = {role: 'site_admin', email: site.email}) {
   };
   const context = vm.createContext({document});
   vm.runInContext(readFileSync(new URL('../js/staff-access.js', import.meta.url), 'utf8'), context);
-  const controller = context.startStaffAccess({rpc}, invite, () => schoolList);
+  const controller = context.startStaffAccess({rpc}, invite, () => schoolList, () => directory);
   const element = id => document.getElementById('staff-access-' + id);
   const fill = (email, role = 'ad', school = 'marlboro') => {
     element('email').value = email; element('name').value = 'New Person';
@@ -113,6 +113,25 @@ test('creates another AD for the same school only after a review and sends no re
   assert.equal(mutations[0].p_school, 'marlboro');
   assert.equal(mutations[0].p_remove, false);
   assert.equal(ui.element('review').open, false);
+});
+
+test('site admins can invite an AD to a directory school and review its real name', async () => {
+  const mutations = [];
+  const directory = [{slug: 'north-harbor', name: 'North Harbor High School'}];
+  const ui = mount(async (name, args) => {
+    if (name === 'list_staff_access') return {data: {actor_role: 'site_admin', accounts: []}};
+    mutations.push(args);
+    return {data: {}};
+  }, {role: 'site_admin', email: site.email}, directory);
+  await ui.controller.load();
+  assert.ok(ui.element('school').children.some(item =>
+    item.value === 'north-harbor' && item.textContent === 'North Harbor High School'));
+  ui.fill('ad@northharbor.org', 'ad', 'north-harbor');
+  await ui.review();
+  assert.match(ui.element('review-summary').textContent, /North Harbor High School/);
+  await ui.element('review-confirm').onclick();
+  assert.equal(mutations[0].p_school, 'north-harbor');
+  assert.match(ui.element('status').textContent, /School added to the platform/);
 });
 
 test('duplicate email cannot turn a new invitation into an update', async () => {

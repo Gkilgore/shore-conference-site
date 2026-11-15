@@ -8,7 +8,7 @@ vm.runInContext(readFileSync(new URL('../js/staff-import.js',import.meta.url),'u
 const header='date,start_time,sport,gender,level,home_away,opponent,location';
 const row='2031-09-01,3:00 PM,Soccer,Girls,Varsity,Home,Visitor,Field';
 
-function mountImport(existingGames = [], client = {}, sendTransportationEmail) {
+function mountImport(existingGames = [], client = {}, sendTransportationEmail, directory = []) {
   const elements = new Map();
   const makeElement = tag => ({
     tag, children: [], hidden: false, disabled: false, textContent: '',
@@ -27,7 +27,8 @@ function mountImport(existingGames = [], client = {}, sendTransportationEmail) {
   const context = vm.createContext({document, seasonOf: () => 'Fall', crypto: {randomUUID: () => 'import-batch'}});
   vm.runInContext(readFileSync(new URL('../js/staff-import.js',import.meta.url),'utf8'), context);
   const controller = context.startStaffImport(client, {
-    currentSchool: () => ({slug:'marlboro'}), schools: () => [], existingGames: () => existingGames,
+    currentSchool: () => ({slug:'marlboro'}), schools: () => [], opponents: () => directory,
+    existingGames: () => existingGames,
     onImported() {}, sendTransportationEmail,
   });
   return {controller, elements};
@@ -89,6 +90,21 @@ test('CSV import saves an optional early-dismissal time and flags an invalid one
   assert.equal(saved.length, 1);
   assert.equal(saved[0].early_dismissal_time, '13:30');
   assert.ok(elements.get('import-preview').tBodies[0].children.some(item => item.className === 'is-problem'));
+  controller.stop();
+});
+
+test('CSV opponents from the AD list retain a directory key without becoming a school identity', async () => {
+  const saved = [];
+  const {controller, elements} = mountImport([], {
+    async rpc(name, {input}) { assert.equal(name, 'save_staff_game'); saved.push(input); return {data: 'saved'}; },
+  }, undefined, [{slug: 'north-harbor', name: 'North Harbor High School'}]);
+  const input = elements.get('import-file');
+  input.files = [new File([header + '\n2031-09-01,3:00 PM,Soccer,Girls,Varsity,Home,North Harbor High School,Field'], 'directory.csv')];
+  await input.onchange();
+  await elements.get('import-save').onclick();
+  assert.equal(saved[0].opponent_school_id, null);
+  assert.equal(saved[0].opponent_directory_slug, 'north-harbor');
+  assert.equal(saved[0].opponent_name, 'North Harbor High School');
   controller.stop();
 });
 
