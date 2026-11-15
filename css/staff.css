@@ -308,6 +308,31 @@
   letter-spacing: 0.1em;
 }
 #game-form .filters label { flex-basis: 8rem; }
+#game-form .filters .start-time-field {
+  display: grid;
+  flex: 1 1 14rem;
+  min-width: 0;
+  gap: 0.3rem;
+}
+.start-time-control { display: flex; align-items: center; gap: 0.5rem; }
+.start-time-control > input { flex: 1; min-width: 0; }
+#game-form .filters .start-time-tbd {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  font-size: 0.9rem;
+  letter-spacing: normal;
+  text-transform: none;
+  cursor: pointer;
+}
+#game-form .start-time-tbd input[type="checkbox"] {
+  width: 1.1rem;
+  min-height: 1.1rem;
+  margin: 0;
+  accent-color: var(--school-color);
+}
 #game-form-status:empty, #transportation-contact-status:empty { display: none; }
 #game-form-status, #transportation-contact-status { font-weight: 700; }
 

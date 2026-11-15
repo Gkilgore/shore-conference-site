@@ -179,6 +179,18 @@ const homeAwayBadge = scheduleTable.querySelector('.schedule-list-game td[data-l
 check('AD schedule shows a labeled home/away color badge',
   homeAwayBadge?.textContent === 'Home' && homeAwayBadge.classList.contains('is-home'));
 check('AD game editor has an early dismissal time field', document.querySelector('#game-form [name="early_dismissal_time"]')?.type === 'time');
+const gameStartTime = document.querySelector('#game-form [name="start_time"]');
+const gameStartTimeTbd = document.getElementById('start-time-tbd');
+check('TBD is a checkbox beside the start time',
+  gameStartTimeTbd?.type === 'checkbox' && !document.getElementById('start-time-mode'));
+gameStartTimeTbd.checked = true;
+gameStartTimeTbd.dispatchEvent(new Event('change'));
+check('checking TBD disables and clears the start time',
+  gameStartTime.disabled && !gameStartTime.required && gameStartTime.value === '');
+gameStartTimeTbd.checked = false;
+gameStartTimeTbd.dispatchEvent(new Event('change'));
+check('unchecking TBD restores required start time entry',
+  !gameStartTime.disabled && gameStartTime.required);
 check('game editor has no transportation confirmation field',
   !document.querySelector('#game-form [name="bus_confirmed"]') && !document.getElementById('tournament-bus-confirmed'));
 check('list table uses the available width', scheduleTable.getBoundingClientRect().width >= get('schedule-list').clientWidth);

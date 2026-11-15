@@ -127,7 +127,7 @@ function startStaffSchedule(client, invite) {
   const formStatus = document.getElementById('game-form-status');
   const fields = form.elements;
   const gameSportHint = document.getElementById('game-sport-hint');
-  const startTimeMode = document.getElementById('start-time-mode');
+  const startTimeTbd = document.getElementById('start-time-tbd');
   const saveButton = form.querySelector('#save-draft');
   const venues = startStaffVenues(client, { currentSchool, schools: () => schools, fields });
   let canEdit = invite.role !== 'conference_office';
@@ -185,7 +185,7 @@ function startStaffSchedule(client, invite) {
   }
 
   function syncStartTime() {
-    const isTbd = startTimeMode.value === 'tbd';
+    const isTbd = startTimeTbd.checked;
     fields.start_time.disabled = isTbd;
     fields.start_time.required = !isTbd;
     if (isTbd) fields.start_time.value = '';
@@ -239,7 +239,7 @@ function startStaffSchedule(client, invite) {
     sport: fields.sport.value, gender: fields.gender.value, level: fields.level.value,
   }));
 
-  startTimeMode.onchange = syncStartTime;
+  startTimeTbd.onchange = syncStartTime;
 
   function selectView() {
     const choice = isSiteAdmin ? preview.value : '';
@@ -301,7 +301,7 @@ function startStaffSchedule(client, invite) {
         else field.value = values[field.name] ?? '';
       }
     }
-    startTimeMode.value = game && !game.start_time ? 'tbd' : 'set';
+    startTimeTbd.checked = Boolean(game && !game.start_time);
     syncStartTime();
     syncOpponent();
     syncStatusHint();
@@ -1073,7 +1073,7 @@ function startStaffSchedule(client, invite) {
     for (const name of Object.keys(input)) {
       if (typeof input[name] === 'string') input[name] = input[name].trim() || null;
     }
-    input.start_time = startTimeMode.value === 'tbd' ? null : fields.start_time.value || null;
+    input.start_time = startTimeTbd.checked ? null : fields.start_time.value || null;
     input.school_id = selector.value;
     input.id = activeGame?.id ?? null;
     input.revision = activeGame?.revision ?? null;
