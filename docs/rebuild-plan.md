@@ -27,6 +27,8 @@ When an AD saves a scheduled game with a bus departure time, the school transpor
 
 **Public updates:** Each school page identifies the season, year and teams actually posted, followed by recent published game changes. A saved change is public straight away. Withdrawing a schedule hides its old game details from public history, including after reposting.
 
+**School social media (Greg's November 15 update):** ADs save the link to their own school's Instagram, Facebook and X accounts. Conference admins and site admins can do this for any school. See `social-media.md`.
+
 **School branding:** ADs upload their logo and pick two colors in the admin area. The site chooses black or white text automatically so it stays readable, and the AD previews the page before saving.
 
 ## 3. Matching rules
@@ -61,6 +63,7 @@ It names the field that differs but never shows the other school's values.
 | conference_links | The two matched games and when they linked (created by the site)                                 |
 | tournaments | Conference-owned bracket, participants, schedule and results, with private drafts and approved snapshots |
 | tournament_transportation | Each participating school's own bus details for a published tournament match |
+| school_social_accounts | The link to each school's Instagram, Facebook and X account; posts are never stored (see `social-media.md`) |
 | tournament_updates | Approved tournament match changes used by public calendar history |
 
 A game's opponent is either a member school picked from a list or a typed name for non-conference opponents. Only games with a picked member school can link.

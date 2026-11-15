@@ -36,6 +36,8 @@
   <script defer src="js/staff-coach-import.js"></script>
   <script defer src="data/conference-resources.js"></script>
   <script defer src="js/team-info.js"></script>
+  <script defer src="js/social-links.js"></script>
+  <script defer src="js/staff-social.js"></script>
   <script defer src="js/staff-schedule.js"></script>
   <script defer src="js/staff-access.js"></script>
   <script defer src="js/document-archive.js"></script>
@@ -99,6 +101,7 @@
             <button id="staff-transportation-tab" class="staff-tab" type="button" hidden>Transportation</button>
             <button id="staff-coaches-tab" class="staff-tab" type="button" hidden>Coaches</button>
             <button id="staff-settings-tab" class="staff-tab" type="button" hidden>School settings</button>
+            <button id="staff-social-tab" class="staff-tab" type="button" hidden>Social media</button>
             <button id="staff-tournaments-tab" class="staff-tab" type="button">Tournaments</button>
             <button id="staff-documents-tab" class="staff-tab" type="button" hidden>Documents</button>
             <button id="staff-access-tab" class="staff-tab" type="button" hidden>Staff access</button>
@@ -342,6 +345,17 @@
                 <label>Address <input name="venue_address" maxlength="200" placeholder="Optional" autocomplete="off"></label>
                 <button class="button primary" type="submit">Add venue</button>
               </form>
+            </section>
+          </section>
+          <section id="staff-social-panel" class="staff-panel" aria-labelledby="social-title" hidden>
+            <h3 id="social-title" tabindex="-1">Social media</h3>
+            <p id="social-school" class="staff-subhead"></p>
+            <p class="staff-hint">Paste the link to each school account. A saved link shows on the school page and the conference home page right away.</p>
+            <p id="social-status" class="venue-status" role="status" aria-live="polite"></p>
+            <section class="staff-section" aria-labelledby="social-accounts-title">
+              <h4 id="social-accounts-title">Accounts</h4>
+              <ul id="social-list" class="venue-list social-list"></ul>
+              <p class="staff-hint">Instagram shows the account’s latest posts. Facebook and X show as links. The account must be public.</p>
             </section>
           </section>
 <!-- Tournament draft editor and school-owned published-game transportation. -->

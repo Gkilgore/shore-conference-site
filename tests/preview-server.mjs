@@ -48,6 +48,13 @@ const soccer = sandbox.TournamentEngine.resolve({
 });
 const handle = createHandler(async () => ({ schools, games, tournament_games: tournamentGames,
   tournaments: [{ id: tournamentId, document: tournament }, { id: soccerId, document: soccer }] }));
+const socialAccounts = [
+  { school_id: 'marlboro', platform: 'instagram', url: 'https://www.instagram.com/instagram/' },
+  { school_id: 'marlboro', platform: 'facebook', url: 'https://www.facebook.com/facebook' },
+  { school_id: 'marlboro', platform: 'x', url: 'https://x.com/X' },
+  { school_id: 'colts-neck', platform: 'instagram', url: 'https://www.instagram.com/nasa/' },
+  { school_id: 'shore-regional', platform: 'facebook', url: 'https://www.facebook.com/profile.php?id=1234567890' },
+];
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml' };
 
 createServer(async (req, res) => {
@@ -57,6 +64,13 @@ createServer(async (req, res) => {
       const response = await handle(new Request(url, { method: req.method }));
       res.writeHead(response.status, Object.fromEntries(response.headers));
       res.end(Buffer.from(await response.arrayBuffer()));
+      return;
+    }
+    // Social links for the preview. These are the platforms' own public accounts, standing in for school accounts.
+    if (url.pathname === '/rest/v1/school_social_accounts') {
+      const only = url.searchParams.get('school_id')?.replace(/^eq\./, '');
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(socialAccounts.filter(row => !only || row.school_id === only)));
       return;
     }
     if (url.pathname === '/js/supabase-config.js') {

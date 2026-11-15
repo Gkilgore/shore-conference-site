@@ -35,9 +35,28 @@ const documents = [
   {id:'11111111-2222-3333-4444-555555555555', title:'2027 Soccer Rules and Entry Information', type:'Tournament regulations', sport:'Soccer', school_year:'2027-28', file_path:'2027-28/rules-ab12cd34.pdf', description:'SCT regulations and entry information for boys and girls soccer.', note:null, added:'2026-11-14'},
   {id:'11111111-2222-3333-4444-666666666666', title:'Executive Committee', type:'Leadership', sport:'', school_year:'2026-27', file_path:'2026-27/exec-ab12cd35.pdf', description:'The executive committee roster for 2026-27.', note:null, added:'2026-11-14'},
 ];
+// A small in-memory table so the Social media tab can add, change and remove links.
+let socialRows = [{id:'social-1', school_id:'marlboro', platform:'instagram', url:'https://www.instagram.com/instagram/'}];
+function socialTable() {
+  let action = 'select', values = null; const filters = {};
+  const query = {
+    select() { return query; }, insert(row) { action = 'insert'; values = row; return query; },
+    update(row) { action = 'update'; values = row; return query; }, delete() { action = 'delete'; return query; },
+    eq(name, value) { filters[name] = value; return query; },
+    then(callback) {
+      const match = row => Object.entries(filters).every(([name, value]) => row[name] === value);
+      if (action === 'insert') socialRows.push({id: 'social-' + Math.random(), ...values});
+      if (action === 'update') socialRows = socialRows.map(row => match(row) ? {...row, ...values} : row);
+      if (action === 'delete') socialRows = socialRows.filter(row => !match(row));
+      return Promise.resolve({data: action === 'select' ? socialRows.filter(match) : null}).then(callback);
+    },
+  };
+  return query;
+}
 const client = {
   storage: {from: () => ({upload: async () => ({}), remove: async () => ({})})},
   from(table) {
+    if (table === 'school_social_accounts') return socialTable();
     const result = {data: table === 'schools' ? schools : table === 'conference_documents' ? documents : []};
     const query = {then: callback => Promise.resolve(result).then(callback)};
     for (const name of ['select','order','eq','maybeSingle','insert','delete']) query[name] = () => query;
@@ -114,6 +133,58 @@ check('day view uses the same schedule table', !get('schedule-list').hidden && d
 document.querySelector('#calendar .fc-dayGridMonth-button').click();
 await new Promise(resolve => setTimeout(resolve, 100));
 check('month view hides the schedule table', get('schedule-list').hidden && !get('calendar').classList.contains('staff-table-mode'));
+// Social media tab: a site admin picks a school, then adds, fixes and removes links.
+const wait = () => new Promise(resolve => setTimeout(resolve, 100));
+get('schedule-school').value = 'marlboro';
+get('schedule-school').dispatchEvent(new Event('change'));
+await wait();
+get('staff-social-tab').click();
+await wait();
+const socialItems = () => [...get('social-list').children];
+const socialRow = name => socialItems().find(item => item.querySelector('label').textContent.trim() === name);
+check('social tab opens inside content', !get('staff-social-panel').hidden && get('staff-social-panel').parentElement.classList.contains('staff-content') && beside(get('staff-social-panel')));
+check('social tab names the school', get('social-school').textContent === 'Marlboro');
+check('social tab lists three platforms', socialItems().length === 3);
+check('saved Instagram link can be removed', socialRow('Instagram').querySelector('input').value === 'https://www.instagram.com/instagram/' &&
+  [...socialRow('Instagram').querySelectorAll('button')].some(button => button.textContent === 'Remove'));
+const typeLink = (name, value) => { const input = socialRow(name).querySelector('input'); input.value = value; input.dispatchEvent(new Event('input')); };
+const saveLink = name => [...socialRow(name).querySelectorAll('button')].find(button => button.textContent === 'Save').click();
+typeLink('X', 'https://example.org/marlboro');
+saveLink('X');
+await wait();
+check('a link to another site is refused', get('social-status').textContent.startsWith('Paste the link') && socialRows.length === 1 &&
+  socialRow('X').querySelector('input').getAttribute('aria-invalid') === 'true');
+typeLink('X', 'twitter.com/X?lang=en');
+saveLink('X');
+await wait();
+check('an X link is tidied and saved', socialRows.some(row => row.platform === 'x' && row.url === 'https://x.com/X' && row.school_id === 'marlboro'));
+[...socialRow('Instagram').querySelectorAll('button')].find(button => button.textContent === 'Remove').click();
+await wait();
+check('removing a link takes it away at once', !socialRows.some(row => row.platform === 'instagram') && socialRow('Instagram').querySelector('input').value === '');
+check('social tab no page overflow', document.documentElement.scrollWidth <= innerWidth);
+get('schedule-school').value = 'colts-neck';
+get('schedule-school').dispatchEvent(new Event('change'));
+await wait();
+check('social tab follows the school picker', !get('staff-social-panel').hidden && get('social-school').textContent === 'Colts Neck' &&
+  socialItems().every(item => item.querySelector('input').value === ''));
+get('view-as').value = 'office';
+get('view-as').dispatchEvent(new Event('change'));
+await wait();
+check('conference admin sees the social tab for every school', !get('staff-social-tab').hidden && get('schedule-school').options.length === 3 && get('staff-settings-tab').hidden);
+get('view-as').value = 'ad:marlboro';
+get('view-as').dispatchEvent(new Event('change'));
+await wait();
+check('an AD sees the social tab for one school', !get('staff-social-tab').hidden && get('schedule-school').options.length === 1);
+get('view-as').value = '';
+get('view-as').dispatchEvent(new Event('change'));
+await wait();
+if (new URLSearchParams(location.search).get('show') === 'social') {
+  get('schedule-school').value = 'marlboro';
+  get('schedule-school').dispatchEvent(new Event('change'));
+  await wait();
+  get('staff-social-tab').click();
+  await wait();
+} else get('staff-schedule-tab').click();
 check('no script errors', errors.length === 0);
 const result = document.createElement('pre'); result.id = 'qa-results'; result.hidden = true;
 result.textContent = JSON.stringify({width:innerWidth, checks, errors}); document.body.append(result);
