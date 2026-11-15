@@ -8,7 +8,7 @@ vm.runInContext(readFileSync(new URL('../js/staff-import.js',import.meta.url),'u
 const header='date,start_time,sport,gender,level,home_away,opponent,location';
 const row='2031-09-01,3:00 PM,Soccer,Girls,Varsity,Home,Visitor,Field';
 
-function mountImport(existingGames = [], client = {}, sendTransportationEmail, directory = []) {
+function mountImport(existingGames = [], client = {}, sendTransportationEmail, directory = [], schoolList = []) {
   const elements = new Map();
   const makeElement = tag => ({
     tag, children: [], hidden: false, disabled: false, textContent: '',
@@ -27,7 +27,7 @@ function mountImport(existingGames = [], client = {}, sendTransportationEmail, d
   const context = vm.createContext({document, seasonOf: () => 'Fall', crypto: {randomUUID: () => 'import-batch'}});
   vm.runInContext(readFileSync(new URL('../js/staff-import.js',import.meta.url),'utf8'), context);
   const controller = context.startStaffImport(client, {
-    currentSchool: () => ({slug:'marlboro'}), schools: () => [], opponents: () => directory,
+    currentSchool: () => ({slug:'marlboro'}), schools: () => schoolList, opponents: () => directory,
     existingGames: () => existingGames,
     onImported() {}, sendTransportationEmail,
   });
@@ -100,6 +100,22 @@ test('CSV opponents from the AD list retain a directory key without becoming a s
   }, undefined, [{slug: 'north-harbor', name: 'North Harbor High School'}]);
   const input = elements.get('import-file');
   input.files = [new File([header + '\n2031-09-01,3:00 PM,Soccer,Girls,Varsity,Home,North Harbor High School,Field'], 'directory.csv')];
+  await input.onchange();
+  await elements.get('import-save').onclick();
+  assert.equal(saved[0].opponent_school_id, null);
+  assert.equal(saved[0].opponent_directory_slug, 'north-harbor');
+  assert.equal(saved[0].opponent_name, 'North Harbor High School');
+  controller.stop();
+});
+
+test('CSV opponents with a nonmember school profile remain nonconference identities', async () => {
+  const saved = [];
+  const school = {slug: 'north-harbor', name: 'North Harbor High School', is_conference_member: false};
+  const {controller, elements} = mountImport([], {
+    async rpc(name, {input}) { assert.equal(name, 'save_staff_game'); saved.push(input); return {data: 'saved'}; },
+  }, undefined, [school], [school]);
+  const input = elements.get('import-file');
+  input.files = [new File([header + '\n2031-09-01,3:00 PM,Soccer,Girls,Varsity,Home,North Harbor High School,Field'], 'nonmember.csv')];
   await input.onchange();
   await elements.get('import-save').onclick();
   assert.equal(saved[0].opponent_school_id, null);

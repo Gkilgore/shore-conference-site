@@ -46,12 +46,12 @@ begin
   insert into public.teams(id,school_id,sport,gender,level,season)
     values(outside_team,'north-harbor','Opponent Directory Test','Girls','Varsity','Spring');
   insert into public.games(id,school_id,team_id,game_date,start_time,opponent_school_id,
-    opponent_directory_slug,home_away,location)
+    opponent_directory_slug,opponent_name,home_away,location)
   values
     (member_game,'marlboro',current_setting('shore.test_member_team')::uuid,'2039-04-01','15:00',
-      'north-harbor','north-harbor','Away','Shared field'),
+      null,'north-harbor','North Harbor High School','Away','Shared field'),
     (outside_game,'north-harbor',outside_team,'2039-04-01','15:00',
-      'marlboro','marlboro','Home','Shared field');
+      'marlboro','marlboro',null,'Home','Shared field');
   perform set_config('shore.test_member_game',member_game::text,true);
   perform set_config('shore.test_outside_game',outside_game::text,true);
 end;

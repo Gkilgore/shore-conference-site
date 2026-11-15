@@ -115,11 +115,11 @@ function startStaffTeams(client, { currentSchool, games, groups, states, links, 
     if (group.pending_count) return { text: group.pending_count + (group.pending_count === 1 ? ' change' : ' changes') + ' not posted', tone: 'is-draft' };
     return { text: 'Posted', tone: 'is-public' };
   }
-  // Upcoming games against member schools whose entry differs from the other school's.
+  // Upcoming games against active platform schools whose entry differs from the other school's.
   function unmatched(team) {
     const map = links();
     if (!(map instanceof Map)) return [];
-    return team.games.filter(game => game.game_date >= today() && game.opponent_school_id && map.get(game.id) && !map.get(game.id).linked);
+    return team.games.filter(game => game.game_date >= today() && map.has(game.id) && !map.get(game.id).linked);
   }
   const opponent = game => (game.home_away === 'Home' ? 'vs. ' : 'at ') + (schoolName(game.opponent_school_id) || game.opponent_name || 'Opponent');
 

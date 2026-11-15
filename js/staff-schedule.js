@@ -304,13 +304,14 @@ function startStaffSchedule(client, invite) {
     const choices = [new Option('Choose an opponent', '')];
     for (const item of entries.filter(entry => entry.slug !== school?.slug)) {
       const hasSchoolProfile = schools.some(candidate => candidate.slug === item.slug);
+      const isMember = schools.some(candidate => candidate.slug === item.slug && candidate.is_conference_member);
       choices.push(new Option(item.name + (hasSchoolProfile ? ' (school profile)' : ' (directory only)'),
-        hasSchoolProfile ? item.slug : 'directory:' + item.slug));
+        isMember ? item.slug : 'directory:' + item.slug));
     }
     choices.push(new Option('Other opponent', '__other'));
     fields.opponent_school_id.replaceChildren(...choices);
     const selected = savedSlug
-      ? schools.some(item => item.slug === savedSlug) ? savedSlug : 'directory:' + savedSlug
+      ? schools.some(item => item.slug === savedSlug && item.is_conference_member) ? savedSlug : 'directory:' + savedSlug
       : game?.opponent_name ? '__other' : fields.opponent_school_id.value;
     fields.opponent_school_id.value = selected;
     if (game?.opponent_name && selected === '__other') fields.opponent_name.value = game.opponent_name;
@@ -1142,12 +1143,13 @@ function startStaffSchedule(client, invite) {
     const directorySlug = opponentChoice.startsWith('directory:')
       ? opponentChoice.slice('directory:'.length)
       : opponentChoice && opponentChoice !== '__other' ? opponentChoice : null;
-    const platformOpponent = schools.find(item => item.slug === directorySlug);
-    input.opponent_school_id = platformOpponent?.slug ?? null;
+    const opponentProfile = schools.find(item => item.slug === directorySlug);
+    const memberOpponent = opponentProfile?.is_conference_member ? opponentProfile : null;
+    input.opponent_school_id = memberOpponent?.slug ?? null;
     input.opponent_directory_slug = directorySlug;
     input.opponent_name = opponentChoice === '__other'
       ? fields.opponent_name.value.trim() || null
-      : platformOpponent ? null : opponents.entry(directorySlug)?.name ?? null;
+      : memberOpponent ? null : opponents.entry(directorySlug)?.name ?? opponentProfile?.name ?? null;
     input.start_time = startTimeTbd.checked ? null : fields.start_time.value || null;
     input.school_id = selector.value;
     input.id = activeGame?.id ?? null;

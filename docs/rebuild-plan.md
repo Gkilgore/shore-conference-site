@@ -40,7 +40,7 @@ If a published update stops matching, the game comes off the conference calendar
 
 **AD status line.** Each game against an active platform school shows its status in the AD's admin screen:
 
-- LinkedOn the conference calendar
+- LinkedBoth schools entered the same game. It appears on the conference calendar only when both schools are members.
 - Not linkedColts Neck hasn't entered this game
 - Not linkedTime doesn't match (or date, location, home/away)
 

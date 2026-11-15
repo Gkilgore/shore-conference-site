@@ -130,13 +130,13 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     game.home_away = need('home_away', 'Home or away') && pickValue(raw.home_away, { Home: ['home', 'h', 'vs'], Away: ['away', 'a', 'at', '@'] });
     if (raw.home_away && !game.home_away) problems.push('Home or away must be Home or Away');
     const opponent = need('opponent', 'Opponent');
-    const member = opponent && schools().find(item =>
-      [item.name.toLowerCase(), item.slug].includes(opponent.toLowerCase()));
     const listed = opponent && opponents().find(item =>
       [item.name.toLowerCase(), item.slug].includes(opponent.toLowerCase()));
-    if (member?.slug === school.slug || listed?.slug === school.slug) problems.push('A school can’t play itself');
+    const member = listed && schools().find(item =>
+      item.slug === listed.slug && item.is_conference_member);
+    if (listed?.slug === school.slug) problems.push('A school can’t play itself');
     game.opponent_school_id = member && member.slug !== school.slug ? member.slug : null;
-    game.opponent_directory_slug = listed?.slug ?? member?.slug ?? null;
+    game.opponent_directory_slug = listed?.slug ?? null;
     game.opponent_name = member ? null : listed?.name ?? (opponent || null);
     if (game.opponent_name && game.opponent_name.length > 100) problems.push('Opponent is too long');
     game.location = need('location', 'Location');

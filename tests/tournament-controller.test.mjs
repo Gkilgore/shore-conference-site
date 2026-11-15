@@ -439,7 +439,7 @@ function mountStaffSchedule(role) {
   };
   makeSelect('schedule-school');makeSelect('view-as');
   const gameForm=el('game-form');
-  const gameNames=['sport','gender','level','season','game_date','start_time','home_away','status','opponent_school_id','opponent_name','location','notes','bus_departure','pickup_location','early_dismissal_time','return_time','transport_notes'];
+  const gameNames=['sport','gender','level','season','game_date','start_time','home_away','status','opponent_school_id','opponent_directory_slug','opponent_name','location','notes','bus_departure','pickup_location','early_dismissal_time','return_time','transport_notes'];
   gameForm.elements=gameNames.map(name=>{
     const item=['sport','gender','level','opponent_school_id'].includes(name)
       ?makeSelect('game-'+name):new Element('input',registry);
@@ -464,7 +464,7 @@ function mountStaffSchedule(role) {
     const query={select(){return query;},eq(){return query;},order(){return query;},then(resolve,reject){return Promise.resolve({data:table==='schools'?schools:[]}).then(resolve,reject);}};
     return query;
   }};
-  const stub=()=>({reset(){},load:async()=>{},render(){},stop(){},setPreview(){},sync(){},showSettings(){},coaches:()=>[],states:()=>({map:new Map(),removed:0}),groups:()=>[],links:()=>null,setStatus(){},loadState:()=> 'loading',sports:()=>[],listedTeams:()=>[]});
+  const stub=()=>({reset(){},load:async()=>{},loadDirectory:async()=>true,directory:()=>[],entries:()=>[],entry:()=>null,state:()=> 'ready',render(){},stop(){},setPreview(){},sync(){},showSettings(){},coaches:()=>[],states:()=>({map:new Map(),removed:0}),groups:()=>[],links:()=>null,setStatus(){},loadState:()=> 'loading',sports:()=>[],listedTeams:()=>[]});
   const context=vm.createContext({document,window:{},console,crypto:{randomUUID:()=> '22222222-2222-4222-8222-222222222222'},
     Option:function(text,value){const option=new Element('option',registry);option.textContent=text;option.text=text;option.value=value;return option;},
     workspaceTitles:{site_admin:'Site admin workspace',conference_office:'Conference admin workspace',ad:'Athletic Director workspace'},
@@ -472,7 +472,7 @@ function mountStaffSchedule(role) {
   });
   for(const file of ['staff-import.js','tournament-engine.js'])vm.runInContext(readFileSync(new URL('../js/'+file,import.meta.url),'utf8'),context);
   vm.runInContext(readFileSync(new URL('../js/tournament-public.js',import.meta.url),'utf8').split('(async () => {')[0],context);
-  for(const name of ['startStaffAccess','startStaffOverview','startStaffCoaches','startCoachImport','startStaffImport','startStaffSettings','startStaffPublication','startStaffTransportation','startStaffVenues','startStaffDocuments','startStaffSocial','startStaffTeams'])context[name]=stub;
+  for(const name of ['startStaffAccess','startStaffOverview','startStaffCoaches','startCoachImport','startStaffImport','startStaffSettings','startStaffPublication','startStaffTransportation','startStaffVenues','startStaffDocuments','startStaffSocial','startStaffTeams','startStaffOpponents'])context[name]=stub;
   for(const file of ['staff-tournaments.js','staff-schedule.js'])vm.runInContext(readFileSync(new URL('../js/'+file,import.meta.url),'utf8'),context);
   let tournamentStarts=0;
   const realTournamentController=context.startStaffTournaments;
