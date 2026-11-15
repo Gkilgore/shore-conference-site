@@ -638,55 +638,41 @@ function startStaffSchedule(client, invite) {
 
     const controls = document.createElement('div');
     controls.className = 'quick-edit-controls';
-    const save = document.createElement('button');
-    save.type = 'button';
-    save.className = 'quick-edit-action quick-edit-save';
-    save.textContent = 'Save';
-    const cancel = document.createElement('button');
-    cancel.type = 'button';
-    cancel.className = 'quick-edit-action';
-    cancel.textContent = 'Cancel';
-    const message = document.createElement('span');
-    message.className = 'quick-edit-message';
-    message.setAttribute('role', 'status');
-    if (game.status === 'Scheduled' && game.transportation?.bus_departure) {
-      message.textContent = 'Saving may email the transportation contact.';
-    }
-    controls.append(save, cancel, message);
+    const update = document.createElement('button');
+    update.type = 'button';
+    update.className = 'quick-edit-action';
+    update.textContent = 'Update';
+    controls.append(update);
     cell.replaceChildren(input, controls);
     input.focus();
 
-    cancel.onclick = () => renderQuickTime(cell, game, field);
-    save.onclick = async () => {
+    update.onclick = async () => {
       const nextValue = input.value || null;
       const currentValue = (field === 'start_time' ? game.start_time : game.transportation?.bus_departure)?.slice(0, 5) ?? null;
       if (nextValue === currentValue) {
         renderQuickTime(cell, game, field);
         return;
       }
-      save.disabled = true;
-      cancel.disabled = true;
+      update.disabled = true;
+      update.textContent = 'Updating…';
       input.disabled = true;
-      message.textContent = 'Saving…';
       const inputValues = quickTimeSaveValues(game, field, nextValue);
       const { data: savedId, error } = await client.rpc('save_staff_game', { input: inputValues });
       if (stopped) return;
       if (error) {
-        save.disabled = false;
-        cancel.disabled = false;
+        update.disabled = false;
+        update.textContent = 'Update';
         input.disabled = false;
-        message.textContent = error.code === '40001'
-          ? 'This game changed elsewhere. Refreshing the schedule…'
-          : 'The time wasn’t saved. Try again.';
         if (error.code === '40001') {
           await loadGames();
           feedback('This game changed elsewhere. The schedule was refreshed; try the time edit again.');
+        } else {
+          feedback('The time wasn’t saved. Try again.');
         }
         return;
       }
 
-      message.textContent = 'Posting…';
-      const completion = await finishGameSave(savedId, inputValues, () => { message.textContent = 'Sending transportation email…'; });
+      const completion = await finishGameSave(savedId, inputValues);
       if (!completion || stopped) return;
       await loadGames(game.game_date, false, savedId);
       if (stopped) return;
@@ -704,7 +690,7 @@ function startStaffSchedule(client, invite) {
         renderQuickTime(cell, game, field);
       } else if (event.key === 'Enter') {
         event.preventDefault();
-        save.click();
+        update.click();
       }
     };
   }

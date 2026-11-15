@@ -165,6 +165,10 @@ check('AD list has an inline game-time control', Boolean(gameTimeButton));
 gameTimeButton?.click();
 const gameTimeInput = scheduleTable.querySelector('input[type="time"]');
 check('game-time control opens an inline time field', Boolean(gameTimeInput));
+check('game-time editor has one Update button and no explanation',
+  gameTimeInput?.nextElementSibling.querySelectorAll('button').length === 1 &&
+  gameTimeInput?.nextElementSibling.querySelector('button').textContent === 'Update' &&
+  !gameTimeInput?.nextElementSibling.textContent.includes('email'));
 if (gameTimeInput) {
   gameTimeInput.value = '18:15';
   gameTimeInput.parentElement.querySelector('button').click();
@@ -177,8 +181,9 @@ const busTimeButton = document.querySelector('#schedule-list .quick-edit-time[ar
 busTimeButton?.click();
 const busTimeInput = document.querySelector('#schedule-list input[type="time"]');
 const busTimeControls = busTimeInput?.nextElementSibling;
-check('bus-time edit keeps a native time field and compact side-by-side actions',
-  busTimeInput?.type === 'time' && busTimeControls && getComputedStyle(busTimeControls).gridTemplateColumns.split(' ').length === 2);
+check('bus-time edit keeps a native time field and one Update button',
+  busTimeInput?.type === 'time' && busTimeControls?.querySelectorAll('button').length === 1 &&
+  busTimeControls.querySelector('button').textContent === 'Update' && !busTimeControls.textContent.includes('email'));
 if (busTimeInput) {
   busTimeInput.value = '15:00';
   busTimeInput.parentElement.querySelector('button').click();
