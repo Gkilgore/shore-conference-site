@@ -134,7 +134,7 @@ Greg asked for the draft and publish step to go. Details and the plan for older 
 - ADs can change game time and bus departure directly in List and Day views, with Save and Cancel controls. Changes use the regular game-save and posting flow; saving a scheduled game with a bus departure may also email the transportation contact.
 - The local staff preview includes a fictional game to exercise both quick edits and confirm that changing one time preserves the other game and transportation details.
 - Conference admins now get the Games tab too, showing only Match checks (no Add game or Import games).
-- Tabs for an AD: Schedule, Games, Teams, Transportation, School settings. Conference admin: Schedule, Games, Tournaments, Staff access.
+- Tabs for an AD: Schedule, Games, My Teams, Transportation, School settings. Conference admin: Schedule, Games, Tournaments, Staff access.
 - Staff access: "Add a person" form on one row with its button, then "People with access" with one line per person (name, email, access, Edit and Remove). On a phone, name and buttons share the first line.
 - Tournaments and Staff access now show the conference colors instead of the last school picked.
 - Checked with fictional data at 1280px and 375px.
