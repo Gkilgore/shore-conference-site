@@ -535,7 +535,7 @@ function startStaffSchedule(client, invite) {
     table.className = 'staff-schedule-table';
     table.setAttribute('aria-label', 'Games by date');
     const columns = document.createElement('colgroup');
-    for (const width of ['8%', '12%', '6%', '14%', '15%', '12%', '7%', '15%', '11%']) {
+    for (const width of ['10%', '12%', '5%', '14%', '14%', '10%', '9%', '15%', '10%']) {
       const column = document.createElement('col');
       column.style.width = width;
       columns.append(column);
@@ -619,7 +619,7 @@ function startStaffSchedule(client, invite) {
     const label = field === 'start_time' ? 'game time' : 'bus departure';
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'button secondary quick-edit-time';
+    button.className = 'quick-edit-time';
     button.textContent = value
       ? timeFormat.format(new Date(game.game_date + 'T' + value))
       : field === 'start_time' ? 'TBD' : '--:--';
@@ -640,11 +640,11 @@ function startStaffSchedule(client, invite) {
     controls.className = 'quick-edit-controls';
     const save = document.createElement('button');
     save.type = 'button';
-    save.className = 'button primary';
+    save.className = 'quick-edit-action quick-edit-save';
     save.textContent = 'Save';
     const cancel = document.createElement('button');
     cancel.type = 'button';
-    cancel.className = 'button secondary';
+    cancel.className = 'quick-edit-action';
     cancel.textContent = 'Cancel';
     const message = document.createElement('span');
     message.className = 'quick-edit-message';
