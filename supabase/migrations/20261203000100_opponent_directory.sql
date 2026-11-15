@@ -1,5 +1,5 @@
 -- Adds a statewide opponent catalog and school-owned shortlists. Directory entries are not
--- platform identities: only schools with a public.schools row can participate in matching.
+-- platform identities: only schools with an active AD invitation can participate in matching.
 create table public.opponent_directory (
   slug text primary key check (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$' and char_length(slug) <= 80),
   name text not null check (char_length(btrim(name)) between 1 and 100),
@@ -256,7 +256,7 @@ $$;
 revoke all on function public.save_staff_game(jsonb) from public, anon, authenticated;
 grant execute on function public.save_staff_game(jsonb) to authenticated;
 
--- Only an existing platform school can be matched; conference publication remains member-only.
+-- Active schools can match one another; conference publication remains member-only.
 create or replace function public.game_link_status(school text)
 returns table (game_id uuid, linked boolean, reason text)
 language sql stable security definer set search_path = '' as $$

@@ -38,7 +38,7 @@ A game goes on the public conference calendar only when both schools are confere
 
 If a published update stops matching, the game comes off the conference calendar until both published entries agree again. A matched game that either school publishes as postponed or canceled stays on the conference calendar with that status, so visitors can see what changed (Greg's November 9 update). Saving or importing a game publishes it immediately; deleting a game removes its public copy immediately. Public matching is checked against the saved public copies on each calendar/feed read.
 
-**AD status line.** Each game against a member school shows its status in the AD's admin screen:
+**AD status line.** Each game against an active platform school shows its status in the AD's admin screen:
 
 - LinkedOn the conference calendar
 - Not linkedColts Neck hasn't entered this game

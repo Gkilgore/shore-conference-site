@@ -24,6 +24,6 @@ test('directory preview generates stable slugs and flags duplicate or invalid ro
 test('directory preview rejects files over the server import limit', () => {
   const rows = ['name,slug', ...Array.from({length: 2001}, (_, index) => `School ${index},school-${index}`)].join('\n');
   const result = context.previewOpponentDirectoryCsv(rows);
-  assert.deepEqual(result.rows, []);
+  assert.equal(result.rows.length, 0);
   assert.match(result.errors[0], /2,000 schools/);
 });
