@@ -566,19 +566,20 @@ function startStaffSchedule(client, invite) {
         row.className = 'schedule-list-game staff-game-' + game.status.toLowerCase();
         const opponent = schools.find(item => item.slug === game.opponent_school_id)?.name ?? game.opponent_name;
         const values = [
-          game.start_time ? timeFormat.format(new Date(game.game_date + 'T' + game.start_time)) : 'TBD',
-          [game.teams.gender, game.teams.level, game.teams.sport].filter(Boolean).join(' '),
-          game.home_away,
-          (game.home_away === 'Home' ? 'vs ' : 'at ') + opponent,
-          game.location,
-          game.transportation?.pickup_location || '—',
-          game.transportation?.bus_departure
-            ? timeFormat.format(new Date(game.game_date + 'T' + game.transportation.bus_departure)) : '—',
-          game.transportation?.early_dismissal_time
-            ? timeFormat.format(new Date(game.game_date + 'T' + game.transportation.early_dismissal_time)) : '—',
+          ['Time', game.start_time ? timeFormat.format(new Date(game.game_date + 'T' + game.start_time)) : 'TBD'],
+          ['Team', [game.teams.gender, game.teams.level, game.teams.sport].filter(Boolean).join(' ')],
+          ['H/A', game.home_away],
+          ['Opponent', (game.home_away === 'Home' ? 'vs ' : 'at ') + opponent],
+          ['Facility', game.location],
+          ['Transportation', game.transportation?.pickup_location || '—'],
+          ['Depart', game.transportation?.bus_departure
+            ? timeFormat.format(new Date(game.game_date + 'T' + game.transportation.bus_departure)) : '—'],
+          ['Early Dismissal', game.transportation?.early_dismissal_time
+            ? timeFormat.format(new Date(game.game_date + 'T' + game.transportation.early_dismissal_time)) : '—'],
         ];
-        for (const [index, value] of values.entries()) {
+        for (const [index, [labelText, value]] of values.entries()) {
           const cell = document.createElement('td');
+          cell.dataset.label = labelText;
           if (index === 0) renderQuickTime(cell, game, 'start_time');
           else if (index === 6 && canEdit) renderQuickTime(cell, game, 'bus_departure');
           else cell.textContent = value || '—';
@@ -602,6 +603,7 @@ function startStaffSchedule(client, invite) {
           else showDetails(calendar.getEventById(game.id));
         };
         actions.append(actionButton);
+        actions.dataset.label = 'Actions';
         row.append(actions);
         body.append(row);
       }

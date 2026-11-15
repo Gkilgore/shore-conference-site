@@ -175,8 +175,8 @@
 #workspace #calendar .fc-daygrid-event.staff-game:is(:hover, :focus-visible) { background: var(--ink); color: white; }
 #workspace #calendar .fc-list-event.staff-game:is(:hover, :focus-visible) td { background: var(--school-accent); color: var(--accent-ink); }
 #workspace #calendar.staff-table-mode .fc-view-harness { display: none; }
-.schedule-list-wrap { max-width: 100%; overflow-x: auto; background: white; border: var(--frame); }
-.staff-schedule-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 0.84rem; }
+.schedule-list-wrap { max-width: 100%; background: white; border: var(--frame); }
+.staff-schedule-table { width: 100%; max-width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 0.84rem; }
 .staff-schedule-table th, .staff-schedule-table td {
   padding: 0.5rem;
   border: var(--frame);
@@ -252,7 +252,36 @@
 }
 
 @media (max-width: 839px) {
-  .staff-schedule-table { min-width: 62rem; }
+  .staff-schedule-table { display: block; table-layout: auto; }
+  .staff-schedule-table colgroup, .staff-schedule-table thead { display: none; }
+  .staff-schedule-table tbody { display: grid; gap: 0.65rem; }
+  .staff-schedule-table .schedule-list-day { display: block; }
+  .staff-schedule-table .schedule-list-day th { display: block; }
+  .staff-schedule-table .schedule-list-game {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border: var(--frame);
+  }
+  .staff-schedule-table .schedule-list-game td {
+    display: block;
+    min-width: 0;
+    padding: 0.45rem;
+    white-space: normal;
+  }
+  .staff-schedule-table .schedule-list-game td:is(:first-child, :nth-child(3), :nth-last-child(-n+3)) {
+    white-space: normal;
+  }
+  .staff-schedule-table .schedule-list-game td::before {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: var(--muted);
+    content: attr(data-label);
+    font-size: 0.65rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+  .staff-schedule-table .schedule-list-game td:last-child { grid-column: 1 / -1; }
 }
 
 /* Game editor. */

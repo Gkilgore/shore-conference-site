@@ -156,6 +156,8 @@ const scheduleTable = document.querySelector('#schedule-list table');
 check('list view shows the schedule table', !get('schedule-list').hidden && scheduleTable);
 check('list view has aligned schedule columns', ['Time', 'Team', 'H/A', 'Opponent', 'Facility', 'Transportation', 'Depart', 'Early Dismissal', 'Actions']
   .every(label => scheduleTable.tHead.textContent.includes(label)));
+check('schedule game cells have mobile labels', [...scheduleTable.querySelectorAll('.schedule-list-game td')]
+  .every(cell => cell.dataset.label));
 check('AD game editor has an early dismissal time field', document.querySelector('#game-form [name="early_dismissal_time"]')?.type === 'time');
 check('game editor has no transportation confirmation field',
   !document.querySelector('#game-form [name="bus_confirmed"]') && !document.getElementById('tournament-bus-confirmed'));
