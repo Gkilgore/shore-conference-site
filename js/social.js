@@ -48,8 +48,7 @@ function renderSocialAccounts(host, accounts) {
   }
   const side = node('div', 'social-side');
   const instagram = accounts.find(account => account.platform === 'instagram');
-  side.append(node('p', 'eyebrow', 'View on the platform'), links, node('p', 'social-note', instagram
-    ? 'These posts load from the school’s Instagram account.' : 'Each link opens the school’s own account.'));
+  side.append(links);
   if (!instagram) {
     host.replaceChildren(side);
     return;
