@@ -8,9 +8,35 @@ const subdomain = hostname.length >= 3 && !location.hostname.endsWith('.github.i
   : '';
 const schoolSlug = schoolQuery ?? (Object.hasOwn(schoolDirectory, subdomain) ? subdomain : 'marlboro');
 
+async function loadSchoolProfile(slug) {
+  const url = new URL('/rest/v1/schools', shoreSupabase.url);
+  url.searchParams.set('select', 'slug,name,primary_color,accent_color,logo_path');
+  url.searchParams.set('slug', 'eq.' + slug);
+  const response = await fetch(url, {
+    headers: { apikey: shoreSupabase.publishableKey, Authorization: 'Bearer ' + shoreSupabase.publishableKey },
+    signal: AbortSignal.timeout(15000),
+  });
+  if (!response.ok) throw new Error('School details could not load. Refresh to try again.');
+  const [profile] = await response.json();
+  if (!profile) return null;
+  const logo = profile.logo_path
+    ? shoreSupabase.url + '/storage/v1/object/public/school-logos/' +
+      profile.logo_path.split('/').map(encodeURIComponent).join('/')
+    : 'assets/logos/shore-conference.svg';
+  return {
+    name: profile.name, color: profile.primary_color || '#183366',
+    accent: profile.accent_color || '#d4e0ec', logo, logoBackground: 'transparent',
+  };
+}
+
 (async () => {
-if (Object.hasOwn(schoolDirectory, schoolSlug)) {
-  const school = schoolDirectory[schoolSlug];
+let school = schoolDirectory[schoolSlug] ?? null;
+let profileError = null;
+if (!school && !sample) {
+  try { school = await loadSchoolProfile(schoolSlug); }
+  catch (error) { profileError = error; }
+}
+if (school) {
   const title = school.name + ' Athletics';
   document.title = title + ' | The Shore Conference';
   const emphasis = document.createElement('em');
@@ -91,8 +117,10 @@ if (Object.hasOwn(schoolDirectory, schoolSlug)) {
     document.getElementById('recent-updates').hidden = true;
   }
 } else {
-  document.getElementById('page-title').textContent = 'School not found';
+  document.getElementById('page-title').textContent = profileError ? 'Schedule unavailable' : 'School not found';
   document.getElementById('school-welcome').hidden = false;
+  document.getElementById('school-welcome').textContent =
+    profileError?.message ?? 'Choose a school from the directory.';
   document.getElementById('all-schools-link').hidden = false;
   document.getElementById('subscribe-calendar').hidden = true;
   document.getElementById('school-content').hidden = true;
