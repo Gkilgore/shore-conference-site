@@ -548,8 +548,9 @@
               </div>
               <p id="status-hint" class="staff-hint" role="status"></p>
               <div class="filters">
-                <label>Opponent <select name="opponent_school_id"></select></label>
-                <label id="opponent-other">Opponent name <input name="opponent_name" maxlength="100"></label>
+                <label>Opponent <select name="opponent_school_id" required></select></label>
+                <label id="opponent-other" hidden>Opponent name <input name="opponent_name" maxlength="100" disabled></label>
+                <input name="opponent_directory_slug" type="hidden">
                 <label id="venue-pick" hidden>Venue <select id="venue-select"></select></label>
                 <label id="venue-typed">Venue <input name="location" required maxlength="160" autocomplete="off"></label>
               </div>

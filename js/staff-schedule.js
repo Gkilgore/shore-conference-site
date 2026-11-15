@@ -20,7 +20,8 @@ function startStaffSchedule(client, invite) {
   const mayManageAccess = isSiteAdmin || invite.role === 'conference_office';
   const accessTab = document.getElementById('staff-access-tab');
   const accessPanel = document.getElementById('staff-access-workspace');
-  const access = startStaffAccess(client, invite, () => schools);
+  let opponents;
+  const access = startStaffAccess(client, invite, () => schools, () => opponents?.directory() ?? []);
   const tournamentsTab = document.getElementById('staff-tournaments-tab');
   // Tournament tools are off for now, except the conference admin view uploading a finished schedule.
   // selectView shows the tab for that view only.
@@ -39,6 +40,8 @@ function startStaffSchedule(client, invite) {
   const scheduleTab = document.getElementById('staff-schedule-tab');
   const gamesTab = document.getElementById('staff-games-tab');
   const gamesPanel = document.getElementById('staff-games-panel');
+  const opponentsTab = document.getElementById('staff-opponents-tab');
+  const opponentsPanel = document.getElementById('staff-opponents-panel');
   const gamesFeedback = document.getElementById('games-feedback');
   const gamesNext = document.getElementById('games-next');
   const importSection = document.getElementById('import-section');
@@ -79,7 +82,7 @@ function startStaffSchedule(client, invite) {
     currentSchool, coaches: () => coachList.coaches(), onImported: () => coachList.load(),
   });
   const importer = startStaffImport(client, {
-    currentSchool, schools: () => schools, existingGames: () => allGames,
+    currentSchool, schools: () => schools, opponents: () => opponents.entries(), existingGames: () => allGames,
     onImported: date => { feedback(''); gamesNext.hidden = false; loadGames(date); },
     post: ids => publication.post(ids),
     sendTransportationEmail: id => transportation.sendForSavedGame(id),
@@ -130,6 +133,10 @@ function startStaffSchedule(client, invite) {
   const startTimeTbd = document.getElementById('start-time-tbd');
   const saveButton = form.querySelector('#save-draft');
   const venues = startStaffVenues(client, { currentSchool, schools: () => schools, fields });
+  opponents = startStaffOpponents(client, {
+    currentSchool, activeSchools: () => schools, canImport: isSiteAdmin,
+    onChanged: () => syncOpponentOptions(),
+  });
   let canEdit = invite.role !== 'conference_office';
   const options = (schools) => schools.map(school => new Option(school.name, school.slug));
   const dateFormat = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -163,12 +170,13 @@ function startStaffSchedule(client, invite) {
   showSchedule();
   status.textContent = 'Loading schools…';
   loadSchools();
+  opponents.loadDirectory();
 
   async function loadSchools() {
     // Branding columns arrive with the school branding migration; fall back until it is applied.
     let { data, error } = await client.from('schools')
-      .select('slug,name,primary_color,accent_color,logo_path').order('name');
-    if (error) ({ data, error } = await client.from('schools').select('slug,name').order('name'));
+      .select('slug,name,is_conference_member,primary_color,accent_color,logo_path').order('name');
+    if (error) ({ data, error } = await client.from('schools').select('slug,name,is_conference_member').order('name'));
     if (stopped) return;
     if (error) {
       status.textContent = 'The school list could not load. Refresh to try again.';
@@ -253,6 +261,7 @@ function startStaffSchedule(client, invite) {
     access.reset();
     const school = schools.find(item => item.slug === schoolId);
     canEdit = role !== 'conference_office';
+    opponentsTab.hidden = !canEdit;
     roleLabel.textContent = roleLabels[role];
     title.textContent = roleLabels[role];
     account.textContent = choice ? '' : signedInAccount;
@@ -271,10 +280,41 @@ function startStaffSchedule(client, invite) {
   }
 
   function syncOpponent() {
-    const other = !fields.opponent_school_id.value;
+    const choice = fields.opponent_school_id.value;
+    const other = choice === '__other';
+    const slug = choice.startsWith('directory:')
+      ? choice.slice('directory:'.length)
+      : choice && !other ? choice : '';
+    fields.opponent_directory_slug.value = slug;
     document.getElementById('opponent-other').hidden = !other;
     fields.opponent_name.required = other;
     fields.opponent_name.disabled = !other;
+    if (!other) fields.opponent_name.value = '';
+  }
+
+  function syncOpponentOptions(game = activeGame) {
+    if (!fields?.opponent_school_id || !opponents) return;
+    const school = currentSchool();
+    const entries = opponents.entries();
+    const savedSlug = game?.opponent_directory_slug || game?.opponent_school_id;
+    if (savedSlug && !entries.some(item => item.slug === savedSlug)) {
+      const saved = opponents.entry(savedSlug) ?? schools.find(item => item.slug === savedSlug);
+      if (saved) entries.push({ slug: saved.slug, name: saved.name });
+    }
+    const choices = [new Option('Choose an opponent', '')];
+    for (const item of entries.filter(entry => entry.slug !== school?.slug)) {
+      const onPlatform = schools.some(candidate => candidate.slug === item.slug);
+      choices.push(new Option(item.name + (onPlatform ? '' : ' (not on platform)'),
+        onPlatform ? item.slug : 'directory:' + item.slug));
+    }
+    choices.push(new Option('Other opponent', '__other'));
+    fields.opponent_school_id.replaceChildren(...choices);
+    const selected = savedSlug
+      ? schools.some(item => item.slug === savedSlug) ? savedSlug : 'directory:' + savedSlug
+      : game?.opponent_name ? '__other' : fields.opponent_school_id.value;
+    fields.opponent_school_id.value = selected;
+    if (game?.opponent_name && selected === '__other') fields.opponent_name.value = game.opponent_name;
+    syncOpponent();
   }
 
   function edit(game) {
@@ -296,14 +336,15 @@ function startStaffSchedule(client, invite) {
       const bus = game.transportation;
       const values = { ...game, ...game.teams, ...bus, notes: game.notes, transport_notes: bus?.notes };
       for (const field of fields) {
+        if (field.name === 'opponent_school_id') continue;
         if (!field.name || !Object.hasOwn(values, field.name)) continue;
         if (field.type === 'checkbox') field.checked = Boolean(values[field.name]);
         else field.value = values[field.name] ?? '';
       }
     }
+    syncOpponentOptions(game);
     startTimeTbd.checked = Boolean(game && !game.start_time);
     syncStartTime();
-    syncOpponent();
     syncStatusHint();
     venues.sync(game?.location ?? '');
     transportation.setPreview(game, true);
@@ -342,6 +383,7 @@ function startStaffSchedule(client, invite) {
   function selectSchool() {
     const showContact = canEdit && !transportationPanel.hidden;
     const showSettings = canEdit && !settingsPanel.hidden;
+    const showOpponents = canEdit && !opponentsPanel.hidden;
     const showSocial = !socialPanel.hidden;
     const showTournaments = !tournamentsPanel.hidden;
     const showCoaches = canEdit && !coachesPanel.hidden;
@@ -356,6 +398,7 @@ function startStaffSchedule(client, invite) {
     publication.reset();
     coachList.reset();
     coachImport.reset();
+    opponents.reset();
     social.reset();
     overview.reset();
     importer.reset();
@@ -364,11 +407,9 @@ function startStaffSchedule(client, invite) {
     applySchoolTheme(client, workspaceSchool());
     list.replaceChildren();
     calendar?.removeAllEvents();
-    fields.opponent_school_id.replaceChildren(
-      new Option('Other opponent', ''),
-      ...options(schools.filter(school => school.slug !== selector.value)),
-    );
+    syncOpponentOptions(null);
     edit(null);
+    opponents.load();
     showSchedule();
     setHeading();
     scheduleFeedback.textContent = '';
@@ -376,6 +417,7 @@ function startStaffSchedule(client, invite) {
     importButton.hidden = !canEdit;
     transportationTab.hidden = !canEdit;
     settingsTab.hidden = !canEdit;
+    opponentsTab.hidden = !canEdit;
     socialTab.hidden = false;
     // Coaches are tabled for now (Greg, November 12): no tab, no coach lists, no coach emails.
     coachesTab.hidden = true;
@@ -385,6 +427,7 @@ function startStaffSchedule(client, invite) {
     if (showGames) openGames(false);
     else if (!canEdit && !teamsPanel.hidden) showSchedule();
     if (showSettings) openSettings(false);
+    if (showOpponents) openOpponents(false);
     if (showSocial) openSocial(false);
     if (showTournaments) openTournaments(false);
     loadGames(null, true);
@@ -778,6 +821,7 @@ function startStaffSchedule(client, invite) {
       start_time: field === 'start_time' ? value || null : game.start_time,
       home_away: game.home_away,
       opponent_school_id: game.opponent_school_id,
+      opponent_directory_slug: game.opponent_directory_slug,
       opponent_name: game.opponent_name,
       location: game.location,
       status: game.status,
@@ -816,7 +860,7 @@ function startStaffSchedule(client, invite) {
   // Hides every panel and clears the selected tab; each opener then shows its own panel.
   function hidePanels() {
     for (const [panel, tab] of [[schedulePanel, scheduleTab], [gamesPanel, gamesTab], [teamsPanel, teamsTab],
-      [transportationPanel, transportationTab], [coachesPanel, coachesTab], [settingsPanel, settingsTab], [tournamentsPanel, tournamentsTab],
+      [opponentsPanel, opponentsTab], [transportationPanel, transportationTab], [coachesPanel, coachesTab], [settingsPanel, settingsTab], [tournamentsPanel, tournamentsTab],
       [documentsPanel, documentsTab], [socialPanel, socialTab]]) {
       panel.hidden = true;
       tab.removeAttribute('aria-current');
@@ -915,6 +959,17 @@ function startStaffSchedule(client, invite) {
     venues.showSettings();
     if (focus) settingsTitle.focus();
   }
+
+  function openOpponents(focus = true) {
+    if (!canEdit || !selector.value) return;
+    hidePanels();
+    opponentsPanel.hidden = false;
+    opponentsTab.setAttribute('aria-current', 'true');
+    filterForm.hidden = true;
+    opponents.load();
+    if (focus) document.getElementById('opponents-title').focus();
+  }
+  opponentsTab.onclick = () => openOpponents();
 
   function openSocial(focus = true) {
     if (!selector.value) return;
@@ -1069,10 +1124,24 @@ function startStaffSchedule(client, invite) {
       formStatus.textContent = gameSportHint.textContent || 'Choose a sport from the Teams list.';
       return;
     }
+    if (opponents.state() !== 'ready') {
+      formStatus.textContent = 'The opponent list could not load. Refresh before saving this game.';
+      return;
+    }
     const input = Object.fromEntries(new FormData(form));
     for (const name of Object.keys(input)) {
       if (typeof input[name] === 'string') input[name] = input[name].trim() || null;
     }
+    const opponentChoice = fields.opponent_school_id.value;
+    const directorySlug = opponentChoice.startsWith('directory:')
+      ? opponentChoice.slice('directory:'.length)
+      : opponentChoice && opponentChoice !== '__other' ? opponentChoice : null;
+    const platformOpponent = schools.find(item => item.slug === directorySlug);
+    input.opponent_school_id = platformOpponent?.slug ?? null;
+    input.opponent_directory_slug = directorySlug;
+    input.opponent_name = opponentChoice === '__other'
+      ? fields.opponent_name.value.trim() || null
+      : platformOpponent ? null : opponents.entry(directorySlug)?.name ?? null;
     input.start_time = startTimeTbd.checked ? null : fields.start_time.value || null;
     input.school_id = selector.value;
     input.id = activeGame?.id ?? null;
@@ -1084,6 +1153,7 @@ function startStaffSchedule(client, invite) {
     scheduleTab.disabled = true;
     coachesTab.disabled = true;
     addGame.disabled = true;
+    opponentsTab.disabled = true;
     transportationTab.disabled = true;
     settingsTab.disabled = true;
     accessTab.disabled = true;
@@ -1107,6 +1177,7 @@ function startStaffSchedule(client, invite) {
     scheduleTab.disabled = false;
     coachesTab.disabled = false;
     addGame.disabled = false;
+    opponentsTab.disabled = false;
     transportationTab.disabled = false;
     settingsTab.disabled = false;
     accessTab.disabled = false;
@@ -1141,6 +1212,7 @@ function startStaffSchedule(client, invite) {
     settings.stop();
     publication.stop();
     access.stop();
+    opponents.stop();
     tournaments.stop();
     documents.stop();
     social.stop();
@@ -1150,6 +1222,8 @@ function startStaffSchedule(client, invite) {
     tournamentsTab.disabled = false;
     accessTab.onclick = null;
     accessTab.disabled = false;
+    opponentsTab.onclick = null;
+    opponentsTab.disabled = false;
     overview.stop();
     teams.stop();
     importer.stop();
