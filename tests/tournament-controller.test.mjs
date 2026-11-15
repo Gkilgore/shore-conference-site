@@ -18,6 +18,7 @@ class Element {
     if(selector==='input:checked')return all.filter(item=>item.tagName==='INPUT'&&item.checked);
     return all.filter(item=>selector.split(',').includes(item.tagName.toLowerCase()));
   }
+  addEventListener() {}
   focus() {}
   showModal() { this.open=true; }
   close() { this.open=false; this.onclose?.(); }
@@ -440,7 +441,8 @@ function mountStaffSchedule(role) {
   const gameForm=el('game-form');
   const gameNames=['sport','gender','level','season','game_date','start_time','home_away','status','opponent_school_id','opponent_name','location','notes','bus_departure','pickup_location','early_dismissal_time','return_time','transport_notes'];
   gameForm.elements=gameNames.map(name=>{
-    const item=name==='opponent_school_id'?makeSelect('game-'+name):new Element('input',registry);
+    const item=['sport','gender','level','opponent_school_id'].includes(name)
+      ?makeSelect('game-'+name):new Element('input',registry);
     item.name=name;return item;
   });
   for(const item of gameForm.elements)gameForm.elements[item.name]=item;
@@ -462,7 +464,7 @@ function mountStaffSchedule(role) {
     const query={select(){return query;},eq(){return query;},order(){return query;},then(resolve,reject){return Promise.resolve({data:table==='schools'?schools:[]}).then(resolve,reject);}};
     return query;
   }};
-  const stub=()=>({reset(){},load:async()=>{},render(){},stop(){},setPreview(){},sync(){},showSettings(){},coaches:()=>[],states:()=>({map:new Map(),removed:0}),groups:()=>[],links:()=>null,setStatus(){}});
+  const stub=()=>({reset(){},load:async()=>{},render(){},stop(){},setPreview(){},sync(){},showSettings(){},coaches:()=>[],states:()=>({map:new Map(),removed:0}),groups:()=>[],links:()=>null,setStatus(){},loadState:()=> 'loading',sports:()=>[],listedTeams:()=>[]});
   const context=vm.createContext({document,window:{},console,crypto:{randomUUID:()=> '22222222-2222-4222-8222-222222222222'},
     Option:function(text,value){const option=new Element('option',registry);option.textContent=text;option.text=text;option.value=value;return option;},
     workspaceTitles:{site_admin:'Site admin workspace',conference_office:'Conference admin workspace',ad:'Athletic Director workspace'},

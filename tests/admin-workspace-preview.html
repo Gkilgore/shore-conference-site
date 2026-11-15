@@ -64,6 +64,9 @@ const sampleGame = {
   teams:{sport:'Soccer',gender:'Girls',level:'Varsity',season:'Fall'},
   transportation:{bus_departure:'14:30:00',pickup_location:'Main entrance',early_dismissal_time:null,return_time:null,notes:null},
 };
+const listedTeams = [{
+  id:sampleGame.team_id, school_id:'marlboro', sport:'Soccer', gender:'Girls', level:'Varsity', season:'Fall',
+}];
 const saveCalls = [];
 const transportationEmails = [];
 const client = {
@@ -71,7 +74,8 @@ const client = {
   functions: {invoke: async (name, options) => { transportationEmails.push({name,options}); return {data:{sent:true}}; }},
   from(table) {
     if (table === 'school_social_accounts') return socialTable();
-    const result = {data: table === 'schools' ? schools : table === 'conference_documents' ? documents : table === 'games' ? [sampleGame] : []};
+    const result = {data: table === 'schools' ? schools : table === 'conference_documents' ? documents
+      : table === 'games' ? [sampleGame] : table === 'teams' ? listedTeams : []};
     const query = {then: callback => Promise.resolve(result).then(callback)};
     for (const name of ['select','order','eq','maybeSingle','insert','delete']) query[name] = () => query;
     return query;
@@ -151,6 +155,18 @@ get('view-as').dispatchEvent(new Event('change'));
 await new Promise(resolve => setTimeout(resolve, 200));
 get('staff-schedule-tab').click();
 await new Promise(resolve => setTimeout(resolve, 100));
+const gameSportSelect = document.querySelector('#game-form [name="sport"]');
+check('game editor sports are limited to listed teams',
+  gameSportSelect?.tagName === 'SELECT' && [...gameSportSelect.options].some(option => option.value === 'Soccer'));
+gameSportSelect.value = 'Soccer';
+gameSportSelect.dispatchEvent(new Event('change'));
+check('game editor derives gender, level and season from the listed team',
+  [...document.querySelector('#game-form [name="gender"]').options].length === 1 &&
+  document.querySelector('#game-form [name="gender"]').value === 'Girls' &&
+  document.querySelector('#game-form [name="level"]').value === 'Varsity' &&
+  document.querySelector('#game-form [name="season"]').type === 'hidden' &&
+  document.querySelector('#game-form [name="season"]').value === 'Fall' &&
+  !document.querySelector('#game-form label select[name="season"]'));
 document.querySelector('#calendar .fc-listMonth-button').click();
 await new Promise(resolve => setTimeout(resolve, 100));
 const scheduleTable = document.querySelector('#schedule-list table');
@@ -171,6 +187,10 @@ check('AD list has an inline game-time control', Boolean(gameTimeButton));
 gameTimeButton?.click();
 const gameTimeInput = scheduleTable.querySelector('input[type="time"]');
 check('game-time control opens an inline time field', Boolean(gameTimeInput));
+const gameTimeCell = gameTimeInput?.closest('td');
+check('time editor is wide enough to read the full AM/PM value',
+  gameTimeInput?.getBoundingClientRect().width >= 112 &&
+  gameTimeInput.getBoundingClientRect().right <= gameTimeCell?.getBoundingClientRect().right + 1);
 check('game-time editor has one Update button and no explanation',
   gameTimeInput?.nextElementSibling.querySelectorAll('button').length === 1 &&
   gameTimeInput?.nextElementSibling.querySelector('button').textContent === 'Update' &&

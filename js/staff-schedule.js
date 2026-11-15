@@ -594,7 +594,7 @@ function startStaffSchedule(client, invite) {
     table.className = 'staff-schedule-table';
     table.setAttribute('aria-label', 'Games by date');
     const columns = document.createElement('colgroup');
-    for (const width of ['9%', '12%', '7%', '14%', '14%', '10%', '9%', '15%', '10%']) {
+    for (const width of ['14%', '10%', '7%', '12%', '12%', '8%', '14%', '14%', '9%']) {
       const column = document.createElement('col');
       column.style.width = width;
       columns.append(column);
@@ -678,6 +678,7 @@ function startStaffSchedule(client, invite) {
   }
 
   function renderQuickTime(cell, game, field) {
+    cell.classList.remove('quick-time-editing');
     const value = field === 'start_time' ? game.start_time : game.transportation?.bus_departure;
     if (!canEdit) {
       cell.textContent = value ? timeFormat.format(new Date(game.game_date + 'T' + value)) : '—';
@@ -696,6 +697,7 @@ function startStaffSchedule(client, invite) {
   }
 
   function openQuickTimeEditor(cell, game, field) {
+    cell.classList.add('quick-time-editing');
     const label = field === 'start_time' ? 'game time' : 'bus departure';
     const value = field === 'start_time' ? game.start_time : game.transportation?.bus_departure;
     const input = document.createElement('input');

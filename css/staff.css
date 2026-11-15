@@ -175,7 +175,7 @@
 #workspace #calendar .fc-daygrid-event.staff-game:is(:hover, :focus-visible) { background: var(--ink); color: white; }
 #workspace #calendar .fc-list-event.staff-game:is(:hover, :focus-visible) td { background: var(--school-accent); color: var(--accent-ink); }
 #workspace #calendar.staff-table-mode .fc-view-harness { display: none; }
-.schedule-list-wrap { max-width: 100%; background: white; border: var(--frame); }
+.schedule-list-wrap { max-width: 100%; background: white; border: var(--frame); container: schedule-list / inline-size; }
 .staff-schedule-table { width: 100%; max-width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 0.84rem; }
 .staff-schedule-table th, .staff-schedule-table td {
   padding: 0.5rem;
@@ -230,6 +230,7 @@
   font-size: 0.9rem;
   font-weight: 700;
 }
+.quick-edit-controls input { min-width: 7rem; }
 .quick-edit-action {
   width: 100%;
   min-height: 2.5rem;
@@ -251,7 +252,7 @@
   #workspace #calendar .fc-list-day-cushion { padding-inline: 0.65rem; }
 }
 
-@media (max-width: 839px) {
+@container schedule-list (max-width: 62rem) {
   .staff-schedule-table { display: block; table-layout: auto; }
   .staff-schedule-table colgroup, .staff-schedule-table thead { display: none; }
   .staff-schedule-table tbody { display: grid; gap: 0.65rem; }
@@ -281,7 +282,8 @@
     line-height: 1.2;
     text-transform: uppercase;
   }
-  .staff-schedule-table .schedule-list-game td:last-child { grid-column: 1 / -1; }
+  .staff-schedule-table .schedule-list-game td:last-child,
+  .staff-schedule-table .schedule-list-game td.quick-time-editing { grid-column: 1 / -1; }
 }
 
 /* Game editor. */
