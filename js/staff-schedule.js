@@ -634,74 +634,96 @@ function startStaffSchedule(client, invite) {
     const startDate = dateKey(view.activeStart);
     const endDate = dateKey(view.activeEnd);
     const games = calendarGames.filter(game => game.game_date >= startDate && game.game_date < endDate);
-    const table = document.createElement('table');
-    table.className = 'staff-schedule-table';
-    table.setAttribute('aria-label', 'Games by date');
-    const columns = document.createElement('colgroup');
-    for (const width of ['14%', '10%', '7%', '12%', '12%', '8%', '14%', '14%', '9%']) {
-      const column = document.createElement('col');
-      column.style.width = width;
-      columns.append(column);
+    const agenda = document.createElement('div');
+    agenda.className = 'staff-schedule-agenda';
+    agenda.setAttribute('aria-label', 'Games by date');
+    if (!games.length) {
+      const empty = document.createElement('p');
+      empty.className = 'schedule-agenda-empty';
+      empty.textContent = 'No saved games in this view.';
+      agenda.append(empty);
+      scheduleList.replaceChildren(agenda);
+      return;
     }
-    table.innerHTML = '<thead><tr><th scope="col">Time</th><th scope="col">Team</th><th scope="col">H/A</th>' +
-      '<th scope="col">Opponent</th><th scope="col">Facility</th><th scope="col">Transportation</th>' +
-      '<th scope="col">Depart</th><th scope="col">Early Dismissal</th><th scope="col">Actions</th></tr></thead>';
-    table.prepend(columns);
-    const body = document.createElement('tbody');
     const grouped = new Map();
     for (const game of games) {
       if (!grouped.has(game.game_date)) grouped.set(game.game_date, []);
       grouped.get(game.game_date).push(game);
     }
     for (const [date, dayGames] of grouped) {
-      const heading = document.createElement('tr');
-      heading.className = 'schedule-list-day';
-      const label = document.createElement('th');
-      label.scope = 'rowgroup';
-      label.colSpan = 9;
+      const day = document.createElement('section');
+      day.className = 'schedule-agenda-day';
+      const heading = document.createElement('h4');
+      heading.className = 'schedule-agenda-heading';
+      const dateLabel = document.createElement('time');
+      dateLabel.dateTime = date;
+      dateLabel.textContent = scheduleDateFormat.format(new Date(date + 'T12:00'));
       const count = document.createElement('span');
       count.textContent = dayGames.length + (dayGames.length === 1 ? ' event' : ' events');
-      label.append(scheduleDateFormat.format(new Date(date + 'T12:00')), count);
-      heading.append(label);
-      body.append(heading);
+      heading.append(dateLabel, count);
+      const rows = document.createElement('ul');
+      rows.className = 'schedule-agenda-games';
       for (const game of dayGames) {
-        const row = document.createElement('tr');
-        row.className = 'schedule-list-game staff-game-' + game.status.toLowerCase();
-        const opponent = schools.find(item => item.slug === game.opponent_school_id)?.name ?? game.opponent_name;
-        const values = [
-          ['Time', game.start_time ? timeFormat.format(new Date(game.game_date + 'T' + game.start_time)) : 'TBD'],
-          ['Team', [game.teams.gender, game.teams.level, game.teams.sport].filter(Boolean).join(' ')],
-          ['H/A', game.home_away],
-          ['Opponent', (game.home_away === 'Home' ? 'vs ' : 'at ') + opponent],
-          ['Facility', game.location],
-          ['Transportation', game.transportation?.pickup_location || '—'],
-          ['Depart', game.transportation?.bus_departure
-            ? timeFormat.format(new Date(game.game_date + 'T' + game.transportation.bus_departure)) : '—'],
-          ['Early Dismissal', game.transportation?.early_dismissal_time
-            ? timeFormat.format(new Date(game.game_date + 'T' + game.transportation.early_dismissal_time)) : '—'],
-        ];
-        for (const [index, [labelText, value]] of values.entries()) {
-          const cell = document.createElement('td');
-          cell.dataset.label = labelText;
-          if (index === 0) renderQuickTime(cell, game, 'start_time');
-          else if (index === 6 && canEdit) renderQuickTime(cell, game, 'bus_departure');
-          else if (index === 2) {
-            const badge = document.createElement('span');
-            badge.className = 'home-away-badge is-' + game.home_away.toLowerCase();
-            badge.textContent = game.home_away;
-            cell.append(badge);
-          }
-          else cell.textContent = value || '—';
-          if (index === 1 && unpublished.has(game.id)) {
-            const tag = document.createElement('span');
-            tag.className = 'staff-tag';
-            tag.textContent = unpublished.get(game.id) === 'Draft' ? 'Not posted' : 'Change not posted';
-            cell.append(document.createElement('br'), tag);
-          }
-          if (index === 5 && game.transportation?.notes) cell.title = game.transportation.notes;
-          row.append(cell);
+        const row = document.createElement('li');
+        row.className = 'schedule-agenda-game staff-game-' + game.status.toLowerCase();
+        const start = document.createElement('span');
+        start.className = 'schedule-agenda-time';
+        renderQuickTime(start, game, 'start_time');
+        const main = document.createElement('div');
+        main.className = 'schedule-agenda-main';
+        const headline = document.createElement('div');
+        headline.className = 'schedule-agenda-matchup';
+        const team = document.createElement('strong');
+        team.textContent = [game.teams.gender, game.teams.level, game.teams.sport].filter(Boolean).join(' ');
+        const badge = document.createElement('span');
+        badge.className = 'home-away-badge is-' + game.home_away.toLowerCase();
+        badge.textContent = game.home_away;
+        const opponent = document.createElement('span');
+        opponent.textContent = (game.home_away === 'Home' ? 'vs. ' : 'at ') +
+          (schools.find(item => item.slug === game.opponent_school_id)?.name ?? game.opponent_name ?? 'Opponent');
+        headline.append(team, badge, opponent);
+        const pending = unpublished.get(game.id);
+        if (pending) {
+          const tag = document.createElement('span');
+          tag.className = 'staff-tag';
+          tag.textContent = pending === 'Draft' ? 'Not posted' : 'Change not posted';
+          headline.append(tag);
         }
-        const actions = document.createElement('td');
+        if (game.status !== 'Scheduled') {
+          const tag = document.createElement('span');
+          tag.className = 'staff-tag schedule-agenda-status is-' + game.status.toLowerCase();
+          tag.textContent = game.status;
+          headline.append(tag);
+        }
+        const details = document.createElement('div');
+        details.className = 'schedule-agenda-details';
+        const venue = document.createElement('span');
+        venue.textContent = game.location;
+        details.append(venue);
+        if (game.transportation?.pickup_location) {
+          const pickup = document.createElement('span');
+          pickup.textContent = 'Pickup: ' + game.transportation.pickup_location;
+          details.append(pickup);
+        }
+        if (game.transportation?.bus_departure) {
+          const departure = document.createElement('span');
+          departure.className = 'schedule-agenda-departure';
+          departure.append('Bus: ');
+          const departureTime = document.createElement('span');
+          renderQuickTime(departureTime, game, 'bus_departure');
+          departure.append(departureTime);
+          details.append(departure);
+        }
+        if (game.transportation?.early_dismissal_time) {
+          const dismissal = document.createElement('span');
+          dismissal.textContent = 'Early dismissal: ' +
+            timeFormat.format(new Date(game.game_date + 'T' + game.transportation.early_dismissal_time));
+          details.append(dismissal);
+        }
+        if (game.transportation?.notes) details.title = game.transportation.notes;
+        main.append(headline, details);
+        const actions = document.createElement('div');
+        actions.className = 'schedule-agenda-actions';
         const actionButton = document.createElement('button');
         actionButton.type = 'button';
         actionButton.className = 'button secondary';
@@ -712,17 +734,18 @@ function startStaffSchedule(client, invite) {
           else showDetails(calendar.getEventById(game.id));
         };
         actions.append(actionButton);
-        actions.dataset.label = 'Actions';
-        row.append(actions);
-        body.append(row);
+        row.append(start, main, actions);
+        rows.append(row);
       }
+      day.append(heading, rows);
+      agenda.append(day);
     }
-    table.append(body);
-    scheduleList.replaceChildren(table);
+    scheduleList.replaceChildren(agenda);
   }
 
   function renderQuickTime(cell, game, field) {
-    cell.classList.remove('quick-time-editing');
+    const row = cell.closest('.schedule-agenda-game');
+    (field === 'start_time' ? row : cell.parentElement)?.classList.remove('quick-time-editing');
     const value = field === 'start_time' ? game.start_time : game.transportation?.bus_departure;
     if (!canEdit) {
       cell.textContent = value ? timeFormat.format(new Date(game.game_date + 'T' + value)) : '—';
@@ -741,7 +764,8 @@ function startStaffSchedule(client, invite) {
   }
 
   function openQuickTimeEditor(cell, game, field) {
-    cell.classList.add('quick-time-editing');
+    const row = cell.closest('.schedule-agenda-game');
+    (field === 'start_time' ? row : cell.parentElement)?.classList.add('quick-time-editing');
     const label = field === 'start_time' ? 'game time' : 'bus departure';
     const value = field === 'start_time' ? game.start_time : game.transportation?.bus_departure;
     const input = document.createElement('input');

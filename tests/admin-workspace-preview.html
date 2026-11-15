@@ -169,15 +169,20 @@ check('game editor derives gender, level and season from the listed team',
   !document.querySelector('#game-form label select[name="season"]'));
 document.querySelector('#calendar .fc-listMonth-button').click();
 await new Promise(resolve => setTimeout(resolve, 100));
-const scheduleTable = document.querySelector('#schedule-list table');
-check('list view shows the schedule table', !get('schedule-list').hidden && scheduleTable);
-check('list view has aligned schedule columns', ['Time', 'Team', 'H/A', 'Opponent', 'Facility', 'Transportation', 'Depart', 'Early Dismissal', 'Actions']
-  .every(label => scheduleTable.tHead.textContent.includes(label)));
-check('schedule game cells have mobile labels', [...scheduleTable.querySelectorAll('.schedule-list-game td')]
-  .every(cell => cell.dataset.label));
-const homeAwayBadge = scheduleTable.querySelector('.schedule-list-game td[data-label="H/A"] .home-away-badge');
-check('AD schedule shows a labeled home/away color badge',
+const scheduleAgenda = document.querySelector('#schedule-list .staff-schedule-agenda');
+check('list view shows the date-grouped agenda', !get('schedule-list').hidden && scheduleAgenda &&
+  scheduleAgenda.querySelector('.schedule-agenda-heading time')?.dateTime === sampleGame.game_date);
+check('agenda lays out each game as a focused row',
+  scheduleAgenda?.querySelector('.schedule-agenda-game .schedule-agenda-time') &&
+  scheduleAgenda?.querySelector('.schedule-agenda-game .schedule-agenda-main') &&
+  scheduleAgenda?.querySelector('.schedule-agenda-game .schedule-agenda-actions'));
+const homeAwayBadge = scheduleAgenda?.querySelector('.schedule-agenda-matchup .home-away-badge');
+check('AD agenda shows a labeled home/away color badge',
   homeAwayBadge?.textContent === 'Home' && homeAwayBadge.classList.contains('is-home'));
+check('agenda keeps the venue and transportation details readable',
+  scheduleAgenda?.textContent.includes('Marlboro High School') &&
+  scheduleAgenda?.textContent.includes('Main entrance') &&
+  scheduleAgenda?.textContent.includes('Bus:'));
 check('AD game editor has an early dismissal time field', document.querySelector('#game-form [name="early_dismissal_time"]')?.type === 'time');
 const gameStartTime = document.querySelector('#game-form [name="start_time"]');
 const gameStartTimeTbd = document.getElementById('start-time-tbd');
@@ -193,13 +198,13 @@ check('unchecking TBD restores required start time entry',
   !gameStartTime.disabled && gameStartTime.required);
 check('game editor has no transportation confirmation field',
   !document.querySelector('#game-form [name="bus_confirmed"]') && !document.getElementById('tournament-bus-confirmed'));
-check('list table uses the available width', scheduleTable.getBoundingClientRect().width >= get('schedule-list').clientWidth);
-const gameTimeButton = scheduleTable.querySelector('.quick-edit-time[aria-label^="Edit game time"]');
+check('agenda uses the available width', scheduleAgenda.getBoundingClientRect().width >= get('schedule-list').clientWidth);
+const gameTimeButton = scheduleAgenda.querySelector('.quick-edit-time[aria-label^="Edit game time"]');
 check('AD list has an inline game-time control', Boolean(gameTimeButton));
 gameTimeButton?.click();
-const gameTimeInput = scheduleTable.querySelector('input[type="time"]');
+const gameTimeInput = scheduleAgenda.querySelector('input[type="time"]');
 check('game-time control opens an inline time field', Boolean(gameTimeInput));
-const gameTimeCell = gameTimeInput?.closest('td');
+const gameTimeCell = gameTimeInput?.closest('.schedule-agenda-time');
 check('time editor is wide enough to read the full AM/PM value',
   gameTimeInput?.getBoundingClientRect().width >= 112 &&
   gameTimeInput.getBoundingClientRect().right <= gameTimeCell?.getBoundingClientRect().right + 1);
@@ -231,7 +236,8 @@ check('bus-time quick edit saves and sends the transportation email',
   saveCalls.at(-1)?.bus_departure === '15:00' && transportationEmails.length === 2);
 document.querySelector('#calendar .fc-listDay-button').click();
 await new Promise(resolve => setTimeout(resolve, 100));
-check('day view uses the same schedule table', !get('schedule-list').hidden && document.querySelector('#schedule-list table')?.tHead.textContent === scheduleTable.tHead.textContent);
+check('day view uses the same agenda rows',
+  !get('schedule-list').hidden && document.querySelector('#schedule-list .schedule-agenda-game'));
 document.querySelector('#calendar .fc-dayGridMonth-button').click();
 await new Promise(resolve => setTimeout(resolve, 100));
 check('month view hides the schedule table', get('schedule-list').hidden && !get('calendar').classList.contains('staff-table-mode'));
