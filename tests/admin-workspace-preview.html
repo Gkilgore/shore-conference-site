@@ -111,6 +111,7 @@ for (const [tab, panel] of [['staff-schedule-tab','staff-schedule-panel'], ['sta
   check(panel + ' no page overflow', document.documentElement.scrollWidth <= innerWidth);
   check(panel + ' SC logo', get('workspace-logo').src.endsWith('/shore-conference.svg') && !get('workspace-logo').hidden);
 }
+check('games tab label says Add Game', get('staff-games-tab').textContent === 'Add Game');
 get('staff-access-search').value = 'marlboro';
 const controls = ['email', 'name', 'role', 'school', 'submit'].map(id => get('staff-access-' + id).getBoundingClientRect());
 check('access controls aligned on desktop', innerWidth < 1100 || controls.every(box => Math.abs(box.bottom - controls[0].bottom) < 1));

@@ -1,6 +1,6 @@
 # Schedule tools
 
-The staff dashboard opens on **Games**, where ADs add, edit and import games. **Transportation** lists upcoming away games with a bus departure and lets an AD save the transportation contact. Saving a scheduled game with a bus departure sends the details to that contact and copies the AD. No transportation confirmation is required; bus confirmation does not determine the game's Scheduled, Postponed or Canceled status.
+The staff dashboard opens on **Add Game**, where ADs add, edit and import games. **Transportation** lists upcoming away games with a bus departure and lets an AD save the transportation contact. Saving a scheduled game with a bus departure sends the details to that contact and copies the AD. No transportation confirmation is required; bus confirmation does not determine the game's Scheduled, Postponed or Canceled status.
 
 ## Saving and posting
 
@@ -24,7 +24,7 @@ A matched game that either school publishes as Postponed or Canceled stays on th
 
 ## CSV import
 
-Use **Import games** on the Games tab, then **Download template**. The columns are:
+Use **Import games** on the Add Game tab, then **Download template**. The columns are:
 
 `date, start_time, sport, gender, level, season, home_away, opponent, location, status, bus_departure, pickup_location, early_dismissal_time, return_time, transport_notes, notes`
 

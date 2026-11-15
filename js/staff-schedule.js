@@ -358,7 +358,7 @@ function startStaffSchedule(client, invite) {
     fillSeasonFilters(filterFields.season, filterFields.sport, filterOptions());
     status.textContent = data.length
       ? data.length + (data.length === 1 ? ' saved game.' : ' saved games.') + (canEdit ? ' Select a game to edit it.' : '')
-      : 'No games saved for this school.' + (canEdit ? ' Open Games to add the first one.' : '');
+      : 'No games saved for this school.' + (canEdit ? ' Open Add Game to add the first one.' : '');
     if (newSchool && data.length) {
       const today = new Date();
       const dateKey = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') +
