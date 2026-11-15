@@ -27,6 +27,7 @@
   <script defer src="js/seasons.js"></script>
   <script defer src="js/staff-overview.js"></script>
   <script defer src="js/staff-import.js"></script>
+  <script defer src="js/staff-opponents.js"></script>
   <script defer src="js/tournament-engine.js"></script>
   <script defer src="js/tournament-public.js"></script>
   <script defer src="js/staff-tournaments.js"></script>
@@ -97,6 +98,7 @@
           <nav class="staff-nav" aria-label="Staff dashboard">
             <button id="staff-schedule-tab" class="staff-tab" type="button" aria-current="true">Schedule</button>
             <button id="staff-games-tab" class="staff-tab" type="button">Add Game</button>
+            <button id="staff-opponents-tab" class="staff-tab" type="button" hidden>Opponents</button>
             <button id="staff-teams-tab" class="staff-tab" type="button" hidden>Teams</button>
             <button id="staff-transportation-tab" class="staff-tab" type="button" hidden>Transportation</button>
             <button id="staff-coaches-tab" class="staff-tab" type="button" hidden>Coaches</button>
@@ -152,6 +154,32 @@
                 <button id="import-save" class="button primary" type="button" hidden>Import and post games</button>
                 <button id="import-clear" class="button secondary" type="button" hidden>Clear</button>
               </div>
+          </section>
+          <section id="staff-opponents-panel" class="staff-panel" aria-labelledby="opponents-title" hidden>
+            <h3 id="opponents-title" tabindex="-1">Opponents</h3>
+            <p id="opponents-status" role="status" aria-live="polite"></p>
+            <section class="staff-section" aria-labelledby="opponent-list-title">
+              <h4 id="opponent-list-title">My opponent list</h4>
+              <p class="staff-hint">Add schools you schedule. Only schools using the platform can match games; conference games appear on the conference calendar only when both schools match.</p>
+              <form id="opponent-add-form" class="filters opponent-add-form">
+                <label>Find a New Jersey school<input id="opponent-search" type="search" autocomplete="off"></label>
+                <label>School<select id="opponent-add-school" required></select></label>
+                <button class="button secondary" type="submit">Add to my list</button>
+              </form>
+              <ul id="opponent-list" class="opponent-list"></ul>
+            </section>
+            <section id="opponent-directory-import" class="staff-section" aria-labelledby="opponent-directory-title" hidden>
+              <h4 id="opponent-directory-title">Master NJSIAA school list</h4>
+              <p class="staff-hint">Site admins can upload a CSV with a <code>name</code> column and an optional <code>slug</code> column. The upload adds or updates directory entries; it does not enroll schools or remove anyone from an AD’s list.</p>
+              <div class="actions opponent-import-actions">
+                <label>CSV file<input id="opponent-directory-file" type="file" accept=".csv,text/csv"></label>
+                <button id="opponent-directory-template" class="button secondary" type="button">Download CSV template</button>
+                <button id="opponent-directory-preview-button" class="button secondary" type="button">Preview upload</button>
+              </div>
+              <p id="opponent-directory-summary" class="staff-hint" role="status"></p>
+              <div id="opponent-directory-preview" class="opponent-directory-preview" hidden></div>
+              <button id="opponent-directory-save" class="button primary" type="button" hidden>Save directory schools</button>
+            </section>
           </section>
             <section id="match-section" class="staff-section" aria-labelledby="overview-title">
               <h4 id="overview-title" tabindex="-1">Match checks</h4>
