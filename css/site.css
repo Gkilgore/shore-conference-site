@@ -376,19 +376,29 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
   display: inline-block;
   width: max-content;
   max-width: 100%;
-  padding: 0 0.35rem;
+  padding: 0.1rem 0.5rem;
   border: var(--frame);
-  font-size: 0.64rem;
+  font-size: 0.76rem;
   font-weight: 800;
-  line-height: 1.55;
+  line-height: 1.4;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   vertical-align: middle;
   white-space: nowrap;
 }
 .home-away-badge.is-home { background: var(--navy); border-color: var(--navy); color: white; }
-.home-away-badge.is-away { background: var(--paper); border-color: var(--steel-dark); color: var(--ink); }
-.game-list strong .home-away-badge { margin-right: 0.35rem; padding: 0 0.35rem; font-size: 0.64rem; }
+.home-away-badge.is-away { background: var(--school-accent); border-color: var(--school-accent); color: var(--accent-ink); }
+.game-list strong .home-away-badge { margin-right: 0.4rem; padding: 0.1rem 0.5rem; font-size: 0.76rem; }
+#calendar .fc-daygrid-event .home-away-badge.is-home {
+  background: white;
+  border-color: white;
+  color: var(--ink);
+}
+#calendar .fc-list-event .home-away-badge.is-home {
+  background: white;
+  border-color: var(--steel-dark);
+  color: var(--ink);
+}
 .game-list li:only-child { padding: 0.85rem; }
 .game-list .empty-schedule { display: block; }
 

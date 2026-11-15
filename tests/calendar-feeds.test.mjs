@@ -20,6 +20,15 @@ const away = { ...home, id: 'game-two', school_id: 'colts-neck', home_away: 'Awa
 const options = { scope: 'school', school: 'marlboro' };
 const project = (games, opts = options, directory = schools) => publicSchedule(directory, games, opts);
 
+test('public school and conference events retain the home-side value for calendar labels', () => {
+  const homeEvent = project([home]).events[0];
+  const awayEvent = project([away], {scope: 'school', school: 'colts-neck'}).events[0];
+  const conferenceEvent = project([home, away], {scope: 'conference'}).events[0];
+  assert.equal(homeEvent.home_away, 'Home');
+  assert.equal(awayEvent.home_away, 'Away');
+  assert.equal(conferenceEvent.home_away, 'Home');
+});
+
 test('rescheduling updates the same UID and sequence, with Eastern daylight-saving timezone', () => {
   const before = buildCalendar(project([home]));
   const after = buildCalendar(project([{ ...home, revision: 2, game_date: '2027-03-15', start_time: '16:30:00' }]));

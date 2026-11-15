@@ -110,7 +110,7 @@ export function publicSchedule(schools, games, options, tournamentGames = []) {
       id: game.feed_id ?? game.id, revision: game.revision, updated_at: game.updated_at,
       title: title + (game.status === 'Scheduled' ? '' : ' · ' + game.status),
       start: game.start_time ? game.game_date + 'T' + game.start_time : game.game_date, location: game.location,
-      status: game.status, notes: game.notes ?? '', school: game.school_id,
+      status: game.status, notes: game.notes ?? '', school: game.school_id, home_away: game.home_away,
       schools: [game.school_id, game.opponent_school_id].filter(Boolean),
       sport: team.sport, gender: team.gender, level: team.level, season: team.season,
     };
