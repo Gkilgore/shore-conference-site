@@ -83,6 +83,61 @@ $$;
 revoke all on function public.import_opponent_directory(jsonb) from public, anon, authenticated;
 grant execute on function public.import_opponent_directory(jsonb) to authenticated;
 
+create function public.add_school_opponent(p_school text, p_name text)
+returns jsonb language plpgsql security definer set search_path = '' as $$
+declare
+  normalized_name text := regexp_replace(btrim(coalesce(p_name, '')), '[[:space:]]+', ' ', 'g');
+  slug_base text;
+  opponent_slug text;
+  saved_name text;
+  affected integer;
+begin
+  if p_school is null or not exists (select 1 from public.schools s where s.slug = p_school) then
+    raise exception 'Choose a school for this opponent list.' using errcode = '22023';
+  end if;
+  if not shore_private.can_manage_schedule(p_school) then
+    raise exception 'This account cannot edit that school.' using errcode = '42501';
+  end if;
+  if char_length(normalized_name) not between 1 and 100 then
+    raise exception 'Enter a school name of up to 100 characters.' using errcode = '22023';
+  end if;
+
+  select d.slug, d.name into opponent_slug, saved_name
+  from public.opponent_directory d
+  where lower(btrim(d.name)) = lower(normalized_name)
+  order by d.slug
+  limit 1;
+
+  if opponent_slug is null then
+    slug_base := trim(both '-' from regexp_replace(lower(normalized_name), '[^a-z0-9]+', '-', 'g'));
+    opponent_slug := left(coalesce(nullif(slug_base, ''), 'school'), 70)
+      || '-' || substr(md5(lower(normalized_name)), 1, 8);
+    insert into public.opponent_directory(slug, name)
+    values (opponent_slug, normalized_name)
+    on conflict (slug) do nothing;
+    select d.name into saved_name from public.opponent_directory d where d.slug = opponent_slug;
+    if lower(saved_name) <> lower(normalized_name) then
+      raise exception 'That school name could not be added. Contact the site admin.' using errcode = '22023';
+    end if;
+  end if;
+
+  if opponent_slug = p_school or exists (
+    select 1 from public.schools s
+    where s.slug = p_school and lower(btrim(s.name)) = lower(normalized_name)
+  ) then
+    raise exception 'Your school cannot be its own opponent.' using errcode = '22023';
+  end if;
+
+  insert into public.school_opponents(school_id, opponent_slug)
+  values (p_school, opponent_slug)
+  on conflict do nothing;
+  get diagnostics affected = row_count;
+  return jsonb_build_object('slug', opponent_slug, 'name', saved_name, 'added', affected = 1);
+end;
+$$;
+revoke all on function public.add_school_opponent(text, text) from public, anon;
+grant execute on function public.add_school_opponent(text, text) to authenticated;
+
 -- A site admin can enroll a directory school by assigning its first AD. Conference admins
 -- remain limited to existing member schools.
 create or replace function shore_private.manage_staff_access(p_email text,p_name text,p_role text,p_school text,

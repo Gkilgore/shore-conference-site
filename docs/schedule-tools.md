@@ -4,11 +4,11 @@ The staff dashboard opens on **Add Game**, where ADs add, edit and import games.
 
 ## Opponents
 
-Each school has its own opponent list. ADs can search the shared New Jersey school directory, add schools to their list, and remove them later; removing a school does not change games already saved. The directory begins with Shore Conference schools. A site admin can import or update the broader NJSIAA list from the **Opponents** tab using the CSV template and preview; the template is not itself a populated statewide roster.
+Each school has its own opponent list. ADs can type a non-conference school's name to add it, or remove schools later; removing a school does not change games already saved. New names are added to the shared directory so other ADs can find them, but they are added only to the AD's own list. Adding a name does not enroll that school or enable game matching.
 
 Schools outside the conference can use the platform after a site admin assigns their first AD from the directory in **Staff access**. Only schools with an AD invitation can match games. Nonconference matches stay on the participating schools' schedules; only matched member-school games appear on the conference calendar.
 
-`supabase/migrations/20261203000100_opponent_directory.sql` and `supabase/tests/opponent-directory.sql` are test-project work only; they have not been applied to a Supabase project. Import the approved NJSIAA CSV after applying the migration in the test project. Never apply it to the live project without Greg's go-ahead.
+`supabase/migrations/20261203000100_opponent_directory.sql` and `supabase/tests/opponent-directory.sql` are test-project work only; they have not been applied to a Supabase project. The migration must be applied in the test project before the Opponents tab can save names. Never apply it to the live project without Greg's go-ahead.
 
 ## Saving and posting
 

@@ -1,58 +1,16 @@
-// Manages each school's opponent shortlist and the site-admin NJSIAA directory upload.
-function makeOpponentSlug(name) {
-  return String(name || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '').slice(0, 80).replace(/-+$/g, '');
-}
-
-function previewOpponentDirectoryCsv(text) {
-  const rows = typeof parseCsv === 'function' ? parseCsv(text) : [];
-  if (!rows.length) return { rows: [], errors: ['The file is empty.'] };
-  const header = rows[0].map(value => value.trim().toLowerCase().replace(/ /g, '_'));
-  const nameIndex = header.indexOf('name') >= 0 ? header.indexOf('name') : header.indexOf('school_name');
-  const slugIndex = header.indexOf('slug');
-  if (nameIndex < 0) return { rows: [], errors: ['The CSV needs a name column.'] };
-  const data = rows.slice(1);
-  if (data.length > 2000) return { rows: [], errors: ['Upload up to 2,000 schools at a time.'] };
-  const seen = new Set();
-  return {
-    errors: [],
-    rows: data.map((cells, index) => {
-      const name = (cells[nameIndex] ?? '').trim().replace(/\s+/g, ' ');
-      const enteredSlug = slugIndex < 0 ? '' : (cells[slugIndex] ?? '').trim();
-      const slug = enteredSlug || makeOpponentSlug(name);
-      let issue = '';
-      if (!name) issue = 'School name is missing.';
-      else if (name.length > 100) issue = 'School name is longer than 100 characters.';
-      else if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 80) issue = 'Add a valid slug or leave it blank to generate one.';
-      else if (seen.has(slug)) issue = 'This slug appears more than once in the file.';
-      if (!issue) seen.add(slug);
-      return { line: index + 2, name, slug, issue };
-    }),
-  };
-}
-
-function startStaffOpponents(client, { currentSchool, activeSchools, canImport, onChanged = () => {} }) {
+// Manages each school's opponent shortlist and adds non-conference schools by name.
+function startStaffOpponents(client, { currentSchool, activeSchools, onChanged = () => {} }) {
   const status = document.getElementById('opponents-status');
-  const search = document.getElementById('opponent-search');
-  const addSelect = document.getElementById('opponent-add-school');
+  const nameInput = document.getElementById('opponent-name');
   const addForm = document.getElementById('opponent-add-form');
   const list = document.getElementById('opponent-list');
-  const importSection = document.getElementById('opponent-directory-import');
-  const fileInput = document.getElementById('opponent-directory-file');
-  const templateButton = document.getElementById('opponent-directory-template');
-  const previewButton = document.getElementById('opponent-directory-preview-button');
-  const summary = document.getElementById('opponent-directory-summary');
-  const preview = document.getElementById('opponent-directory-preview');
-  const saveDirectory = document.getElementById('opponent-directory-save');
+  const submit = addForm.querySelector('button[type="submit"]');
   let directory = [];
   let selected = new Set();
-  let previewRows = [];
   let directoryState = 'loading';
   let request = 0;
+  let saving = false;
   let active = true;
-
-  importSection.hidden = !canImport;
 
   function getDirectoryEntry(slug) {
     return directory.find(item => item.slug === slug) ?? null;
@@ -67,21 +25,10 @@ function startStaffOpponents(client, { currentSchool, activeSchools, canImport, 
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  function refreshAddOptions() {
-    const school = currentSchool();
-    const query = search.value.trim().toLocaleLowerCase();
-    const available = directory.filter(item => item.slug !== school?.slug && !selected.has(item.slug) &&
-      (!query || item.name.toLocaleLowerCase().includes(query)));
-    addSelect.replaceChildren(new Option(
-      available.length ? 'Choose a school' : query ? 'No schools match' : 'No more schools to add', '',
-    ), ...available.map(item => new Option(item.name, item.slug)));
-    addForm.querySelector('button[type="submit"]').disabled = !available.length || directoryState !== 'ready';
-  }
-
   function render() {
     const school = currentSchool();
     if (!school) return;
-    refreshAddOptions();
+    submit.disabled = saving;
     const ownEntries = entries().filter(item => item.slug !== school.slug);
     list.replaceChildren(...(ownEntries.length ? ownEntries.map(item => {
       const row = document.createElement('li');
@@ -115,8 +62,8 @@ function startStaffOpponents(client, { currentSchool, activeSchools, canImport, 
       if (error) {
         directoryState = 'error';
         status.textContent = ['42P01', 'PGRST205'].includes(error.code)
-          ? 'The opponent directory is not set up yet. Ask the site admin to apply the opponent directory migration.'
-          : 'The opponent directory could not load. Check your connection or access, then try again.';
+          ? 'The opponent list is not set up yet. Ask the site admin to apply the opponent directory migration.'
+          : 'The opponent list could not load. Check your connection or access, then try again.';
         return false;
       }
       directory = data ?? [];
@@ -125,7 +72,7 @@ function startStaffOpponents(client, { currentSchool, activeSchools, canImport, 
     } catch {
       if (!active) return false;
       directoryState = 'error';
-      status.textContent = 'The opponent directory could not load. Check your connection, then try again.';
+      status.textContent = 'The opponent list could not load. Check your connection, then try again.';
       return false;
     }
   }
@@ -134,6 +81,7 @@ function startStaffOpponents(client, { currentSchool, activeSchools, canImport, 
     const school = currentSchool();
     const current = ++request;
     selected = new Set();
+    nameInput.value = '';
     list.replaceChildren();
     if (!school) return false;
     status.textContent = 'Loading your opponent list…';
@@ -164,117 +112,81 @@ function startStaffOpponents(client, { currentSchool, activeSchools, canImport, 
 
   async function addOpponent() {
     const school = currentSchool();
-    const slug = addSelect.value;
-    if (!school || !getDirectoryEntry(slug) || selected.has(slug)) return;
-    const submit = addForm.querySelector('button[type="submit"]');
+    const name = nameInput.value.trim().replace(/\s+/g, ' ');
+    if (!school) return;
+    if (!name) {
+      status.textContent = 'Enter a school name to add it to your list.';
+      return;
+    }
+    if (name.length > 100) {
+      status.textContent = 'School names must be 100 characters or fewer.';
+      return;
+    }
+    if (name.toLocaleLowerCase() === school.name.trim().toLocaleLowerCase()) {
+      status.textContent = 'Your school cannot be its own opponent.';
+      return;
+    }
+    if (entries().some(item => item.name.trim().toLocaleLowerCase() === name.toLocaleLowerCase())) {
+      status.textContent = name + ' is already on your opponent list.';
+      return;
+    }
+
+    saving = true;
     submit.disabled = true;
-    const { error } = await client.from('school_opponents').insert({
-      school_id: school.slug, opponent_slug: slug,
-    });
-    if (!active) return;
-    status.textContent = error ? 'That school could not be added. Refresh the list and try again.'
-      : getDirectoryEntry(slug).name + ' was added to your opponent list.';
-    if (!error) await load();
-    else submit.disabled = false;
+    try {
+      const { data, error } = await client.rpc('add_school_opponent', {
+        p_school: school.slug,
+        p_name: name,
+      });
+      if (!active) return;
+      if (error) {
+        if (['42883', '42P01', 'PGRST202', 'PGRST205'].includes(error.code)) {
+          status.textContent = 'Manual opponent lists are not set up yet. Ask the site admin to apply the opponent directory migration.';
+        } else if (error.code === '42501') {
+          status.textContent = 'You do not have permission to change this school’s opponent list.';
+        } else if (error.code === '22023') {
+          status.textContent = error.message || 'Check the school name and try again.';
+        } else {
+          status.textContent = 'The opponent was not added. Check your connection and try again.';
+        }
+        return;
+      }
+      nameInput.value = '';
+      await loadDirectory(true);
+      const refreshed = await load();
+      status.textContent = data?.added
+        ? (refreshed ? data.name + ' was added to your opponent list.'
+          : data.name + ' was added, but the list could not refresh. Reload the tab to see it.')
+        : data?.name + ' is already on your opponent list.';
+    } catch {
+      if (active) status.textContent = 'The opponent was not added. Check your connection and try again.';
+    } finally {
+      if (active) {
+        saving = false;
+        submit.disabled = false;
+      }
+    }
   }
 
   async function removeOpponent(item) {
     const school = currentSchool();
     if (!school || !selected.has(item.slug)) return;
-    const { error } = await client.from('school_opponents').delete()
-      .eq('school_id', school.slug).eq('opponent_slug', item.slug);
-    if (!active) return;
-    status.textContent = error ? 'That school could not be removed. Refresh the list and try again.'
-      : item.name + ' was removed. Games already saved keep their opponent.';
-    if (!error) await load();
-  }
-
-  function previewDirectory() {
-    const file = fileInput.files?.[0];
-    if (!file) {
-      summary.textContent = 'Choose a CSV file first.';
-      preview.hidden = true;
-      saveDirectory.hidden = true;
-      return;
-    }
-    if (file.size > 1048576 || !/\.csv$/i.test(file.name)) {
-      summary.textContent = file.size > 1048576 ? 'The file is over 1 MB. Split it into smaller CSV files.'
-        : 'Choose a CSV file.';
-      preview.hidden = true;
-      saveDirectory.hidden = true;
-      return;
-    }
-    file.text().then(text => {
-      if (!active) return;
-      const result = previewOpponentDirectoryCsv(text);
-      previewRows = result.rows;
-      preview.replaceChildren(...previewRows.map(item => {
-        const row = document.createElement('p');
-        row.className = item.issue ? 'opponent-directory-problem' : '';
-        row.textContent = 'Row ' + item.line + ': ' + (item.name || '(no name)') +
-          (item.issue ? ' — ' + item.issue : ' · ' + item.slug);
-        return row;
-      }));
-      preview.hidden = !previewRows.length;
-      const ready = previewRows.filter(item => !item.issue).length;
-      const problems = previewRows.length - ready;
-      summary.textContent = result.errors.length ? result.errors.join(' ')
-        : ready + ' ready' + (ready === 1 ? ' school' : ' schools') +
-          (problems ? ' · ' + problems + ' problem ' + (problems === 1 ? 'row' : 'rows') + ' will be skipped.' : '.');
-      saveDirectory.hidden = !ready;
-    }).catch(() => {
-      summary.textContent = 'The CSV file could not be read. Choose it again.';
-      preview.hidden = true;
-      saveDirectory.hidden = true;
-    });
-  }
-
-  async function importDirectory() {
-    const rows = previewRows.filter(item => !item.issue).map(({ slug, name }) => ({ slug, name }));
-    if (!rows.length) return;
-    saveDirectory.disabled = true;
-    summary.textContent = 'Saving the directory…';
     try {
-      const { data, error } = await client.rpc('import_opponent_directory', { p_rows: rows });
+      const { error } = await client.from('school_opponents').delete()
+        .eq('school_id', school.slug).eq('opponent_slug', item.slug);
       if (!active) return;
       if (error) {
-        summary.textContent = error.code === '42501'
-          ? 'Only a site admin can update the master school list.'
-          : 'The directory was not saved. Check the CSV and your connection, then try again.';
-        saveDirectory.disabled = false;
+        status.textContent = 'That school could not be removed. Refresh the list and try again.';
         return;
       }
-      await loadDirectory(true);
-      summary.textContent = (data?.imported ?? rows.length) + ' schools added or updated. Existing AD lists were kept.';
-      preview.hidden = true;
-      saveDirectory.hidden = true;
-      saveDirectory.disabled = false;
-      fileInput.value = '';
-      render();
+      await load();
+      status.textContent = item.name + ' was removed. Games already saved keep their opponent.';
     } catch {
-      if (!active) return;
-      summary.textContent = 'The directory may not have saved. Reload the directory before trying again.';
-      saveDirectory.disabled = false;
+      if (active) status.textContent = 'That school could not be removed. Check your connection and try again.';
     }
   }
 
-  function downloadTemplate() {
-    const blob = new Blob(['name,slug\nColts Neck,colts-neck\nNew Jersey Example School,\n'], {
-      type: 'text/csv;charset=utf-8',
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'njsiaa-schools-template.csv';
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  search.oninput = refreshAddOptions;
-  addForm.onsubmit = event => { event.preventDefault(); addOpponent(); };
-  templateButton.onclick = downloadTemplate;
-  previewButton.onclick = previewDirectory;
-  saveDirectory.onclick = importDirectory;
+  addForm.onsubmit = event => { event.preventDefault(); return addOpponent(); };
 
   return {
     load,
@@ -286,14 +198,14 @@ function startStaffOpponents(client, { currentSchool, activeSchools, canImport, 
     reset() {
       request++;
       selected = new Set();
+      nameInput.value = '';
       list.replaceChildren();
       status.textContent = '';
     },
     stop() {
       active = false;
       request++;
-      addForm.onsubmit = search.oninput = null;
-      templateButton.onclick = previewButton.onclick = saveDirectory.onclick = null;
+      addForm.onsubmit = null;
       list.replaceChildren();
     },
   };

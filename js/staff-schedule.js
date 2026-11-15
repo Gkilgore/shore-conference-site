@@ -134,7 +134,7 @@ function startStaffSchedule(client, invite) {
   const saveButton = form.querySelector('#save-draft');
   const venues = startStaffVenues(client, { currentSchool, schools: () => schools, fields });
   opponents = startStaffOpponents(client, {
-    currentSchool, activeSchools: () => schools, canImport: isSiteAdmin,
+    currentSchool, activeSchools: () => schools,
     onChanged: () => syncOpponentOptions(),
   });
   let canEdit = invite.role !== 'conference_office';

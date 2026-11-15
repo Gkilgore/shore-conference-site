@@ -60,12 +60,30 @@ select set_config('request.jwt.claims',
   jsonb_build_object('sub',current_setting('shore.test_outside'),'role','authenticated')::text,true);
 set local role authenticated;
 do $$
-declare linked boolean; reason text; rejected boolean:=false;
+declare linked boolean; reason text; rejected boolean:=false; added jsonb; repeated jsonb;
 begin
   if not exists(select 1 from public.school_opponents where school_id='north-harbor' and opponent_slug='marlboro') then
     raise exception 'AD could not read its own opponent list';
   end if;
+  added:=public.add_school_opponent('north-harbor','Eastview High School');
+  repeated:=public.add_school_opponent('north-harbor',' eastview   high school ');
+  if (added->>'added')<>'true' or (repeated->>'added')<>'false'
+    or (added->>'slug')<>(repeated->>'slug') then
+    raise exception 'Manual opponent add did not normalize and prevent duplicate names';
+  end if;
+  if exists(select 1 from public.school_opponents where school_id='marlboro'
+    and opponent_slug=(added->>'slug')) then
+    raise exception 'Manual opponent was added to another school’s list';
+  end if;
+  begin perform public.add_school_opponent('marlboro','Unauthorized Opponent');
+  exception when insufficient_privilege then rejected:=true; end;
+  if not rejected then raise exception 'AD added an opponent to another school’s list'; end if;
+  rejected:=false;
+  begin perform public.add_school_opponent('north-harbor','North Harbor High School');
+  exception when invalid_parameter_value then rejected:=true; end;
+  if not rejected then raise exception 'AD added its own school as an opponent'; end if;
   insert into public.school_opponents(school_id,opponent_slug) values('north-harbor','colts-neck');
+  rejected:=false;
   begin insert into public.school_opponents(school_id,opponent_slug) values('marlboro','north-harbor');
   exception when insufficient_privilege then rejected:=true; end;
   if not rejected then raise exception 'AD changed another school’s opponent list'; end if;
