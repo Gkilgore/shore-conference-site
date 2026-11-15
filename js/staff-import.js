@@ -92,7 +92,7 @@ async function previewScheduleFiles(files, check) {
   return { rows, errors };
 }
 
-function startStaffImport(client, { currentSchool, schools, existingGames, onImported, sendTransportationEmail,
+function startStaffImport(client, { currentSchool, schools, opponents = () => [], existingGames, onImported, sendTransportationEmail,
   post = async () => ({ ok: true, held: [], heldIds: new Set() }) }) {
   const fileInput = document.getElementById('import-file');
   const template = document.getElementById('import-template');
@@ -132,9 +132,12 @@ function startStaffImport(client, { currentSchool, schools, existingGames, onImp
     const opponent = need('opponent', 'Opponent');
     const member = opponent && schools().find(item =>
       [item.name.toLowerCase(), item.slug].includes(opponent.toLowerCase()));
-    if (member?.slug === school.slug) problems.push('A school can’t play itself');
+    const listed = opponent && opponents().find(item =>
+      [item.name.toLowerCase(), item.slug].includes(opponent.toLowerCase()));
+    if (member?.slug === school.slug || listed?.slug === school.slug) problems.push('A school can’t play itself');
     game.opponent_school_id = member && member.slug !== school.slug ? member.slug : null;
-    game.opponent_name = member ? null : opponent || null;
+    game.opponent_directory_slug = listed?.slug ?? member?.slug ?? null;
+    game.opponent_name = member ? null : listed?.name ?? (opponent || null);
     if (game.opponent_name && game.opponent_name.length > 100) problems.push('Opponent is too long');
     game.location = need('location', 'Location');
     if (game.location && game.location.length > 160) problems.push('Location is too long');

@@ -1,5 +1,5 @@
 // Reviews invited staff access changes through the database's permission and revision checks.
-function startStaffAccess(client, invite, schoolsFn) {
+function startStaffAccess(client, invite, schoolsFn, directoryFn = () => []) {
   const get = name => document.getElementById('staff-access-' + name);
   const panel = get('panel'), form = get('form'), list = get('list'), status = get('status');
   const email = get('email'), name = get('name'), role = get('role'), school = get('school');
@@ -15,7 +15,16 @@ function startStaffAccess(client, invite, schoolsFn) {
   const canManage = account => account.role !== 'site_admin' &&
     (actorRole === 'site_admin' || (actorRole === 'conference_office' && account.role === 'ad'));
   const labelRole = value => value === 'ad' ? 'School AD' : value === 'conference_office' ? 'Conference admin' : 'Site admin';
-  const schoolName = id => schoolsFn().find(item => item.slug === id)?.name || id || '';
+  const schoolName = id => schoolsFn().find(item => item.slug === id)?.name ||
+    directoryFn().find(item => item.slug === id)?.name || id || '';
+  const availableSchools = () => {
+    const active = schoolsFn().filter(item =>
+      actorRole !== 'conference_office' || item.is_conference_member !== false);
+    if (actorRole !== 'site_admin') return active;
+    const bySlug = new Map(active.map(item => [item.slug, item]));
+    for (const item of directoryFn()) if (!bySlug.has(item.slug)) bySlug.set(item.slug, item);
+    return [...bySlug.values()].sort((a, b) => a.name.localeCompare(b.name));
+  };
   const assignment = account => labelRole(account.role) + (account.school_id ? ' — ' + schoolName(account.school_id) : '');
 
   function closeReview() {
@@ -72,7 +81,7 @@ function startStaffAccess(client, invite, schoolsFn) {
     role.replaceChildren(option('ad', 'School AD'),
       ...(actorRole === 'site_admin' ? [option('conference_office', 'Conference admin')] : []));
     school.replaceChildren(option('', 'Choose a school'),
-      ...schoolsFn().map(item => option(item.slug, item.name)));
+      ...availableSchools().map(item => option(item.slug, item.name)));
     renderList();
     clearDraft();
   }
@@ -184,7 +193,7 @@ function startStaffAccess(client, invite, schoolsFn) {
     if (draft.role !== 'ad' && !(actorRole === 'site_admin' && draft.role === 'conference_office')) {
       return actorRole === 'conference_office' ? 'Conference admins can manage School AD access only.' : 'Choose School AD or Conference admin access.';
     }
-    if (draft.role === 'ad' && !schoolsFn().some(item => item.slug === draft.school_id)) return 'Choose a school from the list.';
+    if (draft.role === 'ad' && !availableSchools().some(item => item.slug === draft.school_id)) return 'Choose a school from the list.';
     if (editing && (draft.email !== normalized(editing.email) || !canManage(editing))) return 'Choose this person from the current access list again.';
     if (!editing && accounts.some(account => normalized(account.email) === draft.email)) return 'This email already has access. Use Edit on that person.';
     return draft;
@@ -227,6 +236,8 @@ function startStaffAccess(client, invite, schoolsFn) {
     // Consume the review once; failures require a new review instead of resending old revisions.
     pending = null;
     busy = saving = true; syncFields(); confirm.disabled = true; cancelReview.disabled = true;
+    const enrolling = !action.remove && action.draft.role === 'ad' &&
+      !schoolsFn().some(item => item.slug === action.draft.school_id);
     const {error} = await rpc('manage_staff_access', {
       p_email: action.draft.email, p_name: action.draft.name, p_role: action.draft.role,
       p_school: action.draft.school_id, p_expected_revision: action.previous?.access_revision ?? null,
@@ -241,7 +252,9 @@ function startStaffAccess(client, invite, schoolsFn) {
       : error?.code === '42501'
         ? 'You can’t make this change. Choose a different one and review again.'
         : error ? 'The change may not have saved. Check the list before trying again.'
-          : action.remove ? 'Access removed.' : action.previous ? 'Access updated.' : 'Access added. They sign in with that email.';
+          : action.remove ? 'Access removed.' : enrolling
+            ? 'School added to the platform and AD access added. Refresh the dashboard to open its schedule.'
+            : action.previous ? 'Access updated.' : 'Access added. They sign in with that email.';
   };
 
   reset();

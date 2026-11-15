@@ -64,10 +64,10 @@ function startStaffOverview(client, { currentSchool, gameTitle, canEdit, openEdi
   function render(visible = games) {
     games = visible;
     const upcoming = games.filter(game => game.game_date >= todayKey());
-    const conference = upcoming.filter(game => game.opponent_school_id);
+    const platformGames = upcoming.filter(game => game.opponent_school_id);
     const checked = links instanceof Map;
-    const unlinked = checked ? conference.filter(game => links.get(game.id) && !links.get(game.id).linked) : [];
-    const linked = checked ? conference.filter(game => links.get(game.id)?.linked).length : null;
+    const unlinked = checked ? platformGames.filter(game => links.get(game.id) && !links.get(game.id).linked) : [];
+    const linked = checked ? platformGames.filter(game => links.get(game.id)?.linked).length : null;
     const scheduledBuses = upcoming.filter(game =>
       game.status === 'Scheduled' && game.home_away === 'Away' && game.transportation?.bus_departure);
 
@@ -82,7 +82,7 @@ function startStaffOverview(client, { currentSchool, gameTitle, canEdit, openEdi
     else if (!checked) linkList.replaceChildren(note('Match checks are not set up yet.'));
     else linkList.replaceChildren(...(unlinked.length
       ? unlinked.map(game => row(game, links.get(game.id).reason))
-      : [note('Every upcoming conference game in this view matches.')]));
+      : [note('Every upcoming game with a platform school in this view matches.')]));
 
     busList.replaceChildren(...(scheduledBuses.length
       ? scheduledBuses.map(game => row(game, 'Bus departure ' +
