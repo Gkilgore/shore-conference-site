@@ -127,7 +127,7 @@ test('Add Game sports come from the loaded school team list', async () => {
   assert.equal(app.controller.loadState(), 'loading');
   await app.controller.load();
   assert.equal(app.controller.loadState(), 'ready');
-  assert.deepEqual(app.controller.sports(), ['Soccer', 'Track and Field']);
+  assert.deepEqual(Array.from(app.controller.sports()), ['Soccer', 'Track and Field']);
 });
 
 test('AD must confirm removing an unused team and cannot remove one with games', async () => {
