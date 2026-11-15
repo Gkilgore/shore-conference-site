@@ -29,6 +29,14 @@ function teamLabel(game) {
   return [game.gender, game.level, game.sport].join(' ');
 }
 
+function createHomeAwayBadge(homeAway) {
+  if (homeAway !== 'Home' && homeAway !== 'Away') return null;
+  const badge = document.createElement('span');
+  badge.className = 'home-away-badge is-' + homeAway.toLowerCase();
+  badge.textContent = homeAway;
+  return badge;
+}
+
 // Picks black or white text so it stays readable on a school's chosen color.
 function readableInk(hex) {
   const value = parseInt(hex.slice(1), 16);
@@ -87,8 +95,10 @@ function renderUpcoming(events, { showChanged = false } = {}) {
     const start = new Date(game.start.slice(0, 10) + 'T12:00');
     date.dateTime = game.start;
     date.textContent = dateFormat.format(start);
+    const homeAway = createHomeAwayBadge(game.home_away);
     if (scheduled(game)) {
-      title.textContent = game.title;
+      if (homeAway) title.append(homeAway, ' ');
+      title.append(game.title);
       details.textContent = [game.start.includes('T') ? timeFormat.format(new Date(game.start)) : 'TBD',
         game.location, game.bus,
         game.earlyDismissal && 'Early dismissal ' + game.earlyDismissal].filter(Boolean).join(' · ');
@@ -99,6 +109,7 @@ function renderUpcoming(events, { showChanged = false } = {}) {
       label.className = 'game-status is-' + game.status.toLowerCase();
       label.textContent = game.status;
       matchup.textContent = game.title.endsWith(' · ' + game.status) ? game.title.slice(0, -game.status.length - 3) : game.title;
+      if (homeAway) title.append(homeAway, ' ');
       title.append(label, ' ', matchup);
       details.textContent = ['Was ' + (game.start.includes('T') ? timeFormat.format(new Date(game.start)) : 'TBD'),
         game.location, game.earlyDismissal && 'Early dismissal ' + game.earlyDismissal].filter(Boolean).join(' · ');

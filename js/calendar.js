@@ -142,6 +142,8 @@ function renderCalendar(events) {
         time.textContent = displayedTime;
         content.append(time);
       }
+      const homeAway = createHomeAwayBadge(event.extendedProps.game?.home_away ?? event.extendedProps.home_away);
+      if (homeAway) content.append(homeAway);
       content.append(title);
       const details = [event.extendedProps.location, event.extendedProps.bus,
         event.extendedProps.earlyDismissal && 'Early dismissal ' + event.extendedProps.earlyDismissal].filter(Boolean);

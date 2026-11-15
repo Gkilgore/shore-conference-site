@@ -372,6 +372,23 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
 .game-status.is-canceled { background: var(--red); border-color: var(--red); color: white; }
 .game-list strong span { padding: 0; font-size: inherit; color: inherit; }
 .game-status.is-canceled + span { text-decoration: line-through; }
+.home-away-badge {
+  display: inline-block;
+  width: max-content;
+  max-width: 100%;
+  padding: 0 0.35rem;
+  border: var(--frame);
+  font-size: 0.64rem;
+  font-weight: 800;
+  line-height: 1.55;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.home-away-badge.is-home { background: var(--navy); border-color: var(--navy); color: white; }
+.home-away-badge.is-away { background: var(--paper); border-color: var(--steel-dark); color: var(--ink); }
+.game-list strong .home-away-badge { margin-right: 0.35rem; padding: 0 0.35rem; font-size: 0.64rem; }
 .game-list li:only-child { padding: 0.85rem; }
 .game-list .empty-schedule { display: block; }
 

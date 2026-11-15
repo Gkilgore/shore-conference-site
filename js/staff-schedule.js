@@ -498,12 +498,20 @@ function startStaffSchedule(client, invite) {
           });
           // Outlined games are not on the public schedule. The list view and screen readers also get the words.
           const state = event.extendedProps.unpublished;
+          const title = el.querySelector('.fc-event-title, .fc-list-event-title');
+          const homeAway = event.extendedProps.game.home_away;
+          if (title && (homeAway === 'Home' || homeAway === 'Away')) {
+            const badge = document.createElement('span');
+            badge.className = 'home-away-badge is-' + homeAway.toLowerCase();
+            badge.textContent = homeAway;
+            title.before(badge, ' ');
+          }
           if (!state) return;
           el.title = state === 'Draft' ? 'Not posted' : 'Has a change that isn’t posted';
           const tag = document.createElement('span');
           tag.className = 'staff-tag';
           tag.textContent = state === 'Draft' ? 'Not posted' : 'Change not posted';
-          (el.querySelector('.fc-event-title, .fc-list-event-title') ?? el).prepend(tag, ' ');
+          (title ?? el).prepend(tag, ' ');
         },
         eventClick({ event }) {
           if (canEdit) openEditor(event.extendedProps.game);
@@ -535,7 +543,7 @@ function startStaffSchedule(client, invite) {
     table.className = 'staff-schedule-table';
     table.setAttribute('aria-label', 'Games by date');
     const columns = document.createElement('colgroup');
-    for (const width of ['10%', '12%', '5%', '14%', '14%', '10%', '9%', '15%', '10%']) {
+    for (const width of ['9%', '12%', '7%', '14%', '14%', '10%', '9%', '15%', '10%']) {
       const column = document.createElement('col');
       column.style.width = width;
       columns.append(column);
@@ -582,6 +590,12 @@ function startStaffSchedule(client, invite) {
           cell.dataset.label = labelText;
           if (index === 0) renderQuickTime(cell, game, 'start_time');
           else if (index === 6 && canEdit) renderQuickTime(cell, game, 'bus_departure');
+          else if (index === 2) {
+            const badge = document.createElement('span');
+            badge.className = 'home-away-badge is-' + game.home_away.toLowerCase();
+            badge.textContent = game.home_away;
+            cell.append(badge);
+          }
           else cell.textContent = value || '—';
           if (index === 1 && unpublished.has(game.id)) {
             const tag = document.createElement('span');

@@ -66,6 +66,20 @@ test('school buttons retain normal-text contrast on bright school red', () => {
   assert.ok((values[1]+0.05)/(values[0]+0.05)>=4.5, 'Keyport red requires at least 4.5:1 for button text');
 });
 
+test('home and away badges have distinct classes and readable labels', () => {
+  const context = vm.createContext({ document: { createElement: () => ({ className: '', textContent: '' }),
+    querySelectorAll: () => [], getElementById: () => null } });
+  vm.runInContext(source('js/site.js'), context);
+  const badges = JSON.parse(vm.runInContext(
+    `JSON.stringify(['Home', 'Away'].map(createHomeAwayBadge).map(({ className, textContent }) => [className, textContent]))`,
+    context));
+  assert.deepEqual(badges, [
+    ['home-away-badge is-home', 'Home'],
+    ['home-away-badge is-away', 'Away'],
+  ]);
+  assert.equal(context.createHomeAwayBadge('Neutral'), null);
+});
+
 function renderDirectory(includeRoster = true) {
   const elements = new Map();
   const element = () => ({ children: [], value: '', style: { setProperty() {} },
