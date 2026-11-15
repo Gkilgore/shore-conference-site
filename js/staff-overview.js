@@ -64,8 +64,10 @@ function startStaffOverview(client, { currentSchool, gameTitle, canEdit, openEdi
   function render(visible = games) {
     games = visible;
     const upcoming = games.filter(game => game.game_date >= todayKey());
-    const platformGames = upcoming.filter(game => game.opponent_school_id);
     const checked = links instanceof Map;
+    const platformGames = upcoming.filter(game => checked
+      ? links.has(game.id)
+      : game.opponent_school_id);
     const unlinked = checked ? platformGames.filter(game => links.get(game.id) && !links.get(game.id).linked) : [];
     const linked = checked ? platformGames.filter(game => links.get(game.id)?.linked).length : null;
     const scheduledBuses = upcoming.filter(game =>

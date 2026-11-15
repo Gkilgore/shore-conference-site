@@ -58,7 +58,7 @@ function startStaffOpponents(client, { currentSchool, activeSchools, canImport, 
     return directory.find(item => item.slug === slug) ?? null;
   }
 
-  function isPlatformSchool(slug) {
+  function hasSchoolProfile(slug) {
     return activeSchools().some(item => item.slug === slug);
   }
 
@@ -90,7 +90,7 @@ function startStaffOpponents(client, { currentSchool, activeSchools, canImport, 
       label.textContent = item.name;
       const identity = document.createElement('span');
       identity.className = 'opponent-entry-identity';
-      identity.textContent = isPlatformSchool(item.slug) ? 'On platform' : 'Not on platform';
+      identity.textContent = hasSchoolProfile(item.slug) ? 'School profile' : 'Directory only';
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'button secondary';

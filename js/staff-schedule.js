@@ -303,9 +303,9 @@ function startStaffSchedule(client, invite) {
     }
     const choices = [new Option('Choose an opponent', '')];
     for (const item of entries.filter(entry => entry.slug !== school?.slug)) {
-      const onPlatform = schools.some(candidate => candidate.slug === item.slug);
-      choices.push(new Option(item.name + (onPlatform ? '' : ' (not on platform)'),
-        onPlatform ? item.slug : 'directory:' + item.slug));
+      const hasSchoolProfile = schools.some(candidate => candidate.slug === item.slug);
+      choices.push(new Option(item.name + (hasSchoolProfile ? ' (school profile)' : ' (directory only)'),
+        hasSchoolProfile ? item.slug : 'directory:' + item.slug));
     }
     choices.push(new Option('Other opponent', '__other'));
     fields.opponent_school_id.replaceChildren(...choices);
