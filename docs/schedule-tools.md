@@ -8,6 +8,8 @@ Each school has its own opponent list. ADs can search the shared New Jersey scho
 
 Schools outside the conference can use the platform after a site admin assigns their first AD from the directory in **Staff access**. Only schools with an AD invitation can match games. Nonconference matches stay on the participating schools' schedules; only matched member-school games appear on the conference calendar.
 
+`supabase/migrations/20261203000100_opponent_directory.sql` and `supabase/tests/opponent-directory.sql` are test-project work only; they have not been applied to a Supabase project. Import the approved NJSIAA CSV after applying the migration in the test project. Never apply it to the live project without Greg's go-ahead.
+
 ## Saving and posting
 
 Saving or importing a game posts it immediately when the team can be safely published; there is no draft or separate Publish step. Games from schedules that were previously taken down remain private until an AD posts that team again. Deleting a game removes its public copy. Calendar apps refresh updates on their own schedule.
