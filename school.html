@@ -56,16 +56,8 @@
       </div>
     </section>
     <div id="school-content" class="wrap section">
-      <section aria-labelledby="upcoming-title">
-        <div class="section-heading"><div><p id="public-schedule-status" class="eyebrow" role="status">Loading schedule…</p><h2 id="upcoming-title">Next games</h2></div></div>
-        <ul class="game-list" id="upcoming"></ul>
-      </section>
-      <!-- Shown only when the school has saved a social media account. Posts load from the platform. -->
-      <section id="social" class="social-section" aria-labelledby="social-title" hidden>
-        <div class="section-heading"><div><p class="eyebrow">From the school’s accounts</p><h2 id="social-title">Social media</h2></div></div>
-        <div id="social-accounts" class="social-box social-accounts"></div>
-      </section>
       <section class="school-calendar" id="school-calendar" aria-labelledby="calendar-title">
+        <p id="public-schedule-status" class="eyebrow" role="status">Loading schedule…</p>
         <h2 id="calendar-title">Full schedule</h2>
       <form id="calendar-filters" class="filters" role="search" aria-label="Filter games">
         <label>Sport<select name="sport"><option value="">All sports</option></select></label>
@@ -83,11 +75,16 @@
         </ul>
       </div>
       </section>
-      <!-- Shown only when the school has postings or changes, or when they fail to load. -->
-      <section id="school-postings" class="public-postings" aria-labelledby="school-seasons-title" hidden>
-        <h2 id="school-seasons-title">Posted schedules</h2>
-        <div id="school-seasons" aria-live="polite"></div>
+      <section class="school-upcoming" aria-labelledby="upcoming-title">
+        <div class="section-heading"><h2 id="upcoming-title">Next games</h2></div>
+        <ul class="game-list" id="upcoming"></ul>
       </section>
+      <!-- Shown only when the school has saved a social media account. Posts load from the platform. -->
+      <section id="social" class="social-section" aria-labelledby="social-title" hidden>
+        <div class="section-heading"><div><p class="eyebrow">From the school’s accounts</p><h2 id="social-title">Social media</h2></div></div>
+        <div id="social-accounts" class="social-box social-accounts"></div>
+      </section>
+      <!-- Shown only when the school has schedule changes. -->
       <section id="recent-updates" class="public-postings" aria-labelledby="school-updates-title" hidden>
         <h2 id="school-updates-title">Schedule changes</h2>
         <ul id="school-updates" class="public-update-list" aria-live="polite"></ul>

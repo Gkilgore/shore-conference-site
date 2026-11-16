@@ -87,14 +87,10 @@ if (school) {
       games = publicCalendarEvents(schedule);
       status.textContent = 'All times Eastern';
       // Each renderer returns how many items it drew; empty sections stay hidden.
-      document.getElementById('school-postings').hidden = !renderSchoolSeasons(document.getElementById('school-seasons'), schedule, notice => {
-        window.dispatchEvent(new CustomEvent('shore:season-selected', { detail: notice }));
-      });
       document.getElementById('recent-updates').hidden =
         !renderSchoolUpdates(document.getElementById('school-updates'), schedule, schoolDirectory);
     } else {
       status.textContent = 'Sample schedule · Eastern Time';
-      document.getElementById('school-postings').hidden = true;
       document.getElementById('recent-updates').hidden = true;
     }
     renderUpcoming(games, { showChanged: true });
@@ -113,7 +109,6 @@ if (school) {
     document.getElementById('calendar-filters').hidden = true;
     // One message is enough; the sections that depend on the schedule stay hidden.
     document.getElementById('upcoming').textContent = error.message;
-    document.getElementById('school-postings').hidden = true;
     document.getElementById('recent-updates').hidden = true;
   }
 } else {

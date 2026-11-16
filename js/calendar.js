@@ -23,6 +23,20 @@ function renderCalendar(events) {
   }
 
   const fields = filters.elements;
+  let singleTeam = false;
+  // Month, week and day squares on a school calendar stay short: the team's name, or the opponent
+  // once the filters leave one team. Clicking a game opens the full details. The conference
+  // calendar keeps both schools in the square.
+  function squareLabel(event) {
+    if (fields.school) return event.title;
+    const { sport, gender, level, status } = event.extendedProps;
+    const team = [gender, level, sport].filter(Boolean).join(' ');
+    if (!team || !event.title.startsWith(team)) return event.title;
+    if (!singleTeam) return team;
+    let rest = event.title.slice(team.length).replace(/^\s*·?\s*/, '');
+    if (status && rest.endsWith(' · ' + status)) rest = rest.slice(0, -status.length - 3);
+    return rest || team;
+  }
   if (fields.school) {
     const schools = typeof shoreSchools !== 'undefined' ? shoreSchools : sampleSchools;
     for (const [slug, school] of Object.entries(schools).sort(([, first], [, second]) => first.name.localeCompare(second.name))) {
@@ -119,6 +133,9 @@ function renderCalendar(events) {
       document.getElementById('filter-count').textContent = results.length
         ? results.length + (results.length === 1 ? ' game shown.' : ' games shown.') : '';
       showEmpty(results, matches, afterLastDay);
+      // With one team on screen the squares can name the opponent; otherwise they name the team.
+      singleTeam = Boolean(fields.sport.value) &&
+        new Set(matches.map(game => [game.sport, game.gender, game.level].join('|'))).size === 1;
       // Tells the page which team and which part of the year are on screen.
       window.dispatchEvent(new CustomEvent('shore:calendar-view', { detail: {
         sport: fields.sport.value, gender: fields.gender?.value ?? '', level: fields.level.value,
@@ -132,18 +149,20 @@ function renderCalendar(events) {
       content.className = 'game';
       const title = document.createElement('span');
       title.className = 'game-title';
-      title.textContent = event.title;
-      const icon = typeof createSportIcon === 'function' ? createSportIcon(event.extendedProps.sport) : null;
-      if (icon) title.prepend(icon);
+      title.textContent = inList ? event.title : squareLabel(event);
+      // Time and Home/Away share the first line so the square stays short.
+      const head = document.createElement('span');
+      head.className = 'game-head';
       const displayedTime = event.allDay ? 'TBD' : timeText;
       if (displayedTime && (!inList || event.allDay)) {
         const time = document.createElement('span');
         time.className = 'game-time';
         time.textContent = displayedTime;
-        content.append(time);
+        head.append(time);
       }
       const homeAway = createHomeAwayBadge(event.extendedProps.game?.home_away ?? event.extendedProps.home_away);
-      if (homeAway) content.append(homeAway);
+      if (homeAway) head.append(homeAway);
+      if (head.childNodes.length) content.append(head);
       content.append(title);
       const details = [event.extendedProps.location, event.extendedProps.bus,
         event.extendedProps.earlyDismissal && 'Early dismissal ' + event.extendedProps.earlyDismissal].filter(Boolean);

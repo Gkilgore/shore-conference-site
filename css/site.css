@@ -292,7 +292,8 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
 .school-hero .primary { background: var(--school-accent); border-color: var(--school-accent); color: var(--accent-ink); }
 .school-hero .primary:is(:hover, :focus-visible) { background: var(--paper); border-color: var(--paper); color: var(--ink); }
 .school-hero .secondary { border-color: white; }
-.school-calendar { margin-top: 2.5rem; }
+/* The calendar leads the school page; the next games follow it. */
+.school-upcoming { margin-top: 2.5rem; }
 .school-calendar h2 { margin-bottom: 0.9rem; }
 
 /* Buttons: solid fills; hover swaps to a different solid color. */
@@ -564,6 +565,9 @@ textarea { display: block; resize: vertical; }
 #calendar .fc-daygrid-event .game { display: grid; min-width: 0; font-size: 0.76rem; line-height: 1.25; }
 #calendar .fc-daygrid-event .game-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
 #calendar .fc-daygrid-event .game-time { color: inherit; font-weight: 800; }
+/* Time on the left, Home/Away on the right of the same line. */
+#calendar .game-head { display: flex; align-items: center; justify-content: space-between; gap: 0.3rem; min-width: 0; }
+#calendar :is(.fc-daygrid-event, .fc-timegrid-event) .home-away-badge { padding: 0 0.3rem; font-size: 0.62rem; line-height: 1.5; }
 #calendar .fc-timegrid-event { border-radius: 0; }
 /* Same status colors as the staff dashboard: postponed yellow, canceled red and struck through. */
 #calendar .fc-event.is-postponed { --fc-event-bg-color: var(--yellow); --fc-event-text-color: var(--ink); }

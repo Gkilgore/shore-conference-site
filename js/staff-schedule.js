@@ -1,4 +1,4 @@
-// Runs staff schedule, transportation, settings, social media, access tabs and the game editor.
+// Runs staff schedule, transportation, settings (with social media), access tabs and the game editor.
 function startStaffSchedule(client, invite) {
   const selector = document.getElementById('schedule-school');
   const preview = document.getElementById('view-as');
@@ -60,9 +60,7 @@ function startStaffSchedule(client, invite) {
   const settingsTab = document.getElementById('staff-settings-tab');
   const settingsPanel = document.getElementById('staff-settings-panel');
   const settingsTitle = document.getElementById('settings-title');
-  // Social media links: every role can edit them, each for the schools Supabase allows.
-  const socialTab = document.getElementById('staff-social-tab');
-  const socialPanel = document.getElementById('staff-social-panel');
+  // Social media links sit under School settings: every role can edit them, each for the schools Supabase allows.
   const social = startStaffSocial(client, { currentSchool: () => currentSchool() });
   const filterForm = document.getElementById('staff-filters');
   const filterFields = filterForm.elements;
@@ -383,9 +381,8 @@ function startStaffSchedule(client, invite) {
 
   function selectSchool() {
     const showContact = canEdit && !transportationPanel.hidden;
-    const showSettings = canEdit && !settingsPanel.hidden;
+    const showSettings = !settingsPanel.hidden;
     const showOpponents = canEdit && !opponentsPanel.hidden;
-    const showSocial = !socialPanel.hidden;
     const showTournaments = !tournamentsPanel.hidden;
     const showCoaches = canEdit && !coachesPanel.hidden;
     const showTeams = canEdit && !teamsPanel.hidden;
@@ -417,9 +414,8 @@ function startStaffSchedule(client, invite) {
     addGame.hidden = !canEdit;
     importButton.hidden = !canEdit;
     transportationTab.hidden = !canEdit;
-    settingsTab.hidden = !canEdit;
+    settingsTab.hidden = false;
     opponentsTab.hidden = !canEdit;
-    socialTab.hidden = false;
     // Coaches are tabled for now (Greg, November 12): no tab, no coach lists, no coach emails.
     coachesTab.hidden = true;
     if (showContact) openTransportation(false);
@@ -429,7 +425,6 @@ function startStaffSchedule(client, invite) {
     else if (!canEdit && !teamsPanel.hidden) showSchedule();
     if (showSettings) openSettings(false);
     if (showOpponents) openOpponents(false);
-    if (showSocial) openSocial(false);
     if (showTournaments) openTournaments(false);
     loadGames(null, true);
   }
@@ -886,7 +881,7 @@ function startStaffSchedule(client, invite) {
   function hidePanels() {
     for (const [panel, tab] of [[schedulePanel, scheduleTab], [gamesPanel, gamesTab], [teamsPanel, teamsTab],
       [opponentsPanel, opponentsTab], [transportationPanel, transportationTab], [coachesPanel, coachesTab], [settingsPanel, settingsTab], [tournamentsPanel, tournamentsTab],
-      [documentsPanel, documentsTab], [socialPanel, socialTab]]) {
+      [documentsPanel, documentsTab]]) {
       panel.hidden = true;
       tab.removeAttribute('aria-current');
     }
@@ -976,12 +971,19 @@ function startStaffSchedule(client, invite) {
   }
 
   function openSettings(focus = true) {
-    if (!canEdit || !selector.value) return;
+    if (!selector.value) return;
     hidePanels();
     settingsPanel.hidden = false;
     settingsTab.setAttribute('aria-current', 'true');
-    settings.load();
-    venues.showSettings();
+    // Conference admins manage only the social media links; logo, colors and venues stay with the school.
+    document.getElementById('settings-branding').hidden = !canEdit;
+    document.getElementById('settings-venues').hidden = !canEdit;
+    document.getElementById('settings-school').textContent = currentSchool()?.name ?? '';
+    if (canEdit) {
+      settings.load();
+      venues.showSettings();
+    }
+    social.load();
     if (focus) settingsTitle.focus();
   }
 
@@ -995,16 +997,6 @@ function startStaffSchedule(client, invite) {
     if (focus) document.getElementById('opponents-title').focus();
   }
   opponentsTab.onclick = () => openOpponents();
-
-  function openSocial(focus = true) {
-    if (!selector.value) return;
-    hidePanels();
-    socialPanel.hidden = false;
-    socialTab.setAttribute('aria-current', 'true');
-    social.load();
-    if (focus) document.getElementById('social-title').focus();
-  }
-  socialTab.onclick = () => openSocial();
 
   function openTournaments(focus = true) {
     hidePanels();
@@ -1248,7 +1240,6 @@ function startStaffSchedule(client, invite) {
     tournaments.stop();
     documents.stop();
     social.stop();
-    socialTab.onclick = null;
     documentsTab.onclick = null;
     tournamentsTab.onclick = null;
     tournamentsTab.disabled = false;

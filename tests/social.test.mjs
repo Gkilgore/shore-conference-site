@@ -157,7 +157,6 @@ test('the staff tab loads one school and refuses a bad link before anything is s
   const staff = mountStaff({ saved: [{ id: 'a', school_id: 'marlboro', platform: 'instagram', url: 'https://www.instagram.com/marlboro/' },
     { id: 'b', school_id: 'colts-neck', platform: 'x', url: 'https://x.com/ColtsNeck' }] });
   await staff.controller.load();
-  assert.equal(staff.el('social-school').textContent, 'Marlboro');
   assert.deepEqual(staff.calls[0].filters, { school_id: 'marlboro' });
   assert.equal(staff.el('social-list').children.length, 3);
   assert.equal(staff.input('Instagram').value, 'https://www.instagram.com/marlboro/');
