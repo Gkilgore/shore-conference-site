@@ -63,7 +63,7 @@ test('History states its source scope and links the saved record', () => {
     assert.ok(history.includes('href="#' + id + '"') && history.includes('id="' + id + '"'), id);
   }
 });
-test('Information panels carry no placeholders or images waiting on permission', () => {
+test('static Information fallback contains only the logo; enhanced history photos are checked separately', () => {
   assert.doesNotMatch(about + history, /Photo to come|Caption:|photo-slot|<figure/i);
   assert.equal((about + history).match(/<img /g).length, 1, 'only the conference logo');
 });

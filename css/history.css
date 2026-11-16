@@ -1,0 +1,76 @@
+/* History feature: existing conference palette, full frames, and readable stories at every width. */
+.history-feature { gap: 2rem; }
+.history-feature h3, .history-feature h4 { margin: 0; line-height: 1.2; }
+.history-feature h3 { font-size: clamp(1.35rem, 3vw, 1.8rem); }
+.history-feature h4 { font-size: 1.15rem; }
+.history-feature .eyebrow, .history-date { color: var(--red); }
+.history-hero { display: grid; gap: 1.25rem; align-items: center; }
+.history-hero-copy { display: grid; gap: 0.8rem; }
+.history-hero h2 { font-size: clamp(2.2rem, 5vw, 3.5rem); line-height: 1; }
+.history-hero h2:focus { outline: none; }
+.history-hero .standfirst { max-width: 24ch; font-size: clamp(1.25rem, 3vw, 1.8rem); line-height: 1.15; font-weight: 700; }
+.history-hero-note { font-size: 0.85rem; color: var(--muted); }
+.history-photo { margin: 0; border: var(--frame); background: var(--paper); }
+.history-photo img { display: block; width: 100%; height: auto; }
+.history-photo figcaption { padding: 0.4rem 0.6rem; font-size: 0.75rem; line-height: 1.45; background: white; }
+.history-photo a:hover, .history-citations a:hover { background: var(--hover); }
+.history-jump { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.history-jump .button { min-height: 2.75rem; font-size: 0.9rem; padding: 0.55rem 0.7rem; }
+.history-section { display: grid; gap: 1rem; scroll-margin-top: 1rem; min-width: 0; }
+.history-section-head { display: grid; gap: 0.4rem; }
+.history-section-head .eyebrow { margin: 0; }
+.history-controls { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.history-controls .button { min-height: 2.75rem; padding: 0.5rem 0.7rem; }
+.history-controls [aria-pressed="true"] { color: white; background: var(--navy); }
+.history-controls [aria-pressed="true"]:is(:hover, :focus-visible) { background: var(--red); }
+.history-event-list, .history-membership-list { display: grid; gap: 0.65rem; padding: 0; margin: 0; list-style: none; }
+.history-event { border: var(--frame); }
+.history-feature summary { cursor: pointer; min-height: 2.75rem; padding: 0.65rem; font-weight: 700; }
+.history-feature summary:is(:hover, :focus-visible) { background: var(--hover); }
+.history-feature summary:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; }
+.history-event summary { padding: 0.85rem; }
+.history-event summary > span { display: block; }
+.history-event-title { margin-block: 0.3rem; font-size: 1.1rem; }
+.history-event-intro { font-weight: 400; line-height: 1.5; }
+.history-date { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+.history-expanded { display: grid; gap: 0.65rem; padding: 0.75rem; }
+.history-citations { font-size: 0.8rem; color: var(--muted); overflow-wrap: anywhere; }
+.history-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 0.65rem; }
+.history-filters label { display: grid; gap: 0.25rem; flex: 1 1 9rem; font-size: 0.85rem; font-weight: 700; }
+.history-filters select { width: 100%; min-height: 2.75rem; }
+.history-filters .button { min-height: 2.75rem; }
+.history-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: 0.85rem; }
+.history-athlete, .history-story { display: flex; flex-direction: column; border: var(--frame); min-width: 0; }
+.history-athlete .history-photo { border: 0; }
+.history-athlete .history-photo img { height: 16rem; object-fit: contain; background: var(--paper); }
+.history-school-mark { display: grid; min-height: 13rem; gap: 0.5rem; padding: 1rem; place-content: center; justify-items: center; background: var(--paper); text-align: center; }
+.history-school-mark img { width: 6rem; height: 6rem; object-fit: contain; }
+.history-school-mark .doc-meta { font-size: 0.75rem; max-width: 20ch; }
+.history-card-body { display: grid; gap: 0.65rem; padding: 0.85rem; }
+.history-card-body .eyebrow { margin: 0; font-size: 0.72rem; }
+.history-card-body > p { font-size: 0.95rem; }
+.history-card-body .history-school-line { font-size: 0.8rem; }
+.history-card-body details { border: var(--frame); }
+.history-card-body summary { font-size: 0.85rem; }
+.history-card-body .history-expanded { font-size: 0.9rem; }
+.history-note { background: var(--paper); padding: 0.65rem; border: var(--frame); font-size: 0.85rem; }
+[data-history-group] { display: grid; gap: 0.85rem; }
+.history-stories { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 1rem; }
+.history-story .history-photo { border: 0; }
+.history-story .history-photo img { height: 14rem; object-fit: contain; }
+.history-featured { background: var(--paper); }
+.history-membership-list li { display: grid; gap: 0.4rem; padding: 1rem; border: var(--frame); }
+.history-archive { border: var(--frame); min-width: 0; }
+.history-archive > div { padding: 1rem; display: grid; gap: 1.25rem; }
+.history-source-list { max-height: 28rem; overflow-y: auto; overscroll-behavior: contain; padding: 0.25rem; border: var(--frame); }
+.history-source-list li { scroll-margin-top: 1rem; }
+.history-feature :target { scroll-margin-top: 1rem; }
+.history-source-list li:target { background: var(--paper); }
+.history-feature:not(.history-ready) .history-enhanced { display: none; }
+@media (min-width: 680px) {
+  .history-hero { grid-template-columns: 1.1fr 1fr; }
+  .history-membership-list { grid-template-columns: 1fr 1fr; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .history-feature { scroll-behavior: smooth; }
+}
