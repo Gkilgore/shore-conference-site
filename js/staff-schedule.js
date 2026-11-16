@@ -380,6 +380,7 @@ function startStaffSchedule(client, invite) {
     syncStatusHint();
     venues.sync(game?.location ?? '');
     transportation.setPreview(game, true);
+    document.getElementById('game-transportation-fieldset').hidden = fields.home_away.value !== 'Away';
   }
 
   function syncStatusHint() {
@@ -1106,6 +1107,9 @@ function startStaffSchedule(client, invite) {
   preview.onchange = selectView;
   selector.onchange = selectSchool;
   fields.opponent_school_id.onchange = syncOpponent;
+  fields.home_away.onchange = () => {
+    document.getElementById('game-transportation-fieldset').hidden = fields.home_away.value !== 'Away';
+  };
   closeEditor.onclick = () => askToLeave(leaveEditor);
   form.oninput = () => { dirty = true; syncStatusHint(); };
   document.getElementById('discard-confirm').onclick = () => {

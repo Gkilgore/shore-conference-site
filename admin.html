@@ -554,7 +554,7 @@
               </div>
               <label>Game notes <textarea name="notes" maxlength="1000" rows="2"></textarea></label>
             </fieldset>
-            <fieldset class="prose">
+            <fieldset class="prose" id="game-transportation-fieldset" hidden>
               <legend>Transportation</legend>
               <div class="filters">
                 <label>Bus departure <input name="bus_departure" type="time"></label>
@@ -563,6 +563,7 @@
                 <label>Return time <input name="return_time" type="time"></label>
               </div>
               <label>Transportation notes <textarea name="transport_notes" maxlength="1000" rows="2"></textarea></label>
+              <p class="staff-hint">Save the game with or without transportation details. These remind you that the team will need transportation.</p>
             </fieldset>
             <p class="staff-hint">Saving posts this game to the public schedule.</p>
             <p id="game-form-status" role="status"></p>
