@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700;800&display=swap">
   <link rel="stylesheet" href="css/site.css">
+  <link rel="stylesheet" href="css/history.css">
   <script defer src="js/site.js"></script>
   <script defer src="data/school-directory.js"></script>
   <script defer src="data/conference-resources.js"></script>
@@ -17,6 +18,9 @@
   <script defer src="js/supabase-config.js"></script>
   <script defer src="data/document-archive.js"></script>
   <script defer src="js/document-archive.js"></script>
+  <script defer src="data/history.js"></script>
+  <script defer src="js/history-data.js"></script>
+  <script defer src="js/history.js"></script>
   <script defer src="js/resources.js"></script>
   <script defer src="js/document-links.js"></script>
 </head>
@@ -68,13 +72,66 @@
             <li><a href="#documents"><strong>Documents</strong><span>Constitution, leadership and award forms.</span></a></li>
           </ul>
         </section>
-        <section class="panel article" id="history" aria-labelledby="history-title">
+        <section class="panel article history-feature" id="history" aria-labelledby="history-title">
+          <header class="history-hero">
+            <div class="history-hero-copy">
+              <p class="eyebrow">1936–2026 · Monmouth &amp; Ocean counties</p>
+              <h2 id="history-title">Our History</h2>
+              <p class="standfirst">90 Years of Shore Conference Athletics</p>
+              <p>Nine schools set a league in motion in February 1936. Across the decades, new schools, new sports and new opportunities changed who could compete and how far they could go.</p>
+              <p class="history-hero-note">A history in progress, through November 15, 2026. Every story starts with a source.</p>
+            </div>
+            <div id="history-hero-photo" class="history-enhanced"></div>
+          </header>
+          <nav class="history-jump history-enhanced" aria-label="Explore Shore history">
+            <a class="button secondary" href="#history-timeline">Timeline</a>
+            <a class="button secondary" href="#history-legends">Legends</a>
+            <a class="button secondary" href="#history-moments">Defining Moments</a>
+            <a class="button secondary" href="#history-schools">Schools</a>
+            <a class="button secondary" href="#history-sources">Sources</a>
+          </nav>
+          <section class="history-section history-enhanced" id="history-timeline" aria-labelledby="history-timeline-title">
+            <header class="history-section-head"><p class="eyebrow">01 / The decades</p><h3 id="history-timeline-title">The Shore Conference through the decades</h3><p>Pick a decade. Open a milestone for its story and sources.</p></header>
+            <div id="history-decades" class="history-controls" role="group" aria-label="Timeline decade"></div>
+            <p id="history-decade-status" class="doc-meta" role="status"></p>
+            <ol id="history-events" class="history-event-list"></ol>
+          </section>
+          <section class="history-section history-enhanced" id="history-legends" aria-labelledby="history-legends-title">
+            <header class="history-section-head"><p class="eyebrow">02 / The people</p><h3 id="history-legends-title">Shore Conference Legends</h3><p>School careers that opened onto a bigger stage. These profiles celebrate achievements across sports, without ranking one against another.</p></header>
+            <div class="history-filters">
+              <label for="history-sport">Sport<select id="history-sport"><option value="all">All sports</option></select></label>
+              <label for="history-era">School era<select id="history-era"><option value="all">All eras</option></select></label>
+              <button type="button" class="button secondary" id="history-reset">Reset filters</button>
+            </div>
+            <p id="history-results" class="doc-meta" role="status"></p>
+            <p id="history-empty" hidden>No profiles match those filters. Try another sport or school era.</p>
+            <div data-history-group><div id="history-athletes" class="history-gallery"></div></div>
+            <div data-history-group><h3>Jersey Shore Greats</h3><p>A school’s later membership does not turn its earlier alumni into conference competitors.</p><div id="history-shore-greats" class="history-gallery"></div></div>
+            <div data-history-group><h3>Membership research ongoing</h3><p>These achievements are documented. A source establishing conference membership during the athlete’s school years is still needed.</p><div id="history-membership-research" class="history-gallery"></div></div>
+          </section>
+          <section class="history-section history-enhanced" id="history-moments" aria-labelledby="history-moments-title">
+            <header class="history-section-head"><p class="eyebrow">03 / Defining moments</p><h3 id="history-moments-title">The stories behind the scores</h3><p>New opportunities, lasting programs and teams that changed expectations.</p></header>
+            <div id="history-stories" class="history-stories"></div>
+          </section>
+          <section class="history-section history-enhanced" id="history-schools" aria-labelledby="history-schools-title">
+            <header class="history-section-head"><p class="eyebrow">04 / Membership</p><h3 id="history-schools-title">The schools that built the Shore</h3><p>Membership changed with regional schools, new high schools and new admission rules. This is a documented chronology, not a complete accession list.</p></header>
+            <ol id="history-membership" class="history-membership-list"></ol>
+            <a href="schools.html">Browse today’s scheduling directory</a>
+          </section>
+          <section class="history-section" id="history-sources" aria-labelledby="history-sources-title">
+            <header class="history-section-head"><p class="eyebrow">05 / The archive</p><h3 id="history-sources-title">Historical archive and sources</h3><p>The conference’s original record covers 1936 through 1969. School archives, athletic associations and contemporary reporting help extend the story.</p></header>
+            <details class="history-archive history-enhanced"><summary>Browse historical sources</summary><div><ul id="history-source-list" class="doc-list history-source-list"></ul></div></details>
+            <details class="history-archive history-enhanced"><summary>Photographs and reuse credits</summary><div><p>These photographs show the athletes later in their careers. They are not presented as high-school archival photographs.</p><ul id="history-photo-credits" class="doc-list"></ul></div></details>
+            <details class="history-archive history-enhanced"><summary>Research ongoing</summary><div><p>The nine-school founding roster, several admission and re-entry dates, early girls tournament chronology, and complete championship totals still need archival confirmation. Approved historical team photographs are also needed.</p><p>Only documented claims appear in the timeline. A source’s silence is not proof that an event did not happen.</p></div></details>
+            <noscript><p>The original history is available below. Turn on JavaScript for the modern timeline, athlete profiles and filters.</p></noscript>
+            <details class="history-archive" id="history-original" open><summary>Read the original 1936–1969 history</summary><div>
+          <p class="history-note">The original record also mentions Shore-area athletes outside the conference. Its entry about Bob Verga at St. Rose is not evidence that he competed in the conference during its public-school-only era.</p>
           <!-- Milestones chosen from assets/documents/HISTORY_OF_THE_SHORE_CONFERENCE.pdf; every date and number is in that record.
                To add a photo, put <figure class="photo"><img src="assets/history/file.jpg" alt="what the photo shows" width="…" height="…" loading="lazy"><figcaption>Caption and credit.</figcaption></figure>
                between an era's opening paragraph and its list. -->
           <header class="article-head">
             <p class="eyebrow">1936 through 1969</p>
-            <h2 id="history-title">History of the Shore Conference</h2>
+            <h3 id="history-original-title">The founding-era record</h3>
             <p class="standfirst">Nine schools met in February 1936 to form a league for the smaller public high schools of Monmouth and Ocean counties. By 1969 the conference had four divisions built for 27 schools.</p>
             <p class="doc-meta">Chosen from the conference’s record of its meetings, which covers 1936 through 1969.</p>
           </header>
@@ -124,6 +181,8 @@
           </section>
           <p>The original document has every meeting in the record and a list of officers.</p>
           <div class="actions"><a class="button dark" href="assets/documents/HISTORY_OF_THE_SHORE_CONFERENCE.pdf">Original document (PDF)</a></div>
+            </div></details>
+          </section>
         </section>
         <section class="panel" id="divisions" aria-labelledby="divisions-title">
           <h2 id="divisions-title">Divisions</h2>
