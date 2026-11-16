@@ -34,6 +34,21 @@ function conferenceEvents(games) {
   });
 }
 
+// Colors ADs saved for their schools. The calendar falls back to the school directory without them.
+async function loadSchoolColors() {
+  try {
+    const url = new URL('/rest/v1/schools', shoreSupabase.url);
+    url.searchParams.set('select', 'slug,primary_color');
+    const response = await fetch(url, {
+      headers: { apikey: shoreSupabase.publishableKey, Authorization: 'Bearer ' + shoreSupabase.publishableKey },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!response.ok) return {};
+    return Object.fromEntries((await response.json()).filter(school => school.primary_color)
+      .map(school => [school.slug, school.primary_color]));
+  } catch { return {}; }
+}
+
 (async () => {
   const sample = new URLSearchParams(location.search).get('sample') === '1';
   const status = document.getElementById('public-schedule-status');
@@ -41,7 +56,7 @@ function conferenceEvents(games) {
     const games = sample ? conferenceEvents(sampleGames)
       : publicCalendarEvents(await loadPublicCalendar({ scope: 'conference' }));
     if (status) status.textContent = sample ? 'Sample schedule' : '';
-    if (document.getElementById('calendar')) renderCalendar(games);
+    if (document.getElementById('calendar')) renderCalendar(games, { schoolColors: sample ? {} : await loadSchoolColors() });
     if (document.getElementById('upcoming')) renderUpcoming(games, { showChanged: true });
     setSubscriptionLink({ scope: 'conference' });
   } catch (error) {
