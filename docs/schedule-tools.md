@@ -8,7 +8,9 @@ Each school has its own opponent list. ADs can type a non-conference school's na
 
 Schools outside the conference can use the platform after a site admin assigns their first AD from the directory in **Staff access**. Only schools with an AD invitation can match games. Nonconference matches stay on the participating schools' schedules; only matched member-school games appear on the conference calendar.
 
-`supabase/migrations/20261203000100_opponent_directory.sql` and `supabase/tests/opponent-directory.sql` are test-project work only; they have not been applied to a Supabase project. The migration must be applied in the test project before the Opponents tab can save names. Never apply it to the live project without Greg's go-ahead.
+Applied `20261203000100_opponent_directory.sql` to test project `jrtcyihpdrcnhxgproyw` on November 15, 2026. The SQL permission test passed and rolled back. `add_school_opponent` checks the caller's own invitation directly, preventing an AD from adding opponents to another school's list. Both new tables have row-level security enabled; all 48 schools and 2,256 starting opponent pairs were verified. Greg handles the live project.
+
+The security advisor added notices for signed-in access to the owner-run `add_school_opponent` and `import_opponent_directory` functions; both intentionally check staff permissions inside the function. The anonymous `game_link_status` notice cleared. No other new findings appeared. The public-calendar function was redeployed with JWT verification off; Marlboro's JSON feed returned 13 events, all including `home_away`.
 
 ## Saving and posting
 
@@ -38,7 +40,7 @@ Use **Import games** on the Add Game tab, then **Download template**. The column
 
 Early Dismissal is optional, can be entered in the game editor or CSV, and appears in the AD's List and Day tables. When entered, it also appears on that school's public calendar and school-specific feed, but not on the conference calendar or another school's calendar. Return time remains available in the game editor and CSV.
 
-`supabase/migrations/20261130000100_early_dismissal.sql` adds the time field and updates game saving and school-only public calendars. Apply it only to the test project; it has not been applied to any Supabase project.
+Applied `20261130000100_early_dismissal.sql` to test project `jrtcyihpdrcnhxgproyw` on November 15, 2026 and confirmed the optional time field exists. Applied `20261113000100_game_time_tbd.sql` the same day and confirmed game start times can be left unknown. Greg handles the live project.
 
 - **Required:** date, sport, gender, level, home or away, opponent, and location. Use `TBD` for a start time that has not been announced.
 - **Dates:** 2026-11-09 or 11/9/2026.
