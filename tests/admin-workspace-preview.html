@@ -67,6 +67,24 @@ const sampleGame = {
 const listedTeams = [{
   id:sampleGame.team_id, school_id:'marlboro', sport:'Soccer', gender:'Girls', level:'Varsity', season:'Fall',
 }];
+// ?show=teams fills the Teams tab with several fictional teams so the grouped list can be reviewed.
+// It is for looking only: the game editor check that expects a single listed team does not pass in this mode.
+const showTeams = new URLSearchParams(location.search).get('show') === 'teams';
+const previewGames = [sampleGame];
+const previewGroups = [];
+if (showTeams) {
+  const extra = [['Soccer','Girls','JV','Fall',1], ['Soccer','Boys','Varsity','Fall',2], ['Soccer','Boys','Freshman','Fall',0],
+    ['Football','Boys','Varsity','Fall',1], ['Football','Boys','Freshman','Fall',0], ['Tennis','Girls','JV','Fall',0],
+    ['Basketball','Boys','Varsity','Winter',0], ['Basketball','Boys','JV','Winter',1]];
+  extra.forEach(([sport, gender, level, season, pending], index) => {
+    const id = 'aaaaaaaa-0000-4000-8000-00000000000' + index;
+    listedTeams.push({id, school_id:'marlboro', sport, gender, level, season});
+    const game = {...sampleGame, id:'bbbbbbbb-0000-4000-8000-00000000000' + index, team_id:id, teams:{sport,gender,level,season}};
+    previewGames.push(game);
+    previewGroups.push({team_id:id, season_year:2026, sport, gender, level, season, token:'t' + index,
+      published_at:pending === 2 || index === 5 ? null : '2026-11-01T12:00:00Z', pending_count:pending, games:[{id:game.id, draft:true, published:!pending}]});
+  });
+}
 const saveCalls = [];
 const transportationEmails = [];
 const client = {
@@ -75,13 +93,15 @@ const client = {
   from(table) {
     if (table === 'school_social_accounts') return socialTable();
     const result = {data: table === 'schools' ? schools : table === 'conference_documents' ? documents
-      : table === 'games' ? [sampleGame] : table === 'teams' ? listedTeams : []};
+      : table === 'games' ? previewGames : table === 'teams' ? listedTeams : []};
     const query = {then: callback => Promise.resolve(result).then(callback)};
     for (const name of ['select','order','eq','maybeSingle','insert','delete']) query[name] = () => query;
     return query;
   },
   async rpc(name, args) {
     if (name === 'list_staff_access') return {data:{actor_role:'site_admin',accounts}};
+    if (name === 'review_schedule_publication' && showTeams) return {data:previewGroups};
+    if (name === 'game_link_status' && showTeams) return {data:previewGames.map((game, index) => ({game_id:game.id, linked:index % 3 !== 1, reason:index % 3 !== 1 ? 'On the conference calendar' : 'Time doesn’t match'}))};
     if (name === 'save_staff_game') {
       saveCalls.push(args.input);
       Object.assign(sampleGame, {
@@ -243,6 +263,10 @@ await new Promise(resolve => setTimeout(resolve, 100));
 check('month view hides the schedule table', get('schedule-list').hidden && !get('calendar').classList.contains('staff-table-mode'));
 // Social media under School settings: a site admin picks a school, then adds, fixes and removes links.
 const wait = () => new Promise(resolve => setTimeout(resolve, 100));
+// Back to the site admin view, which can pick any school.
+get('view-as').value = '';
+get('view-as').dispatchEvent(new Event('change'));
+await wait();
 get('schedule-school').value = 'marlboro';
 get('schedule-school').dispatchEvent(new Event('change'));
 await wait();
@@ -288,12 +312,34 @@ check('an AD sees logo, venues and social media for one school', !get('staff-set
 get('view-as').value = '';
 get('view-as').dispatchEvent(new Event('change'));
 await wait();
+// Each tab has its own address, so the browser's Back button moves between tabs instead of leaving the page.
+get('staff-schedule-tab').click();
+await wait();
+get('staff-teams-tab').click();
+await wait();
+check('opening a tab puts it in the address', location.hash === '#teams');
+get('staff-settings-tab').click();
+await wait();
+history.back();
+await wait();
+check('Back returns to the previous tab', location.hash === '#teams' && !get('staff-teams-panel').hidden && get('staff-settings-panel').hidden);
+history.forward();
+await wait();
+check('Forward reopens the next tab', location.hash === '#settings' && !get('staff-settings-panel').hidden);
+history.replaceState(null, '', location.pathname + location.search);
 if (new URLSearchParams(location.search).get('show') === 'settings') {
   get('schedule-school').value = 'shore-regional';
   get('schedule-school').dispatchEvent(new Event('change'));
   await wait();
   get('staff-settings-tab').click();
   await wait();
+} else if (new URLSearchParams(location.search).get('show') === 'teams') {
+  get('schedule-school').value = 'marlboro';
+  get('schedule-school').dispatchEvent(new Event('change'));
+  await wait();
+  get('staff-teams-tab').click();
+  await wait();
+  document.querySelector('#team-list .team-group')?.click();
 } else get('staff-schedule-tab').click();
 check('no script errors', errors.length === 0);
 const result = document.createElement('pre'); result.id = 'qa-results'; result.hidden = true;

@@ -188,7 +188,40 @@ function startStaffSchedule(client, invite) {
       preview.disabled = false;
     }
     selectView();
+    addressReady = true;
+    openFromAddress();
   }
+
+  // Each tab has its own address (admin.html#teams), so the browser's Back and Forward buttons move
+  // between tabs instead of leaving the dashboard, and a refresh reopens the same tab.
+  // Only these names are read from the address; anything else, such as a sign-in reply, is left alone.
+  const addressTabs = { schedule: scheduleTab, games: gamesTab, teams: teamsTab, opponents: opponentsTab,
+    transportation: transportationTab, settings: settingsTab, tournaments: tournamentsTab,
+    documents: documentsTab, access: accessTab };
+  const page = typeof window !== 'undefined' && typeof location !== 'undefined' && window.history?.pushState ? window : null;
+  let addressReady = false;
+  const addressName = () => {
+    const name = location.hash.slice(1);
+    return name in addressTabs ? name : location.hash ? null : 'schedule';
+  };
+  const currentTabName = () => Object.keys(addressTabs).find(name => addressTabs[name].getAttribute?.('aria-current'));
+  // Runs after a tab opens: adds the tab to the browser history unless the address already names it.
+  function syncAddress() {
+    if (!page || !addressReady || stopped) return;
+    const name = currentTabName();
+    if (!name || name === addressName()) return;
+    page.history.pushState(null, '', name === 'schedule' ? location.pathname + location.search : '#' + name);
+  }
+  // Runs on Back, Forward and first load: opens the tab the address names, if this account has it.
+  // The tab's own click runs, so the unsaved-changes question still appears.
+  function openFromAddress() {
+    if (!page || !addressReady || stopped) return;
+    const name = addressName();
+    const tab = name && addressTabs[name];
+    if (!tab || tab.hidden || tab.disabled || name === currentTabName()) return;
+    tab.click();
+  }
+  page?.addEventListener('popstate', openFromAddress);
 
   function syncStartTime() {
     const isTbd = startTimeTbd.checked;
@@ -887,6 +920,8 @@ function startStaffSchedule(client, invite) {
     }
     accessPanel.hidden = true;
     accessTab.removeAttribute('aria-current');
+    // Once the tab that is opening has marked itself, record it in the address.
+    Promise.resolve().then(syncAddress);
     access.reset();
     tournaments.reset();
     // Leaving Tournaments or Staff access puts the school's colors back.
@@ -915,7 +950,8 @@ function startStaffSchedule(client, invite) {
     hidePanels();
     teamsPanel.hidden = false;
     teamsTab.setAttribute('aria-current', 'true');
-    filterForm.hidden = false;
+    // The Teams list is folded by sport, so it has no filters.
+    filterForm.hidden = true;
     teams.render();
     if (focus) (document.getElementById('team-title') ?? document.getElementById('teams-title')).focus();
   }
@@ -1232,6 +1268,7 @@ function startStaffSchedule(client, invite) {
   return () => {
     stopped = true;
     sidebar?.removeEventListener('click', guardTabs, true);
+    page?.removeEventListener('popstate', openFromAddress);
     transportation.stop();
     settings.stop();
     publication.stop();

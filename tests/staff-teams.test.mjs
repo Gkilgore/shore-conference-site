@@ -135,7 +135,7 @@ test('AD must confirm removing an unused team and cannot remove one with games',
     { id: 'empty', school_id: 'marlboro', sport: 'Soccer', gender: 'Girls', level: 'JV', season: 'Fall' },
   ] });
   await unused.controller.load();
-  unused.document.getElementById('team-list').children[0].children[0].onclick();
+  unused.document.getElementById('team-list').children[1].children[0].onclick();
   const remove = findButton(unused.document.getElementById('team-detail'), 'Remove team');
   remove.onclick();
   assert.equal(unused.writes.length, 0);
@@ -150,7 +150,7 @@ test('AD must confirm removing an unused team and cannot remove one with games',
       teams: { sport: 'Soccer', gender: 'Girls', level: 'Varsity', season: 'Fall' } }],
   });
   await withGames.controller.load();
-  withGames.document.getElementById('team-list').children[0].children[0].onclick();
+  withGames.document.getElementById('team-list').children[1].children[0].onclick();
   assert.equal(findButton(withGames.document.getElementById('team-detail'), 'Remove team').disabled, true);
   assert.equal(withGames.writes.length, 0);
 });

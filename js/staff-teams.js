@@ -123,34 +123,108 @@ function startStaffTeams(client, { currentSchool, games, groups, states, links, 
   }
   const opponent = game => (game.home_away === 'Home' ? 'vs. ' : 'at ') + (schoolName(game.opponent_school_id) || game.opponent_name || 'Opponent');
 
+  // The list has five columns: Team, Games, Next game, Matched, Status. Teams of one sport and season
+  // fold into one row that opens to show each level; a sport with a single team stays a plain row.
+  // The tab has no filters: the folded list is short enough to scan.
+  const expanded = new Set();
+  function summary(teamsIn) {
+    const upcoming = teamsIn.flatMap(team => team.games).filter(game => game.game_date >= today())
+      .sort((a, b) => a.game_date.localeCompare(b.game_date))[0];
+    const total = teamsIn.reduce((sum, team) => sum + team.games.length, 0);
+    // A mark stands for the words; the words stay for screen readers and on hover.
+    const mark = (symbol, className, words) => {
+      const host = node('span', undefined, 'team-tags');
+      const flag = node('span', symbol, className);
+      flag.title = words;
+      flag.setAttribute('aria-hidden', 'true');
+      host.append(flag, node('span', words, 'visually-hidden'));
+      return host;
+    };
+    // Matched counts only games against schools that can match: "2/3", or a check when all of them do.
+    const map = links();
+    const matchable = map instanceof Map ? teamsIn.flatMap(team => team.games).filter(game => map.has(game.id)) : [];
+    const linked = matchable.filter(game => map.get(game.id).linked).length;
+    let matched = node('span', '—', 'team-meta team-matched');
+    if (matchable.length && linked === matchable.length) {
+      matched = mark('✓', 'team-flag is-done', 'All ' + linked + ' matched');
+    } else if (matchable.length) {
+      matched = mark(linked + '/' + matchable.length, 'team-tag is-problem', linked + ' of ' + matchable.length + ' matched');
+    }
+    matched.classList.add('team-matched');
+    // Posted: a check when the schedule is on the public site, "1/2" when only some of a sport's teams are.
+    const posted = teamsIn.filter(team => team.group?.published_at).length;
+    let tags = node('span', '—', 'team-meta team-posted');
+    if (posted === teamsIn.length) tags = mark('✓', 'team-flag is-done', 'Posted');
+    else if (posted) tags = mark(posted + '/' + teamsIn.length, 'team-tag', posted + ' of ' + teamsIn.length + ' teams posted');
+    tags.classList.add('team-posted');
+    const count = node('span', String(total), 'team-meta team-count');
+    // On a phone the column labels are hidden, so the number carries its own word.
+    count.dataset.unit = total === 1 ? ' game' : ' games';
+    return { cells: [count,
+      node('span', upcoming ? shortDate.format(when(upcoming)) : '—', 'team-meta team-next'), matched, tags] };
+  }
+  function teamRow(team, label) {
+    const open = node('button', undefined, 'team-row');
+    open.type = 'button';
+    open.dataset.team = team.key;
+    open.append(node('strong', label), ...summary([team]).cells);
+    open.onclick = () => {
+      selected = team.key;
+      selectedId = team.id;
+      status.textContent = '';
+      render();
+      document.getElementById('team-title').focus();
+    };
+    return open;
+  }
+
   function renderList(all) {
-    const filters = filterValues();
-    const visible = all.filter(team => ['sport', 'season', 'level', 'gender'].every(name => !filters[name] || filters[name] === team[name]));
-    list.replaceChildren(...visible.map(team => {
+    const sports = new Map();
+    for (const team of all) {
+      // A team with no posting record has no year in its label; it still belongs with its sport and season.
+      const term = team.label.split(' · ').pop();
+      const key = team.sport + '|' + team.season;
+      if (!sports.has(key)) sports.set(key, { key, term, teams: [] });
+      const sport = sports.get(key);
+      if (term.length > sport.term.length) sport.term = term;
+      sport.title = team.sport + ' · ' + sport.term;
+      sport.teams.push(team);
+    }
+    const head = node('li', undefined, 'team-columns');
+    head.setAttribute('aria-hidden', 'true');
+    head.append(node('span', 'Team'), node('span', 'Games'), node('span', 'Next game'), node('span', 'Matched'), node('span', 'Posted'));
+    const rows = [...sports.values()].map(sport => {
       const row = node('li');
-      const open = node('button', undefined, 'team-row');
-      open.type = 'button';
-      open.dataset.team = team.key;
-      const next = team.games.find(game => game.game_date >= today());
-      const count = team.games.length + (team.games.length === 1 ? ' game' : ' games');
-      const state = publishState(team);
-      const misses = unmatched(team).length;
-      const tags = node('span', undefined, 'team-tags');
-      if (misses) tags.append(node('span', misses + ' not matched', 'team-tag is-problem'));
-      if (state.text) tags.append(node('span', state.text, 'team-tag ' + state.tone));
-      open.append(node('strong', team.label), node('span', count + (next ? ' · next ' + shortDate.format(when(next)) : ''), 'team-meta'), tags);
-      open.onclick = () => {
-        selected = team.key;
-        selectedId = team.id;
-        status.textContent = '';
-        render();
-        document.getElementById('team-title').focus();
+      if (sport.teams.length === 1) {
+        row.append(teamRow(sport.teams[0], sport.teams[0].label));
+        return row;
+      }
+      const isOpen = expanded.has(sport.key);
+      const total = summary(sport.teams);
+      const toggle = node('button', undefined, 'team-row team-group');
+      toggle.type = 'button';
+      toggle.setAttribute('aria-expanded', String(isOpen));
+      const name = node('strong', sport.title);
+      name.append(' ', node('span', sport.teams.length + ' teams', 'team-meta'));
+      toggle.append(name, ...total.cells);
+      const inner = node('ul', undefined, 'team-sublist');
+      inner.hidden = !isOpen;
+      inner.append(...sport.teams.map(team => {
+        const item = node('li');
+        item.append(teamRow(team, team.gender + ' ' + team.level));
+        return item;
+      }));
+      toggle.onclick = () => {
+        const open = inner.hidden;
+        inner.hidden = !open;
+        toggle.setAttribute('aria-expanded', String(open));
+        if (open) expanded.add(sport.key); else expanded.delete(sport.key);
       };
-      row.append(open);
+      row.append(toggle, inner);
       return row;
-    }));
+    });
+    list.replaceChildren(...(rows.length ? [head, ...rows] : []));
     if (!all.length) list.append(node('li', 'No teams yet. Add the school’s first team above.', 'staff-empty'));
-    else if (!visible.length) list.append(node('li', 'No teams match these filters.', 'staff-empty'));
   }
 
   function gameRow(game, reason) {

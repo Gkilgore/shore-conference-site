@@ -55,7 +55,9 @@ h2 { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.1; }
 
 /* Masthead: brand, main navigation, and the staff sign-in link. */
 /* Raised above the page bands so nothing in the header slips behind them. */
-.masthead { position: relative; z-index: 10; background: white; border-bottom: var(--frame); view-transition-name: masthead; }
+/* The masthead stays at the top while the page scrolls; in-page links stop just below it. */
+html { scroll-padding-top: 5rem; }
+.masthead { position: sticky; top: 0; z-index: 10; background: white; border-bottom: var(--frame); view-transition-name: masthead; }
 .site-header {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -86,6 +88,9 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
 
 /* Phones: brand and staff link on top, then four equal tabs across the full width. */
 @media (max-width: 640px) {
+  /* On a phone only the row of four tabs stays; the brand row (3.25rem) scrolls away to save space. */
+  html { scroll-padding-top: 4rem; }
+  .masthead { top: -3.25rem; }
   .site-header { grid-template-columns: 1fr auto; gap: 0.5rem; padding-block: 0.5rem 0; }
   .site-header nav {
     grid-column: 1 / -1;
@@ -562,11 +567,15 @@ textarea { display: block; resize: vertical; }
   color: var(--school-ink);
   padding: 0.2rem 0.3rem;
 }
-#calendar .fc-daygrid-event .game { display: grid; min-width: 0; font-size: 0.76rem; line-height: 1.25; }
+#calendar .fc-daygrid-event .game { display: grid; flex: 1 1 auto; min-width: 0; font-size: 0.76rem; line-height: 1.25; }
 #calendar .fc-daygrid-event .game-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
 #calendar .fc-daygrid-event .game-time { color: inherit; font-weight: 800; }
 /* Time on the left, Home/Away on the right of the same line. */
-#calendar .game-head { display: flex; align-items: center; justify-content: space-between; gap: 0.3rem; min-width: 0; }
+#calendar .game-head { display: flex; align-items: center; gap: 0.3rem; min-width: 0; }
+#calendar .game-head .home-away-badge { margin-left: auto; }
+/* "Girls JV": which team, shown beside the time once a sport is chosen. */
+#calendar .game-team-tag { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+#calendar .game-head :is(.game-time, .home-away-badge) { flex: none; }
 #calendar :is(.fc-daygrid-event, .fc-timegrid-event) .home-away-badge { padding: 0 0.3rem; font-size: 0.62rem; line-height: 1.5; }
 #calendar .fc-timegrid-event { border-radius: 0; }
 /* Same status colors as the staff dashboard: postponed yellow, canceled red and struck through. */

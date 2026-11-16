@@ -24,18 +24,32 @@ function renderCalendar(events) {
 
   const fields = filters.elements;
   let singleTeam = false;
+  // Squares are narrow, so levels are shortened there: "Boys Frsh Football".
+  const shortLevel = level => ({ Varsity: 'V', Freshman: 'Frsh' })[level] ?? level;
   // Month, week and day squares on a school calendar stay short: the team's name, or the opponent
-  // once the filters leave one team. Clicking a game opens the full details. The conference
+  // once a sport is chosen. Clicking a game opens the full details. The conference
   // calendar keeps both schools in the square.
   function squareLabel(event) {
     if (fields.school) return event.title;
     const { sport, gender, level, status } = event.extendedProps;
     const team = [gender, level, sport].filter(Boolean).join(' ');
     if (!team || !event.title.startsWith(team)) return event.title;
-    if (!singleTeam) return team;
+    if (!fields.sport.value) return [gender, shortLevel(level), sport].filter(Boolean).join(' ');
     let rest = event.title.slice(team.length).replace(/^\s*·?\s*/, '');
     if (status && rest.endsWith(' · ' + status)) rest = rest.slice(0, -status.length - 3);
     return rest || team;
+  }
+  // With one sport on screen, a short label such as "Girls JV" beside the time tells its teams apart.
+  function teamTag(event) {
+    if (fields.school || !fields.sport.value || singleTeam) return null;
+    const { gender, level } = event.extendedProps;
+    const text = [gender, shortLevel(level)].filter(Boolean).join(' ');
+    if (!text) return null;
+    const tag = document.createElement('span');
+    tag.className = 'game-team-tag';
+    tag.textContent = text;
+    tag.title = [gender, level].filter(Boolean).join(' ');
+    return tag;
   }
   if (fields.school) {
     const schools = typeof shoreSchools !== 'undefined' ? shoreSchools : sampleSchools;
@@ -133,7 +147,7 @@ function renderCalendar(events) {
       document.getElementById('filter-count').textContent = results.length
         ? results.length + (results.length === 1 ? ' game shown.' : ' games shown.') : '';
       showEmpty(results, matches, afterLastDay);
-      // With one team on screen the squares can name the opponent; otherwise they name the team.
+      // With one team on screen the squares need no team tag.
       singleTeam = Boolean(fields.sport.value) &&
         new Set(matches.map(game => [game.sport, game.gender, game.level].join('|'))).size === 1;
       // Tells the page which team and which part of the year are on screen.
@@ -160,6 +174,8 @@ function renderCalendar(events) {
         time.textContent = displayedTime;
         head.append(time);
       }
+      const tag = inList ? null : teamTag(event);
+      if (tag) head.append(tag);
       const homeAway = createHomeAwayBadge(event.extendedProps.game?.home_away ?? event.extendedProps.home_away);
       if (homeAway) head.append(homeAway);
       if (head.childNodes.length) content.append(head);
