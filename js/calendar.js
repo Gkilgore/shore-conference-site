@@ -228,8 +228,11 @@ function renderCalendar(events, { schoolColors = {}, schoolSlug = null } = {}) {
       }
       const tag = inList ? null : teamTag(event);
       if (tag) head.append(tag);
-      const homeAway = createHomeAwayBadge(square?.homeAway ?? event.extendedProps.game?.home_away ?? event.extendedProps.home_away ?? event.home_away);
-      if (homeAway) head.append(homeAway);
+      // Only show home/away badge on school calendars, not conference calendars (color already conveys this)
+      if (square?.useSchoolColor) {
+        const homeAway = createHomeAwayBadge(square?.homeAway ?? event.extendedProps.game?.home_away ?? event.extendedProps.home_away ?? event.home_away);
+        if (homeAway) head.append(homeAway);
+      }
       // Only show the top section (school name + status) for conference square, not school calendar
       if (square && !square.useSchoolColor) {
         content.classList.add('has-school-color');
