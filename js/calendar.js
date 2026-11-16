@@ -183,7 +183,7 @@ function renderCalendar(events, { schoolColors = {}, schoolSlug = null } = {}) {
       const firstDay = range.startStr.slice(0, 10);
       const afterLastDay = range.endStr.slice(0, 10);
       const matches = events.filter(game =>
-        (!fields.school?.value || game.schools.includes(fields.school.value)) &&
+        (!fields.school?.value || (game.schools ?? []).includes(fields.school.value)) &&
         (!fields.sport.value || game.sport === fields.sport.value) &&
         (!fields.gender?.value || game.gender === fields.gender.value) &&
         (!fields.level.value || game.level === fields.level.value) &&
