@@ -23,6 +23,34 @@ function renderCalendar(events) {
   }
 
   const fields = filters.elements;
+  let singleTeam = false;
+  // Squares are narrow, so levels are shortened there: "Boys Frsh Football".
+  const shortLevel = level => ({ Varsity: 'V', Freshman: 'Frsh' })[level] ?? level;
+  // Month, week and day squares on a school calendar stay short: the team's name, or the opponent
+  // once a sport is chosen. Clicking a game opens the full details. The conference
+  // calendar keeps both schools in the square.
+  function squareLabel(event) {
+    if (fields.school) return event.title;
+    const { sport, gender, level, status } = event.extendedProps;
+    const team = [gender, level, sport].filter(Boolean).join(' ');
+    if (!team || !event.title.startsWith(team)) return event.title;
+    if (!fields.sport.value) return [gender, shortLevel(level), sport].filter(Boolean).join(' ');
+    let rest = event.title.slice(team.length).replace(/^\s*·?\s*/, '');
+    if (status && rest.endsWith(' · ' + status)) rest = rest.slice(0, -status.length - 3);
+    return rest || team;
+  }
+  // With one sport on screen, a short label such as "Girls JV" beside the time tells its teams apart.
+  function teamTag(event) {
+    if (fields.school || !fields.sport.value || singleTeam) return null;
+    const { gender, level } = event.extendedProps;
+    const text = [gender, shortLevel(level)].filter(Boolean).join(' ');
+    if (!text) return null;
+    const tag = document.createElement('span');
+    tag.className = 'game-team-tag';
+    tag.textContent = text;
+    tag.title = [gender, level].filter(Boolean).join(' ');
+    return tag;
+  }
   if (fields.school) {
     const schools = typeof shoreSchools !== 'undefined' ? shoreSchools : sampleSchools;
     for (const [slug, school] of Object.entries(schools).sort(([, first], [, second]) => first.name.localeCompare(second.name))) {
@@ -119,6 +147,9 @@ function renderCalendar(events) {
       document.getElementById('filter-count').textContent = results.length
         ? results.length + (results.length === 1 ? ' game shown.' : ' games shown.') : '';
       showEmpty(results, matches, afterLastDay);
+      // With one team on screen the squares need no team tag.
+      singleTeam = Boolean(fields.sport.value) &&
+        new Set(matches.map(game => [game.sport, game.gender, game.level].join('|'))).size === 1;
       // Tells the page which team and which part of the year are on screen.
       window.dispatchEvent(new CustomEvent('shore:calendar-view', { detail: {
         sport: fields.sport.value, gender: fields.gender?.value ?? '', level: fields.level.value,
@@ -132,18 +163,22 @@ function renderCalendar(events) {
       content.className = 'game';
       const title = document.createElement('span');
       title.className = 'game-title';
-      title.textContent = event.title;
-      const icon = typeof createSportIcon === 'function' ? createSportIcon(event.extendedProps.sport) : null;
-      if (icon) title.prepend(icon);
+      title.textContent = inList ? event.title : squareLabel(event);
+      // Time and Home/Away share the first line so the square stays short.
+      const head = document.createElement('span');
+      head.className = 'game-head';
       const displayedTime = event.allDay ? 'TBD' : timeText;
       if (displayedTime && (!inList || event.allDay)) {
         const time = document.createElement('span');
         time.className = 'game-time';
         time.textContent = displayedTime;
-        content.append(time);
+        head.append(time);
       }
+      const tag = inList ? null : teamTag(event);
+      if (tag) head.append(tag);
       const homeAway = createHomeAwayBadge(event.extendedProps.game?.home_away ?? event.extendedProps.home_away);
-      if (homeAway) content.append(homeAway);
+      if (homeAway) head.append(homeAway);
+      if (head.childNodes.length) content.append(head);
       content.append(title);
       const details = [event.extendedProps.location, event.extendedProps.bus,
         event.extendedProps.earlyDismissal && 'Early dismissal ' + event.extendedProps.earlyDismissal].filter(Boolean);

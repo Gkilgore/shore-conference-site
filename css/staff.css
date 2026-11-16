@@ -312,7 +312,7 @@
   text-transform: uppercase;
   letter-spacing: 0.14em;
 }
-:is(#game-form, #branding-form) fieldset > label, #transportation-contact-form > label {
+:is(#game-form, #branding-form) fieldset > label, .branding-upload > label, #transportation-contact-form > label {
   display: grid;
   gap: 0.3rem;
   font-size: 0.78rem;
@@ -364,6 +364,9 @@
   border: var(--frame);
 }
 .branding-current img { width: 100%; height: 100%; object-fit: contain; }
+/* The current logo sits beside its upload control so the row fills the frame. */
+.branding-logo-row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: start; }
+.branding-upload { flex: 1 1 14rem; display: grid; gap: 0.5rem; min-width: 0; }
 input[type="file"] { padding: 0.35rem; font-size: 0.95rem; }
 input[type="file"]::file-selector-button {
   margin-right: 0.75rem;
@@ -402,9 +405,10 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
 #branding-contrast.is-warning { padding: 0.5rem 0.7rem; background: var(--yellow); border: var(--frame); color: var(--ink); font-weight: 500; }
 #branding-status { font-weight: 700; }
 #branding-status:empty { display: none; }
-.branding-preview-area { display: grid; gap: 0.5rem; }
+.branding-preview-area { display: grid; grid-template-rows: auto 1fr; gap: 0.5rem; }
 .branding-preview {
   display: grid;
+  align-content: center;
   justify-items: center;
   gap: 0.75rem;
   padding: 1.5rem 1rem;
@@ -635,10 +639,12 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
 
 @media (min-width: 840px) {
   .staff-layout { grid-template-columns: 14rem minmax(0, 1fr); }
+  /* The tabs stay beside the work while the page scrolls, just under the masthead. */
+  .staff-sidebar { position: sticky; top: 5rem; max-height: calc(100vh - 6rem); overflow-y: auto; }
 }
 @media (min-width: 1000px) {
-  .branding-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr); }
-  .branding-preview-area { position: sticky; top: 1rem; }
+  /* The preview runs the full height of the form beside it. */
+  .branding-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr); align-items: stretch; }
 }
 @media (max-width: 839px) {
   .staff-nav { display: flex; flex-wrap: wrap; gap: 1px; background: var(--steel); border-bottom: var(--frame); }
@@ -727,10 +733,26 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
 /* Teams tab: a compact list of teams, then one team's schedule, unmatched games and coaches. */
 .team-list, .team-coaches { margin: 0.75rem 0 0; padding: 0; list-style: none; border: var(--frame); background: white; }
 .team-list > li + li, .team-coaches > li + li { border-top: 1px solid var(--rule); }
-.team-row { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; align-items: center; gap: 0.25rem 1rem; width: 100%; min-height: 3rem; padding: 0.6rem 0.85rem; border: 0; background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.team-row, .team-columns { display: grid; grid-template-columns: minmax(0, 1fr) 4rem 6rem 5.5rem 4rem; align-items: center; gap: 0.25rem 1rem; width: 100%; min-height: 3rem; padding: 0.6rem 0.85rem; border: 0; background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
 .team-row:is(:hover, :focus-visible) { background: var(--school-accent); color: var(--accent-ink); }
 .team-row:focus-visible { outline-offset: -4px; }
 .team-meta { color: var(--muted); font-size: 0.92rem; }
+/* Column labels, sport rows that open to show each level, and check marks for matched and posted. */
+.team-columns { min-height: 0; padding-block: 0.4rem; background: var(--paper); cursor: default; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; }
+.team-columns > :nth-last-child(-n+2) { text-align: center; }
+.team-row .team-tags { justify-content: center; }
+.team-row span:is(.team-matched, .team-posted):not(.team-tags) { text-align: center; }
+.team-flag.is-done { background: var(--school-color); color: var(--school-ink); }
+.team-row > strong, .team-columns > :first-child { padding-left: 1.4rem; }
+.team-group > strong { position: relative; }
+.team-group > strong::before { content: "+"; position: absolute; left: 0; width: 1rem; text-align: center; font-weight: 800; }
+.team-group[aria-expanded="true"] > strong::before { content: "\2212"; }
+.team-group strong .team-meta { margin-left: 0.4rem; font-weight: 500; }
+.team-sublist { margin: 0; padding: 0; list-style: none; background: var(--paper); border-top: 1px solid var(--rule); }
+.team-sublist > li + li { border-top: 1px solid var(--rule); }
+.team-sublist .team-row > strong { padding-left: 2.6rem; font-weight: 500; }
+.team-flag { display: inline-grid; place-items: center; width: 1.6rem; aspect-ratio: 1; font-size: 0.95rem; line-height: 1; }
+
 .team-row:is(:hover, :focus-visible) .team-meta { color: inherit; }
 .team-tags { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.3rem; }
 .team-tag { display: inline-block; padding: 0.1rem 0.45rem; border: 1px solid var(--steel-dark); background: white; color: var(--ink); font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
@@ -755,8 +777,14 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
 .team-coaches span { overflow-wrap: anywhere; color: var(--muted); }
 .team-coaches + .actions { margin-top: 0.75rem; }
 @media (max-width: 640px) {
-  .team-row { grid-template-columns: 1fr; }
-  .team-tags { justify-content: flex-start; }
+  .team-columns { display: none; }
+  .team-row { grid-template-columns: auto auto 1fr auto; }
+  .team-row .team-matched { justify-content: flex-end; text-align: right; }
+  .team-row > strong { grid-column: 1 / -1; }
+  .team-row .team-count { padding-left: 1.4rem; }
+  .team-sublist .team-row .team-count { padding-left: 2.6rem; }
+  .team-count::after { content: attr(data-unit); }
+  .team-next::before { content: "Next "; }
   .team-coaches > li { grid-template-columns: 1fr auto; }
   .team-coaches span { grid-column: 1; }
   .team-coaches button { grid-column: 2; grid-row: 1 / span 2; }
@@ -817,6 +845,6 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
 }
 
 
-/* Social media tab: one row per platform, reusing the venue list's frame. */
+/* Social media section of School settings: one row per platform, reusing the venue list's frame. */
 .social-list label { flex: 1 1 16rem; display: grid; gap: 0.25rem; font-weight: 700; }
 .social-list input[aria-invalid] { border-color: var(--red); outline: 1px solid var(--red); }

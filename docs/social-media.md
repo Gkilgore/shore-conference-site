@@ -25,7 +25,7 @@ Sources: [Instagram oEmbed](https://developers.facebook.com/docs/instagram-platf
 
 ## Who can change the links
 
-The staff dashboard has a Social media tab. An AD manages their own school. Conference admins and site admins pick any school. Each school has one link per platform. Saving posts the link straight away and Remove takes it off straight away.
+Social media is a section of the staff School settings tab. An AD manages their own school. Conference admins and site admins pick any school; conference admins see only this section there, not logo, colors or venues. Each school has one link per platform. Saving posts the link straight away and Remove takes it off straight away.
 
 Supabase enforces this in `school_social_accounts` with row-level security (`shore_private.can_manage_social`). The table accepts one exact link form per platform, so a saved link can only point at instagram.com, facebook.com or x.com.
 
@@ -33,7 +33,7 @@ Supabase enforces this in `school_social_accounts` with row-level security (`sho
 
 - `js/social-links.js` checks and tidies a link. The staff tab and the public pages share it.
 - `js/social.js` draws the public sections. Instagram's script loads only when the section is about to scroll into view. If it does not load in 12 seconds the visitor gets a short message and the account link.
-- `js/staff-social.js` runs the staff tab.
+- `js/staff-social.js` runs the staff section.
 - `supabase/migrations/20261202000100_school_social_accounts.sql` creates the table. `supabase/tests/school-social-accounts.sql` tests the permissions.
 - `tests/social.test.mjs` covers the link check, the school picker and the staff tab. `tests/preview-server.mjs` serves a few sample links that point at the platforms' own accounts.
 

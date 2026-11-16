@@ -1,10 +1,9 @@
-// Staff Social media tab: the link to a school's Instagram, Facebook and X account, one of each.
+// Social media section of the staff School settings tab: the link to a school's Instagram, Facebook and X account, one of each.
 // ADs manage their own school; conference admins and site admins pick any school. Supabase enforces that.
 // A saved link shows on the school page and the home page straight away. Only the link is saved.
 function startStaffSocial(client, { currentSchool }) {
   const list = document.getElementById('social-list');
   const status = document.getElementById('social-status');
-  const schoolLine = document.getElementById('social-school');
   let rows = [];
   let active = true;
   let request = 0;
@@ -27,7 +26,6 @@ function startStaffSocial(client, { currentSchool }) {
     const school = currentSchool();
     if (!school) return;
     const current = ++request;
-    schoolLine.textContent = school.name;
     const { data, error } = await client.from('school_social_accounts')
       .select('id,school_id,platform,url').eq('school_id', school.slug);
     if (!active || current !== request) return;

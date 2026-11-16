@@ -1,4 +1,4 @@
-// Runs staff schedule, transportation, settings, social media, access tabs and the game editor.
+// Runs staff schedule, transportation, settings (with social media), access tabs and the game editor.
 function startStaffSchedule(client, invite) {
   const selector = document.getElementById('schedule-school');
   const preview = document.getElementById('view-as');
@@ -60,9 +60,7 @@ function startStaffSchedule(client, invite) {
   const settingsTab = document.getElementById('staff-settings-tab');
   const settingsPanel = document.getElementById('staff-settings-panel');
   const settingsTitle = document.getElementById('settings-title');
-  // Social media links: every role can edit them, each for the schools Supabase allows.
-  const socialTab = document.getElementById('staff-social-tab');
-  const socialPanel = document.getElementById('staff-social-panel');
+  // Social media links sit under School settings: every role can edit them, each for the schools Supabase allows.
   const social = startStaffSocial(client, { currentSchool: () => currentSchool() });
   const filterForm = document.getElementById('staff-filters');
   const filterFields = filterForm.elements;
@@ -190,7 +188,40 @@ function startStaffSchedule(client, invite) {
       preview.disabled = false;
     }
     selectView();
+    addressReady = true;
+    openFromAddress();
   }
+
+  // Each tab has its own address (admin.html#teams), so the browser's Back and Forward buttons move
+  // between tabs instead of leaving the dashboard, and a refresh reopens the same tab.
+  // Only these names are read from the address; anything else, such as a sign-in reply, is left alone.
+  const addressTabs = { schedule: scheduleTab, games: gamesTab, teams: teamsTab, opponents: opponentsTab,
+    transportation: transportationTab, settings: settingsTab, tournaments: tournamentsTab,
+    documents: documentsTab, access: accessTab };
+  const page = typeof window !== 'undefined' && typeof location !== 'undefined' && window.history?.pushState ? window : null;
+  let addressReady = false;
+  const addressName = () => {
+    const name = location.hash.slice(1);
+    return name in addressTabs ? name : location.hash ? null : 'schedule';
+  };
+  const currentTabName = () => Object.keys(addressTabs).find(name => addressTabs[name].getAttribute?.('aria-current'));
+  // Runs after a tab opens: adds the tab to the browser history unless the address already names it.
+  function syncAddress() {
+    if (!page || !addressReady || stopped) return;
+    const name = currentTabName();
+    if (!name || name === addressName()) return;
+    page.history.pushState(null, '', name === 'schedule' ? location.pathname + location.search : '#' + name);
+  }
+  // Runs on Back, Forward and first load: opens the tab the address names, if this account has it.
+  // The tab's own click runs, so the unsaved-changes question still appears.
+  function openFromAddress() {
+    if (!page || !addressReady || stopped) return;
+    const name = addressName();
+    const tab = name && addressTabs[name];
+    if (!tab || tab.hidden || tab.disabled || name === currentTabName()) return;
+    tab.click();
+  }
+  page?.addEventListener('popstate', openFromAddress);
 
   function syncStartTime() {
     const isTbd = startTimeTbd.checked;
@@ -383,9 +414,8 @@ function startStaffSchedule(client, invite) {
 
   function selectSchool() {
     const showContact = canEdit && !transportationPanel.hidden;
-    const showSettings = canEdit && !settingsPanel.hidden;
+    const showSettings = !settingsPanel.hidden;
     const showOpponents = canEdit && !opponentsPanel.hidden;
-    const showSocial = !socialPanel.hidden;
     const showTournaments = !tournamentsPanel.hidden;
     const showCoaches = canEdit && !coachesPanel.hidden;
     const showTeams = canEdit && !teamsPanel.hidden;
@@ -417,9 +447,8 @@ function startStaffSchedule(client, invite) {
     addGame.hidden = !canEdit;
     importButton.hidden = !canEdit;
     transportationTab.hidden = !canEdit;
-    settingsTab.hidden = !canEdit;
+    settingsTab.hidden = false;
     opponentsTab.hidden = !canEdit;
-    socialTab.hidden = false;
     // Coaches are tabled for now (Greg, November 12): no tab, no coach lists, no coach emails.
     coachesTab.hidden = true;
     if (showContact) openTransportation(false);
@@ -429,7 +458,6 @@ function startStaffSchedule(client, invite) {
     else if (!canEdit && !teamsPanel.hidden) showSchedule();
     if (showSettings) openSettings(false);
     if (showOpponents) openOpponents(false);
-    if (showSocial) openSocial(false);
     if (showTournaments) openTournaments(false);
     loadGames(null, true);
   }
@@ -886,12 +914,14 @@ function startStaffSchedule(client, invite) {
   function hidePanels() {
     for (const [panel, tab] of [[schedulePanel, scheduleTab], [gamesPanel, gamesTab], [teamsPanel, teamsTab],
       [opponentsPanel, opponentsTab], [transportationPanel, transportationTab], [coachesPanel, coachesTab], [settingsPanel, settingsTab], [tournamentsPanel, tournamentsTab],
-      [documentsPanel, documentsTab], [socialPanel, socialTab]]) {
+      [documentsPanel, documentsTab]]) {
       panel.hidden = true;
       tab.removeAttribute('aria-current');
     }
     accessPanel.hidden = true;
     accessTab.removeAttribute('aria-current');
+    // Once the tab that is opening has marked itself, record it in the address.
+    Promise.resolve().then(syncAddress);
     access.reset();
     tournaments.reset();
     // Leaving Tournaments or Staff access puts the school's colors back.
@@ -920,7 +950,8 @@ function startStaffSchedule(client, invite) {
     hidePanels();
     teamsPanel.hidden = false;
     teamsTab.setAttribute('aria-current', 'true');
-    filterForm.hidden = false;
+    // The Teams list is folded by sport, so it has no filters.
+    filterForm.hidden = true;
     teams.render();
     if (focus) (document.getElementById('team-title') ?? document.getElementById('teams-title')).focus();
   }
@@ -976,12 +1007,19 @@ function startStaffSchedule(client, invite) {
   }
 
   function openSettings(focus = true) {
-    if (!canEdit || !selector.value) return;
+    if (!selector.value) return;
     hidePanels();
     settingsPanel.hidden = false;
     settingsTab.setAttribute('aria-current', 'true');
-    settings.load();
-    venues.showSettings();
+    // Conference admins manage only the social media links; logo, colors and venues stay with the school.
+    document.getElementById('settings-branding').hidden = !canEdit;
+    document.getElementById('settings-venues').hidden = !canEdit;
+    document.getElementById('settings-school').textContent = currentSchool()?.name ?? '';
+    if (canEdit) {
+      settings.load();
+      venues.showSettings();
+    }
+    social.load();
     if (focus) settingsTitle.focus();
   }
 
@@ -995,16 +1033,6 @@ function startStaffSchedule(client, invite) {
     if (focus) document.getElementById('opponents-title').focus();
   }
   opponentsTab.onclick = () => openOpponents();
-
-  function openSocial(focus = true) {
-    if (!selector.value) return;
-    hidePanels();
-    socialPanel.hidden = false;
-    socialTab.setAttribute('aria-current', 'true');
-    social.load();
-    if (focus) document.getElementById('social-title').focus();
-  }
-  socialTab.onclick = () => openSocial();
 
   function openTournaments(focus = true) {
     hidePanels();
@@ -1240,6 +1268,7 @@ function startStaffSchedule(client, invite) {
   return () => {
     stopped = true;
     sidebar?.removeEventListener('click', guardTabs, true);
+    page?.removeEventListener('popstate', openFromAddress);
     transportation.stop();
     settings.stop();
     publication.stop();
@@ -1248,7 +1277,6 @@ function startStaffSchedule(client, invite) {
     tournaments.stop();
     documents.stop();
     social.stop();
-    socialTab.onclick = null;
     documentsTab.onclick = null;
     tournamentsTab.onclick = null;
     tournamentsTab.disabled = false;

@@ -103,7 +103,6 @@
             <button id="staff-transportation-tab" class="staff-tab" type="button" hidden>Transportation</button>
             <button id="staff-coaches-tab" class="staff-tab" type="button" hidden>Coaches</button>
             <button id="staff-settings-tab" class="staff-tab" type="button" hidden>School settings</button>
-            <button id="staff-social-tab" class="staff-tab" type="button" hidden>Social media</button>
             <button id="staff-tournaments-tab" class="staff-tab" type="button">Tournaments</button>
             <button id="staff-documents-tab" class="staff-tab" type="button" hidden>Documents</button>
             <button id="staff-access-tab" class="staff-tab" type="button" hidden>Staff access</button>
@@ -312,15 +311,19 @@
           <section id="staff-settings-panel" class="staff-panel" aria-labelledby="settings-title" hidden>
             <h3 id="settings-title" tabindex="-1">School settings</h3>
             <p id="settings-school" class="staff-subhead"></p>
-            <section class="staff-section">
+            <section id="settings-branding" class="staff-section">
             <h4>Logo and colors</h4>
             <div class="branding-layout">
               <form id="branding-form" class="branding-form">
                 <fieldset>
                   <legend>Logo</legend>
-                  <div class="branding-current"><img id="branding-logo-current" alt="Current logo" width="96" height="96"></div>
-                  <label>Upload a new logo <input id="branding-logo-file" type="file" accept="image/png,image/jpeg,image/webp"></label>
-                  <p class="staff-hint">A PNG with a transparent background works best. Up to 1 MB. Colors are picked from a new logo automatically.</p>
+                  <div class="branding-logo-row">
+                    <div class="branding-current"><img id="branding-logo-current" alt="Current logo" width="96" height="96"></div>
+                    <div class="branding-upload">
+                      <label>Upload a new logo <input id="branding-logo-file" type="file" accept="image/png,image/jpeg,image/webp"></label>
+                      <p class="staff-hint">A PNG with a transparent background works best. Up to 1 MB. Colors are picked from a new logo automatically.</p>
+                    </div>
+                  </div>
                 </fieldset>
                 <fieldset>
                   <legend>Colors</legend>
@@ -351,7 +354,7 @@
               </div>
             </div>
             </section>
-            <section class="staff-section" aria-labelledby="venues-title">
+            <section id="settings-venues" class="staff-section" aria-labelledby="venues-title">
               <h4 id="venues-title">Venues</h4>
               <p class="staff-hint">Your fields, gyms and courts. Both schools pick from this list, so the venue always matches.</p>
               <p id="venue-status" class="venue-status" role="status"></p>
@@ -362,14 +365,10 @@
                 <button class="button primary" type="submit">Add venue</button>
               </form>
             </section>
-          </section>
-          <section id="staff-social-panel" class="staff-panel" aria-labelledby="social-title" hidden>
-            <h3 id="social-title" tabindex="-1">Social media</h3>
-            <p id="social-school" class="staff-subhead"></p>
-            <p class="staff-hint">Paste the link to each school account. A saved link shows on the school page and the conference home page right away.</p>
-            <p id="social-status" class="venue-status" role="status" aria-live="polite"></p>
-            <section class="staff-section" aria-labelledby="social-accounts-title">
-              <h4 id="social-accounts-title">Accounts</h4>
+            <section id="settings-social" class="staff-section" aria-labelledby="social-accounts-title">
+              <h4 id="social-accounts-title">Social media</h4>
+              <p class="staff-hint">Paste the link to each school account. A saved link shows on the school page and the conference home page right away.</p>
+              <p id="social-status" class="venue-status" role="status" aria-live="polite"></p>
               <ul id="social-list" class="venue-list social-list"></ul>
               <p class="staff-hint">Instagram shows the account’s latest posts. Facebook and X show as links. The account must be public.</p>
             </section>

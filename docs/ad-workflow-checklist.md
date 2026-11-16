@@ -138,3 +138,10 @@ Greg asked for the draft and publish step to go. Details and the plan for older 
 - Staff access: "Add a person" form on one row with its button, then "People with access" with one line per person (name, email, access, Edit and Remove). On a phone, name and buttons share the first line.
 - Tournaments and Staff access now show the conference colors instead of the last school picked.
 - Checked with fictional data at 1280px and 375px.
+
+### November 15: Social media moves into School settings
+
+- Social media is no longer its own tab. It is the last section of School settings, after Logo and colors and Venues.
+- Conference admins now get the School settings tab, showing only Social media.
+- Logo and colors: the current logo sits beside the upload control, and on a wide screen the preview runs the full height of the form.
+- Checked with fictional data at 1280px and 390px.

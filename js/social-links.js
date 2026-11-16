@@ -1,5 +1,5 @@
 // Checks a school's Instagram, Facebook or X account link and tidies it into one standard form.
-// Shared by the staff Social media tab and the public pages. No page access, so tests can run it.
+// Shared by the staff Social media section and the public pages. No page access, so tests can run it.
 const socialPlatforms = {
   instagram: {
     label: 'Instagram',

@@ -35,7 +35,7 @@ const documents = [
   {id:'11111111-2222-3333-4444-555555555555', title:'2027 Soccer Rules and Entry Information', type:'Tournament regulations', sport:'Soccer', school_year:'2027-28', file_path:'2027-28/rules-ab12cd34.pdf', description:'SCT regulations and entry information for boys and girls soccer.', note:null, added:'2026-11-14'},
   {id:'11111111-2222-3333-4444-666666666666', title:'Executive Committee', type:'Leadership', sport:'', school_year:'2026-27', file_path:'2026-27/exec-ab12cd35.pdf', description:'The executive committee roster for 2026-27.', note:null, added:'2026-11-14'},
 ];
-// A small in-memory table so the Social media tab can add, change and remove links.
+// A small in-memory table so the Social media section can add, change and remove links.
 let socialRows = [{id:'social-1', school_id:'marlboro', platform:'instagram', url:'https://www.instagram.com/instagram/'}];
 function socialTable() {
   let action = 'select', values = null; const filters = {};
@@ -67,6 +67,24 @@ const sampleGame = {
 const listedTeams = [{
   id:sampleGame.team_id, school_id:'marlboro', sport:'Soccer', gender:'Girls', level:'Varsity', season:'Fall',
 }];
+// ?show=teams fills the Teams tab with several fictional teams so the grouped list can be reviewed.
+// It is for looking only: the game editor check that expects a single listed team does not pass in this mode.
+const showTeams = new URLSearchParams(location.search).get('show') === 'teams';
+const previewGames = [sampleGame];
+const previewGroups = [];
+if (showTeams) {
+  const extra = [['Soccer','Girls','JV','Fall',1], ['Soccer','Boys','Varsity','Fall',2], ['Soccer','Boys','Freshman','Fall',0],
+    ['Football','Boys','Varsity','Fall',1], ['Football','Boys','Freshman','Fall',0], ['Tennis','Girls','JV','Fall',0],
+    ['Basketball','Boys','Varsity','Winter',0], ['Basketball','Boys','JV','Winter',1]];
+  extra.forEach(([sport, gender, level, season, pending], index) => {
+    const id = 'aaaaaaaa-0000-4000-8000-00000000000' + index;
+    listedTeams.push({id, school_id:'marlboro', sport, gender, level, season});
+    const game = {...sampleGame, id:'bbbbbbbb-0000-4000-8000-00000000000' + index, team_id:id, teams:{sport,gender,level,season}};
+    previewGames.push(game);
+    previewGroups.push({team_id:id, season_year:2026, sport, gender, level, season, token:'t' + index,
+      published_at:pending === 2 || index === 5 ? null : '2026-11-01T12:00:00Z', pending_count:pending, games:[{id:game.id, draft:true, published:!pending}]});
+  });
+}
 const saveCalls = [];
 const transportationEmails = [];
 const client = {
@@ -75,13 +93,15 @@ const client = {
   from(table) {
     if (table === 'school_social_accounts') return socialTable();
     const result = {data: table === 'schools' ? schools : table === 'conference_documents' ? documents
-      : table === 'games' ? [sampleGame] : table === 'teams' ? listedTeams : []};
+      : table === 'games' ? previewGames : table === 'teams' ? listedTeams : []};
     const query = {then: callback => Promise.resolve(result).then(callback)};
     for (const name of ['select','order','eq','maybeSingle','insert','delete']) query[name] = () => query;
     return query;
   },
   async rpc(name, args) {
     if (name === 'list_staff_access') return {data:{actor_role:'site_admin',accounts}};
+    if (name === 'review_schedule_publication' && showTeams) return {data:previewGroups};
+    if (name === 'game_link_status' && showTeams) return {data:previewGames.map((game, index) => ({game_id:game.id, linked:index % 3 !== 1, reason:index % 3 !== 1 ? 'On the conference calendar' : 'Time doesn’t match'}))};
     if (name === 'save_staff_game') {
       saveCalls.push(args.input);
       Object.assign(sampleGame, {
@@ -241,18 +261,22 @@ check('day view uses the same agenda rows',
 document.querySelector('#calendar .fc-dayGridMonth-button').click();
 await new Promise(resolve => setTimeout(resolve, 100));
 check('month view hides the schedule table', get('schedule-list').hidden && !get('calendar').classList.contains('staff-table-mode'));
-// Social media tab: a site admin picks a school, then adds, fixes and removes links.
+// Social media under School settings: a site admin picks a school, then adds, fixes and removes links.
 const wait = () => new Promise(resolve => setTimeout(resolve, 100));
+// Back to the site admin view, which can pick any school.
+get('view-as').value = '';
+get('view-as').dispatchEvent(new Event('change'));
+await wait();
 get('schedule-school').value = 'marlboro';
 get('schedule-school').dispatchEvent(new Event('change'));
 await wait();
-get('staff-social-tab').click();
+get('staff-settings-tab').click();
 await wait();
 const socialItems = () => [...get('social-list').children];
 const socialRow = name => socialItems().find(item => item.querySelector('label').textContent.trim() === name);
-check('social tab opens inside content', !get('staff-social-panel').hidden && get('staff-social-panel').parentElement.classList.contains('staff-content') && beside(get('staff-social-panel')));
-check('social tab names the school', get('social-school').textContent === 'Marlboro');
-check('social tab lists three platforms', socialItems().length === 3);
+check('social media sits in school settings', !get('staff-settings-panel').hidden && get('staff-settings-panel').contains(get('social-list')) && !get('staff-social-tab') && beside(get('staff-settings-panel')));
+check('school settings names the school', get('settings-school').textContent === 'Marlboro');
+check('social media lists three platforms', socialItems().length === 3);
 check('saved Instagram link can be removed', socialRow('Instagram').querySelector('input').value === 'https://www.instagram.com/instagram/' &&
   [...socialRow('Instagram').querySelectorAll('button')].some(button => button.textContent === 'Remove'));
 const typeLink = (name, value) => { const input = socialRow(name).querySelector('input'); input.value = value; input.dispatchEvent(new Event('input')); };
@@ -269,29 +293,53 @@ check('an X link is tidied and saved', socialRows.some(row => row.platform === '
 [...socialRow('Instagram').querySelectorAll('button')].find(button => button.textContent === 'Remove').click();
 await wait();
 check('removing a link takes it away at once', !socialRows.some(row => row.platform === 'instagram') && socialRow('Instagram').querySelector('input').value === '');
-check('social tab no page overflow', document.documentElement.scrollWidth <= innerWidth);
+check('school settings no page overflow', document.documentElement.scrollWidth <= innerWidth);
 get('schedule-school').value = 'colts-neck';
 get('schedule-school').dispatchEvent(new Event('change'));
 await wait();
-check('social tab follows the school picker', !get('staff-social-panel').hidden && get('social-school').textContent === 'Colts Neck' &&
+check('social media follows the school picker', !get('staff-settings-panel').hidden && get('settings-school').textContent === 'Colts Neck' &&
   socialItems().every(item => item.querySelector('input').value === ''));
 get('view-as').value = 'office';
 get('view-as').dispatchEvent(new Event('change'));
 await wait();
-check('conference admin sees the social tab for every school', !get('staff-social-tab').hidden && get('schedule-school').options.length === 3 && get('staff-settings-tab').hidden);
+check('conference admin sees only social media in school settings, for every school', !get('staff-settings-tab').hidden && get('schedule-school').options.length === 3 &&
+  get('settings-branding').hidden && get('settings-venues').hidden && !get('settings-social').hidden && socialItems().length === 3);
 get('view-as').value = 'ad:marlboro';
 get('view-as').dispatchEvent(new Event('change'));
 await wait();
-check('an AD sees the social tab for one school', !get('staff-social-tab').hidden && get('schedule-school').options.length === 1);
+check('an AD sees logo, venues and social media for one school', !get('staff-settings-tab').hidden && get('schedule-school').options.length === 1 &&
+  !get('settings-branding').hidden && !get('settings-venues').hidden && !get('settings-social').hidden);
 get('view-as').value = '';
 get('view-as').dispatchEvent(new Event('change'));
 await wait();
-if (new URLSearchParams(location.search).get('show') === 'social') {
+// Each tab has its own address, so the browser's Back button moves between tabs instead of leaving the page.
+get('staff-schedule-tab').click();
+await wait();
+get('staff-teams-tab').click();
+await wait();
+check('opening a tab puts it in the address', location.hash === '#teams');
+get('staff-settings-tab').click();
+await wait();
+history.back();
+await wait();
+check('Back returns to the previous tab', location.hash === '#teams' && !get('staff-teams-panel').hidden && get('staff-settings-panel').hidden);
+history.forward();
+await wait();
+check('Forward reopens the next tab', location.hash === '#settings' && !get('staff-settings-panel').hidden);
+history.replaceState(null, '', location.pathname + location.search);
+if (new URLSearchParams(location.search).get('show') === 'settings') {
+  get('schedule-school').value = 'shore-regional';
+  get('schedule-school').dispatchEvent(new Event('change'));
+  await wait();
+  get('staff-settings-tab').click();
+  await wait();
+} else if (new URLSearchParams(location.search).get('show') === 'teams') {
   get('schedule-school').value = 'marlboro';
   get('schedule-school').dispatchEvent(new Event('change'));
   await wait();
-  get('staff-social-tab').click();
+  get('staff-teams-tab').click();
   await wait();
+  document.querySelector('#team-list .team-group')?.click();
 } else get('staff-schedule-tab').click();
 check('no script errors', errors.length === 0);
 const result = document.createElement('pre'); result.id = 'qa-results'; result.hidden = true;
