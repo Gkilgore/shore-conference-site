@@ -76,6 +76,7 @@ if (school) {
     season: game.season,
     level: game.level,
     status: game.status,
+    home_away: game.home_away,
     classNames: game.status === 'Scheduled' ? [] : ['is-' + game.status.toLowerCase()],
     // Bus times show only on the owning school's calendar.
     bus: game.transportation?.bus_departure ? 'Bus ' + formatBusTime(game.transportation.bus_departure) : '',
