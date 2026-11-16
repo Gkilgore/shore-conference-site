@@ -95,7 +95,13 @@ begin
   if p_school is null or not exists (select 1 from public.schools s where s.slug = p_school) then
     raise exception 'Choose a school for this opponent list.' using errcode = '22023';
   end if;
-  if not shore_private.can_manage_schedule(p_school) then
+  -- Owner-run functions skip row-level security, so can_manage_schedule would see every
+  -- invitation here. Check the caller's own invitation directly instead.
+  if not exists (
+    select 1 from public.users u
+    where u.email = shore_private.verified_staff_email()
+      and (u.role = 'site_admin' or (u.role = 'ad' and u.school_id = p_school))
+  ) then
     raise exception 'This account cannot edit that school.' using errcode = '42501';
   end if;
   if char_length(normalized_name) not between 1 and 100 then
