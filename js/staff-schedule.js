@@ -579,11 +579,19 @@ function startStaffSchedule(client, invite) {
     if (!calendar && !window.FullCalendar) return;
     calendarGames = entries;
     renderScheduleList();
+    const school = currentSchool();
+    // Use school colors for home/away distinction when not in conference view
+    const getEventColor = (game) => {
+      if (game.status !== 'Scheduled' || !school) return null;
+      const isHome = game.home_away === 'Home';
+      return isHome ? school.primary_color : school.accent_color;
+    };
     const events = entries.map(game => ({
       id: game.id,
       start: game.start_time ? game.game_date + 'T' + game.start_time : game.game_date,
       title: gameTitle(game) + (game.start_time ? '' : ' · TBD') +
         (game.status === 'Scheduled' ? '' : ' · ' + game.status),
+      backgroundColor: getEventColor(game),
       classNames: ['staff-game', 'staff-game-' + game.status.toLowerCase(), ...(unpublished.has(game.id) ? ['staff-unpublished'] : [])],
       extendedProps: { game, location: game.location, status: game.status, unpublished: unpublished.get(game.id) },
     }));

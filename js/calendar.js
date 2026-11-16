@@ -13,7 +13,7 @@ function followPreferredView(calendar) {
   listViewQuery.addEventListener('change', update);
   return () => listViewQuery.removeEventListener('change', update);
 }
-function renderCalendar(events, { schoolColors = {} } = {}) {
+function renderCalendar(events, { schoolColors = {}, schoolSlug = null } = {}) {
   const target = document.getElementById('calendar');
   const filters = document.getElementById('calendar-filters');
   if (!window.FullCalendar) {
@@ -43,18 +43,44 @@ function renderCalendar(events, { schoolColors = {} } = {}) {
   // Conference calendar: a square takes the home school's color, or the picked school's when the
   // School filter is set. A color an AD saved comes first, then the school directory's.
   // Its square has three lines: that school's name, the time with Home or Away, then the team and opponent.
+  // Uses the primary color for home games and the accent color for away games.
   function conferenceSquare(event) {
     if (!fields.school) return null;
     const involved = event.extendedProps.schools ?? [];
     const slug = involved.includes(fields.school.value) ? fields.school.value : involved[0];
     const directory = typeof shoreSchools !== 'undefined' ? shoreSchools : sampleSchools;
-    const color = schoolColors[slug] || directory[slug]?.color;
-    if (!color || !directory[slug]) return null;
     const home = slug === involved[0];
+    // Get school colors: schoolColors may have both primary and accent, or just primary (legacy)
+    const colorData = schoolColors[slug];
+    let color;
+    if (typeof colorData === 'object' && colorData !== null) {
+      // New format: { primary, accent }
+      color = home ? colorData.primary : colorData.accent;
+    } else {
+      // Legacy format: just the string color value
+      color = colorData || directory[slug]?.color;
+    }
+    // Fall back to directory colors
+    if (!color) {
+      color = home ? directory[slug]?.color : directory[slug]?.accent;
+    }
+    if (!color || !directory[slug]) return null;
     const other = directory[involved[home ? 1 : 0]]?.name;
     const { sport, gender, level } = event.extendedProps;
     return { color, school: directory[slug].name, homeAway: home ? 'Home' : 'Away',
       matchup: [gender, shortLevel(level), sport].filter(Boolean).join(' ') + (other ? (home ? ' vs. ' : ' at ') + other : '') };
+  }
+  // For school-specific calendars, apply colors based on home/away status using CSS variables
+  // set by the school page (--school-color and --school-accent).
+  function schoolCalendarSquare(event) {
+    if (fields.school || !schoolSlug) return null;
+    const isHome = event.home_away === 'Home';
+    // Store the CSS variable name so we can apply it, and also store the computed color value
+    return { 
+      color: isHome ? 'var(--school-color)' : 'var(--school-accent)',
+      colorVariable: isHome ? '--school-color' : '--school-accent',
+      homeAway: event.home_away 
+    };
   }
   // With one sport on screen, a short label such as "Girls JV" beside the time tells its teams apart.
   function teamTag(event) {
@@ -173,7 +199,8 @@ function renderCalendar(events, { schoolColors = {} } = {}) {
         date: new Date((range.start.getTime() + range.end.getTime()) / 2).toISOString().slice(0, 10),
       } }));
       // School-colored squares carry a class so the status fills (yellow, red) step aside for the color.
-      showEvents(fields.school ? results.map(game => ({ ...game,
+      // This applies to conference calendar with school filter OR school-specific calendars.
+      showEvents(fields.school || schoolSlug ? results.map(game => ({ ...game,
         classNames: [...(game.classNames ?? []), 'school-colored'], tint: fields.school.value })) : results);
     },
     eventContent({ event, timeText, view }) {
@@ -182,7 +209,7 @@ function renderCalendar(events, { schoolColors = {} } = {}) {
       content.className = 'game';
       const title = document.createElement('span');
       title.className = 'game-title';
-      const square = inList ? null : conferenceSquare(event);
+      const square = inList ? null : (conferenceSquare(event) || schoolCalendarSquare(event));
       title.textContent = inList ? event.title : square?.matchup ?? squareLabel(event);
       // Time and Home/Away share the first line so the square stays short.
       const head = document.createElement('span');
@@ -196,27 +223,34 @@ function renderCalendar(events, { schoolColors = {} } = {}) {
       }
       const tag = inList ? null : teamTag(event);
       if (tag) head.append(tag);
-      const homeAway = createHomeAwayBadge(square?.homeAway ?? event.extendedProps.game?.home_away ?? event.extendedProps.home_away);
+      const homeAway = createHomeAwayBadge(square?.homeAway ?? event.extendedProps.game?.home_away ?? event.extendedProps.home_away ?? event.home_away);
       if (homeAway) head.append(homeAway);
       if (square) {
         content.classList.add('has-school-color');
         content.style.background = square.color;
-        content.style.color = readableInk(square.color);
+        // For CSS variables, use the CSS variable for text color too; for hex colors, compute readableInk
+        if (square.colorVariable) {
+          content.style.color = square.colorVariable === '--school-color' 
+            ? 'var(--school-ink)' 
+            : 'var(--accent-ink)';
+        } else if (typeof square.color === 'string' && square.color.startsWith('#')) {
+          content.style.color = readableInk(square.color);
+        }
         const top = document.createElement('span');
         top.className = 'game-head';
         const school = document.createElement('span');
         school.className = 'game-school';
         school.textContent = square.school;
-        top.append(school);
+        if (school.textContent) top.append(school);
         // The fill is the school's, so Postponed and Canceled show as a label instead.
-        const status = event.extendedProps.status;
+        const status = event.extendedProps.status || event.status;
         if (status && status !== 'Scheduled') {
           const label = document.createElement('span');
           label.className = 'game-status is-' + status.toLowerCase();
           label.textContent = status;
           top.append(label);
         }
-        content.append(top);
+        if (top.childNodes.length) content.append(top);
       }
       if (head.childNodes.length) content.append(head);
       content.append(title);

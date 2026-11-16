@@ -38,14 +38,14 @@ function conferenceEvents(games) {
 async function loadSchoolColors() {
   try {
     const url = new URL('/rest/v1/schools', shoreSupabase.url);
-    url.searchParams.set('select', 'slug,primary_color');
+    url.searchParams.set('select', 'slug,primary_color,accent_color');
     const response = await fetch(url, {
       headers: { apikey: shoreSupabase.publishableKey, Authorization: 'Bearer ' + shoreSupabase.publishableKey },
       signal: AbortSignal.timeout(8000),
     });
     if (!response.ok) return {};
-    return Object.fromEntries((await response.json()).filter(school => school.primary_color)
-      .map(school => [school.slug, school.primary_color]));
+    return Object.fromEntries((await response.json()).filter(school => school.primary_color || school.accent_color)
+      .map(school => [school.slug, { primary: school.primary_color, accent: school.accent_color }]));
   } catch { return {}; }
 }
 

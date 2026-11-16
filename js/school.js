@@ -101,7 +101,7 @@ if (school) {
       other.className = '';
       noUpcoming.append(' ', other);
     }
-    renderCalendar(games);
+    renderCalendar(games, { schoolSlug });
     setSubscriptionLink({ scope: 'school', school: schoolSlug });
   } catch (error) {
     status.textContent = '';
