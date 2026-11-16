@@ -27,7 +27,9 @@
   <script defer src="js/seasons.js"></script>
   <script defer src="js/staff-overview.js"></script>
   <script defer src="js/staff-import.js"></script>
+  <script defer src="data/njsiaa-schools.js"></script>
   <script defer src="js/staff-opponents.js"></script>
+  <script defer src="js/staff-opponents-njsiaa.js"></script>
   <script defer src="js/tournament-engine.js"></script>
   <script defer src="js/tournament-public.js"></script>
   <script defer src="js/staff-tournaments.js"></script>
@@ -157,6 +159,15 @@
           <section id="staff-opponents-panel" class="staff-panel" aria-labelledby="opponents-title" hidden>
             <h3 id="opponents-title" tabindex="-1">Opponents</h3>
             <p id="opponents-status" role="status" aria-live="polite"></p>
+            <section class="staff-section" aria-labelledby="njsiaa-schools-title">
+              <h4 id="njsiaa-schools-title">NJSIAA member schools</h4>
+              <p class="staff-hint">Browse and add schools from the NJSIAA member directory. Click a school to see its details and add it to your opponent list.</p>
+              <div class="staff-njsiaa-search">
+                <input id="njsiaa-search" type="text" placeholder="Search schools..." autocomplete="off">
+              </div>
+              <ul id="njsiaa-schools-list" class="njsiaa-schools-list"></ul>
+              <div id="njsiaa-no-results" class="staff-empty" hidden>No schools found matching your search.</div>
+            </section>
             <section class="staff-section" aria-labelledby="opponent-list-title">
               <h4 id="opponent-list-title">My opponent list</h4>
               <p class="staff-hint">Add schools you schedule. Matching requires an AD invitation for both schools; a school profile alone is not enough. Only matched member-school games appear on the conference calendar.</p>
