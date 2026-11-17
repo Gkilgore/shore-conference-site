@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Teams Tab Mockup - Year-Based Preparation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700;800&display=swap">
+  <link rel="stylesheet" href="css/site.css">
+  <style>
+    body { background: #f5f5f5; padding: 20px; }
+    .mockup-container { max-width: 900px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h1 { margin-top: 0; color: #183366; }
+    
+    .season-section { margin-bottom: 50px; padding: 30px; background: #f9f9f9; border-left: 4px solid #183366; }
+    .season-section h2 { margin-top: 0; color: #183366; display: flex; align-items: center; gap: 10px; }
+    .season-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .season-badge.current { background: #183366; color: white; }
+    .season-badge.next { background: #ffcc00; color: #183366; }
+    
+    .season-row { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #ddd; }
+    .season-row:last-child { border-bottom: none; }
+    
+    .season-row h3 { margin: 0 0 15px 0; color: #333; font-size: 16px; }
+    
+    .team-list { list-style: none; padding: 0; margin: 0; }
+    .team-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+    .team-item input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+    .team-item label { margin: 0; cursor: pointer; flex: 1; }
+    .team-item .team-label { flex: 1; }
+    .team-item .team-meta { font-size: 13px; color: #666; }
+    .team-item.disabled label { opacity: 0.6; }
+    .team-item.disabled { opacity: 0.6; }
+    
+    .team-actions { display: flex; gap: 10px; align-items: center; }
+    .copy-button { padding: 8px 16px; background: #004990; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; }
+    .copy-button:hover { background: #003366; }
+    .add-team-button { padding: 8px 16px; background: #d4e0ec; color: #183366; border: 1px solid #183366; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; }
+    .add-team-button:hover { background: #c0d8e8; }
+    
+    .season-label { display: flex; align-items: center; gap: 8px; }
+    .copy-from-badge { display: inline-block; padding: 4px 8px; background: #e0e0e0; border-radius: 3px; font-size: 12px; color: #666; }
+    
+    .select-all-row { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 2px solid #ddd; }
+    .select-all-row input { width: 20px; height: 20px; }
+    
+    .info-box { padding: 15px; background: #e3f2fd; border-left: 4px solid #004990; margin-bottom: 20px; border-radius: 4px; }
+    .info-box p { margin: 0; color: #333; font-size: 14px; }
+    
+    .removed-team { text-decoration: line-through; opacity: 0.5; }
+    .new-team::after { content: " ✨ NEW"; color: #ffcc00; font-weight: 700; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="mockup-container">
+    <h1>🏀 My Teams</h1>
+    
+    <!-- CURRENT SEASON SECTION -->
+    <div class="season-section">
+      <h2>
+        <span class="season-badge current">CURRENT</span>
+        2024-2025 Season
+      </h2>
+      
+      <!-- Fall -->
+      <div class="season-row">
+        <h3>Fall 2024-2025</h3>
+        <ul class="team-list">
+          <li class="team-item">
+            <input type="checkbox" id="fall-1" checked disabled>
+            <label for="fall-1" class="team-label">Boys Varsity Soccer</label>
+            <span class="team-meta">3 games</span>
+          </li>
+          <li class="team-item">
+            <input type="checkbox" id="fall-2" checked disabled>
+            <label for="fall-2" class="team-label">Girls Varsity Soccer</label>
+            <span class="team-meta">5 games</span>
+          </li>
+          <li class="team-item">
+            <input type="checkbox" id="fall-3" checked disabled>
+            <label for="fall-3" class="team-label">Girls JV Soccer</label>
+            <span class="team-meta">4 games</span>
+          </li>
+          <li class="team-item">
+            <input type="checkbox" id="fall-4" checked disabled>
+            <label for="fall-4" class="team-label">Boys Varsity Football</label>
+            <span class="team-meta">8 games</span>
+          </li>
+          <li class="team-item">
+            <input type="checkbox" id="fall-5" checked disabled>
+            <label for="fall-5" class="team-label">Girls Volleyball</label>
+            <span class="team-meta">12 games</span>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- Winter -->
+      <div class="season-row">
+        <h3>Winter 2024-2025</h3>
+        <ul class="team-list">
+          <li class="team-item">
+            <input type="checkbox" id="winter-1" checked disabled>
+            <label for="winter-1" class="team-label">Boys Varsity Basketball</label>
+            <span class="team-meta">15 games</span>
+          </li>
+          <li class="team-item">
+            <input type="checkbox" id="winter-2" checked disabled>
+            <label for="winter-2" class="team-label">Girls Varsity Basketball</label>
+            <span class="team-meta">16 games</span>
+          </li>
+          <li class="team-item">
+            <input type="checkbox" id="winter-3" checked disabled>
+            <label for="winter-3" class="team-label">Girls JV Basketball</label>
+            <span class="team-meta">10 games</span>
+          </li>
+          <li class="team-item">
+            <input type="checkbox" id="winter-4" checked disabled>
+            <label for="winter-4" class="team-label">Wrestling</label>
+            <span class="team-meta">8 matches</span>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- Spring -->
+      <div class="season-row">
+        <h3>Spring 2024-2025</h3>
+        <ul class="team-list">
+          <li class="team-item">
+            <input type="checkbox" id="spring-1" checked disabled>
+            <label for="spring-1" class="team-label">Boys Varsity Lacrosse</label>
+            <span class="team-meta">10 games</span>
+          </li>
+          <li class="team-item">
+            <input type="checkbox" id="spring-2" checked disabled>
+            <label for="spring-2" class="team-label">Girls Varsity Lacrosse</label>
+            <span class="team-meta">9 games</span>
+          </li>
+          <li class="team-item">
+            <input type="checkbox" id="spring-3" checked disabled>
+            <label for="spring-3" class="team-label">Track & Field</label>
+            <span class="team-meta">6 meets</span>
+          </li>
+          <li class="team-item">
+            <input type="checkbox" id="spring-4" checked disabled>
+            <label for="spring-4" class="team-label">Tennis</label>
+            <span class="team-meta">12 matches</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+    
+    <!-- NEXT SEASON PREPARATION SECTION -->
+    <div class="season-section" style="border-left-color: #ffcc00; background: #fffcf0;">
+      <h2>
+        <span class="season-badge next">PREPARE NEXT</span>
+        2025-2026 Season
+      </h2>
+      
+      <div class="info-box">
+        <p><strong>✓ Control your timeline:</strong> Prepare teams whenever you're ready. Uncheck teams that won't run this year, add new programs, then save.</p>
+      </div>
+      
+      <!-- Fall 2025-2026 -->
+      <div class="season-row">
+        <h3>
+          <span class="season-label">
+            Fall 2025-2026
+            <span class="copy-from-badge">↓ Copying from Fall 2024-2025</span>
+          </span>
+        </h3>
+        
+        <div class="select-all-row">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" checked>
+            <strong>Select all to copy</strong>
+          </label>
+        </div>
+        
+        <ul class="team-list">
+          <li class="team-item">
+            <input type="checkbox" id="fall25-1" checked>
+            <label for="fall25-1" class="team-label">Boys Varsity Soccer</label>
+          </li>
+          <li class="team-item">
+            <input type="checkbox" id="fall25-2" checked>
+            <label for="fall25-2" class="team-label">Girls Varsity Soccer</label>
+          </li>
+          <li class="team-item disabled">
+            <input type="checkbox" id="fall25-3">
+            <label for="fall25-3" class="team-label"><span class="removed-team">Girls JV Soccer</span></label>
+            <span class="team-meta" style="opacity: 0.5;">← Not recruiting this year</span>
+          </li>
+          <li class="team-item">
+            <input type="checkbox" id="fall25-4" checked>
+            <label for="fall25-4" class="team-label">Boys Varsity Football</label>
+          </li>
+          <li class="team-item">
+            <input type="checkbox" id="fall25-5" checked>
+            <label for="fall25-5" class="team-label">Girls Volleyball</label>
+          </li>
+        </ul>
+        
+        <div style="margin-top: 15px; display: flex; gap: 10px; align-items: center;">
+          <button class="copy-button">📋 Copy Selected to Fall 2025-2026</button>
+          <button class="add-team-button">+ Add Team</button>
+        </div>
+      </div>
+      
+      <!-- Winter 2025-2026 -->
+      <div class="season-row">
+        <h3>
+          <span class="season-label">
+            Winter 2025-2026
+            <span class="copy-from-badge">↓ Copying from Winter 2024-2025</span>
+          </span>
+        </h3>
+        
+        <div class="select-all-row">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" checked>
+            <strong>Select all to copy</strong>
+          </label>
+        </div>
+        
+        <ul class="team-list">
+          <li class="team-item">
+            <input type="checkbox" id="winter25-1" checked>
+            <label for="winter25-1" class="team-label">Boys Varsity Basketball</label>
+          </li>
+          <li class="team-item">
+            <input type="checkbox" id="winter25-2" checked>
+            <label for="winter25-2" class="team-label">Girls Varsity Basketball</label>
+          </li>
+          <li class="team-item">
+            <input type="checkbox" id="winter25-3" checked>
+            <label for="winter25-3" class="team-label">Girls JV Basketball</label>
+          </li>
+          <li class="team-item">
+            <input type="checkbox" id="winter25-4" checked>
+            <label for="winter25-4" class="team-label">Wrestling</label>
+          </li>
+        </ul>
+        
+        <div style="margin-top: 15px; display: flex; gap: 10px; align-items: center;">
+          <button class="copy-button">📋 Copy Selected to Winter 2025-2026</button>
+          <button class="add-team-button">+ Add Team</button>
+        </div>
+      </div>
+      
+      <!-- Spring 2025-2026 -->
+      <div class="season-row">
+        <h3>
+          <span class="season-label">
+            Spring 2026
+            <span class="copy-from-badge">↓ Copying from Spring 2024-2025</span>
+          </span>
+        </h3>
+        
+        <div class="select-all-row">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" checked>
+            <strong>Select all to copy</strong>
+          </label>
+        </div>
+        
+        <ul class="team-list">
+          <li class="team-item">
+            <input type="checkbox" id="spring25-1" checked>
+            <label for="spring25-1" class="team-label">Boys Varsity Lacrosse</label>
+          </li>
+          <li class="team-item">
+            <input type="checkbox" id="spring25-2" checked>
+            <label for="spring25-2" class="team-label">Girls Varsity Lacrosse</label>
+          </li>
+          <li class="team-item">
+            <input type="checkbox" id="spring25-3" checked>
+            <label for="spring25-3" class="team-label">Track & Field</label>
+          </li>
+          <li class="team-item">
+            <input type="checkbox" id="spring25-4" checked>
+            <label for="spring25-4" class="team-label">Tennis</label>
+          </li>
+          <li class="team-item" style="background: #fff9e6; padding: 10px;">
+            <input type="checkbox" id="spring25-5" checked>
+            <label for="spring25-5" class="team-label"><span class="new-team">Girls Wrestling</span></label>
+          </li>
+        </ul>
+        
+        <div style="margin-top: 15px; display: flex; gap: 10px; align-items: center;">
+          <button class="copy-button">📋 Copy Selected to Spring 2026</button>
+          <button class="add-team-button">+ Add Team</button>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</body>
+</html>

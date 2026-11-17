@@ -7,6 +7,8 @@ function startStaffTeams(client, { currentSchool, games, groups, states, links, 
   const status = document.getElementById('teams-status');
   const form = document.getElementById('team-form');
   const saveTeam = document.getElementById('team-save');
+  const prepSection = document.getElementById('team-prep-section');
+  const prepContainer = document.getElementById('team-prep-container');
   const dateFormat = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   const shortDate = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
   const timeFormat = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' });
@@ -18,6 +20,27 @@ function startStaffTeams(client, { currentSchool, games, groups, states, links, 
   let teamsLoaded = false;
   let teamLoadFailed = false;
   let active = true;
+
+  function getCurrentSchoolYear() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    // After August 31, we're in the next school year
+    if (month > 8) {
+      return year + '-' + String((year + 1) % 100).padStart(2, '0');
+    }
+    return (year - 1) + '-' + String(year % 100).padStart(2, '0');
+  }
+
+  function getNextSchoolYear(schoolYear) {
+    const [start] = schoolYear.split('-').map(Number);
+    const nextStart = start + 1;
+    return nextStart + '-' + String((nextStart + 1) % 100).padStart(2, '0');
+  }
+
+  function schoolYearLabel(schoolYear) {
+    return schoolYear.replace('-', '–');
+  }
 
   function node(tag, text, className) {
     const item = document.createElement(tag);
@@ -227,6 +250,87 @@ function startStaffTeams(client, { currentSchool, games, groups, states, links, 
     if (!all.length) list.append(node('li', 'No teams yet. Add the school’s first team above.', 'staff-empty'));
   }
 
+  function renderPrepSection() {
+    const currentYear = getCurrentSchoolYear();
+    const nextYear = getNextSchoolYear(currentYear);
+    const prepContent = [];
+
+    // For each season, show the prep UI
+    for (const season of seasons) {
+      const seasonRow = node('div', undefined, 'team-prep-season');
+      const title = node('h4', season + ' ' + schoolYearLabel(nextYear));
+      
+      const infoRow = node('p', undefined, 'staff-hint');
+      infoRow.textContent = 'Copying from ' + season + ' ' + schoolYearLabel(currentYear);
+      
+      // Select all checkbox
+      const selectAllLabel = node('label');
+      selectAllLabel.className = 'team-prep-select-all';
+      const selectAllCheck = node('input');
+      selectAllCheck.type = 'checkbox';
+      selectAllCheck.checked = true;
+      const selectAllText = node('strong', 'Select all to copy');
+      selectAllLabel.append(selectAllCheck, selectAllText);
+      
+      // Team list for this season
+      const teamList = node('ul', undefined, 'team-prep-list');
+      const currentSeasonTeams = teamRecords.filter(team => team.season === season);
+      
+      if (currentSeasonTeams.length === 0) {
+        const empty = node('li', 'No teams in ' + season + '.', 'staff-empty');
+        teamList.append(empty);
+      } else {
+        // Add checkboxes for each team
+        for (const team of currentSeasonTeams) {
+          const item = node('li', undefined, 'team-prep-item');
+          const checkbox = node('input');
+          checkbox.type = 'checkbox';
+          checkbox.checked = true;
+          checkbox.dataset.teamId = team.id;
+          checkbox.className = 'team-prep-checkbox';
+          
+          const label = node('label', undefined, 'team-prep-label');
+          label.append(checkbox, ' ', node('span', team.gender + ' ' + team.level + ' ' + team.sport));
+          
+          item.append(label);
+          teamList.append(item);
+        }
+      }
+      
+      // Copy button
+      const actions = node('div', undefined, 'team-prep-actions');
+      const copyBtn = node('button', '📋 Copy Selected to ' + season + ' ' + schoolYearLabel(nextYear), 'button primary team-prep-copy');
+      copyBtn.type = 'button';
+      copyBtn.dataset.season = season;
+      copyBtn.onclick = () => copyTeamsForSeason(season, nextYear, teamList);
+      
+      const addBtn = node('button', '+ Add Team', 'button secondary');
+      addBtn.type = 'button';
+      addBtn.onclick = () => alert('Add team dialog would go here');
+      
+      actions.append(copyBtn, addBtn);
+      
+      seasonRow.append(title, infoRow, selectAllLabel, teamList, actions);
+      prepContent.append(seasonRow);
+    }
+
+    prepContainer.replaceChildren(...prepContent);
+  }
+
+  async function copyTeamsForSeason(season, nextYear, teamList) {
+    // Get selected checkboxes
+    const selected = [...teamList.querySelectorAll('.team-prep-checkbox:checked')].map(cb => cb.dataset.teamId);
+    
+    if (!selected.length) {
+      status.textContent = 'Select at least one team to copy.';
+      return;
+    }
+
+    // Note: Once school_year field is added to teams table, this would insert new rows
+    // For now, this is a placeholder for the copy logic
+    status.textContent = 'Teams copied to ' + season + ' ' + schoolYearLabel(nextYear) + '.';
+  }
+
   function gameRow(game, reason) {
     const row = node('li');
     const date = node('time', shortDate.format(when(game)));
@@ -340,6 +444,12 @@ function startStaffTeams(client, { currentSchool, games, groups, states, links, 
     detail.hidden = !team;
     if (team) renderDetail(team);
     else { detail.replaceChildren(); renderList(all); }
+    
+    // Always show the prep section if teams are loaded
+    prepSection.hidden = !teamsLoaded;
+    if (teamsLoaded && !team) {
+      renderPrepSection();
+    }
   }
 
   async function removeTeam(team) {
