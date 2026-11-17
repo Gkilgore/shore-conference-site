@@ -71,6 +71,14 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
       useSchoolColor: true  // Flag to indicate this uses school colors, not conference display
     };
   }
+  // "vs. Colts Neck" or "at Colts Neck": the event title without its team name and status.
+  function opponentText(event) {
+    const { sport, gender, level, status } = event.extendedProps;
+    const team = [gender, level, sport].filter(Boolean).join(' ');
+    let rest = team && event.title.startsWith(team) ? event.title.slice(team.length).replace(/^\s*·?\s*/, '') : event.title;
+    if (status && rest.endsWith(' · ' + status)) rest = rest.slice(0, -status.length - 3);
+    return rest || event.title;
+  }
   // With one sport on screen, a short label such as "Girls JV" beside the time tells its teams apart.
   function teamTag(event) {
     if (fields.school || !fields.sport?.value || singleTeam) return null;
@@ -261,17 +269,30 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
             ? 'var(--school-ink)' 
             : 'var(--accent-ink)');
         }
-        // Show status badge if not scheduled
+        // Two lines: the team on the left with the time on the right (a Postponed or Canceled label takes
+        // the time's place), then the opponent. "vs." or "at" says home or away, so no badge is needed.
+        const { sport, gender, level } = event.extendedProps;
         const status = event.extendedProps.status || event.status;
+        const top = document.createElement('span');
+        top.className = 'game-head';
+        const team = document.createElement('span');
+        team.className = 'game-school';
+        team.textContent = [gender, shortLevel(level), sport].filter(Boolean).join(' ');
+        top.append(team);
         if (status && status !== 'Scheduled') {
-          const top = document.createElement('span');
-          top.className = 'game-head';
           const label = document.createElement('span');
           label.className = 'game-status is-' + status.toLowerCase();
           label.textContent = status;
           top.append(label);
-          content.append(top);
+        } else if (displayedTime) {
+          const time = document.createElement('span');
+          time.className = 'game-time';
+          time.textContent = displayedTime;
+          top.append(time);
         }
+        head.replaceChildren();
+        content.append(top);
+        title.textContent = opponentText(event);
       }
       if (movedTo && !inList && !square) {
         const label = document.createElement('span');

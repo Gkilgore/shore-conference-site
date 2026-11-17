@@ -594,6 +594,8 @@ textarea { display: block; resize: vertical; }
 #calendar .game-head .game-status { flex: none; margin: 0 0 0 auto; padding: 0 0.3rem; font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
 /* Conference calendar: the status word sits on the yellow or red fill, so it is plain white. */
 #calendar .game-head .game-status.on-fill { background: white; border-color: white; color: var(--ink); }
+/* School pages: a status label can land on a gold or yellow school color, so it gets a dark frame. */
+#calendar .has-school-color .game-head .game-status { border: 1px solid var(--ink); }
 /* A "moved" note on a game's old date: white with a full steel frame, so it reads as a pointer, not a game. */
 #calendar .fc-event.is-moved { --fc-event-bg-color: white; --fc-event-border-color: var(--steel-dark); --fc-event-text-color: var(--ink); }
 #calendar .fc-daygrid-event.is-moved { background: white; border: 1px solid var(--steel-dark); color: var(--ink); }
