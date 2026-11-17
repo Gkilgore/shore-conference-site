@@ -43,6 +43,21 @@ function conferenceEvents(games) {
     if (status) status.textContent = sample ? 'Sample schedule' : '';
     if (document.getElementById('calendar')) renderCalendar(games);
     if (document.getElementById('upcoming')) renderUpcoming(games, { showChanged: true });
+    // On the calendar page the list sits under the calendar, shows five games and follows its filters.
+    const filters = document.getElementById('calendar-filters');
+    if (filters && document.getElementById('upcoming')) {
+      const showFiltered = () => {
+        const { school, sport, gender, level, search } = filters.elements;
+        const query = search.value.trim().toLowerCase();
+        renderUpcoming(games.filter(game => (!school.value || game.schools.includes(school.value)) &&
+          (!sport.value || game.sport === sport.value) && (!gender.value || game.gender === gender.value) &&
+          (!level.value || game.level === level.value) &&
+          (game.title + ' ' + (game.location ?? '')).toLowerCase().includes(query)), { showChanged: true, limit: 5 });
+      };
+      showFiltered();
+      filters.addEventListener('input', showFiltered);
+      filters.addEventListener('reset', () => setTimeout(showFiltered, 0));
+    }
     setSubscriptionLink({ scope: 'conference' });
   } catch (error) {
     if (status) status.textContent = error.message;
