@@ -18,6 +18,9 @@ test('home stays focused on schools and schedules', () => {
   assert.match(home, /Find your school/);
   assert.match(home, /View calendar/);
   assert.match(home, /id="upcoming"/);
+  assert.match(home, /class="hero-copy">High school athletics grounded in education, sportsmanship and fair competition\.<\/p>/);
+  assert.match(home, /href="resources\.html#history"/);
+  assert.ok(home.indexOf('id="upcoming"') < home.indexOf('href="resources.html#history"'));
 });
 test('resources urls are labeled Information in every masthead', () => {
   for (const name of mastheadPages) {
@@ -56,6 +59,15 @@ test('About next steps use stable internal destinations', () => {
     assert.ok(about.includes('href="' + href + '"'), href);
   }
 });
+test('About explains the revised constitution without treating the directory as membership', () => {
+  for (const heading of ['Our mission', 'Guiding principles', 'Member schools', 'How the conference works', 'Official documents']) {
+    assert.match(about, new RegExp(heading, 'i'));
+  }
+  assert.match(about, /full and affiliate/i);
+  assert.match(about, /sport-specific/i);
+  assert.match(about, /Revised June 2024/);
+  assert.match(about, /assets\/documents\/SC_Constitution_2024_\.pdf/);
+});
 test('History states its source scope and links the saved record', () => {
   assert.match(history, /1936 through 1969/i);
   assert.match(history, /assets\/documents\/HISTORY_OF_THE_SHORE_CONFERENCE\.pdf/);
@@ -71,6 +83,11 @@ test('History retains selected verified milestones', () => {
   for (const fact of ['February 1936', 'Convention Hall', 'girls’ programs', 'four-division', '27 schools']) {
     assert.match(history, new RegExp(fact, 'i'));
   }
+});
+test('History distinguishes founding from incorporation', () => {
+  assert.match(history, /February 1936/);
+  assert.match(history, /October 29, 1938/);
+  assert.match(history, /SC_Constitution_2024_\.pdf/);
 });
 test('Information layouts use the shared design system', () => {
   const css = read('css/site.css');

@@ -714,11 +714,21 @@ textarea { display: block; resize: vertical; }
 .game-details dt { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding-top: 0.15rem; }
 .game-details dd { margin: 0; overflow-wrap: anywhere; }
 
-/* Information stories: the About and History tabs. About is the logo beside a short description, a row of
-   facts, then four link boxes. History is three eras, each a list of dated milestones. All stack on phones. */
+/* Information stories and Home context share compact layouts. About has the logo, sourced explanation and links;
+   History keeps dated lists. All stack on phones. */
 .about-story { display: grid; gap: 1.25rem; align-items: center; }
 .about-logo { width: min(100%, 15rem); height: auto; justify-self: center; }
 .about-text { display: grid; gap: 0.6rem; }
+.home-history { display: grid; gap: 1rem; align-items: center; padding: 1rem; border: var(--frame); background: white; }
+.home-history h2 { margin: 0.2rem 0 0.4rem; }
+.home-history p:last-child { max-width: 65ch; }
+.home-history .button { justify-self: start; }
+.about-section { margin-top: 0.25rem; }
+.about-section h3 { margin: 0 0 0.5rem; }
+.about-section p + p { margin-top: 0.65rem; }
+.about-principles { display: grid; gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
+.about-principles li { display: grid; gap: 0.25rem; }
+.about-principles span { line-height: 1.45; }
 .about-facts, .about-next, .history-timeline { display: grid; gap: 1px; margin: 0; padding: 0; list-style: none; background: var(--steel); border: var(--frame); }
 .about-facts li { display: grid; align-content: start; gap: 0.3rem; padding: 0.9rem 1rem; background: var(--paper); }
 .about-facts strong { font-size: 1.1rem; line-height: 1.25; }
@@ -734,6 +744,8 @@ textarea { display: block; resize: vertical; }
 .history-timeline p { line-height: 1.55; }
 .history-era .photo { max-width: 34rem; margin: 0; }
 @media (min-width: 700px) {
+  .home-history { grid-template-columns: minmax(0, 1fr) auto; padding: 1.25rem; }
+  .about-principles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .about-story { grid-template-columns: 15rem minmax(0, 1fr); gap: 2rem; }
   .about-facts { grid-template-columns: repeat(3, 1fr); }
   .about-next { grid-template-columns: repeat(2, 1fr); }
