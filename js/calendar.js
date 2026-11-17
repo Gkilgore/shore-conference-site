@@ -205,7 +205,7 @@ function renderCalendar(events, { schoolColors = {}, schoolSlug = null } = {}) {
       // School-colored squares carry a class so the status fills (yellow, red) step aside for the color.
       // This applies to conference calendar with school filter OR school-specific calendars.
       showEvents(fields.school || schoolSlug ? results.map(game => ({ ...game,
-        classNames: [...(game.classNames ?? []), 'school-colored'], tint: fields.school.value })) : results);
+        classNames: [...(game.classNames ?? []), 'school-colored'], tint: fields.school?.value })) : results);
     },
     eventContent({ event, timeText, view }) {
       const content = document.createElement('div');
