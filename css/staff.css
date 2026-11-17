@@ -731,6 +731,11 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
 .staff-tab[hidden] { display: none; }
 
 /* Teams tab: a compact list of teams, then one team's schedule, unmatched games and coaches. */
+.team-prep-season + .team-prep-season { margin-top: 1rem; }
+.team-prep-season h4 { margin: 0 0 0.4rem; }
+.team-prep-list { display: grid; gap: 1px; margin: 0; padding: 1px; list-style: none; background: var(--steel); }
+.team-prep-item { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.5rem 0.7rem; background: white; }
+.team-prep-item .button { min-height: 2.4rem; padding: 0.3rem 0.7rem; }
 .team-list, .team-coaches { margin: 0.75rem 0 0; padding: 0; list-style: none; border: var(--frame); background: white; }
 .team-list > li + li, .team-coaches > li + li { border-top: 1px solid var(--rule); }
 .team-row, .team-columns { display: grid; grid-template-columns: minmax(0, 1fr) 4rem 6rem 5.5rem 4rem; align-items: center; gap: 0.25rem 1rem; width: 100%; min-height: 3rem; padding: 0.6rem 0.85rem; border: 0; background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
