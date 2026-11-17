@@ -84,11 +84,11 @@
         <div class="section-heading"><div><p class="eyebrow">From the school’s accounts</p><h2 id="social-title">Social media</h2></div></div>
         <div id="social-accounts" class="social-box social-accounts"></div>
       </section>
-      <!-- Shown only when the school has schedule changes. -->
-      <section id="recent-updates" class="public-postings" aria-labelledby="school-updates-title" hidden>
-        <h2 id="school-updates-title">Schedule changes</h2>
+      <!-- Shown only when the school has schedule changes; closed until a visitor opens it. -->
+      <details id="recent-updates" class="schedule-changes" hidden>
+        <summary><h2 id="school-updates-title">Schedule changes</h2> <span id="school-updates-count"></span></summary>
         <ul id="school-updates" class="public-update-list" aria-live="polite"></ul>
-      </section>
+      </details>
     </div>
     <div class="wrap section"><a id="school-divisions-link" href="resources.html#divisions">Browse division lists</a></div>
   </main>

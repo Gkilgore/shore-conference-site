@@ -51,7 +51,17 @@ const movedGame = games.find(game => game.school_id === 'marlboro' && game.home_
   game.opponent_school_id === 'colts-neck' && game.sport === 'Soccer' && game.level === 'Varsity');
 const movedFromDate = movedGame && new Date(new Date(movedGame.game_date + 'T12:00:00Z').getTime() - 3 * 864e5).toISOString().slice(0, 10);
 const moves = movedGame ? [{ game_id: movedGame.id, from_date: movedFromDate, from_time: '15:30:00' }] : [];
-const handle = createHandler(async () => ({ schools, games, tournament_games: tournamentGames, moves,
+// A few fictional published changes so the school page's Schedule changes panel has rows.
+const team = { season: 'Fall', season_year: 2026, sport: 'Soccer', gender: 'Boys', level: 'Varsity' };
+const slot = (date, time, status = 'Scheduled') => ({ game_date: date, start_time: time, status, home_away: 'Away',
+  opponent_school_id: 'colts-neck', location: 'Colts Neck Field 2', teams: { sport: 'Soccer', gender: 'Boys', level: 'Varsity', season: 'Fall' } });
+const updates = [
+  { id: 3, kind: 'game_canceled', ...team, occurred_at: '2026-11-14T15:00:00Z', game_id: 'u1', before: slot('2026-11-17', '16:00:00'), after: slot('2026-11-17', '16:00:00', 'Canceled') },
+  { id: 2, kind: 'game_changed', ...team, occurred_at: '2026-11-12T15:00:00Z', game_id: 'u2', before: slot('2026-11-20', '15:30:00'), after: slot('2026-11-20', '16:00:00') },
+  { id: 1, kind: 'game_added', ...team, occurred_at: '2026-11-10T15:00:00Z', game_id: 'u3', before: null, after: slot('2026-11-24', '15:45:00') },
+];
+const handle = createHandler(async options => ({ schools, games, tournament_games: tournamentGames, moves,
+  updates: options.scope === 'school' ? updates : [],
   tournaments: [{ id: tournamentId, document: tournament }, { id: soccerId, document: soccer }] }));
 const socialAccounts = [
   { school_id: 'marlboro', platform: 'instagram', url: 'https://www.instagram.com/instagram/' },

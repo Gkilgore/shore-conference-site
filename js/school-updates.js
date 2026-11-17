@@ -155,23 +155,15 @@ function renderSchoolUpdates(target, schedule, schoolNames) {
     const date = document.createElement('time');
     date.dateTime = update.occurred_at;
     date.textContent = schoolPublicDate(update.occurred_at, true);
-    const heading = document.createElement('h3');
+    // One short row: when, what happened, which game, then what changed.
+    const heading = document.createElement('strong');
     heading.textContent = update.headline;
-    const team = document.createElement('p');
-    team.textContent = update.team;
-    row.append(date, heading, team);
-    if (update.details) {
-      const details = document.createElement('p');
-      details.textContent = update.details;
-      row.append(details);
-    }
+    const game = document.createElement('span');
+    game.textContent = [update.team, update.details].filter(Boolean).join(' · ');
+    row.append(date, heading, game);
     if (update.changes.length) {
-      const changes = document.createElement('ul');
-      changes.append(...update.changes.map(text => {
-        const field = document.createElement('li');
-        field.textContent = text;
-        return field;
-      }));
+      const changes = document.createElement('small');
+      changes.textContent = update.changes.join('; ');
       row.append(changes);
     }
     return row;

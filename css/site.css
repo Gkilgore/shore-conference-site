@@ -404,6 +404,11 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
   border-color: var(--steel-dark);
   color: var(--ink);
 }
+/* Next games: the date block takes the calendar colors (see renderUpcoming). */
+.game-list li.is-away time { background: var(--school-accent); color: var(--accent-ink); }
+.game-list li:is(.is-home, .is-away):is(.is-postponed, .is-canceled) time { background: var(--steel); color: var(--ink); }
+.game-list li.is-postponed:not(.is-home, .is-away) time { background: var(--yellow); color: var(--ink); }
+.game-list li.is-canceled:not(.is-home, .is-away) time { background: var(--red); color: white; }
 .game-list li:only-child { padding: 0.85rem; }
 .game-list .empty-schedule { display: block; }
 
@@ -583,8 +588,14 @@ textarea { display: block; resize: vertical; }
 #calendar .fc-daygrid-event.is-postponed { background: var(--yellow); color: var(--ink); }
 #calendar .fc-event.is-canceled { --fc-event-bg-color: var(--red); --fc-event-text-color: white; }
 #calendar .fc-daygrid-event.is-canceled { background: var(--red); color: white; }
-#calendar .fc-list-event.is-postponed td { background: #fff1c2; }
-#calendar .fc-list-event.is-canceled td { background: #f6dde3; }
+/* List view: the time cell is filled like a calendar square, and a status label leads the title. */
+#calendar .fc-list-event td.fc-list-event-time { background: var(--navy); color: white; }
+#calendar .fc-list-event.is-postponed td.fc-list-event-time { background: var(--yellow); color: var(--ink); }
+#calendar .fc-list-event.is-canceled td.fc-list-event-time { background: var(--red); color: white; }
+#calendar .fc-list-event.is-home td.fc-list-event-time { background: var(--school-color); color: var(--school-ink); }
+#calendar .fc-list-event.is-away td.fc-list-event-time { background: var(--school-accent); color: var(--accent-ink); }
+#calendar .fc-list-event:is(.is-home, .is-away):is(.is-postponed, .is-canceled) td.fc-list-event-time { background: var(--steel); color: var(--ink); }
+#calendar .fc-list-event.is-moved td.fc-list-event-time { background: white; color: var(--muted); }
 /* School pages: a square is filled with the school's color, so a status shows as a label on it. */
 #calendar :is(.fc-daygrid-event, .fc-timegrid-event).school-colored { padding: 0; border: 0; background: none; }
 #calendar .school-colored .game.has-school-color { padding: 0.2rem 0.3rem; }
@@ -621,7 +632,7 @@ textarea { display: block; resize: vertical; }
 #calendar .fc-list-day-cushion { background: var(--ink); color: white; }
 #calendar .fc-list-day-cushion a { display: inline-block; padding-block: 0.15rem; color: inherit; text-decoration: none; font-weight: 700; }
 #calendar .fc-list-day-cushion a:is(:hover, :focus-visible) { background: var(--hover); color: var(--ink); outline: 0.2rem solid var(--hover); }
-#calendar .fc-list-event-time { color: var(--red); font-weight: 700; font-variant-numeric: tabular-nums; }
+#calendar .fc-list-event-time { font-weight: 700; font-variant-numeric: tabular-nums; }
 #calendar .fc-list-event-graphic { display: none; }
 .game { overflow-wrap: anywhere; white-space: normal; }
 .game-title { font-weight: 700; }
@@ -637,9 +648,24 @@ textarea { display: block; resize: vertical; }
 /* About page and footer. */
 .public-postings { background: white; border: var(--frame); padding: 1rem; margin-block: 1rem; }
 .public-postings article + article { margin-top: 1rem; }
-.public-update-list { display: grid; gap: 0.75rem; list-style: none; padding: 0; }
-.public-update-list > li { border: var(--frame); padding: 0.75rem; overflow-wrap: anywhere; }
-.public-update-list p { margin-block: 0.4rem; }
+/* Schedule changes: a closed panel that opens to one short row per change. */
+.schedule-changes { margin-block: 1.5rem 1rem; background: white; border: var(--frame); }
+.schedule-changes summary { display: flex; align-items: baseline; gap: 0.6rem; padding: 0.7rem 1rem; cursor: pointer; list-style: none; }
+.schedule-changes summary::-webkit-details-marker { display: none; }
+.schedule-changes summary::before { content: "+"; width: 1rem; font-weight: 800; }
+.schedule-changes[open] summary::before { content: "\2212"; }
+.schedule-changes summary:is(:hover, :focus-visible) { background: var(--hover); }
+.schedule-changes summary h2 { margin: 0; font-size: 1.1rem; }
+#school-updates-count { color: var(--muted); font-size: 0.9rem; }
+.public-update-list { display: grid; gap: 1px; margin: 0; padding: 0; list-style: none; background: var(--rule); border-top: var(--frame); }
+.public-update-list > li { display: grid; grid-template-columns: 6.5rem auto 1fr; gap: 0.1rem 0.75rem; align-items: baseline; padding: 0.45rem 1rem; background: white; font-size: 0.9rem; overflow-wrap: anywhere; }
+.public-update-list time { color: var(--muted); }
+.public-update-list span { color: var(--muted); }
+.public-update-list small { grid-column: 2 / -1; color: var(--muted); }
+@media (max-width: 640px) {
+  .public-update-list > li { grid-template-columns: auto 1fr; }
+  .public-update-list span, .public-update-list small { grid-column: 1 / -1; }
+}
 .prose { display: grid; gap: 1.5rem; }
 .prose p { max-width: 65ch; margin-top: 0.4rem; line-height: 1.6; }
 .site-footer { padding-block: 1.1rem; background: var(--ink); color: white; font-size: 0.9rem; }
@@ -774,7 +800,7 @@ textarea { display: block; resize: vertical; }
   --rule: color-mix(in srgb, var(--school-color) 13%, #e4e7e9);
   --paper: color-mix(in srgb, var(--school-color) 7%, #f7f7f5);
 }
-.school-page .section-heading .eyebrow, .school-page .game-details .eyebrow, .school-page #calendar .fc-list-event-time { color: var(--ink); }
+.school-page .section-heading .eyebrow, .school-page .game-details .eyebrow { color: var(--ink); }
 .school-page #calendar .fc-day-today .fc-daygrid-day-number { background: var(--school-accent); color: var(--accent-ink); box-shadow: 0 0 0 1px var(--steel-dark); }
 .school-page #calendar .fc-more-link { color: var(--ink); border-color: var(--ink); }
 .school-page #calendar .fc-more-link:is(:hover, :focus-visible) { background: var(--ink); color: white; }

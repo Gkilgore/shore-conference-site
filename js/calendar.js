@@ -201,8 +201,9 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
       // School-page squares carry a class so the status fills (yellow, red) step aside for the school's color.
       // The conference calendar keeps its own colors.
       // A "moved" note keeps its plain white look on school pages too.
+      // is-home and is-away color the List view's time cell like the squares.
       showEvents(schoolSlug ? results.map(game => game.moved_to ? game : ({ ...game,
-        classNames: [...(game.classNames ?? []), 'school-colored'] })) : results);
+        classNames: [...(game.classNames ?? []), 'school-colored', game.home_away === 'Away' ? 'is-away' : 'is-home'] })) : results);
     },
     eventContent({ event, timeText, view }) {
       const content = document.createElement('div');
@@ -221,6 +222,15 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
       head.className = 'game-head';
       const displayedTime = movedTo ? '' : (event.allDay ? 'TBD' : timeText) + (movedFrom ? '*' : '');
       if (inList && movedFrom) title.textContent = '* ' + title.textContent;
+      // List rows: a Postponed or Canceled label leads the title, as in Next games.
+      const listStatus = event.extendedProps.status;
+      if (inList && listStatus && !['Scheduled', 'Moved'].includes(listStatus)) {
+        if (title.textContent.endsWith(' · ' + listStatus)) title.textContent = title.textContent.slice(0, -listStatus.length - 3);
+        const label = document.createElement('span');
+        label.className = 'game-status is-' + listStatus.toLowerCase();
+        label.textContent = listStatus;
+        title.prepend(label, ' ');
+      }
       if (displayedTime && (!inList || event.allDay)) {
         const time = document.createElement('span');
         time.className = 'game-time';
