@@ -18,6 +18,7 @@ test('home stays focused on schools and schedules', () => {
   assert.match(home, /Find your school/);
   assert.match(home, /View calendar/);
   assert.match(home, /id="upcoming"/);
+  assert.match(home, /class="hero-copy">High school athletics grounded in education, sportsmanship and fair competition\.<\/p>/);
   assert.match(home, /href="resources\.html#history"/);
   assert.ok(home.indexOf('id="upcoming"') < home.indexOf('href="resources.html#history"'));
 });

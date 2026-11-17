@@ -4,7 +4,7 @@ Reviewed November 16, 2026 for the Home and Information pages. The user-supplied
 
 | Source | Relevant content | Public use |
 | --- | --- | --- |
-| June 2024 constitution, philosophy, PDF p. 2 | Athletics as part of education; academic standards; sportsmanship and student development | Short Home introduction and About mission |
+| June 2024 constitution, philosophy, PDF p. 2 | Athletics as part of education; academic standards; sportsmanship and student development | Home hero and About mission |
 | Article II, PDF p. 3 | Leadership, teamwork, equity and inclusion, physical and emotional well-being, fair play, opportunity, recognition and NJSIAA compliance | About mission and four principles |
 | Article III, PDF pp. 3–5 | Full and affiliate membership; county scope of full members; affiliate participation in up to two sports; shared membership conditions | Concise About membership explanation. The 48-school scheduling directory is not represented as the official roll. |
 | Article VIII, PDF pp. 14–15 | Base divisions and annual sport-specific realignment; enrollment, committee input, competitive balance and geography | About “How the conference works”; no fixed division structure implied |
