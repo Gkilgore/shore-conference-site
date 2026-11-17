@@ -576,6 +576,7 @@ textarea { display: block; resize: vertical; }
 /* "Girls JV": which team, shown beside the time once a sport is chosen. */
 #calendar .game-team-tag { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
 #calendar .game-head :is(.game-time, .home-away-badge) { flex: none; }
+#calendar .game-head .game-school + .game-time { margin-left: auto; }
 #calendar :is(.fc-daygrid-event, .fc-timegrid-event) .home-away-badge { padding: 0 0.3rem; font-size: 0.62rem; line-height: 1.5; }
 #calendar .fc-timegrid-event { border-radius: 0; }
 /* Same status colors as the staff dashboard: postponed yellow, canceled red and struck through. */

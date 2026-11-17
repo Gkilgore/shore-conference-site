@@ -226,14 +226,21 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
         school.className = 'game-school';
         school.textContent = square.school;
         if (school.textContent) top.append(school);
-        // The yellow or red fill shows the status; the word repeats it for anyone who can't tell the colors apart.
+        // Top right: the time, or the status word in its place for a postponed or canceled game. The yellow
+        // or red fill shows the status too; the word is for anyone who can't tell the colors apart.
         const status = event.extendedProps.status || event.status;
         if (status && status !== 'Scheduled') {
           const label = document.createElement('span');
           label.className = 'game-status on-fill';
           label.textContent = status;
           top.append(label);
+        } else if (displayedTime) {
+          const time = document.createElement('span');
+          time.className = 'game-time';
+          time.textContent = displayedTime;
+          top.append(time);
         }
+        head.replaceChildren();
         if (top.childNodes.length) content.append(top);
       } else if (square && square.useSchoolColor) {
         // For school calendars, apply the color styling
