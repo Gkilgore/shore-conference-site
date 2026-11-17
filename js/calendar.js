@@ -55,7 +55,7 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
     const other = directory[involved[home ? 1 : 0]]?.name;
     const { sport, gender, level } = event.extendedProps;
     return { school: directory[slug].name, homeAway: home ? 'Home' : 'Away',
-      matchup: [shortGender(gender), shortLevel(level), sport].filter(Boolean).join(' ') + (other ? (home ? ' vs. ' : ' at ') + other : '') };
+      matchup: [shortGender(gender), shortLevel(level), sport].filter(Boolean).join(' ') + (other ? (home ? ' vs. ' : ' @ ') + other : '') };
   }
   // For school-specific calendars, apply colors based on home/away status using CSS variables
   // set by the school page (--school-color and --school-accent).
@@ -79,7 +79,7 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
     const team = [gender, level, sport].filter(Boolean).join(' ');
     let rest = team && event.title.startsWith(team) ? event.title.slice(team.length).replace(/^\s*·?\s*/, '') : event.title;
     if (status && rest.endsWith(' · ' + status)) rest = rest.slice(0, -status.length - 3);
-    return rest || event.title;
+    return (rest || event.title).replace(/(^| )at (?=\S)/, '$1@ ');
   }
   // With one sport on screen, a short label such as "Girls JV" beside the time tells its teams apart.
   function teamTag(event) {
@@ -218,7 +218,9 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
       const { moved_to: movedTo, moved_from: movedFrom } = event.extendedProps;
       const square = inList ? null : (conferenceSquare(event) || (movedTo ? null : schoolCalendarSquare(event)));
       // For school calendars (useSchoolColor), don't try to show matchup
-      title.textContent = inList ? event.title : (square?.useSchoolColor ? squareLabel(event) : (square?.matchup ?? squareLabel(event)));
+      // Calendar views write an away game as "@ Colts Neck" to save space.
+      title.textContent = (inList ? event.title : (square?.useSchoolColor ? squareLabel(event) : (square?.matchup ?? squareLabel(event))))
+        .replace(/(^| )at (?=\S)/, '$1@ ');
       // Time and Home/Away share the first line so the square stays short.
       const head = document.createElement('span');
       head.className = 'game-head';
