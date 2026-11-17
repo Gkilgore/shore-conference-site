@@ -136,7 +136,7 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
     emptyAction.hidden = !next && !filtered;
   }
 
-  const showGameDetails = createGameDetails(target);
+  const showGameDetails = createGameDetails(target, { schoolColors: Boolean(schoolSlug) });
   const calendar = new FullCalendar.Calendar(target, {
     initialView: preferredCalendarView(),
     headerToolbar: {
@@ -350,38 +350,68 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
   followPreferredView(calendar);
 }
 
-function createGameDetails(calendar) {
+// The game pop-up. A colored band names the team and the matchup, in the same colors as the game on the
+// calendar: on a school page (schoolColors) the school color for home games, its accent for away games and
+// grey for postponed or canceled ones; elsewhere navy, yellow for postponed and red for canceled.
+// Below it: when, where (with directions), bus and early dismissal, the original slot of a moved game, and notes.
+function createGameDetails(calendar, { schoolColors = false } = {}) {
   const dialog = document.createElement('dialog');
-  dialog.className = 'game-details';
+  dialog.className = 'game-details game-card';
   dialog.setAttribute('aria-labelledby', 'game-details-title');
   dialog.innerHTML = `
-    <p class="eyebrow">Game details</p>
-    <h2 id="game-details-title"></h2>
-    <dl></dl>
-    <p><a class="button secondary" data-tournament-bracket hidden>View tournament bracket</a></p>
-    <form method="dialog"><button class="button secondary" autofocus>Close</button></form>
+    <div class="game-card-band">
+      <p class="game-card-team"></p>
+      <h2 id="game-details-title"></h2>
+    </div>
+    <div class="game-card-body">
+      <dl></dl>
+      <div class="actions">
+        <a class="button secondary" data-directions target="_blank" rel="noopener">Directions<span class="visually-hidden"> (opens in a new tab)</span></a>
+        <a class="button secondary" data-tournament-bracket hidden>View tournament bracket</a>
+        <form method="dialog"><button class="button secondary" autofocus>Close</button></form>
+      </div>
+    </div>
   `;
   calendar.after(dialog);
+  // A click on the dimmed backdrop closes the pop-up.
+  dialog.addEventListener?.('click', event => { if (event.target === dialog) dialog.close(); });
 
-  const dateFormat = new Intl.DateTimeFormat('en-US', { dateStyle: 'full', timeStyle: 'short' });
-  const dateOnlyFormat = new Intl.DateTimeFormat('en-US', { dateStyle: 'full' });
+  const dayFormat = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  const timeFormat = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' });
+  const clock = value => value ? timeFormat.format(new Date('2000-01-01T' + value)) : '';
   return event => {
     const details = event.extendedProps;
-    const rows = [
-      ['When', event.start ? event.allDay ? dateOnlyFormat.format(event.start) + ' · TBD'
-        : dateFormat.format(event.start) + ' ET' : 'Time to be announced'],
-      ['Venue', details.location || 'To be announced'],
-      ['Status', details.status || 'Scheduled'],
-    ];
+    const game = details.game ?? {};
+    const teams = game.teams ?? {};
+    const sport = details.sport ?? teams.sport, gender = details.gender ?? teams.gender, level = details.level ?? teams.level;
+    const status = details.status ?? game.status ?? 'Scheduled';
+    const homeAway = details.home_away ?? game.home_away;
+    // "Girls Varsity Soccer" in the band's small line; the rest of the title ("@ Marlboro") is the heading.
+    const team = [gender, level, sport].filter(Boolean).join(' ');
+    let rest = event.title.replace(new RegExp(' · (' + status + '|TBD)$'), '').replace(/ · TBD$/, '');
+    if (team && rest.startsWith(team)) rest = rest.slice(team.length).replace(/^\s*·?\s*/, '');
+    const heading = dialog.querySelector('h2');
+    heading.textContent = (rest || event.title).replace(/(^| )at (?=\S)/, '$1@ ');
+    const teamLine = dialog.querySelector('.game-card-team');
+    teamLine.textContent = rest ? team : '';
+    if (status !== 'Scheduled') {
+      const label = document.createElement('span');
+      label.className = 'game-status is-' + status.toLowerCase();
+      label.textContent = status;
+      teamLine.append(label);
+    }
+    dialog.className = 'game-details game-card is-' + status.toLowerCase() +
+      (schoolColors ? ' uses-school-colors is-' + (homeAway === 'Away' ? 'away' : 'home') : '');
+
+    const when = event.start ? dayFormat.format(event.start) + ' · ' + (event.allDay ? 'Time TBD' : timeFormat.format(event.start) + ' ET')
+      : 'Date and time to be announced';
+    const bus = details.bus || (game.transportation?.bus_departure ? 'Bus ' + clock(game.transportation.bus_departure) : '');
+    const rows = [['When', when], ['Where', details.location || 'To be announced']];
     if (details.moved_from) rows.push(['Originally', details.moved_from.text]);
-    if (details.bus) rows.push(['Transportation', details.bus]);
+    if (bus) rows.push(['Bus', bus.replace(/^Bus /, '')]);
     if (details.earlyDismissal) rows.push(['Early dismissal', details.earlyDismissal]);
-    const bracket = dialog.querySelector('[data-tournament-bracket]');
-    // The bracket page is switched off for now. Use "!details.tournament_id" here to bring the link back.
-    bracket.hidden = true;
-    if (details.tournament_id) bracket.href = 'tournament.html?id=' + encodeURIComponent(details.tournament_id) +
-      (details.match_id ? '#match-' + encodeURIComponent(details.match_id) : '');
-    dialog.querySelector('h2').textContent = event.title;
+    const notes = details.notes ?? game.notes;
+    if (notes) rows.push(['Notes', notes]);
     dialog.querySelector('dl').replaceChildren(...rows.flatMap(([label, value]) => {
       const term = document.createElement('dt');
       const description = document.createElement('dd');
@@ -389,6 +419,15 @@ function createGameDetails(calendar) {
       description.textContent = value;
       return [term, description];
     }));
+
+    const directions = dialog.querySelector('[data-directions]');
+    directions.hidden = !details.location;
+    if (details.location) directions.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(details.location);
+    const bracket = dialog.querySelector('[data-tournament-bracket]');
+    // The bracket page is switched off for now. Use "!details.tournament_id" here to bring the link back.
+    bracket.hidden = true;
+    if (details.tournament_id) bracket.href = 'tournament.html?id=' + encodeURIComponent(details.tournament_id) +
+      (details.match_id ? '#match-' + encodeURIComponent(details.match_id) : '');
     dialog.showModal();
   };
 }
