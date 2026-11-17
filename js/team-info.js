@@ -48,9 +48,10 @@ function teamDivision({ school, sport, gender, level, date }) {
 }
 
 // quietWhenAll hides the line until a sport is chosen; the staff Schedule tab uses it to stay compact.
+// quietWhenAll hides the box until there is a division to show: no prompt to pick a sport or a team.
 function renderTeamInfo(target, selection, { quietWhenAll = false } = {}) {
   const result = teamDivision(selection);
-  if (quietWhenAll && result.state === 'all') {
+  if (quietWhenAll && ['all', 'choose-team'].includes(result.state)) {
     target.replaceChildren();
     target.hidden = true;
     return;
