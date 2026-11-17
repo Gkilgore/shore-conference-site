@@ -16,9 +16,9 @@ function followPreferredView(calendar) {
 function renderCalendar(events, { schoolColors = {}, schoolSlug = null } = {}) {
   const target = document.getElementById('calendar');
   const filters = document.getElementById('calendar-filters');
-  if (!window.FullCalendar) {
-    filters.hidden = true;
-    target.textContent = 'The calendar could not load. Check your connection and refresh.';
+  if (!window.FullCalendar || !target || !filters) {
+    if (filters) filters.hidden = true;
+    if (target) target.textContent = 'The calendar could not load. Check your connection and refresh.';
     return;
   }
 
@@ -35,7 +35,7 @@ function renderCalendar(events, { schoolColors = {}, schoolSlug = null } = {}) {
     if (fields.school) return status && event.title.endsWith(' · ' + status) ? event.title.slice(0, -status.length - 3) : event.title;
     const team = [gender, level, sport].filter(Boolean).join(' ');
     if (!team || !event.title.startsWith(team)) return event.title;
-    if (!fields.sport.value) return [gender, shortLevel(level), sport].filter(Boolean).join(' ');
+    if (!fields.sport?.value) return [gender, shortLevel(level), sport].filter(Boolean).join(' ');
     let rest = event.title.slice(team.length).replace(/^\s*·?\s*/, '');
     if (status && rest.endsWith(' · ' + status)) rest = rest.slice(0, -status.length - 3);
     return rest || team;
@@ -88,7 +88,7 @@ function renderCalendar(events, { schoolColors = {}, schoolSlug = null } = {}) {
   }
   // With one sport on screen, a short label such as "Girls JV" beside the time tells its teams apart.
   function teamTag(event) {
-    if (fields.school || !fields.sport.value || singleTeam) return null;
+    if (fields.school || !fields.sport?.value || singleTeam) return null;
     const { gender, level } = event.extendedProps;
     const text = [gender, shortLevel(level)].filter(Boolean).join(' ');
     if (!text) return null;
@@ -179,14 +179,14 @@ function renderCalendar(events, { schoolColors = {}, schoolSlug = null } = {}) {
     height: 'auto',
     noEventsText: 'No games in this view.',
     events(range, showEvents) {
-      const query = fields.search.value.trim().toLowerCase();
+      const query = (fields.search?.value ?? '').trim().toLowerCase();
       const firstDay = range.startStr.slice(0, 10);
       const afterLastDay = range.endStr.slice(0, 10);
       const matches = events.filter(game =>
         (!fields.school?.value || (game.schools ?? []).includes(fields.school?.value)) &&
-        (!fields.sport.value || game.sport === fields.sport.value) &&
-        (!fields.gender?.value || game.gender === fields.gender.value) &&
-        (!fields.level.value || game.level === fields.level.value) &&
+        (!fields.sport?.value || game.sport === fields.sport?.value) &&
+        (!fields.gender?.value || game.gender === fields.gender?.value) &&
+        (!fields.level?.value || game.level === fields.level?.value) &&
         (game.title + ' ' + game.location).toLowerCase().includes(query));
       const results = matches.filter(game =>
         game.start.slice(0, 10) >= firstDay && game.start.slice(0, 10) < afterLastDay);
@@ -195,11 +195,11 @@ function renderCalendar(events, { schoolColors = {}, schoolSlug = null } = {}) {
         ? results.length + (results.length === 1 ? ' game shown.' : ' games shown.') : '';
       showEmpty(results, matches, afterLastDay);
       // With one team on screen the squares need no team tag.
-      singleTeam = Boolean(fields.sport.value) &&
+      singleTeam = Boolean(fields.sport?.value) &&
         new Set(matches.map(game => [game.sport, game.gender, game.level].join('|'))).size === 1;
       // Tells the page which team and which part of the year are on screen.
       window.dispatchEvent(new CustomEvent('shore:calendar-view', { detail: {
-        sport: fields.sport.value, gender: fields.gender?.value ?? '', level: fields.level.value,
+        sport: fields.sport?.value, gender: fields.gender?.value ?? '', level: fields.level?.value,
         date: new Date((range.start.getTime() + range.end.getTime()) / 2).toISOString().slice(0, 10),
       } }));
       // School-colored squares carry a class so the status fills (yellow, red) step aside for the color.
