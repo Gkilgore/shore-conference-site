@@ -50,6 +50,7 @@ function mount({ records = [], games = [] } = {}) {
   };
 
   const writes = [];
+  const addedGames = [];
   const client = {
     from(table) {
       assert.equal(table, 'teams');
@@ -87,14 +88,43 @@ function mount({ records = [], games = [] } = {}) {
     coaches: () => null,
     schoolName: () => '',
     filterValues: () => ({}),
-    openGame() {}, addGame() {}, reviewTeam() {}, unpublishTeam() {}, editCoach() {}, addCoach() {},
+    openGame() {}, addGame(team) { addedGames.push(team); }, reviewTeam() {}, unpublishTeam() {}, editCoach() {}, addCoach() {},
   });
-  return { controller, document, form, records: () => records, writes, status: document.getElementById('teams-status') };
+  return { controller, document, form, records: () => records, writes, addedGames,
+    status: document.getElementById('teams-status') };
 }
 
 function findButton(root, label) {
   return descendants(root).find(item => item.tag === 'button' && item.textContent === label);
 }
+
+test('existing teams start another year through Add Game without copying team rows', async () => {
+  const team = { id: 'soccer', school_id: 'marlboro', sport: 'Soccer', gender: 'Girls', level: 'Varsity', season: 'Fall' };
+  const app = mount({ records: [team] });
+  await app.controller.load();
+  const prep = app.document.getElementById('team-prep-container');
+  const nextFall = new Date().getMonth() >= 8 ? new Date().getFullYear() + 1 : new Date().getFullYear();
+  assert.ok(descendants(prep).some(item => item.tag === 'h4' && item.textContent === 'Fall ' + nextFall));
+  const button = findButton(prep, 'Add game');
+  assert.ok(button, 'existing team has a next-year game action');
+  button.onclick();
+  assert.equal(app.addedGames.length, 1);
+  assert.equal(app.addedGames[0].id, team.id);
+  assert.equal(app.writes.length, 0, 'starting next year does not duplicate the team');
+  assert.ok(!descendants(prep).some(item => /Copy Selected|Teams copied/.test(item.textContent || '')));
+});
+
+test('the next schedule labels fall, winter and spring by their playing dates', async () => {
+  const base = { school_id: 'marlboro', sport: 'Soccer', gender: 'Girls', level: 'Varsity' };
+  const app = mount({ records: ['Fall', 'Winter', 'Spring'].map(season => ({ ...base, id: season, season })) });
+  await app.controller.load();
+  const prep = descendants(app.document.getElementById('team-prep-container'));
+  const nextFall = new Date().getMonth() >= 8 ? new Date().getFullYear() + 1 : new Date().getFullYear();
+  const headings = prep.filter(item => item.tag === 'h4').map(item => item.textContent);
+  assert.deepEqual(headings, ['Fall ' + nextFall,
+    'Winter ' + nextFall + '–' + String(nextFall + 1).slice(-2),
+    'Spring ' + (nextFall + 1)]);
+});
 
 test('AD can add multiple levels for one sport and season', async () => {
   const app = mount();

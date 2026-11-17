@@ -32,14 +32,10 @@ function startStaffTeams(client, { currentSchool, games, groups, states, links, 
     return (year - 1) + '-' + String(year % 100).padStart(2, '0');
   }
 
-  function getNextSchoolYear(schoolYear) {
-    const [start] = schoolYear.split('-').map(Number);
-    const nextStart = start + 1;
-    return nextStart + '-' + String((nextStart + 1) % 100).padStart(2, '0');
-  }
-
-  function schoolYearLabel(schoolYear) {
-    return schoolYear.replace('-', '–');
+  function nextSeasonLabel(season) {
+    const nextFall = Number(getCurrentSchoolYear().slice(0, 4)) + 1;
+    if (season === 'Winter') return 'Winter ' + nextFall + '–' + String(nextFall + 1).slice(-2);
+    return season + ' ' + (season === 'Spring' ? nextFall + 1 : nextFall);
   }
 
   function node(tag, text, className) {
@@ -251,84 +247,25 @@ function startStaffTeams(client, { currentSchool, games, groups, states, links, 
   }
 
   function renderPrepSection() {
-    const currentYear = getCurrentSchoolYear();
-    const nextYear = getNextSchoolYear(currentYear);
     const prepContent = [];
-
-    // For each season, show the prep UI
     for (const season of seasons) {
-      const seasonRow = node('div', undefined, 'team-prep-season');
-      const title = node('h4', season + ' ' + schoolYearLabel(nextYear));
-      
-      const infoRow = node('p', undefined, 'staff-hint');
-      infoRow.textContent = 'Copying from ' + season + ' ' + schoolYearLabel(currentYear);
-      
-      // Select all checkbox
-      const selectAllLabel = node('label');
-      selectAllLabel.className = 'team-prep-select-all';
-      const selectAllCheck = node('input');
-      selectAllCheck.type = 'checkbox';
-      selectAllCheck.checked = true;
-      const selectAllText = node('strong', 'Select all to copy');
-      selectAllLabel.append(selectAllCheck, selectAllText);
-      
-      // Team list for this season
-      const teamList = node('ul', undefined, 'team-prep-list');
       const currentSeasonTeams = teamRecords.filter(team => team.season === season);
-      
-      if (currentSeasonTeams.length === 0) {
-        const empty = node('li', 'No teams in ' + season + '.', 'staff-empty');
-        teamList.append(empty);
-      } else {
-        // Add checkboxes for each team
-        for (const team of currentSeasonTeams) {
-          const item = node('li', undefined, 'team-prep-item');
-          const checkbox = node('input');
-          checkbox.type = 'checkbox';
-          checkbox.checked = true;
-          checkbox.dataset.teamId = team.id;
-          checkbox.className = 'team-prep-checkbox';
-          
-          const label = node('label', undefined, 'team-prep-label');
-          label.append(checkbox, ' ', node('span', team.gender + ' ' + team.level + ' ' + team.sport));
-          
-          item.append(label);
-          teamList.append(item);
-        }
+      if (!currentSeasonTeams.length) continue;
+      const seasonRow = node('div', undefined, 'team-prep-season');
+      const title = node('h4', nextSeasonLabel(season));
+      const teamList = node('ul', undefined, 'team-prep-list');
+      for (const team of currentSeasonTeams) {
+        const item = node('li', undefined, 'team-prep-item');
+        item.append(node('span', team.gender + ' ' + team.level + ' ' + team.sport));
+        const add = button('Add game', 'secondary', () => addGame(team));
+        add.setAttribute('aria-label', 'Add ' + nextSeasonLabel(season) + ' game for ' + team.gender + ' ' + team.level + ' ' + team.sport);
+        item.append(add);
+        teamList.append(item);
       }
-      
-      // Copy button
-      const actions = node('div', undefined, 'team-prep-actions');
-      const copyBtn = node('button', '📋 Copy Selected to ' + season + ' ' + schoolYearLabel(nextYear), 'button primary team-prep-copy');
-      copyBtn.type = 'button';
-      copyBtn.dataset.season = season;
-      copyBtn.onclick = () => copyTeamsForSeason(season, nextYear, teamList);
-      
-      const addBtn = node('button', '+ Add Team', 'button secondary');
-      addBtn.type = 'button';
-      addBtn.onclick = () => alert('Add team dialog would go here');
-      
-      actions.append(copyBtn, addBtn);
-      
-      seasonRow.append(title, infoRow, selectAllLabel, teamList, actions);
-      prepContent.append(seasonRow);
+      seasonRow.append(title, teamList);
+      prepContent.push(seasonRow);
     }
-
     prepContainer.replaceChildren(...prepContent);
-  }
-
-  async function copyTeamsForSeason(season, nextYear, teamList) {
-    // Get selected checkboxes
-    const selected = [...teamList.querySelectorAll('.team-prep-checkbox:checked')].map(cb => cb.dataset.teamId);
-    
-    if (!selected.length) {
-      status.textContent = 'Select at least one team to copy.';
-      return;
-    }
-
-    // Note: Once school_year field is added to teams table, this would insert new rows
-    // For now, this is a placeholder for the copy logic
-    status.textContent = 'Teams copied to ' + season + ' ' + schoolYearLabel(nextYear) + '.';
   }
 
   function gameRow(game, reason) {
@@ -445,9 +382,9 @@ function startStaffTeams(client, { currentSchool, games, groups, states, links, 
     if (team) renderDetail(team);
     else { detail.replaceChildren(); renderList(all); }
     
-    // Always show the prep section if teams are loaded
-    prepSection.hidden = !teamsLoaded;
-    if (teamsLoaded && !team) {
+    // Existing teams can start next year's games while the team list is open.
+    prepSection.hidden = !teamsLoaded || !teamRecords.length || Boolean(team);
+    if (!prepSection.hidden) {
       renderPrepSection();
     }
   }
