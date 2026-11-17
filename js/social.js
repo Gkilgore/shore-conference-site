@@ -36,7 +36,7 @@ function renderSocialAccounts(host, accounts) {
     return element;
   };
   const links = node('ul', 'social-links');
-  for (const account of accounts) {
+  for (const account of accounts.filter(account => account.platform !== 'instagram')) {
     const link = node('a', 'button secondary', account.name + ' · ' + account.label + ' ' + account.handle);
     link.href = account.url;
     link.target = '_blank';
@@ -46,21 +46,18 @@ function renderSocialAccounts(host, accounts) {
     item.append(link);
     links.append(item);
   }
-  const side = node('div', 'social-side');
-  const instagram = accounts.find(account => account.platform === 'instagram' && account.name === 'School athletics')
-    ?? accounts.find(account => account.platform === 'instagram');
-  side.append(links);
-  if (!instagram) {
-    host.replaceChildren(side);
-    return;
-  }
+  document.getElementById('social-links').replaceChildren(...(links.childElementCount ? [links] : []));
+  const instagramAccounts = accounts.filter(account => account.platform === 'instagram');
+  const frames = instagramAccounts.map(instagram => {
+    const frame = node('div', 'social-embed');
+    const status = node('p', 'social-note', 'Loading Instagram…');
+    status.setAttribute('role', 'status');
+    frame.append(node('p', 'eyebrow', instagram.name + ' · Instagram ' + instagram.handle), status);
+    return { frame, status, instagram };
+  });
+  host.replaceChildren(...frames.map(item => item.frame));
 
-  const frame = node('div', 'social-embed');
-  const status = node('p', 'social-note', 'Loading Instagram…');
-  status.setAttribute('role', 'status');
-  frame.append(node('p', 'eyebrow', instagram.name + ' · Instagram ' + instagram.handle), status);
-  host.replaceChildren(frame, side);
-
+  for (const { frame, status, instagram } of frames) {
   const show = async () => {
     // Instagram's script swaps this quote for its own frame holding the account's latest posts.
     const quote = node('blockquote', 'instagram-media');
@@ -82,7 +79,11 @@ function renderSocialAccounts(host, accounts) {
       if (loaded()) return;
       quote.remove();
       frame.querySelector('iframe')?.remove();
-      status.textContent = 'Instagram didn’t load here. Use the Instagram link to see the account.';
+      const open = node('a', '', 'Open ' + instagram.handle + ' on Instagram');
+      open.href = instagram.url;
+      open.target = '_blank';
+      open.rel = 'noopener';
+      status.replaceChildren('Instagram didn’t load here. ', open);
     };
     const watcher = new MutationObserver(() => { if (loaded()) watcher.disconnect(); });
     watcher.observe(frame, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
@@ -94,13 +95,14 @@ function renderSocialAccounts(host, accounts) {
       failed();
     }
   };
-  if (!('IntersectionObserver' in window)) return void show();
+  if (!('IntersectionObserver' in window)) { show(); continue; }
   const near = new IntersectionObserver(entries => {
     if (!entries.some(entry => entry.isIntersecting)) return;
     near.disconnect();
     show();
   }, { rootMargin: '300px' });
   near.observe(frame);
+  }
 }
 
 (async () => {
