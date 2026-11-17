@@ -73,11 +73,13 @@ function renderTeamInfo(target, selection, { quietWhenAll = false } = {}) {
   const official = list => link('Official division list', list.url);
   const parts = [part('span', 'Division', 'team-info-label')];
   if (result.state === 'assigned') {
-    parts.push(part('strong', [result.division, result.label, result.level].join(' · ')), official(result.list));
+    // One control: the division's name opens its schools, with the official list at the end.
+    const name = [result.division, result.label, result.level].join(' · ');
+    if (!result.members) parts.push(part('strong', name), official(result.list));
     if (result.members) {
       const details = document.createElement('details');
       const names = document.createElement('ul');
-      details.append(part('summary', 'Schools in ' + result.division), names);
+      details.append(part('summary', name), names);
       names.append(...result.members.map(member => {
         const item = document.createElement('li');
         const slugs = divisionEntrySchools(member, schools);
@@ -89,6 +91,10 @@ function renderTeamInfo(target, selection, { quietWhenAll = false } = {}) {
         });
         return item;
       }));
+      const source = document.createElement('li');
+      source.className = 'team-info-source';
+      source.append(official(result.list));
+      names.append(source);
       parts.push(details);
     }
   } else if (result.state === 'all') {

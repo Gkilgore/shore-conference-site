@@ -762,7 +762,9 @@ textarea { display: block; resize: vertical; }
 .team-info { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.9rem; margin-block: 0.75rem; padding: 0.5rem 0.75rem; background: var(--paper); border: var(--frame); font-size: 0.95rem; }
 .team-info[hidden] { display: none; }
 .team-info-label { font-size: 0.76rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
-.team-info summary { cursor: pointer; text-decoration: underline; }
+.team-info summary { cursor: pointer; font-weight: 700; }
+.team-info summary:is(:hover, :focus-visible) { background: var(--hover); }
+.team-info-source { margin-left: auto; }
 .team-info details[open] { flex-basis: 100%; }
 .team-info ul { display: flex; flex-wrap: wrap; gap: 0.15rem 1rem; margin: 0.35rem 0 0; padding: 0; list-style: none; }
 .empty-schedule a { font-weight: 700; }
