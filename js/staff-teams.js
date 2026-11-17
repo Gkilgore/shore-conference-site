@@ -447,6 +447,8 @@ function startStaffTeams(client, { currentSchool, games, groups, states, links, 
   return {
     render,
     load,
+    // Every team with its games, for the Schedule tab's team picker.
+    all: () => teams(),
     loadState() { return teamsLoaded ? 'ready' : teamLoadFailed ? 'error' : 'loading'; },
     listedTeams() {
       return teamRecords.map(({ sport, gender, level, season }) => ({ sport, gender, level, season }));

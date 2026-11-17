@@ -10,7 +10,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700;800&display=swap">
   <link rel="stylesheet" href="css/site.css">
-  <link rel="stylesheet" href="css/history.css">
   <script defer src="js/site.js"></script>
   <script defer src="data/school-directory.js"></script>
   <script defer src="data/conference-resources.js"></script>
@@ -18,9 +17,6 @@
   <script defer src="js/supabase-config.js"></script>
   <script defer src="data/document-archive.js"></script>
   <script defer src="js/document-archive.js"></script>
-  <script defer src="data/history.js"></script>
-  <script defer src="js/history-data.js"></script>
-  <script defer src="js/history.js"></script>
   <script defer src="js/resources.js"></script>
   <script defer src="js/document-links.js"></script>
 </head>
@@ -99,118 +95,88 @@
             <li><a href="#documents"><strong>Documents</strong><span>Constitution, leadership and award forms.</span></a></li>
           </ul>
         </section>
-        <section class="panel article history-feature" id="history" aria-labelledby="history-title">
-          <header class="history-hero">
-            <div class="history-hero-copy">
-              <p class="eyebrow">1936–2026 · Monmouth &amp; Ocean counties</p>
-              <h2 id="history-title">Our History</h2>
-              <p class="standfirst">90 Years of Shore Conference Athletics</p>
-              <p>Nine schools set a league in motion in February 1936. Across the decades, new schools, new sports and new opportunities changed who could compete and how far they could go.</p>
-              <p class="history-hero-note">A history in progress, through November 15, 2026. Every story starts with a source.</p>
-            </div>
-            <div id="history-hero-photo" class="history-enhanced"></div>
-          </header>
-          <nav class="history-jump history-enhanced" aria-label="Explore Shore history">
-            <a class="button secondary" href="#history-timeline">Timeline</a>
-            <a class="button secondary" href="#history-legends">Legends</a>
-            <a class="button secondary" href="#history-moments">Defining Moments</a>
-            <a class="button secondary" href="#history-schools">Schools</a>
-            <a class="button secondary" href="#history-sources">Sources</a>
-          </nav>
-          <section class="history-section history-enhanced" id="history-timeline" aria-labelledby="history-timeline-title">
-            <header class="history-section-head"><p class="eyebrow">01 / The decades</p><h3 id="history-timeline-title">The Shore Conference through the decades</h3><p>Pick a decade. Open a milestone for its story and sources.</p></header>
-            <div id="history-decades" class="history-controls" role="group" aria-label="Timeline decade"></div>
-            <p id="history-decade-status" class="doc-meta" role="status"></p>
-            <ol id="history-events" class="history-event-list"></ol>
-          </section>
-          <section class="history-section history-enhanced" id="history-legends" aria-labelledby="history-legends-title">
-            <header class="history-section-head"><p class="eyebrow">02 / The people</p><h3 id="history-legends-title">Shore Conference Legends</h3><p>School careers that opened onto a bigger stage. These profiles celebrate achievements across sports, without ranking one against another.</p></header>
-            <div class="history-filters">
-              <label for="history-sport">Sport<select id="history-sport"><option value="all">All sports</option></select></label>
-              <label for="history-era">School era<select id="history-era"><option value="all">All eras</option></select></label>
-              <button type="button" class="button secondary" id="history-reset">Reset filters</button>
-            </div>
-            <p id="history-results" class="doc-meta" role="status"></p>
-            <p id="history-empty" hidden>No profiles match those filters. Try another sport or school era.</p>
-            <div data-history-group><div id="history-athletes" class="history-gallery"></div></div>
-            <div data-history-group><h3>Jersey Shore Greats</h3><p>A school’s later membership does not turn its earlier alumni into conference competitors.</p><div id="history-shore-greats" class="history-gallery"></div></div>
-            <div data-history-group><h3>Membership research ongoing</h3><p>These achievements are documented. A source establishing conference membership during the athlete’s school years is still needed.</p><div id="history-membership-research" class="history-gallery"></div></div>
-          </section>
-          <section class="history-section history-enhanced" id="history-moments" aria-labelledby="history-moments-title">
-            <header class="history-section-head"><p class="eyebrow">03 / Defining moments</p><h3 id="history-moments-title">The stories behind the scores</h3><p>New opportunities, lasting programs and teams that changed expectations.</p></header>
-            <div id="history-stories" class="history-stories"></div>
-          </section>
-          <section class="history-section history-enhanced" id="history-schools" aria-labelledby="history-schools-title">
-            <header class="history-section-head"><p class="eyebrow">04 / Membership</p><h3 id="history-schools-title">The schools that built the Shore</h3><p>Membership changed with regional schools, new high schools and new admission rules. This is a documented chronology, not a complete accession list.</p></header>
-            <ol id="history-membership" class="history-membership-list"></ol>
-            <a href="schools.html">Browse today’s scheduling directory</a>
-          </section>
-          <section class="history-section" id="history-sources" aria-labelledby="history-sources-title">
-            <header class="history-section-head"><p class="eyebrow">05 / The archive</p><h3 id="history-sources-title">Historical archive and sources</h3><p>The conference’s original record covers 1936 through 1969. School archives, athletic associations and contemporary reporting help extend the story.</p></header>
-            <details class="history-archive history-enhanced"><summary>Browse historical sources</summary><div><ul id="history-source-list" class="doc-list history-source-list"></ul></div></details>
-            <details class="history-archive history-enhanced"><summary>Photographs and reuse credits</summary><div><p>These photographs show the athletes later in their careers. They are not presented as high-school archival photographs.</p><ul id="history-photo-credits" class="doc-list"></ul></div></details>
-            <details class="history-archive history-enhanced"><summary>Research ongoing</summary><div><p>The nine-school founding roster, several admission and re-entry dates, early girls tournament chronology, and complete championship totals still need archival confirmation. Approved historical team photographs are also needed.</p><p>Only documented claims appear in the timeline. A source’s silence is not proof that an event did not happen.</p></div></details>
-            <noscript><p>The original history is available below. Turn on JavaScript for the modern timeline, athlete profiles and filters.</p></noscript>
-            <details class="history-archive" id="history-original" open><summary>Read the original 1936–1969 history</summary><div>
-          <p class="history-note">The original record also mentions Shore-area athletes outside the conference. Its entry about Bob Verga at St. Rose is not evidence that he competed in the conference during its public-school-only era.</p>
-          <!-- Milestones chosen from assets/documents/HISTORY_OF_THE_SHORE_CONFERENCE.pdf; every date and number is in that record.
-               To add a photo, put <figure class="photo"><img src="assets/history/file.jpg" alt="what the photo shows" width="…" height="…" loading="lazy"><figcaption>Caption and credit.</figcaption></figure>
-               between an era's opening paragraph and its list. -->
+        <section class="panel article" id="history" aria-labelledby="history-title">
+          <!-- Every row is backed by a source in the list below. Keep entries to one line; add the source with the entry. -->
           <header class="article-head">
-            <p class="eyebrow">1936 through 1969</p>
-            <h3 id="history-original-title">The founding-era record</h3>
-            <p class="standfirst">Nine schools met in February 1936 to form a league for the smaller public high schools of Monmouth and Ocean counties. By 1969 the conference had four divisions built for 27 schools.</p>
-            <p class="doc-meta">Chosen from the conference’s record of its meetings, which covers 1936 through 1969.</p>
+            <p class="eyebrow">1936–2026</p>
+            <h2 id="history-title">History</h2>
+            <p class="standfirst">Founded in 1936 by public high schools in Monmouth and Ocean counties.</p>
           </header>
-          <ul class="stat-row">
-            <li><strong>9</strong><span>schools at the founding meeting in February 1936</span></li>
-            <li><strong>16</strong><span>schools once Long Branch joined in March 1956</span></li>
-            <li><strong>27</strong><span>schools in the alignment approved in 1969</span></li>
-          </ul>
-          <nav class="actions" aria-label="History chapters"><a class="button secondary" href="#history-1936">1936–1949</a><a class="button secondary" href="#history-1950">1950–1959</a><a class="button secondary" href="#history-1960">1960–1969</a></nav>
-          <section class="chapter history-era" id="history-1936" aria-labelledby="history-1936-title">
-            <header class="chapter-head"><span>1936–1949</span><h3 id="history-1936-title">A league of Group Two schools</h3></header>
-            <p class="chapter-lead">The conference began as a league for the smaller public high schools of the two counties, with titles in football, basketball, baseball and track.</p>
+          <section class="chapter" aria-labelledby="history-athletes-title">
+            <h3 id="history-athletes-title">Notable athletes</h3>
+            <table class="archive-table history-athletes">
+              <thead><tr><th scope="col">Athlete</th><th scope="col">School</th><th scope="col">Years</th><th scope="col">Sport</th><th scope="col">Known for</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Jack Arden</th><td><a href="school.html?school=lakewood">Lakewood</a></td><td>1950s</td><td>Basketball</td><td>First New Jersey player to score 2,000 career points (2,003 in 1958).</td></tr>
+                <tr><th scope="row">Al Leiter</th><td><a href="school.html?school=central-regional">Central Regional</a></td><td>Class of 1984</td><td>Baseball</td><td>Major League pitcher; NJSIAA Hall of Fame.</td></tr>
+                <tr><th scope="row">Christie Pearce Rampone</th><td><a href="school.html?school=point-pleasant-boro">Point Pleasant Boro</a></td><td>1990s</td><td>Soccer, basketball, field hockey</td><td>Olympic soccer gold in 2004, 2008 and 2012.</td></tr>
+                <tr><th scope="row">Tom Wilkens</th><td><a href="school.html?school=christian-brothers-academy">Christian Brothers Academy</a></td><td>Class of 1994</td><td>Swimming</td><td>Olympic bronze in the 200-meter individual medley, 2000.</td></tr>
+                <tr><th scope="row">Frankie Edgar</th><td><a href="school.html?school=toms-river-east">Toms River East</a></td><td>Late 1990s–2000</td><td>Wrestling</td><td>UFC lightweight champion; UFC Hall of Fame, 2024.</td></tr>
+                <tr><th scope="row">Todd Frazier</th><td><a href="school.html?school=toms-river-south">Toms River South</a></td><td>Early 2000s</td><td>Baseball</td><td>MLB All-Star, 2014.</td></tr>
+                <tr><th scope="row">Knowshon Moreno</th><td><a href="school.html?school=middletown-south">Middletown South</a></td><td>Mid-2000s</td><td>Football</td><td>12th overall pick in the 2009 NFL Draft.</td></tr>
+                <tr><th scope="row">Vinny Curry</th><td><a href="school.html?school=neptune">Neptune</a></td><td>Mid-2000s</td><td>Football</td><td>Super Bowl champion with the Eagles, 2017 season.</td></tr>
+                <tr><th scope="row">Frank Molinaro</th><td><a href="school.html?school=southern-regional">Southern Regional</a></td><td>Class of 2007</td><td>Wrestling</td><td>Three state titles; 2012 NCAA champion at Penn State.</td></tr>
+                <tr><th scope="row">Marina Mabrey</th><td><a href="school.html?school=manasquan">Manasquan</a></td><td>Class of 2015</td><td>Basketball</td><td>2018 NCAA champion at Notre Dame; 2019 WNBA draft pick.</td></tr>
+                <tr><th scope="row">Bryan Antoine</th><td><a href="school.html?school=ranney">Ranney</a></td><td>Class of 2019</td><td>Basketball</td><td>More than 2,500 career points; 2019 Tournament of Champions title.</td></tr>
+                <tr><th scope="row">Scottie Lewis</th><td><a href="school.html?school=ranney">Ranney</a></td><td>Class of 2019</td><td>Basketball</td><td>2019 Tournament of Champions title.</td></tr>
+              </tbody>
+            </table>
+          </section>
+          <section class="chapter" aria-labelledby="history-timeline-title">
+            <h3 id="history-timeline-title">Timeline</h3>
             <ol class="history-timeline">
-              <li><h4>February 1936</h4><p>The Shore Conference of Group Two Public Schools is organized. Nine of the eleven Group Two schools in the two counties send delegates or say they will join. Roy W. H. Maurer, athletic director at Freehold High School, is elected president unanimously.</p></li>
-              <li><h4>October 29, 1938</h4><p>The Shore Conference is incorporated as a nonprofit organization in New Jersey. This date is recorded in Article XI of the <a href="assets/documents/SC_Constitution_2024_.pdf">conference constitution</a>.</p></li>
-              <li><h4>December 1940</h4><p>Membership is limited to twelve schools, and Sayreville’s application is rejected.</p></li>
-              <li><h4>June 1945</h4><p>The conference drops its weighted point system. Titles in the 13-team league will go by won-loss percentage.</p></li>
-              <li><h4>April 1946</h4><p>The basketball tournament clears $980, the most it has ever taken in.</p></li>
-              <li><h4>October 1946</h4><p>Red Bank Catholic is refused membership because the constitution admits only public schools.</p></li>
+              <li><h4>February 1936</h4><p>Nine public high schools in Monmouth and Ocean counties form the conference. Freehold athletic director Roy W. H. Maurer is the first president.</p></li>
+              <li><h4>October 29, 1938</h4><p>The conference is incorporated as a New Jersey nonprofit, as recorded in the <a href="assets/documents/SC_Constitution_2024_.pdf">constitution</a>.</p></li>
+              <li><h4>December 1940</h4><p>Membership is capped at twelve: Rumson, Leonardo, Lakewood, Manasquan, Matawan, Atlantic Highlands, Point Pleasant, Toms River, Keyport, Freehold, Neptune and Hoffman (South Amboy).</p></li>
+              <li><h4>October 1946</h4><p>Red Bank Catholic is turned down because the constitution admits only public schools.</p></li>
+              <li><h4>February 1953</h4><p>Schools are split into A and B divisions by size.</p></li>
+              <li><h4>1956</h4><p>Asbury Park, Central Regional and Long Branch join, bringing membership to 16.</p></li>
+              <li><h4>1957</h4><p>Cross country is added. Wall Township, Southern Regional and Brick Township join.</p></li>
+              <li><h4>1961–1964</h4><p>Soccer, wrestling and tennis are added.</p></li>
+              <li><h4>September 1965</h4><p>Matawan athletic director Barry Rizzo asks what the conference plans for girls’ sports, seven years before Title IX.</p></li>
+              <li><h4>1969</h4><p>Four divisions are approved for 27 schools.</p></li>
+              <li><h4>1970</h4><p>Nancy Williams starts the Shore Regional field hockey program. Her teams go on to win 43 straight division titles.</p></li>
+              <li><h4>1974–1977</h4><p>Asbury Park girls basketball wins three straight state titles, including a 28–0 season.</p></li>
+              <li><h4>1978</h4><p>Red Bank Catholic is admitted, ending the public-schools-only era.</p></li>
+              <li><h4>1982</h4><p>Christian Brothers Academy joins.</p></li>
+              <li><h4>2012</h4><p>Ranney joins.</p></li>
+              <li><h4>March 2019</h4><p>Ranney wins the Tournament of Champions, a first for a Shore boys basketball team.</p></li>
+              <li><h4>2025</h4><p>Jackson Liberty becomes Jackson Township High School.</p></li>
+              <li><h4>May 2026</h4><p>NJSIAA approves state championships in girls flag football, starting in 2026–27.</p></li>
             </ol>
           </section>
-          <section class="chapter history-era" id="history-1950" aria-labelledby="history-1950-title">
-            <header class="chapter-head"><span>1950–1959</span><h3 id="history-1950-title">Divisions, records and new members</h3></header>
-            <p class="chapter-lead">Rising enrollments led the conference to sort its schools by size. Membership reached 16 in 1956, and three more schools were admitted the next year.</p>
-            <ol class="history-timeline">
-              <li><h4>February 1951</h4><p>The 13 members vote unanimously to play football in two divisions for separate trophies, starting in 1952.</p></li>
-              <li><h4>December 1952</h4><p>The Group I and II divisions become A and B, with the larger schools in A. Granny Magee of Manasquan will again run the basketball tournament at Convention Hall in Asbury Park.</p></li>
-              <li><h4>February 1953</h4><p>The conference adopts the Rosati Plan, submitted by Rumson athletic director Joe Rosati. Each school plays a home-and-home series within its division.</p></li>
-              <li><h4>March 1956</h4><p>Long Branch is admitted a month after Asbury Park and Central Regional, bringing membership to 16 schools.</p></li>
-              <li><h4>December 1956</h4><p>Cross country is added. The first conference meet is set for Ocean County Park on November 5, 1957.</p></li>
-              <li><h4>December 1957</h4><p>Wall Township, Southern Regional and Brick Township are admitted.</p></li>
-              <li><h4>February 1958</h4><p>Jack Arden of Lakewood becomes the first player in New Jersey to score more than 2,000 points in a career, finishing with 2,003.</p></li>
-            </ol>
-          </section>
-          <section class="chapter history-era" id="history-1960" aria-labelledby="history-1960-title">
-            <header class="chapter-head"><span>1960–1969</span><h3 id="history-1960-title">New sports and 27 schools</h3></header>
-            <p class="chapter-lead">Scheduling and alignment took up much of the decade. Soccer, wrestling and tennis were added, and in 1969 the conference settled on four divisions.</p>
-            <blockquote class="pullquote"><p>John Kolibas, principal of Shore Regional, suggests a sportsmanship award for member schools.</p><footer>From the conference record, 1967</footer></blockquote>
-            <ol class="history-timeline">
-              <li><h4>March 1961</h4><p>Soccer is adopted, with a first official schedule in 1962.</p></li>
-              <li><h4>March 1962</h4><p>Wrestling becomes an official sport.</p></li>
-              <li><h4>February 1963</h4><p>Bob Verga of St. Rose scores 1,033 points in a season, a Shore and state record.</p></li>
-              <li><h4>February 1964</h4><p>The first tennis league schedule is approved.</p></li>
-              <li><h4>September 1965</h4><p>Matawan athletic director Barry Rizzo asks what the conference plans for girls’ sports. Five schools with girls’ programs are already competing with one another.</p></li>
-              <li><h4>May 1966</h4><p>Asbury Park, which left after the 1961–62 school year, is accepted back.</p></li>
-              <li><h4>February to May 1969</h4><p>A four-division alignment built on 27 schools passes 23–1. Marlboro, Keansburg and a new Toms River high school officially enter.</p></li>
-            </ol>
-          </section>
-          <p>The original document has every meeting in the record and a list of officers.</p>
-          <div class="actions"><a class="button dark" href="assets/documents/HISTORY_OF_THE_SHORE_CONFERENCE.pdf">Original document (PDF)</a></div>
-            </div></details>
-          </section>
+          <details class="history-sources"><summary>Sources</summary>
+            <ul class="doc-list">
+              <li><a href="assets/documents/HISTORY_OF_THE_SHORE_CONFERENCE.pdf">History of the Shore Conference, 1936–1969</a> <span class="doc-meta">Shore Conference</span></li>
+              <li><a href="assets/documents/SC_Constitution_2024_.pdf">Shore Conference Constitution, revised June 2024</a> <span class="doc-meta">Shore Conference</span></li>
+              <li><a href="https://www.njsiaa.org/sites/default/files/documents/2021-11/njsiaa-trailblazer-nancy-williams.pdf">Nancy Williams: NJSIAA Trailblazer</a> <span class="doc-meta">NJSIAA</span></li>
+              <li><a href="https://thecoaster.net/2026/09/16/asbury-park-high-school-blue-bishops-gather-to-recall-championship-era/">Blue Bishops gather to recall championship era</a> <span class="doc-meta">The Coaster, September 16, 2026</span></li>
+              <li><a href="https://www.digifind-it.com/redbank/data/yearbooks/rbc/1980.pdf#page=135">1980 yearbook: Update — Shore Conference</a> <span class="doc-meta">Red Bank Catholic / Red Bank Public Library archive</span></li>
+              <li><a href="https://www.letsgocolts.com/news/27590">Cross country wins 33rd Shore championship</a> <span class="doc-meta">Christian Brothers Academy, 2017</span></li>
+              <li><a href="https://www.njsiaa.org/sites/default/files/documents/2020-10/class-of-2012.pdf">Hall of Fame: Christie Rampone</a> <span class="doc-meta">NJSIAA, class of 2012</span></li>
+              <li><a href="https://monmouthhawks.com/honors/hall-of-fame/christie-pearce-rampone/50">Christie Pearce Rampone, Hall of Fame</a> <span class="doc-meta">Monmouth University Athletics</span></li>
+              <li><a href="https://www.njsiaa.org/sites/default/files/documents/2020-10/class-of-2016.pdf">Hall of Fame: Al Leiter</a> <span class="doc-meta">NJSIAA, class of 2016</span></li>
+              <li><a href="https://www.mlb.com/player/al-leiter-117652/">Al Leiter player biography</a> <span class="doc-meta">Major League Baseball</span></li>
+              <li><a href="https://scarletknights.com/news/2005/1/25/todd_frazier_named_big_east_preseason_freshman_of_the_year">Todd Frazier named preseason freshman of the year</a> <span class="doc-meta">Rutgers Athletics, January 25, 2005</span></li>
+              <li><a href="https://scarletknights.com/news/2014/7/14/Memorable_Moments_Todd_Frazier">Memorable moments: Todd Frazier</a> <span class="doc-meta">Rutgers Athletics, July 14, 2014</span></li>
+              <li><a href="https://www.ufc.com/news/frankie-answer-edgar-named-ufc-hall-fame-class-2024">Frankie Edgar named to Hall of Fame class of 2024</a> <span class="doc-meta">UFC</span></li>
+              <li><a href="https://www.trschools.com/sports/mma-star-frankie-edgar-returns-to-high-school-east">Frankie Edgar returns to High School East</a> <span class="doc-meta">Toms River Regional Schools, June 13, 2019</span></li>
+              <li><a href="https://media.denverbroncos.com/wp-content/uploads/2019/01/Denver_Broncos_MG_2012.pdf">2012 Denver Broncos media guide: Knowshon Moreno</a> <span class="doc-meta">Denver Broncos</span></li>
+              <li><a href="https://playfootball.nfl.com/news-events/news-and-features/vinny-curry-shares-his-youth-football-experience-with-young-players-including-his-son/">Vinny Curry shares his youth football experience</a> <span class="doc-meta">NFL Play Football</span></li>
+              <li><a href="https://herdzone.com/news/2024/11/14/football-herd-legend-vinny-curry-pays-tribute-to-75-with-retirement">Herd legend Vinny Curry retires</a> <span class="doc-meta">Marshall Athletics, November 14, 2024</span></li>
+              <li><a href="https://fightingirish.com/sports/wbball/roster/player/marina-mabrey">Marina Mabrey: 2018–19 player biography</a> <span class="doc-meta">Notre Dame Athletics</span></li>
+              <li><a href="https://gopsusports.com/sports/wrestling/roster/season/2007-08/player/frank-molinaro">Frank Molinaro: 2007–08 roster</a> <span class="doc-meta">Penn State Athletics</span></li>
+              <li><a href="https://gopsusports.com/staff/frank-molinaro">Frank Molinaro: coaching biography</a> <span class="doc-meta">Penn State Athletics</span></li>
+              <li><a href="https://www.njsiaa.org/sites/default/files/documents/2020-11/2020-wrestling-history_0.pdf">Boys wrestling championship history</a> <span class="doc-meta">NJSIAA</span></li>
+              <li><a href="https://www.ranneyschool.org/news-story?pk=602087">Athletic program on path to success</a> <span class="doc-meta">Ranney School, November 2011</span></li>
+              <li><a href="https://tworivertimes.com/history-made-ranney-wins-the-tournament-of-champions/">History made: Ranney wins Tournament of Champions</a> <span class="doc-meta">Rich Chrampanis, Two River Times, March 22, 2019</span></li>
+              <li><a href="https://www.ranneyschool.org/news-story?pk=1025734">Congratulations to the class of 2019</a> <span class="doc-meta">Ranney School</span></li>
+              <li><a href="https://www.letsgocolts.com/news/50504">Olympian Tom Wilkens ’94 honored at CBA</a> <span class="doc-meta">Christian Brothers Academy, 2019</span></li>
+              <li><a href="https://resources.finalsite.net/images/v1763148860/mfy33irlgapcxaznpbr0/4_30_25Addendum_1.pdf">April 30, 2025 agenda addendum: new school names</a> <span class="doc-meta">Jackson Township Board of Education</span></li>
+              <li><a href="https://www.inquirer.com/high-school-sports/girls-flag-football-new-jersey-sanctioned-sport-eagles-giants-jets-20260504.html">Girls flag football approved for 2026–27</a> <span class="doc-meta">The Philadelphia Inquirer, May 4, 2026</span></li>
+            </ul>
+          </details>
+          <div class="actions"><a class="button dark" href="assets/documents/HISTORY_OF_THE_SHORE_CONFERENCE.pdf">Original 1936–1969 record (PDF)</a></div>
         </section>
         <section class="panel" id="divisions" aria-labelledby="divisions-title">
           <h2 id="divisions-title">Divisions</h2>

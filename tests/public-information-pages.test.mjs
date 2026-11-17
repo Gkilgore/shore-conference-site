@@ -19,8 +19,7 @@ test('home stays focused on schools and schedules', () => {
   assert.match(home, /View calendar/);
   assert.match(home, /id="upcoming"/);
   assert.match(home, /class="hero-copy">High school athletics grounded in education, sportsmanship and fair competition\.<\/p>/);
-  assert.match(home, /href="resources\.html#history"/);
-  assert.ok(home.indexOf('id="upcoming"') < home.indexOf('href="resources.html#history"'));
+  assert.doesNotMatch(home, /home-history/);
 });
 test('resources urls are labeled Information in every masthead', () => {
   for (const name of mastheadPages) {
@@ -68,19 +67,21 @@ test('About explains the revised constitution without treating the directory as 
   assert.match(about, /Revised June 2024/);
   assert.match(about, /assets\/documents\/SC_Constitution_2024_\.pdf/);
 });
-test('History states its source scope and links the saved record', () => {
-  assert.match(history, /1936 through 1969/i);
+test('History is a short sourced list with the original record linked', () => {
   assert.match(history, /assets\/documents\/HISTORY_OF_THE_SHORE_CONFERENCE\.pdf/);
-  for (const id of ['history-1936', 'history-1950', 'history-1960']) {
-    assert.ok(history.includes('href="#' + id + '"') && history.includes('id="' + id + '"'), id);
-  }
+  assert.match(history, /class="archive-table history-athletes"/);
+  assert.match(history, /<th scope="col">School<\/th>.*<th scope="col">Sport<\/th>/);
+  assert.match(history, /class="history-timeline"/);
+  assert.match(history, /<summary>Sources<\/summary>/);
+  for (const name of ['Christie Pearce Rampone', 'Al Leiter', 'Frank Molinaro']) assert.ok(history.includes(name), name);
+  assert.ok(!history.includes('Bob Verga'), 'St. Rose was not a member during his school years');
 });
-test('static Information fallback contains only the logo; enhanced history photos are checked separately', () => {
-  assert.doesNotMatch(about + history, /Photo to come|Caption:|photo-slot|<figure/i);
+test('Information pages show no photos except the conference logo', () => {
+  assert.doesNotMatch(about + history, /<figure/i);
   assert.equal((about + history).match(/<img /g).length, 1, 'only the conference logo');
 });
-test('History retains selected verified milestones', () => {
-  for (const fact of ['February 1936', 'Convention Hall', 'girls’ programs', 'four-division', '27 schools']) {
+test('History keeps its key verified milestones', () => {
+  for (const fact of ['February 1936', 'girls’ sports', 'Four divisions', '27 schools']) {
     assert.match(history, new RegExp(fact, 'i'));
   }
 });
@@ -92,7 +93,7 @@ test('History distinguishes founding from incorporation', () => {
 test('Information layouts use the shared design system', () => {
   const css = read('css/site.css');
   const rules = css.slice(css.indexOf('/* Information stories'), css.indexOf('/* End of Information stories'));
-  for (const name of ['about-story', 'about-logo', 'about-facts', 'about-next', 'history-era', 'history-timeline']) {
+  for (const name of ['about-story', 'about-logo', 'about-facts', 'about-next', 'history-athletes', 'history-timeline']) {
     assert.ok(rules.includes('.' + name), name + ' is styled');
     assert.ok(page.includes(name), name + ' is used');
   }

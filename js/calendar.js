@@ -401,7 +401,8 @@ function createDirectionsLink(location, schools) {
 // school page (schoolColors) the school color for home games and its accent for away games. A postponed or
 // canceled game's band is grey everywhere, with its yellow or red label. Below it: when, where (the venue's
 // saved address and directions), the original slot of a moved game, bus, early dismissal and notes.
-function createGameDetails(calendar, { schoolColors = false } = {}) {
+// Staff pages pass onEdit to add an Edit game button, and canEdit to hide it from read-only viewers.
+function createGameDetails(calendar, { schoolColors = false, onEdit = null, canEdit = () => true } = {}) {
   const dialog = document.createElement('dialog');
   dialog.className = 'game-details game-card';
   dialog.setAttribute('aria-labelledby', 'game-details-title');
@@ -415,6 +416,7 @@ function createGameDetails(calendar, { schoolColors = false } = {}) {
       <div class="actions">
         <a class="button secondary" data-directions target="_blank" rel="noopener">Directions<span class="visually-hidden"> (opens in a new tab)</span></a>
         <a class="button secondary" data-tournament-bracket hidden>View tournament bracket</a>
+        <button class="button primary" type="button" data-edit hidden>Edit game</button>
         <form method="dialog"><button class="button secondary" autofocus>Close</button></form>
       </div>
     </div>
@@ -428,6 +430,12 @@ function createGameDetails(calendar, { schoolColors = false } = {}) {
   const timeFormat = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' });
   const clock = value => value ? timeFormat.format(new Date('2000-01-01T' + value)) : '';
   return event => {
+    const editButton = dialog.querySelector('[data-edit]');
+    editButton.hidden = !onEdit || !canEdit();
+    editButton.onclick = () => {
+      dialog.close();
+      onEdit(event);
+    };
     const details = event.extendedProps;
     const game = details.game ?? {};
     const teams = game.teams ?? {};

@@ -48,7 +48,6 @@ function startStaffSchedule(client, invite) {
   const teamsTab = document.getElementById('staff-teams-tab');
   const teamsPanel = document.getElementById('staff-teams-panel');
   // Where the game editor was opened from, so closing it returns there.
-  let editorOrigin = 'schedule';
   let conferenceTheme = false;
   const schedulePanel = document.getElementById('staff-schedule-panel');
   const scheduleTitle = document.getElementById('schedule-title');
@@ -69,8 +68,8 @@ function startStaffSchedule(client, invite) {
   const currentSchool = () => schools.find(school => school.slug === selector.value);
   const overview = startStaffOverview(client, {
     currentSchool, gameTitle, canEdit: () => canEdit,
-    // Editing from the match checks returns to Games; from Transportation's bus list, to Schedule.
-    openEditor: game => openEditor(game, null, gamesPanel.hidden ? 'schedule' : 'games'),
+    openEditor: game => openEditor(game),
+    onLinks: () => teamSchedule?.render(),
   });
   const coachesTab = document.getElementById('staff-coaches-tab');
   const coachesPanel = document.getElementById('staff-coaches-panel');
@@ -106,17 +105,25 @@ function startStaffSchedule(client, invite) {
     links: () => overview.links(), coaches: () => null,
     schoolName: slug => schools.find(school => school.slug === slug)?.name,
     filterValues: () => Object.fromEntries(new FormData(filterForm)),
-    openGame: game => openEditor(game, null, 'teams'),
-    addGame: team => {
-      openEditor(null, null, 'teams');
-      for (const name of ['sport', 'gender', 'level', 'season']) fields[name].value = team[name];
-      fields.game_date.focus();
-    },
+    openGame: game => openEditor(game),
+    addGame: team => addGameFor(team),
     reviewTeam: key => publication.reviewTeam(key),
     unpublishTeam: key => publication.reviewTeam(key, true),
     editCoach: id => { openCoaches(false); coachList.edit(id); },
     addCoach: team => { openCoaches(false); coachList.addFor(team); },
   });
+  const teamSchedule = startStaffTeamSchedule({
+    teams: () => teams.all(), links: () => overview.links(), states: () => publication.states(),
+    schoolName: slug => schools.find(school => school.slug === slug)?.name,
+    openGame: game => openEditor(game), canEdit: () => canEdit,
+  });
+  // Add game starts with a team filled in, from My Teams or the Schedule tab's picker.
+  function addGameFor(team) {
+    openEditor(null);
+    if (!team) return;
+    for (const name of ['sport', 'gender', 'level', 'season']) fields[name].value = team[name];
+    fields.game_date.focus();
+  }
   function feedback(text) {
     scheduleFeedback.textContent = text;
     gamesFeedback.textContent = text;
@@ -125,6 +132,7 @@ function startStaffSchedule(client, invite) {
   const transportation = startStaffTransportation(client, invite,
     () => schools.find(school => school.slug === selector.value), gameTitle);
   const form = document.getElementById('game-form');
+  const editorDialog = document.getElementById('game-editor');
   const formStatus = document.getElementById('game-form-status');
   const fields = form.elements;
   const gameSportHint = document.getElementById('game-sport-hint');
@@ -425,6 +433,7 @@ function startStaffSchedule(client, invite) {
     gamesFeedback.textContent = '';
     gamesNext.hidden = true;
     teams.reset();
+    teamSchedule.reset();
     teamsTab.hidden = !canEdit;
     transportation.reset();
     publication.reset();
@@ -481,7 +490,7 @@ function startStaffSchedule(client, invite) {
     fillSeasonFilters(filterFields.season, filterFields.sport, filterOptions());
     status.textContent = data.length
       ? data.length + (data.length === 1 ? ' saved game.' : ' saved games.') + (canEdit ? ' Select a game to edit it.' : '')
-      : 'No games saved for this school.' + (canEdit ? ' Open Add Game to add the first one.' : '');
+      : 'No games saved for this school.' + (canEdit ? ' Open Schedule to add the first one.' : '');
     if (newSchool && data.length) {
       const today = new Date();
       const dateKey = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') +
@@ -502,6 +511,7 @@ function startStaffSchedule(client, invite) {
     if (stopped || request !== loadNumber) return;
     refreshGameSports(activeGame?.teams ?? { sport: fields.sport.value });
     teams.render();
+    teamSchedule.render();
   }
 
   // Season, Sport, Level and Gender filters shared by the Calendar and Schedule tabs.
@@ -593,11 +603,12 @@ function startStaffSchedule(client, invite) {
       title: gameTitle(game) + (game.start_time ? '' : ' · TBD') +
         (game.status === 'Scheduled' ? '' : ' · ' + game.status),
       backgroundColor: getEventColor(game),
-      classNames: ['staff-game', 'staff-game-' + game.status.toLowerCase(), ...(unpublished.has(game.id) ? ['staff-unpublished'] : [])],
+      classNames: ['staff-game', 'staff-game-' + game.status.toLowerCase(), ...(unpublished.has(game.id) ? ['staff-game-unposted'] : [])],
       extendedProps: { game, location: game.location, status: game.status, unpublished: unpublished.get(game.id) },
     }));
     if (!calendar) {
-      showDetails = createGameDetails(calendarTarget, { schoolColors: true });
+      showDetails = createGameDetails(calendarTarget, { schoolColors: true,
+        onEdit: event => openEditor(event.extendedProps.game), canEdit: () => canEdit });
       calendar = new FullCalendar.Calendar(calendarTarget, {
         initialView: preferredCalendarView(),
         headerToolbar: {
@@ -647,8 +658,7 @@ function startStaffSchedule(client, invite) {
           (title ?? el).prepend(tag, ' ');
         },
         eventClick({ event }) {
-          if (canEdit) openEditor(event.extendedProps.game);
-          else showDetails(event);
+          showDetails(event);
         },
         dateClick({ dateStr }) {
           if (canEdit) openEditor(null, dateStr);
@@ -940,7 +950,7 @@ function startStaffSchedule(client, invite) {
     addGame.hidden = !canEdit;
     importButton.hidden = !canEdit;
     setHeading();
-    form.hidden = true;
+    closeEditorDialog();
     filterForm.hidden = true;
   }
 
@@ -965,21 +975,26 @@ function startStaffSchedule(client, invite) {
     teams.render();
     if (focus) (document.getElementById('team-title') ?? document.getElementById('teams-title')).focus();
   }
-  // Games: adding and importing games, then the match checks. Conference admins see only the match checks.
+  // Schedule: one team's games with Edit buttons, plus adding and importing. The team picker replaces the filters.
   function openGames(focus = true) {
     if (!selector.value) return;
     hidePanels();
     gamesPanel.hidden = false;
     gamesTab.setAttribute('aria-current', 'true');
-    filterForm.hidden = false;
     overview.render(visibleGames());
+    teamSchedule.render();
     if (focus) document.getElementById('games-title').focus();
   }
   function showImport(open) {
     importSection.hidden = !open;
     importButton.setAttribute('aria-expanded', String(open));
   }
-  const leaveEditor = () => editorOrigin === 'teams' ? openTeams(true) : editorOrigin === 'games' ? openGames(true) : showSchedule(true);
+  // The editor is a pop-up over whichever tab is open, so closing it leaves the AD where they were.
+  function closeEditorDialog() {
+    form.hidden = true;
+    if (editorDialog.open) editorDialog.close();
+  }
+  const leaveEditor = closeEditorDialog;
 
 
   function openTransportation(focus = true) {
@@ -994,14 +1009,12 @@ function startStaffSchedule(client, invite) {
     if (focus) transportationTitle.focus();
   }
 
-  function openEditor(game, date, origin = 'schedule') {
+  function openEditor(game, date) {
     if (!canEdit || saveButton.disabled) return;
-    editorOrigin = origin;
     edit(game);
     if (date) fields.game_date.value = date;
-    hidePanels();
     form.hidden = false;
-    ({ teams: teamsTab, games: gamesTab }[origin] ?? scheduleTab).setAttribute('aria-current', 'true');
+    if (!editorDialog.open) editorDialog.showModal();
     gamesNext.hidden = true;
     // A new game starts at the top; an existing one is most often opened to change its date.
     (game ? fields.game_date : fields.sport).focus();
@@ -1112,7 +1125,9 @@ function startStaffSchedule(client, invite) {
     applyFilters();
   }, 0);
   settingsTab.onclick = () => openSettings();
-  addGame.onclick = () => openEditor(null, null, 'games');
+  addGame.onclick = () => addGameFor(teamSchedule.selected());
+  // Escape asks before dropping unsaved changes, like Cancel.
+  editorDialog.addEventListener('cancel', event => { event.preventDefault(); askToLeave(leaveEditor); });
   preview.onchange = selectView;
   selector.onchange = selectSchool;
   fields.opponent_school_id.onchange = syncOpponent;
@@ -1299,6 +1314,7 @@ function startStaffSchedule(client, invite) {
     opponentsTab.disabled = false;
     overview.stop();
     teams.stop();
+    teamSchedule.stop();
     importer.stop();
     coachList.stop();
     venues.stop();

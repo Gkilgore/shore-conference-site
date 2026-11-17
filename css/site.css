@@ -745,10 +745,6 @@ textarea { display: block; resize: vertical; }
 .about-story { display: grid; gap: 1.25rem; align-items: center; }
 .about-logo { width: min(100%, 15rem); height: auto; justify-self: center; }
 .about-text { display: grid; gap: 0.6rem; }
-.home-history { display: grid; gap: 1rem; align-items: center; padding: 1rem; border: var(--frame); background: white; }
-.home-history h2 { margin: 0.2rem 0 0.4rem; }
-.home-history p:last-child { max-width: 65ch; }
-.home-history .button { justify-self: start; }
 .about-section { margin-top: 0.25rem; }
 .about-section h3 { margin: 0 0 0.5rem; }
 .about-section p + p { margin-top: 0.65rem; }
@@ -768,9 +764,19 @@ textarea { display: block; resize: vertical; }
 .history-timeline li { display: grid; gap: 0.25rem; padding: 0.8rem 1rem; background: white; }
 .history-timeline h4 { margin: 0; color: var(--red); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; line-height: 1.7; }
 .history-timeline p { line-height: 1.55; }
-.history-era .photo { max-width: 34rem; margin: 0; }
+.history-athletes { background: white; }
+.history-athletes tbody th { background: white; color: var(--ink); }
+/* Phones: each athlete becomes a stacked block; the header row is hidden and cells read top to bottom. */
+@media (max-width: 699px) {
+  .history-athletes thead { display: none; }
+  .history-athletes :is(tr, th, td) { display: block; }
+  .history-athletes tr { padding: 0.6rem 0.75rem; border: 1px solid var(--steel); }
+  .history-athletes tr + tr { margin-top: -1px; }
+  .history-athletes tbody :is(th, td) { padding: 0.1rem 0; border: 0; }
+}
+.history-sources { margin: 1rem 0; }
+.history-sources summary { cursor: pointer; font-weight: 700; }
 @media (min-width: 700px) {
-  .home-history { grid-template-columns: minmax(0, 1fr) auto; padding: 1.25rem; }
   .about-principles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .about-story { grid-template-columns: 15rem minmax(0, 1fr); gap: 2rem; }
   .about-facts { grid-template-columns: repeat(3, 1fr); }

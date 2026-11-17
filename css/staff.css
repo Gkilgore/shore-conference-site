@@ -144,10 +144,12 @@
 
 /* Status colors: scheduled = school color, postponed = yellow, canceled = red. */
 #workspace #calendar { margin-block: 0; }
+/* Each game square has two lines: time and Home or Away, then the matchup. */
 #workspace #calendar .staff-game { cursor: pointer; }
-#workspace #calendar .fc-daygrid-event.staff-game { display: flex; gap: 0.25rem; overflow: hidden; font-size: 0.76rem; }
+#workspace #calendar .fc-daygrid-event.staff-game { display: flex; flex-wrap: wrap; align-items: center; gap: 0 0.25rem; overflow: hidden; font-size: 0.76rem; }
 #workspace #calendar .fc-daygrid-event.staff-game .fc-event-time { font-weight: 800; flex: none; }
-#workspace #calendar .fc-daygrid-event.staff-game .fc-event-title { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#workspace #calendar .fc-daygrid-event.staff-game .home-away-badge { margin-left: auto; padding: 0 0.3rem; font-size: 0.62rem; line-height: 1.5; }
+#workspace #calendar .fc-daygrid-event.staff-game .fc-event-title { flex: 1 0 100%; min-width: 0; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #workspace #calendar .fc-daygrid-event.staff-game-postponed { background: var(--yellow); color: var(--ink); }
 #workspace #calendar .fc-daygrid-event.staff-game-canceled { background: var(--red); color: white; }
 #workspace #calendar .staff-game-canceled .fc-event-title,
@@ -675,9 +677,9 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
 .staff-unpublished p { flex: 1 1 14rem; font-weight: 700; }
 .staff-unpublished .button { min-height: 2.4rem; padding-block: 0.3rem; }
 /* Filled games are public. Outlined games are drafts or have changes families cannot see yet. */
-#workspace #calendar .fc-daygrid-event.staff-unpublished { background: white; color: var(--ink); box-shadow: inset 0 0 0 2px var(--school-color); }
-#workspace #calendar .fc-daygrid-event.staff-unpublished.staff-game-postponed { box-shadow: inset 0 0 0 2px var(--yellow); }
-#workspace #calendar .fc-daygrid-event.staff-unpublished.staff-game-canceled { box-shadow: inset 0 0 0 2px var(--red); }
+#workspace #calendar .fc-daygrid-event.staff-game-unposted { background: white; color: var(--ink); box-shadow: inset 0 0 0 2px var(--school-color); }
+#workspace #calendar .fc-daygrid-event.staff-game-unposted.staff-game-postponed { box-shadow: inset 0 0 0 2px var(--yellow); }
+#workspace #calendar .fc-daygrid-event.staff-game-unposted.staff-game-canceled { box-shadow: inset 0 0 0 2px var(--red); }
 #workspace #calendar .fc-daygrid-event .staff-tag { display: none; }
 .staff-tag {
   display: inline-block;
@@ -800,8 +802,6 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
 }
 
 /* Games tab: the two ways to enter games sit side by side at the top; the import section opens under them. */
-.games-actions { margin-top: 0.75rem; }
-.games-actions .button { flex: 1 1 12rem; min-height: 3.25rem; font-size: 1.05rem; }
 #games-feedback:empty { display: none; }
 #games-feedback { margin: 0.75rem 0 0; font-weight: 700; }
 #games-next, #games-unpublished { margin-top: 0.75rem; }
@@ -919,3 +919,34 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
   color: var(--muted);
 }
 
+
+/* Schedule tab: a team picker beside Add game and Import, then that team's games as a table. */
+.games-toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: 0.75rem 1rem; }
+.games-toolbar > label { display: grid; gap: 0.25rem; flex: 1 1 16rem; max-width: 26rem; font-weight: 700; }
+.games-toolbar .actions { margin: 0; }
+.games-toolbar .button { min-height: 2.9rem; }
+.games-team-schedule { margin-top: 1rem; }
+.staff-schedule-table-wrap { overflow-x: auto; }
+.staff-schedule-table { width: 100%; border-collapse: collapse; border: var(--frame); font-size: 0.9rem; }
+.staff-schedule-table th {
+  padding: 0.45rem 0.6rem;
+  background: var(--ink);
+  color: white;
+  font-size: 0.72rem;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+.staff-schedule-table td { padding: 0.45rem 0.6rem; border-top: 1px solid var(--rule); background: white; vertical-align: middle; }
+.staff-schedule-table td:is(:nth-child(1), :nth-child(2), :nth-child(5)) { white-space: nowrap; }
+.staff-schedule-table td:last-child { text-align: right; }
+.staff-schedule-table .button { min-height: 2.2rem; padding-block: 0.25rem; }
+.staff-schedule-table .staff-reason { display: block; width: max-content; max-width: 100%; margin-top: 0.25rem; padding: 0.05rem 0.45rem; background: var(--red); color: white; font-size: 0.8rem; font-weight: 700; }
+.staff-schedule-table tr.is-unmatched td { background: #fbeef1; }
+.staff-schedule-table td.is-postponed { background: var(--yellow); font-weight: 700; }
+.staff-schedule-table td.is-canceled { background: var(--red); color: white; font-weight: 700; }
+
+/* The game editor is a pop-up over whichever tab is open. */
+.game-details.game-editor { width: min(46rem, calc(100% - 2rem)); overflow-y: auto; overscroll-behavior: contain; }
+.game-editor #game-form { margin: 0; }

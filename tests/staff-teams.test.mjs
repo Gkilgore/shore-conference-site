@@ -98,7 +98,7 @@ function findButton(root, label) {
   return descendants(root).find(item => item.tag === 'button' && item.textContent === label);
 }
 
-test('existing teams start another year through Add Game without copying team rows', async () => {
+test('existing teams start another year through the Schedule tab without copying team rows', async () => {
   const team = { id: 'soccer', school_id: 'marlboro', sport: 'Soccer', gender: 'Girls', level: 'Varsity', season: 'Fall' };
   const app = mount({ records: [team] });
   await app.controller.load();
@@ -148,7 +148,7 @@ test('AD cannot add a team level twice', async () => {
   assert.match(app.status.textContent, /already on the team list/i);
 });
 
-test('Add Game sports come from the loaded school team list', async () => {
+test('Schedule tab sports come from the loaded school team list', async () => {
   const app = mount({ records: [
     { id: 'soccer-fall', school_id: 'marlboro', sport: 'Soccer', gender: 'Girls', level: 'Varsity', season: 'Fall' },
     { id: 'soccer-spring', school_id: 'marlboro', sport: 'Soccer', gender: 'Boys', level: 'JV', season: 'Spring' },

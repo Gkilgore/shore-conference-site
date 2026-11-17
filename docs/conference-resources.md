@@ -7,7 +7,7 @@
 - `complete` means every division copied has all its members. `allDivisions` means every division on the saved list is copied. They are separate: complete divisions do not make a whole alignment. Since November 13 every list has both. The pop-up still says so plainly if a future list has only some divisions or only division names.
 - Public document records carry their edition label, review date, format and limitations. Past-season leadership remains labeled as such. Link summaries are not full accessible transcriptions of original files.
 - Tournament source records do not create games. The existing conference-office upload and publish workflow stays unchanged; generator and bracket-discovery tools remain hidden.
-- The History tab covers 1936–2026 with a decade timeline, athlete profiles, featured stories, membership chronology and sources. The original 1936–1969 article and PDF remain in its archive. Content lives in `data/history.js`; follow [History editorial notes](history-editorial.md) for sources, membership distinctions, photo permissions and unresolved claims. The licensed Rampone photograph has a visible credit; other profiles currently use labeled school marks.
+- The History tab is plain HTML: notable athletes, one timeline, sources and the original 1936–1969 PDF. Follow [History editorial notes](history-editorial.md) for sources, membership distinctions and photos.
 - Each tab has its own address (`resources.html#divisions`). Navigation and the About and History text work without JavaScript.
 
 ### Approved next-phase permissions
