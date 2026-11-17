@@ -101,8 +101,10 @@ function renderUpcoming(events, { showChanged = false, school = null, limit = 3 
     date.textContent = dateFormat.format(start);
     if (school) row.classList.add(game.home_away === 'Away' ? 'is-away' : 'is-home');
     if (!scheduled(game)) row.classList.add('is-' + game.status.toLowerCase());
+    // Away games read "@ Colts Neck", as on the calendar.
+    const matchupText = text => text.replace(/(^| )at (?=\S)/, '$1@ ');
     if (scheduled(game)) {
-      title.append(game.title);
+      title.append(matchupText(game.title));
       details.textContent = [game.start.includes('T') ? timeFormat.format(new Date(game.start)) : 'TBD',
         game.location, game.bus,
         game.earlyDismissal && 'Early dismissal ' + game.earlyDismissal].filter(Boolean).join(' · ');
@@ -112,7 +114,7 @@ function renderUpcoming(events, { showChanged = false, school = null, limit = 3 
       const matchup = document.createElement('span');
       label.className = 'game-status is-' + game.status.toLowerCase();
       label.textContent = game.status;
-      matchup.textContent = game.title.endsWith(' · ' + game.status) ? game.title.slice(0, -game.status.length - 3) : game.title;
+      matchup.textContent = matchupText(game.title.endsWith(' · ' + game.status) ? game.title.slice(0, -game.status.length - 3) : game.title);
       title.append(label, ' ', matchup);
       details.textContent = ['Was ' + (game.start.includes('T') ? timeFormat.format(new Date(game.start)) : 'TBD'),
         game.location, game.earlyDismissal && 'Early dismissal ' + game.earlyDismissal].filter(Boolean).join(' · ');
