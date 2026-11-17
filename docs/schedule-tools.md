@@ -91,3 +91,9 @@ It works whether or not the newer draft migrations are applied. Coaches and the 
 Since November 12, saving or importing posts the game; see `posting-on-save.md`. Anything above that mentions drafts or publishing describes the earlier workflow.
 
 **Database steps completed November 12 in test project `jrtcyihpdrcnhxgproyw`:** `20261125000100_delete_staff_game.sql`, then `20261127000100_post_on_save.sql`, then `supabase/tests/post-on-save.sql` (PASS, rolled back). See `posting-on-save.md` for compatibility changes and verification limits. Earlier draft instructions above describe the previous workflow.
+
+## Moved games
+
+When a game marked Postponed is later posted at a different date or time, the website leaves a white **Moved** note on the old date ("To Dec 3, 4:00 PM"); clicking it jumps to the new date. The game at its new date gets an asterisk after its time and an **Originally** line in its details. A date fixed without first marking the game Postponed leaves no note. Subscribed calendars do not get the note: their event simply moves, and its description says where it was. On the conference calendar the note appears once both schools have entered the new date.
+
+`supabase/migrations/20261204000100_moved_game_notes.sql` adds the list of moved games to `read_published_schedule`, using only each team's current publication, so withdrawn schedules stay hidden. It has not been applied to any Supabase project. Apply it to the test project, then redeploy `public-calendar`; until then the site works as before, without notes.

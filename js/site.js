@@ -78,7 +78,8 @@ function renderUpcoming(events, { showChanged = false } = {}) {
   const list = document.getElementById('upcoming');
   const now = new Date().toISOString().slice(0, 10);
   const scheduled = game => !game.status || game.status === 'Scheduled';
-  const games = events.filter(game => (showChanged || scheduled(game)) && game.start.slice(0, 10) >= now)
+  // "Moved" notes mark an old date on the calendar; they are not games.
+  const games = events.filter(game => !game.moved_to && (showChanged || scheduled(game)) && game.start.slice(0, 10) >= now)
     .sort((first, second) => first.start.localeCompare(second.start)).slice(0, 3);
   if (!games.length) {
     list.innerHTML = '<li class="empty-schedule">No upcoming games are listed.</li>';
@@ -114,8 +115,6 @@ function renderUpcoming(events, { showChanged = false } = {}) {
       details.textContent = ['Was ' + (game.start.includes('T') ? timeFormat.format(new Date(game.start)) : 'TBD'),
         game.location, game.earlyDismissal && 'Early dismissal ' + game.earlyDismissal].filter(Boolean).join(' · ');
     }
-    const icon = createSportIcon(game.sport);
-    if (icon) title.prepend(icon);
     row.append(date, title, details);
     return row;
   }));

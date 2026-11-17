@@ -13,7 +13,7 @@ function followPreferredView(calendar) {
   listViewQuery.addEventListener('change', update);
   return () => listViewQuery.removeEventListener('change', update);
 }
-function renderCalendar(events, { schoolColors = {}, schoolSlug = null } = {}) {
+function renderCalendar(events, { schoolSlug = null } = {}) {
   const target = document.getElementById('calendar');
   const filters = document.getElementById('calendar-filters');
   if (!window.FullCalendar || !target || !filters) {
@@ -40,34 +40,19 @@ function renderCalendar(events, { schoolColors = {}, schoolSlug = null } = {}) {
     if (status && rest.endsWith(' · ' + status)) rest = rest.slice(0, -status.length - 3);
     return rest || team;
   }
-  // Conference calendar: a square takes the home school's color, or the picked school's when the
-  // School filter is set. A color an AD saved comes first, then the school directory's.
-  // Its square has three lines: that school's name, the time with Home or Away, then the team and opponent.
-  // Uses the primary color for home games and the accent color for away games.
+  // Conference calendar squares keep the conference colors (navy, yellow for postponed, red for
+  // canceled). Each has three lines: the school's name (the picked school's when the School filter is
+  // set, otherwise the home school), the time, then the team and opponent.
   function conferenceSquare(event) {
     if (!fields.school) return null;
     const involved = event.extendedProps.schools ?? [];
     const slug = involved.includes(fields.school.value) ? fields.school.value : involved[0];
     const directory = typeof shoreSchools !== 'undefined' ? shoreSchools : sampleSchools;
     const home = slug === involved[0];
-    // Get school colors: schoolColors may have both primary and accent, or just primary (legacy)
-    const colorData = schoolColors[slug];
-    let color;
-    if (typeof colorData === 'object' && colorData !== null) {
-      // New format: { primary, accent }
-      color = home ? colorData.primary : colorData.accent;
-    } else {
-      // Legacy format: just the string color value
-      color = colorData || directory[slug]?.color;
-    }
-    // Fall back to directory colors
-    if (!color) {
-      color = home ? directory[slug]?.color : directory[slug]?.accent;
-    }
-    if (!color || !directory[slug]) return null;
+    if (!directory[slug]) return null;
     const other = directory[involved[home ? 1 : 0]]?.name;
     const { sport, gender, level } = event.extendedProps;
-    return { color, school: directory[slug].name, homeAway: home ? 'Home' : 'Away',
+    return { school: directory[slug].name, homeAway: home ? 'Home' : 'Away',
       matchup: [gender, shortLevel(level), sport].filter(Boolean).join(' ') + (other ? (home ? ' vs. ' : ' at ') + other : '') };
   }
   // For school-specific calendars, apply colors based on home/away status using CSS variables
@@ -85,6 +70,14 @@ function renderCalendar(events, { schoolColors = {}, schoolSlug = null } = {}) {
       homeAway: homeAway,
       useSchoolColor: true  // Flag to indicate this uses school colors, not conference display
     };
+  }
+  // "vs. Colts Neck" or "at Colts Neck": the event title without its team name and status.
+  function opponentText(event) {
+    const { sport, gender, level, status } = event.extendedProps;
+    const team = [gender, level, sport].filter(Boolean).join(' ');
+    let rest = team && event.title.startsWith(team) ? event.title.slice(team.length).replace(/^\s*·?\s*/, '') : event.title;
+    if (status && rest.endsWith(' · ' + status)) rest = rest.slice(0, -status.length - 3);
+    return rest || event.title;
   }
   // With one sport on screen, a short label such as "Girls JV" beside the time tells its teams apart.
   function teamTag(event) {
@@ -162,7 +155,10 @@ function renderCalendar(events, { schoolColors = {}, schoolSlug = null } = {}) {
     eventOrder: 'start,title',
     eventInteractive: true,
     eventClick({ event }) {
-      showGameDetails(event);
+      // A "moved" note on the old date jumps to the game's new date instead of opening details.
+      const movedTo = event.extendedProps.moved_to;
+      if (movedTo) calendar.gotoDate(movedTo.start.slice(0, 10));
+      else showGameDetails(event);
     },
     eventDidMount({ el }) {
       el.tabIndex = 0;
@@ -202,10 +198,11 @@ function renderCalendar(events, { schoolColors = {}, schoolSlug = null } = {}) {
         sport: fields.sport?.value, gender: fields.gender?.value ?? '', level: fields.level?.value,
         date: new Date((range.start.getTime() + range.end.getTime()) / 2).toISOString().slice(0, 10),
       } }));
-      // School-colored squares carry a class so the status fills (yellow, red) step aside for the color.
-      // This applies to conference calendar with school filter OR school-specific calendars.
-      showEvents(fields.school || schoolSlug ? results.map(game => ({ ...game,
-        classNames: [...(game.classNames ?? []), 'school-colored'], tint: fields.school?.value })) : results);
+      // School-page squares carry a class so the status fills (yellow, red) step aside for the school's color.
+      // The conference calendar keeps its own colors.
+      // A "moved" note keeps its plain white look on school pages too.
+      showEvents(schoolSlug ? results.map(game => game.moved_to ? game : ({ ...game,
+        classNames: [...(game.classNames ?? []), 'school-colored'] })) : results);
     },
     eventContent({ event, timeText, view }) {
       const content = document.createElement('div');
@@ -213,13 +210,17 @@ function renderCalendar(events, { schoolColors = {}, schoolSlug = null } = {}) {
       content.className = 'game';
       const title = document.createElement('span');
       title.className = 'game-title';
-      const square = inList ? null : (conferenceSquare(event) || schoolCalendarSquare(event));
+      // Moved games: the old date keeps a note saying where the game went, and the game at its new date
+      // gets an asterisk after its time.
+      const { moved_to: movedTo, moved_from: movedFrom } = event.extendedProps;
+      const square = inList ? null : (conferenceSquare(event) || (movedTo ? null : schoolCalendarSquare(event)));
       // For school calendars (useSchoolColor), don't try to show matchup
       title.textContent = inList ? event.title : (square?.useSchoolColor ? squareLabel(event) : (square?.matchup ?? squareLabel(event)));
       // Time and Home/Away share the first line so the square stays short.
       const head = document.createElement('span');
       head.className = 'game-head';
-      const displayedTime = event.allDay ? 'TBD' : timeText;
+      const displayedTime = movedTo ? '' : (event.allDay ? 'TBD' : timeText) + (movedFrom ? '*' : '');
+      if (inList && movedFrom) title.textContent = '* ' + title.textContent;
       if (displayedTime && (!inList || event.allDay)) {
         const time = document.createElement('span');
         time.className = 'game-time';
@@ -235,26 +236,27 @@ function renderCalendar(events, { schoolColors = {}, schoolSlug = null } = {}) {
       }
       // Only show the top section (school name + status) for conference square, not school calendar
       if (square && !square.useSchoolColor) {
-        content.classList.add('has-school-color');
-        content.style.background = square.color;
-        // For hex colors, compute readableInk
-        if (typeof square.color === 'string' && square.color.startsWith('#')) {
-          content.style.color = readableInk(square.color);
-        }
         const top = document.createElement('span');
         top.className = 'game-head';
         const school = document.createElement('span');
         school.className = 'game-school';
         school.textContent = square.school;
         if (school.textContent) top.append(school);
-        // The fill is the school's, so Postponed and Canceled show as a label instead.
+        // Top right: the time, or the status word in its place for a postponed or canceled game. The yellow
+        // or red fill shows the status too; the word is for anyone who can't tell the colors apart.
         const status = event.extendedProps.status || event.status;
         if (status && status !== 'Scheduled') {
           const label = document.createElement('span');
-          label.className = 'game-status is-' + status.toLowerCase();
+          label.className = 'game-status on-fill';
           label.textContent = status;
           top.append(label);
+        } else if (displayedTime) {
+          const time = document.createElement('span');
+          time.className = 'game-time';
+          time.textContent = displayedTime;
+          top.append(time);
         }
+        head.replaceChildren();
         if (top.childNodes.length) content.append(top);
       } else if (square && square.useSchoolColor) {
         // For school calendars, apply the color styling
@@ -267,20 +269,49 @@ function renderCalendar(events, { schoolColors = {}, schoolSlug = null } = {}) {
             ? 'var(--school-ink)' 
             : 'var(--accent-ink)');
         }
-        // Show status badge if not scheduled
+        // Two lines: the team on the left with the time on the right (a Postponed or Canceled label takes
+        // the time's place), then the opponent. "vs." or "at" says home or away, so no badge is needed.
+        const { sport, gender, level } = event.extendedProps;
         const status = event.extendedProps.status || event.status;
+        const top = document.createElement('span');
+        top.className = 'game-head';
+        const team = document.createElement('span');
+        team.className = 'game-school';
+        team.textContent = [gender, shortLevel(level), sport].filter(Boolean).join(' ');
+        top.append(team);
         if (status && status !== 'Scheduled') {
-          const top = document.createElement('span');
-          top.className = 'game-head';
+          // The square turns grey so a gold or yellow school color is never mistaken for Postponed;
+          // the yellow or red label says which.
+          content.style.setProperty('background', 'var(--steel)');
+          content.style.setProperty('color', 'var(--ink)');
           const label = document.createElement('span');
           label.className = 'game-status is-' + status.toLowerCase();
           label.textContent = status;
           top.append(label);
-          content.append(top);
+        } else if (displayedTime) {
+          const time = document.createElement('span');
+          time.className = 'game-time';
+          time.textContent = displayedTime;
+          top.append(time);
         }
+        head.replaceChildren();
+        content.append(top);
+        title.textContent = opponentText(event);
+      }
+      if (movedTo && !inList && !square) {
+        const label = document.createElement('span');
+        label.className = 'game-status on-fill';
+        label.textContent = 'Moved';
+        head.append(label);
       }
       if (head.childNodes.length) content.append(head);
       content.append(title);
+      if (movedTo && !inList) {
+        const line = document.createElement('span');
+        line.className = 'game-moved';
+        line.textContent = 'To ' + movedTo.text;
+        content.append(line);
+      }
       const details = [event.extendedProps.location, event.extendedProps.bus,
         event.extendedProps.earlyDismissal && 'Early dismissal ' + event.extendedProps.earlyDismissal].filter(Boolean);
       content.title = 'View details: ' + event.title;
@@ -328,6 +359,7 @@ function createGameDetails(calendar) {
       ['Venue', details.location || 'To be announced'],
       ['Status', details.status || 'Scheduled'],
     ];
+    if (details.moved_from) rows.push(['Originally', details.moved_from.text]);
     if (details.bus) rows.push(['Transportation', details.bus]);
     if (details.earlyDismissal) rows.push(['Early dismissal', details.earlyDismissal]);
     const bracket = dialog.querySelector('[data-tournament-bracket]');

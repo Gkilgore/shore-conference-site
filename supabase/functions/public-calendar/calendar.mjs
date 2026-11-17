@@ -65,7 +65,17 @@ function tournamentEvents(games, options) {
   });
 }
 
-export function publicSchedule(schools, games, options, tournamentGames = []) {
+// "Nov 20, 3:30 PM" from a stored date and time, for the moved-game notes.
+function slotText(date, time) {
+  const day = new Date(date + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+  if (!time) return day + ', time TBD';
+  const [hour, minute] = time.split(':');
+  return day + ', ' + (Number(hour) % 12 || 12) + ':' + minute + (Number(hour) < 12 ? ' AM' : ' PM');
+}
+
+// moves: games that were Postponed and then posted at a new date or time ({ game_id, from_date, from_time }).
+export function publicSchedule(schools, games, options, tournamentGames = [], moves = []) {
+  const movedFrom = new Map(moves.filter(move => move?.game_id && move.from_date).map(move => [move.game_id, move]));
   const directory = new Map(schools.map(school => [school.slug, school]));
   const school = directory.get(options.school);
   if (options.school && !school) throw new Error('School not found.');
@@ -93,13 +103,13 @@ export function publicSchedule(schools, games, options, tournamentGames = []) {
         const away = awayByKey.get(key);
         if (!away || emitted.has(key)) return [];
         emitted.add(key);
-        return [{ ...home, status: shared(home.status, away.status), feed_id: [home.id, away.id].sort().join('-'),
+        return [{ ...home, away_id: away.id, status: shared(home.status, away.status), feed_id: [home.id, away.id].sort().join('-'),
           revision: home.revision + away.revision,
           updated_at: home.updated_at > away.updated_at ? home.updated_at : away.updated_at }];
       });
   } else selected = publicGames.filter(game => game.school_id === options.school);
 
-  const events = selected.map(game => {
+  const events = selected.flatMap(game => {
     const team = game.teams;
     const opponent = directory.get(game.opponent_school_id)?.name ?? game.opponent_name ?? 'Opponent';
     const teamName = [team.gender, team.level, team.sport].join(' ');
@@ -123,7 +133,20 @@ export function publicSchedule(schools, games, options, tournamentGames = []) {
         if (bus.early_dismissal_time) event.transportation.early_dismissal_time = bus.early_dismissal_time;
       }
     }
-    return event;
+    // A postponed game posted at a new slot carries where it was, and leaves a note on the old date.
+    // The note is for the website only; subscribed calendars just see the event move (see buildCalendar).
+    const move = movedFrom.get(game.id) ?? movedFrom.get(game.away_id);
+    if (!move) return [event];
+    event.moved_from = { date: move.from_date, time: move.from_time ?? null, text: slotText(move.from_date, move.from_time) };
+    const note = {
+      id: event.id + '-moved', revision: event.revision, updated_at: event.updated_at,
+      title: title + ' · Moved to ' + slotText(game.game_date, game.start_time),
+      start: move.from_time ? move.from_date + 'T' + move.from_time : move.from_date, location: '',
+      status: 'Moved', notes: '', school: event.school, home_away: event.home_away, schools: event.schools,
+      sport: team.sport, gender: team.gender, level: team.level, season: team.season,
+      moved_to: { start: event.start, text: slotText(game.game_date, game.start_time) },
+    };
+    return [event, note];
   }).concat(tournaments).filter(event => (!options.school || event.schools.includes(options.school)) &&
     ['sport', 'gender', 'level', 'season'].every(key => !options[key] || event[key] === options[key]) &&
     (!options.search || (event.title + ' ' + event.location).toLowerCase().includes(options.search.toLowerCase())))
@@ -163,8 +186,10 @@ export function buildCalendar(schedule) {
     'BEGIN:STANDARD', 'DTSTART:20071104T020000', 'TZOFFSETFROM:-0400', 'TZOFFSETTO:-0500',
     'TZNAME:EST', 'RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU', 'END:STANDARD', 'END:VTIMEZONE',
   ];
-  for (const game of schedule.events) {
+  // Moved-game notes are for the website; a subscribed calendar simply sees the game's event move.
+  for (const game of schedule.events.filter(event => !event.moved_to)) {
     const description = [game.notes];
+    if (game.moved_from) description.push('Originally ' + game.moved_from.text + '.');
     if (schedule.scope === 'school' && game.transportation) {
       const bus = game.transportation;
       const time = value => {

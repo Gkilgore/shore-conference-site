@@ -46,7 +46,12 @@ const soccer = sandbox.TournamentEngine.resolve({
   info: { rules_url: soccerSource.rules_url, director: soccerSource.director, director_confirmed: true,
     reviewed_on: soccerSource.reviewed, dates: soccerSource.dates.Boys },
 });
-const handle = createHandler(async () => ({ schools, games, tournament_games: tournamentGames,
+// One fictional matched game that was postponed three days and moved, to show the "Moved" note.
+const movedGame = games.find(game => game.school_id === 'marlboro' && game.home_away === 'Home' &&
+  game.opponent_school_id === 'colts-neck' && game.sport === 'Soccer' && game.level === 'Varsity');
+const movedFromDate = movedGame && new Date(new Date(movedGame.game_date + 'T12:00:00Z').getTime() - 3 * 864e5).toISOString().slice(0, 10);
+const moves = movedGame ? [{ game_id: movedGame.id, from_date: movedFromDate, from_time: '15:30:00' }] : [];
+const handle = createHandler(async () => ({ schools, games, tournament_games: tournamentGames, moves,
   tournaments: [{ id: tournamentId, document: tournament }, { id: soccerId, document: soccer }] }));
 const socialAccounts = [
   { school_id: 'marlboro', platform: 'instagram', url: 'https://www.instagram.com/instagram/' },
