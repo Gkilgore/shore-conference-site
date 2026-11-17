@@ -91,6 +91,10 @@
   }
   dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
   dialog.addEventListener('close', () => { if (opener?.isConnected) opener.focus(); opener = null; });
+  // A link such as resources.html?team=girls-soccer-fall-2026&division=A%20Central#divisions (from a school
+  // page's Division line) opens that sport's pop-up, scrolled to the named division.
+  const wanted = new URLSearchParams(location.search);
+  let linked = null;
   document.getElementById('division-teams').replaceChildren(...divisionGroups(shoreConferenceResources.divisionLists).flatMap(group => {
     const buttons = node('div', '', 'division-teams');
     buttons.append(...group.teams.map(team => {
@@ -98,10 +102,20 @@
       button.type = 'button';
       button.setAttribute('aria-haspopup', 'dialog');
       button.addEventListener('click', () => openDivisions(team, group.label, button));
+      if (divisionListKey(team.list) === wanted.get('team')) linked = () => openDivisions(team, group.label, button);
       return button;
     }));
     return [node('h3', group.label, 'eyebrow'), buttons];
   }));
+  if (linked) {
+    linked();
+    const section = [...dialog.querySelectorAll('.division-groups section')]
+      .find(item => item.getAttribute('aria-label') === wanted.get('division'));
+    if (section) {
+      section.classList.add('is-current');
+      section.scrollIntoView({ block: 'center' });
+    }
+  }
 
   // Tournament files and conference documents: one framed row each, linking to the copy saved on this site.
   // Drawn again by js/document-archive.js once files uploaded by conference staff have loaded.

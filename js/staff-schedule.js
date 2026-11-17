@@ -597,7 +597,7 @@ function startStaffSchedule(client, invite) {
       extendedProps: { game, location: game.location, status: game.status, unpublished: unpublished.get(game.id) },
     }));
     if (!calendar) {
-      showDetails = createGameDetails(calendarTarget);
+      showDetails = createGameDetails(calendarTarget, { schoolColors: true });
       calendar = new FullCalendar.Calendar(calendarTarget, {
         initialView: preferredCalendarView(),
         headerToolbar: {

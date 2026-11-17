@@ -77,8 +77,11 @@ for (const host of document.querySelectorAll('[data-logo-wall]')) {
 // Next games use the calendar's colors. The date block on a school page is the school color for a home
 // game and its accent for an away game; on conference pages it is navy. A postponed or canceled game's
 // block turns grey on a school page, or yellow or red on a conference page, with its label before the title.
+// Each row opens the same game pop-up as the calendar, and has a Directions link when it has a venue.
+let upcomingDetails = null;
 function renderUpcoming(events, { showChanged = false, school = null, limit = 3 } = {}) {
   const list = document.getElementById('upcoming');
+  if (!upcomingDetails && typeof createGameDetails === 'function') upcomingDetails = createGameDetails(list, { schoolColors: Boolean(school) });
   const now = new Date().toISOString().slice(0, 10);
   const scheduled = game => !game.status || game.status === 'Scheduled';
   // "Moved" notes mark an old date on the calendar; they are not games.
@@ -119,7 +122,24 @@ function renderUpcoming(events, { showChanged = false, school = null, limit = 3 
       details.textContent = ['Was ' + (game.start.includes('T') ? timeFormat.format(new Date(game.start)) : 'TBD'),
         game.location, game.earlyDismissal && 'Early dismissal ' + game.earlyDismissal].filter(Boolean).join(' · ');
     }
+    if (game.location && typeof createDirectionsLink === 'function') {
+      details.append(' · ', createDirectionsLink(game.location, game.schools));
+    }
     row.append(date, title, details);
+    if (upcomingDetails) {
+      // The pop-up reads a calendar event; a list game carries the same fields.
+      const open = () => upcomingDetails({ title: game.title, allDay: !game.start.includes('T'),
+        start: new Date(game.start.includes('T') ? game.start : game.start + 'T12:00'), extendedProps: game });
+      row.tabIndex = 0;
+      row.setAttribute('role', 'button');
+      row.setAttribute('aria-haspopup', 'dialog');
+      row.addEventListener('click', open);
+      row.addEventListener('keydown', key => {
+        if (key.key !== 'Enter' && key.key !== ' ') return;
+        key.preventDefault();
+        open();
+      });
+    }
     return row;
   }));
 }

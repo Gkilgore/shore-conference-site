@@ -10,6 +10,11 @@ function divisionTeamLabel(list, lists) {
   return shared && list.genders.length === 1 ? list.genders[0] + ' ' + sport : sport;
 }
 
+// A stable name for one list in links such as resources.html?team=girls-soccer-fall-2026#divisions.
+function divisionListKey(list) {
+  return [...list.genders, list.sports[0], list.season, list.year].join(' ').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+}
+
 // One group per season and year, in the order the lists are recorded.
 function divisionGroups(lists) {
   const groups = [];

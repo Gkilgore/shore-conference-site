@@ -63,7 +63,7 @@ if (school) {
     siteLink.hidden = false;
   }
   window.addEventListener('shore:calendar-view', ({ detail }) =>
-    renderTeamInfo(document.getElementById('team-info'), { school: schoolSlug, ...detail }));
+    renderTeamInfo(document.getElementById('team-info'), { school: schoolSlug, ...detail }, { quietWhenAll: true }));
 
   let games = sample ? sampleGames.filter(game => game.school === schoolSlug).map(game => ({
     title: teamLabel(game) + (game.home_away === 'Home' ? ' vs. ' : ' at ') +
