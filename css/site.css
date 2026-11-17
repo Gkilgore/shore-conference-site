@@ -377,7 +377,6 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
 .game-status.is-postponed { background: var(--yellow); border-color: var(--yellow); color: var(--ink); }
 .game-status.is-canceled { background: var(--red); border-color: var(--red); color: white; }
 .game-list strong span { padding: 0; font-size: inherit; color: inherit; }
-.game-status.is-canceled + span { text-decoration: line-through; }
 .home-away-badge {
   display: inline-block;
   width: max-content;
@@ -596,6 +595,10 @@ textarea { display: block; resize: vertical; }
 #calendar .game-head .game-status.on-fill { background: white; border-color: white; color: var(--ink); }
 /* School pages: a status label can land on a gold or yellow school color, so it gets a dark frame. */
 #calendar .has-school-color .game-head .game-status { border: 1px solid var(--ink); }
+/* School pages: home games in the school color, away games in its accent, postponed and canceled grey. */
+.status-key .is-home::before { background: var(--school-color); }
+.status-key .is-away::before { background: var(--school-accent); }
+.status-key .is-off::before { background: var(--steel); }
 /* A "moved" note on a game's old date: white with a full steel frame, so it reads as a pointer, not a game. */
 #calendar .fc-event.is-moved { --fc-event-bg-color: white; --fc-event-border-color: var(--steel-dark); --fc-event-text-color: var(--ink); }
 #calendar .fc-daygrid-event.is-moved { background: white; border: 1px solid var(--steel-dark); color: var(--ink); }

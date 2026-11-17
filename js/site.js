@@ -115,8 +115,6 @@ function renderUpcoming(events, { showChanged = false } = {}) {
       details.textContent = ['Was ' + (game.start.includes('T') ? timeFormat.format(new Date(game.start)) : 'TBD'),
         game.location, game.earlyDismissal && 'Early dismissal ' + game.earlyDismissal].filter(Boolean).join(' · ');
     }
-    const icon = createSportIcon(game.sport);
-    if (icon) title.prepend(icon);
     row.append(date, title, details);
     return row;
   }));

@@ -280,6 +280,10 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
         team.textContent = [gender, shortLevel(level), sport].filter(Boolean).join(' ');
         top.append(team);
         if (status && status !== 'Scheduled') {
+          // The square turns grey so a gold or yellow school color is never mistaken for Postponed;
+          // the yellow or red label says which.
+          content.style.setProperty('background', 'var(--steel)');
+          content.style.setProperty('color', 'var(--ink)');
           const label = document.createElement('span');
           label.className = 'game-status is-' + status.toLowerCase();
           label.textContent = status;
