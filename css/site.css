@@ -584,7 +584,6 @@ textarea { display: block; resize: vertical; }
 #calendar .fc-daygrid-event.is-postponed { background: var(--yellow); color: var(--ink); }
 #calendar .fc-event.is-canceled { --fc-event-bg-color: var(--red); --fc-event-text-color: white; }
 #calendar .fc-daygrid-event.is-canceled { background: var(--red); color: white; }
-#calendar .is-canceled .game-title { text-decoration: line-through; }
 #calendar .fc-list-event.is-postponed td { background: #fff1c2; }
 #calendar .fc-list-event.is-canceled td { background: #f6dde3; }
 /* School pages: a square is filled with the school's color, so a status shows as a label on it. */
