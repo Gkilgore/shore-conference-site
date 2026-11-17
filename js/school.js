@@ -88,13 +88,14 @@ if (school) {
       games = publicCalendarEvents(schedule);
       status.textContent = 'All times Eastern';
       // Each renderer returns how many items it drew; empty sections stay hidden.
-      document.getElementById('recent-updates').hidden =
-        !renderSchoolUpdates(document.getElementById('school-updates'), schedule, schoolDirectory);
+      const changes = renderSchoolUpdates(document.getElementById('school-updates'), schedule, schoolDirectory);
+      document.getElementById('recent-updates').hidden = !changes;
+      document.getElementById('school-updates-count').textContent = changes + (changes === 1 ? ' change' : ' changes');
     } else {
       status.textContent = 'Sample schedule · Eastern Time';
       document.getElementById('recent-updates').hidden = true;
     }
-    renderUpcoming(games, { showChanged: true });
+    renderUpcoming(games, { showChanged: true, school: schoolSlug });
     const noUpcoming = document.querySelector('#upcoming .empty-schedule');
     if (noUpcoming && site) {
       const other = siteLink.cloneNode(true);
