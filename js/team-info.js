@@ -56,7 +56,6 @@ function renderTeamInfo(target, selection, { quietWhenAll = false } = {}) {
     target.hidden = true;
     return;
   }
-  const schools = typeof shoreSchools !== 'undefined' ? shoreSchools : {};
   const part = (tag, text, className) => {
     const element = document.createElement(tag);
     element.textContent = text;
@@ -73,30 +72,25 @@ function renderTeamInfo(target, selection, { quietWhenAll = false } = {}) {
   const official = list => link('Official division list', list.url);
   const parts = [part('span', 'Division', 'team-info-label')];
   if (result.state === 'assigned') {
-    // One control: the division's name opens its schools, with the official list at the end.
-    const name = [result.division, result.label, result.level].join(' · ');
-    if (!result.members) parts.push(part('strong', name), official(result.list));
-    if (result.members) {
-      const details = document.createElement('details');
-      const names = document.createElement('ul');
-      details.append(part('summary', name), names);
-      names.append(...result.members.map(member => {
-        const item = document.createElement('li');
-        const slugs = divisionEntrySchools(member, schools);
-        if (!slugs.length) item.textContent = member;
-        slugs.forEach((slug, index) => {
-          const anchor = part('a', schools[slug].name);
-          anchor.href = 'school.html?school=' + encodeURIComponent(slug);
-          item.append(...(index ? [' / ', anchor] : [anchor]));
-        });
-        return item;
-      }));
-      const source = document.createElement('li');
-      source.className = 'team-info-source';
-      source.append(official(result.list));
-      names.append(source);
-      parts.push(details);
-    }
+    // A breadcrumb into the Information page: all divisions, this sport's divisions, then this division,
+    // which opens the sport's division pop-up at this school's group.
+    const crumb = (text, href) => {
+      const anchor = part('a', text);
+      anchor.href = href;
+      return anchor;
+    };
+    const lists = shoreConferenceResources.divisionLists;
+    const team = typeof divisionTeamLabel === 'function' ? divisionTeamLabel(result.list, lists) : result.list.sports[0];
+    const key = typeof divisionListKey === 'function' ? divisionListKey(result.list) : '';
+    const sportPage = key ? 'resources.html?team=' + encodeURIComponent(key) + '#divisions' : allDivisions;
+    const trail = part('nav', '', 'team-info-trail');
+    trail.setAttribute('aria-label', 'Division');
+    trail.append(crumb('Divisions', allDivisions), part('span', '›', 'team-info-sep'),
+      crumb(team + ' · ' + result.label, sportPage), part('span', '›', 'team-info-sep'),
+      crumb(result.division, key ? 'resources.html?team=' + encodeURIComponent(key) +
+        '&division=' + encodeURIComponent(result.division) + '#divisions' : allDivisions));
+    if (result.level !== 'Varsity') trail.append(part('span', result.level, 'team-info-level'));
+    parts.push(trail);
   } else if (result.state === 'all') {
     parts.push(part('span', 'Choose a sport and team to see its division.'),
       link('All division lists', allDivisions));
