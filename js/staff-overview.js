@@ -1,5 +1,5 @@
 // Schedule totals and unlinked games, plus upcoming scheduled buses for the Transportation tab.
-function startStaffOverview(client, { currentSchool, gameTitle, canEdit, openEditor }) {
+function startStaffOverview(client, { currentSchool, gameTitle, canEdit, openEditor, onLinks }) {
   const stats = document.getElementById('overview-stats');
   const linkList = document.getElementById('link-list');
   const busSection = document.getElementById('bus-section');
@@ -102,6 +102,7 @@ function startStaffOverview(client, { currentSchool, gameTitle, canEdit, openEdi
     if (!active || current !== request) return;
     links = error ? 'unavailable' : new Map(data.map(item => [item.game_id, item]));
     render();
+    onLinks?.();
   }
 
   return {

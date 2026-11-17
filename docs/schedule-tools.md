@@ -1,6 +1,6 @@
 # Schedule tools
 
-The staff dashboard opens on **Add Game**, where ADs add, edit and import games. The game editor offers sports from the school's team list, then limits gender and level to listed teams; it fills in the team's season automatically. Start time can be marked **TBD** until it is announced. **Transportation** lists upcoming away games with a bus departure and lets an AD save the transportation contact. Saving a scheduled game with a bus departure sends the details to that contact and copies the AD. No transportation confirmation is required; bus confirmation does not determine the game's Scheduled, Postponed or Canceled status.
+**Calendar** shows the school's games by date; clicking one shows its details, with **Edit game** for ADs, and clicking an empty day adds a game on that date. **Schedule** is where ADs pick a team, see its games in a table, and add, edit or import games; games that don't match the other school's entry are flagged on their row. The game editor opens as a pop-up over either tab. The game editor offers sports from the school's team list, then limits gender and level to listed teams; it fills in the team's season automatically. Start time can be marked **TBD** until it is announced. **Transportation** lists upcoming away games with a bus departure and lets an AD save the transportation contact. Saving a scheduled game with a bus departure sends the details to that contact and copies the AD. No transportation confirmation is required; bus confirmation does not determine the game's Scheduled, Postponed or Canceled status.
 
 ## Opponents
 
@@ -34,7 +34,7 @@ A matched game that either school publishes as Postponed or Canceled stays on th
 
 ## CSV import
 
-Use **Import games** on the Add Game tab, then **Download template**. The columns are:
+Use **Import games** on the Schedule tab, then **Download template**. The columns are:
 
 `date, start_time, sport, gender, level, season, home_away, opponent, location, status, bus_departure, pickup_location, early_dismissal_time, return_time, transport_notes, notes`
 

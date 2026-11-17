@@ -35,6 +35,7 @@
   <script defer src="js/staff-tournaments.js"></script>
   <script defer src="js/staff-coaches.js"></script>
   <script defer src="js/staff-teams.js"></script>
+  <script defer src="js/staff-team-schedule.js"></script>
   <script defer src="js/staff-venues.js"></script>
   <script defer src="js/staff-coach-import.js"></script>
   <script defer src="data/conference-resources.js"></script>
@@ -99,8 +100,8 @@
       <div class="staff-layout">
         <aside class="staff-sidebar" aria-label="Dashboard controls">
           <nav class="staff-nav" aria-label="Staff dashboard">
-            <button id="staff-schedule-tab" class="staff-tab" type="button" aria-current="true">Schedule</button>
-            <button id="staff-games-tab" class="staff-tab" type="button">Add Game</button>
+            <button id="staff-schedule-tab" class="staff-tab" type="button" aria-current="true">Calendar</button>
+            <button id="staff-games-tab" class="staff-tab" type="button">Schedule</button>
             <button id="staff-opponents-tab" class="staff-tab" type="button" hidden>Opponents</button>
             <button id="staff-teams-tab" class="staff-tab" type="button" hidden>My Teams</button>
             <button id="staff-transportation-tab" class="staff-tab" type="button" hidden>Transportation</button>
@@ -126,13 +127,16 @@
             <p id="staff-filter-count" role="status"></p>
           </form>
           <section id="staff-games-panel" class="staff-panel" aria-labelledby="games-title" hidden>
-            <h3 id="games-title" tabindex="-1">Games</h3>
-            <div class="actions games-actions">
-              <button id="add-calendar-game" class="button primary" type="button" hidden>Add game</button>
-              <button id="import-games" class="button secondary" type="button" aria-expanded="false" aria-controls="import-section" hidden>Import games</button>
+            <h3 id="games-title" tabindex="-1">Schedule</h3>
+            <div class="games-toolbar">
+              <label for="games-team">Team <select id="games-team"></select></label>
+              <div class="actions games-actions">
+                <button id="add-calendar-game" class="button primary" type="button" hidden>Add game</button>
+                <button id="import-games" class="button secondary" type="button" aria-expanded="false" aria-controls="import-section" hidden>Import games</button>
+              </div>
             </div>
             <p id="games-feedback" role="status"></p>
-            <div id="games-next" class="actions" hidden><button id="games-view-schedule" class="button secondary" type="button">View on Schedule</button></div>
+            <div id="games-next" class="actions" hidden><button id="games-view-schedule" class="button secondary" type="button">View on Calendar</button></div>
             <div id="games-unpublished" class="staff-unpublished" hidden>
               <p id="games-unpublished-text"></p>
               <button id="games-review" class="button primary" type="button">Open Teams</button>
@@ -157,7 +161,9 @@
                 <button id="import-clear" class="button secondary" type="button" hidden>Clear</button>
               </div>
           </section>
-            <section id="match-section" class="staff-section" aria-labelledby="overview-title">
+            <div id="games-team-schedule" class="games-team-schedule"></div>
+            <!-- Kept for the overview script's totals; unmatched games are flagged on their rows above. -->
+            <section id="match-section" class="staff-section" aria-labelledby="overview-title" hidden>
               <h4 id="overview-title" tabindex="-1">Match checks</h4>
               <ul id="overview-stats" class="staff-stats" aria-label="Schedule totals"></ul>
               <p class="staff-hint">Games below don’t match what the other school entered, so they aren’t on the conference calendar yet. Fix the detail shown in red.</p>
@@ -529,7 +535,8 @@
               </section>
             </div>
           </section>
-          <form id="game-form" class="staff-panel prose" aria-labelledby="game-form-title" hidden>
+          <dialog id="game-editor" class="game-details game-editor" aria-labelledby="game-form-title">
+          <form id="game-form" class="prose" aria-labelledby="game-form-title" hidden>
             <h3 id="game-form-title">Add a game</h3>
             <p id="game-form-context" class="staff-subhead"></p>
             <p class="staff-hint">Everything is required except notes and transportation.</p>
@@ -586,6 +593,7 @@
               <button class="button secondary" id="delete-game" type="button" hidden>Delete game</button>
             </div>
           </form>
+          </dialog>
         </div>
       </div>
     </section>
