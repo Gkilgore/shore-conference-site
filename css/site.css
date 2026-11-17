@@ -718,16 +718,15 @@ textarea { display: block; resize: vertical; }
 
 /* Game pop-up: a band in the game's calendar color, then plain rows and the actions. */
 .game-details.game-card { padding: 0; }
-.game-card-band { display: grid; gap: 0.35rem; padding: 1rem 1.25rem; background: var(--navy); color: white; }
+.game-card-band { display: grid; gap: 0.35rem; padding: 1rem 1.25rem; background: var(--red); color: white; }
 .game-card-band h2 { margin: 0; color: inherit; overflow-wrap: anywhere; }
 .game-card-team { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
 .game-card-team:empty { display: none; }
 .game-card-team .game-status { margin: 0; border: 1px solid var(--ink); }
-.game-card.is-postponed .game-card-band { background: var(--yellow); color: var(--ink); }
-.game-card.is-canceled .game-card-band { background: var(--red); color: white; }
 .game-card.uses-school-colors .game-card-band { background: var(--school-color); color: var(--school-ink); }
 .game-card.uses-school-colors.is-away .game-card-band { background: var(--school-accent); color: var(--accent-ink); }
-.game-card.uses-school-colors:is(.is-postponed, .is-canceled) .game-card-band { background: var(--steel); color: var(--ink); }
+.game-card:is(.is-postponed, .is-canceled) .game-card-band { background: var(--steel); color: var(--ink); }
+.game-card-address { display: block; color: var(--muted); font-weight: 400; }
 .game-card-body { padding: 0 1.25rem 1.25rem; }
 .game-card dl { margin-block: 1rem 1.25rem; }
 .game-card dd { font-weight: 500; }

@@ -82,6 +82,16 @@ createServer(async (req, res) => {
       return;
     }
     // Social links for the preview. These are the platforms' own public accounts, standing in for school accounts.
+    // Fictional addresses for a few sample venues, so the game pop-up can show one.
+    if (url.pathname === '/rest/v1/school_venues') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify([
+        { school_id: 'marlboro', name: 'Marlboro Turf Field', address: '95 North Main Street, Marlboro, NJ 07746' },
+        { school_id: 'marlboro', name: 'Marlboro Gym', address: '95 North Main Street, Marlboro, NJ 07746' },
+        { school_id: 'colts-neck', name: 'Colts Neck Courts', address: '59 Five Points Road, Colts Neck, NJ 07722' },
+      ]));
+      return;
+    }
     if (url.pathname === '/rest/v1/school_social_accounts') {
       const only = url.searchParams.get('school_id')?.replace(/^eq\./, '');
       res.writeHead(200, { 'Content-Type': 'application/json' });
