@@ -163,3 +163,35 @@ test('invalid scopes, extra parameters and malformed selectors are rejected', ()
   assert.throws(() => parseOptions(new URL('https://example.org/?school=marlboro&gender=unknown')));
   assert.equal(parseOptions(new URL('https://example.org/?school=marlboro&sport=Ice%20Hockey')).sport, 'Ice Hockey');
 });
+
+test('a postponed game posted at a new slot leaves a note on its old date for the website only', () => {
+  const moved = { ...home, game_date: '2026-11-12', start_time: '16:00:00' };
+  const moves = [{ game_id: home.id, from_date: '2026-11-09', from_time: '15:45:00' }];
+  const schedule = publicSchedule(schools, [moved], options, [], moves);
+  assert.equal(schedule.events.length, 2);
+  const [note, game] = schedule.events;
+  assert.equal(note.start, '2026-11-09T15:45:00');
+  assert.equal(note.status, 'Moved');
+  assert.deepEqual(note.moved_to, { start: '2026-11-12T16:00:00', text: 'Nov 12, 4:00 PM' });
+  assert.match(note.title, /Moved to Nov 12, 4:00 PM$/);
+  assert.equal(note.transportation, undefined, 'the note carries no bus details');
+  assert.deepEqual(game.moved_from, { date: '2026-11-09', time: '15:45:00', text: 'Nov 9, 3:45 PM' });
+  const feed = buildCalendar(schedule);
+  assert.equal(feed.match(/BEGIN:VEVENT/g).length, 1, 'subscribed calendars only see the game move');
+  assert.ok(feed.includes('Originally Nov 9\\, 3:45 PM.'), 'the moved game says where it was');
+  assert.doesNotMatch(feed, /-moved@/);
+});
+
+test('a conference game shows a move recorded by either school, and nothing without one', () => {
+  const movedHome = { ...home, game_date: '2026-11-12' };
+  const movedAway = { ...away, game_date: '2026-11-12' };
+  const conference = { scope: 'conference' };
+  const withMove = publicSchedule(schools, [movedHome, movedAway], conference, [],
+    [{ game_id: away.id, from_date: '2026-11-09', from_time: null }]);
+  assert.equal(withMove.events.length, 2);
+  assert.equal(withMove.events[0].start, '2026-11-09');
+  assert.equal(withMove.events[0].moved_to.text, 'Nov 12, 3:45 PM');
+  assert.equal(withMove.events[1].moved_from.text, 'Nov 9, time TBD');
+  assert.equal(publicSchedule(schools, [movedHome, movedAway], conference).events.length, 1);
+  assert.equal(publicSchedule(schools, [home], options, [], [{ game_id: 'other-game', from_date: '2026-11-01' }]).events.length, 1);
+});

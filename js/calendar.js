@@ -147,7 +147,10 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
     eventOrder: 'start,title',
     eventInteractive: true,
     eventClick({ event }) {
-      showGameDetails(event);
+      // A "moved" note on the old date jumps to the game's new date instead of opening details.
+      const movedTo = event.extendedProps.moved_to;
+      if (movedTo) calendar.gotoDate(movedTo.start.slice(0, 10));
+      else showGameDetails(event);
     },
     eventDidMount({ el }) {
       el.tabIndex = 0;
@@ -189,7 +192,8 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
       } }));
       // School-page squares carry a class so the status fills (yellow, red) step aside for the school's color.
       // The conference calendar keeps its own colors.
-      showEvents(schoolSlug ? results.map(game => ({ ...game,
+      // A "moved" note keeps its plain white look on school pages too.
+      showEvents(schoolSlug ? results.map(game => game.moved_to ? game : ({ ...game,
         classNames: [...(game.classNames ?? []), 'school-colored'] })) : results);
     },
     eventContent({ event, timeText, view }) {
@@ -198,13 +202,17 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
       content.className = 'game';
       const title = document.createElement('span');
       title.className = 'game-title';
-      const square = inList ? null : (conferenceSquare(event) || schoolCalendarSquare(event));
+      // Moved games: the old date keeps a note saying where the game went, and the game at its new date
+      // gets an asterisk after its time.
+      const { moved_to: movedTo, moved_from: movedFrom } = event.extendedProps;
+      const square = inList ? null : (conferenceSquare(event) || (movedTo ? null : schoolCalendarSquare(event)));
       // For school calendars (useSchoolColor), don't try to show matchup
       title.textContent = inList ? event.title : (square?.useSchoolColor ? squareLabel(event) : (square?.matchup ?? squareLabel(event)));
       // Time and Home/Away share the first line so the square stays short.
       const head = document.createElement('span');
       head.className = 'game-head';
-      const displayedTime = event.allDay ? 'TBD' : timeText;
+      const displayedTime = movedTo ? '' : (event.allDay ? 'TBD' : timeText) + (movedFrom ? '*' : '');
+      if (inList && movedFrom) title.textContent = '* ' + title.textContent;
       if (displayedTime && (!inList || event.allDay)) {
         const time = document.createElement('span');
         time.className = 'game-time';
@@ -265,8 +273,20 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
           content.append(top);
         }
       }
+      if (movedTo && !inList && !square) {
+        const label = document.createElement('span');
+        label.className = 'game-status on-fill';
+        label.textContent = 'Moved';
+        head.append(label);
+      }
       if (head.childNodes.length) content.append(head);
       content.append(title);
+      if (movedTo && !inList) {
+        const line = document.createElement('span');
+        line.className = 'game-moved';
+        line.textContent = 'To ' + movedTo.text;
+        content.append(line);
+      }
       const details = [event.extendedProps.location, event.extendedProps.bus,
         event.extendedProps.earlyDismissal && 'Early dismissal ' + event.extendedProps.earlyDismissal].filter(Boolean);
       content.title = 'View details: ' + event.title;
@@ -314,6 +334,7 @@ function createGameDetails(calendar) {
       ['Venue', details.location || 'To be announced'],
       ['Status', details.status || 'Scheduled'],
     ];
+    if (details.moved_from) rows.push(['Originally', details.moved_from.text]);
     if (details.bus) rows.push(['Transportation', details.bus]);
     if (details.earlyDismissal) rows.push(['Early dismissal', details.earlyDismissal]);
     const bracket = dialog.querySelector('[data-tournament-bracket]');
