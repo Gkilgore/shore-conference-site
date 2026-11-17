@@ -34,6 +34,15 @@ test('every public historical record resolves to a real source and a unique anch
     }
   }
 });
+test('incorporation is a separate sourced 1938 milestone', () => {
+  const founding = data.milestones.find(item => item.id === 'founding-meeting');
+  const incorporation = data.milestones.find(item => item.id === 'incorporation-1938');
+  assert.equal(founding.year, 1936);
+  assert.equal(incorporation.year, 1938);
+  assert.match(incorporation.date, /October 29, 1938/);
+  assert.ok(incorporation.sources.includes('constitution2024'));
+  assert.match(data.sources.constitution2024.url, /SC_Constitution_2024_\.pdf/);
+});
 
 test('athlete classifications keep later-member alumni out of the conference gallery', () => {
   const confirmed = filter(data.athletes, 'all', 'all', 'conference');
