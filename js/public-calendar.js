@@ -20,7 +20,10 @@ async function loadPublicCalendar(options) {
 function publicCalendarEvents(schedule) {
   const formatTime = time => new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' })
     .format(new Date('2000-01-01T' + time));
-  return schedule.events.map(game => ({ ...game,
+  // The calendar function deployed before November 16 sends its middle-dot separators re-encoded as
+  // "Â·". Repair them here; the fixed function source no longer produces them once redeployed.
+  const repair = text => typeof text === 'string' ? text.replaceAll('\u00c2\u00b7', '\u00b7') : text;
+  return schedule.events.map(game => ({ ...game, title: repair(game.title),
     classNames: game.status === 'Scheduled' ? [] : ['is-' + game.status.toLowerCase()],
     bus: game.transportation?.bus_departure
       ? 'Bus ' + formatTime(game.transportation.bus_departure) : '',

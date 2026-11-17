@@ -297,6 +297,8 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
 .school-hero .primary { background: var(--school-accent); border-color: var(--school-accent); color: var(--accent-ink); }
 .school-hero .primary:is(:hover, :focus-visible) { background: var(--paper); border-color: var(--paper); color: var(--ink); }
 .school-hero .secondary { border-color: white; }
+/* The conference calendar page lists upcoming games right under the calendar. */
+.section + .upcoming-after-calendar { padding-top: 0; }
 /* The calendar leads the school page; the next games follow it. */
 .school-upcoming { margin-top: 2.5rem; }
 .school-calendar h2 { margin-bottom: 0.9rem; }

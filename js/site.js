@@ -77,13 +77,13 @@ for (const host of document.querySelectorAll('[data-logo-wall]')) {
 // Next games use the calendar's colors. The date block on a school page is the school color for a home
 // game and its accent for an away game; on conference pages it is navy. A postponed or canceled game's
 // block turns grey on a school page, or yellow or red on a conference page, with its label before the title.
-function renderUpcoming(events, { showChanged = false, school = null } = {}) {
+function renderUpcoming(events, { showChanged = false, school = null, limit = 3 } = {}) {
   const list = document.getElementById('upcoming');
   const now = new Date().toISOString().slice(0, 10);
   const scheduled = game => !game.status || game.status === 'Scheduled';
   // "Moved" notes mark an old date on the calendar; they are not games.
   const games = events.filter(game => !game.moved_to && (showChanged || scheduled(game)) && game.start.slice(0, 10) >= now)
-    .sort((first, second) => first.start.localeCompare(second.start)).slice(0, 3);
+    .sort((first, second) => first.start.localeCompare(second.start)).slice(0, limit);
   if (!games.length) {
     list.innerHTML = '<li class="empty-schedule">No upcoming games are listed.</li>';
     return;
@@ -101,8 +101,10 @@ function renderUpcoming(events, { showChanged = false, school = null } = {}) {
     date.textContent = dateFormat.format(start);
     if (school) row.classList.add(game.home_away === 'Away' ? 'is-away' : 'is-home');
     if (!scheduled(game)) row.classList.add('is-' + game.status.toLowerCase());
+    // Away games read "@ Colts Neck", as on the calendar.
+    const matchupText = text => text.replace(/(^| )at (?=\S)/, '$1@ ');
     if (scheduled(game)) {
-      title.append(game.title);
+      title.append(matchupText(game.title));
       details.textContent = [game.start.includes('T') ? timeFormat.format(new Date(game.start)) : 'TBD',
         game.location, game.bus,
         game.earlyDismissal && 'Early dismissal ' + game.earlyDismissal].filter(Boolean).join(' · ');
@@ -112,7 +114,7 @@ function renderUpcoming(events, { showChanged = false, school = null } = {}) {
       const matchup = document.createElement('span');
       label.className = 'game-status is-' + game.status.toLowerCase();
       label.textContent = game.status;
-      matchup.textContent = game.title.endsWith(' · ' + game.status) ? game.title.slice(0, -game.status.length - 3) : game.title;
+      matchup.textContent = matchupText(game.title.endsWith(' · ' + game.status) ? game.title.slice(0, -game.status.length - 3) : game.title);
       title.append(label, ' ', matchup);
       details.textContent = ['Was ' + (game.start.includes('T') ? timeFormat.format(new Date(game.start)) : 'TBD'),
         game.location, game.earlyDismissal && 'Early dismissal ' + game.earlyDismissal].filter(Boolean).join(' · ');

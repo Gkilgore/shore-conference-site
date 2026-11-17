@@ -1,4 +1,6 @@
 // Selects published schedule fields and serializes subscription calendars without dependencies.
+// Non-ASCII characters are written as \u escapes, so a deploy that misreads the file encoding
+// cannot garble them (a middle dot once arrived as "\u00c2\u00b7").
 export function parseOptions(url) {
   const allowed = ['scope', 'school', 'sport', 'gender', 'level', 'season', 'search', 'format', 'download'];
   for (const key of url.searchParams.keys()) {
@@ -43,8 +45,8 @@ function tournamentEvents(games, options) {
       : home ? away.name + ' at ' + home.name : game.a.name + ' vs. ' + game.b.name;
     const event = {
       id: game.id, revision: game.revision, updated_at: game.updated_at,
-      title: [team.gender, team.level, team.sport].join(' ') + ' · ' + game.tournament_name +
-        ' · ' + game.match_label + ' · ' + pairing + (game.status === 'Scheduled' ? '' : ' · ' + game.status),
+      title: [team.gender, team.level, team.sport].join(' ') + ' \u00b7 ' + game.tournament_name +
+        ' \u00b7 ' + game.match_label + ' \u00b7 ' + pairing + (game.status === 'Scheduled' ? '' : ' \u00b7 ' + game.status),
       start: game.game_date + 'T' + game.start_time, location: game.location,
       status: game.status, notes: '', school: options.scope === 'school' ? options.school : home?.school_id ?? schools[0] ?? null,
       schools, sport: team.sport, gender: team.gender, level: team.level, season: team.season,
@@ -114,11 +116,11 @@ export function publicSchedule(schools, games, options, tournamentGames = [], mo
     const opponent = directory.get(game.opponent_school_id)?.name ?? game.opponent_name ?? 'Opponent';
     const teamName = [team.gender, team.level, team.sport].join(' ');
     const title = isConference
-      ? teamName + ' · ' + opponent + ' at ' + directory.get(game.school_id).name
+      ? teamName + ' \u00b7 ' + opponent + ' at ' + directory.get(game.school_id).name
       : teamName + (game.home_away === 'Home' ? ' vs. ' : ' at ') + opponent;
     const event = {
       id: game.feed_id ?? game.id, revision: game.revision, updated_at: game.updated_at,
-      title: title + (game.status === 'Scheduled' ? '' : ' · ' + game.status),
+      title: title + (game.status === 'Scheduled' ? '' : ' \u00b7 ' + game.status),
       start: game.start_time ? game.game_date + 'T' + game.start_time : game.game_date, location: game.location,
       status: game.status, notes: game.notes ?? '', school: game.school_id, home_away: game.home_away,
       schools: [game.school_id, game.opponent_school_id].filter(Boolean),
@@ -140,7 +142,7 @@ export function publicSchedule(schools, games, options, tournamentGames = [], mo
     event.moved_from = { date: move.from_date, time: move.from_time ?? null, text: slotText(move.from_date, move.from_time) };
     const note = {
       id: event.id + '-moved', revision: event.revision, updated_at: event.updated_at,
-      title: title + ' · Moved to ' + slotText(game.game_date, game.start_time),
+      title: title + ' \u00b7 Moved to ' + slotText(game.game_date, game.start_time),
       start: move.from_time ? move.from_date + 'T' + move.from_time : move.from_date, location: '',
       status: 'Moved', notes: '', school: event.school, home_away: event.home_away, schools: event.schools,
       sport: team.sport, gender: team.gender, level: team.level, season: team.season,
@@ -153,7 +155,7 @@ export function publicSchedule(schools, games, options, tournamentGames = [], mo
     .sort((a, b) => a.start.localeCompare(b.start) || a.id.localeCompare(b.id));
   return {
     scope: options.scope, name: [isConference ? 'Shore Conference' : school.name,
-      options.gender, options.level, options.sport, options.season].filter(Boolean).join(' · '),
+      options.gender, options.level, options.sport, options.season].filter(Boolean).join(' \u00b7 '),
     published: isConference || school.schedule_published === true || tournaments.length > 0,
     events,
   };
@@ -212,7 +214,7 @@ export function buildCalendar(schedule) {
         : game.ics_start_utc ? 'DTSTART:' + game.ics_start_utc
           : 'DTSTART;TZID=America/New_York:' + (game.start.length === 16 ? game.start + ':00' : game.start).replace(/[-:]/g, '').slice(0, 15),
       ...(allDay ? ['DTEND;VALUE=DATE:' + nextDay.toISOString().slice(0, 10).replace(/-/g, '')] : []),
-      'SUMMARY:' + escapeText(game.title + (allDay ? ' · TBD' : '')), 'LOCATION:' + escapeText(game.location),
+      'SUMMARY:' + escapeText(game.title + (allDay ? ' \u00b7 TBD' : '')), 'LOCATION:' + escapeText(game.location),
       'DESCRIPTION:' + escapeText(description.filter(Boolean).join('\n')),
       'STATUS:' + (game.status === 'Canceled' ? 'CANCELLED' : game.status === 'Postponed' ? 'TENTATIVE' : 'CONFIRMED'),
       'END:VEVENT');
