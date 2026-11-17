@@ -495,12 +495,13 @@ function startStaffSchedule(client, invite) {
     if (canEdit) await publication.load();
     if (stopped || request !== loadNumber) return;
     showUnpublished();
+    // The schedule is usable even if the separate Teams request is slow or fails.
+    showCalendar(visible, focusDate ?? (newSchool ? new Date() : null));
+    if (!calendar) showList(visible);
     if (canEdit) await teams.load();
     if (stopped || request !== loadNumber) return;
     refreshGameSports(activeGame?.teams ?? { sport: fields.sport.value });
     teams.render();
-    showCalendar(visible, focusDate ?? (newSchool ? new Date() : null));
-    if (!calendar) showList(visible);
   }
 
   // Season, Sport, Level and Gender filters shared by the Calendar and Schedule tabs.
