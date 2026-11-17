@@ -24,9 +24,9 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
 
   const fields = filters.elements;
   let singleTeam = false;
-  // Squares are narrow, so levels are shortened there: "Boys Frsh Football".
-  const shortLevel = level => ({ Varsity: 'V', Freshman: 'Frsh' })[level] ?? level;
-  // and genders to a letter: "(B) Frsh Football", "(G) JV Soccer".
+  // Squares are narrow, so levels are shortened there: "Boys F Football".
+  const shortLevel = level => ({ Varsity: 'V', Freshman: 'F' })[level] ?? level;
+  // and genders to a letter: "(B) F Football", "(G) JV Soccer".
   const shortGender = gender => ({ Boys: '(B)', Girls: '(G)', Coed: '(C)' })[gender] ?? gender;
   // Month, week and day squares on a school calendar stay short: the team's name, or the opponent
   // once a sport is chosen. Clicking a game opens the full details. The conference
