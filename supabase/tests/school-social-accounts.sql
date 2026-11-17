@@ -19,16 +19,19 @@ set local role authenticated;
 do $$
 declare own uuid; affected integer; rejected boolean; bad text;
 begin
-  insert into public.school_social_accounts(school_id,platform,url) values('marlboro','instagram','https://www.instagram.com/fixture.marlboro/') returning id into own;
+  insert into public.school_social_accounts(school_id,platform,url,account_name) values('marlboro','instagram','https://www.instagram.com/fixture.marlboro/','Football') returning id into own;
   insert into public.school_social_accounts(school_id,platform,url) values('marlboro','facebook','https://www.facebook.com/profile.php?id=1234567890');
   insert into public.school_social_accounts(school_id,platform,url) values('marlboro','x','https://x.com/test_marlboro');
-  update public.school_social_accounts set url='https://www.instagram.com/fixture_renamed/' where id=own;
-  if not exists(select 1 from public.school_social_accounts where id=own and url='https://www.instagram.com/fixture_renamed/') then
+  update public.school_social_accounts set url='https://www.instagram.com/fixture_renamed/', account_name='Boys soccer' where id=own;
+  if not exists(select 1 from public.school_social_accounts where id=own and url='https://www.instagram.com/fixture_renamed/' and account_name='Boys soccer') then
     raise exception 'Own-school edit failed'; end if;
+  insert into public.school_social_accounts(school_id,platform,url,account_name)
+    values('marlboro','instagram','https://www.instagram.com/second/','Football');
   rejected := false;
-  begin insert into public.school_social_accounts(school_id,platform,url) values('marlboro','instagram','https://www.instagram.com/second/');
+  begin insert into public.school_social_accounts(school_id,platform,url,account_name)
+    values('marlboro','instagram','https://www.instagram.com/second/','Duplicate');
   exception when unique_violation then rejected := true; end;
-  if not rejected then raise exception 'Second account on one platform accepted'; end if;
+  if not rejected then raise exception 'Duplicate account URL accepted'; end if;
   foreach bad in array array['http://www.instagram.com/fixture/','https://instagram.com.example.org/fixture/',
     'https://www.instagram.com/p/ABC123/extra/','https://www.instagram.com/fixture','https://example.org/','javascript:alert(1)',
     'https://www.facebook.com/fixture/'] loop
@@ -104,5 +107,5 @@ begin
 end;
 $$;
 reset role;
-select 'PASS: own-school add/edit/remove; bad links, second account and unsupported platform rejected; cross-school insert/edit/removal/move blocked; conference admin manages every school; uninvited and public read-only' as verification;
+select 'PASS: own-school add/edit/remove and multiple accounts; bad links, duplicate URL and unsupported platform rejected; cross-school insert/edit/removal/move blocked; conference admin manages every school; uninvited and public read-only' as verification;
 rollback;

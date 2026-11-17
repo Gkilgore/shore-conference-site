@@ -82,6 +82,16 @@ test('each school gets its own accounts, Instagram first, and a bad saved link i
   assert.equal(socialAccountsFor(rows, 'holmdel').length, 0);
 });
 
+test('several team accounts on one platform appear together with their names', () => {
+  const rows = [
+    { school_id: 'marlboro', platform: 'x', account_name: 'Football', url: 'https://x.com/mhsmustangsfb' },
+    { school_id: 'marlboro', platform: 'x', account_name: 'Boys soccer', url: 'https://x.com/MarlboroSoccer2' },
+    { school_id: 'colts-neck', platform: 'x', account_name: 'Football', url: 'https://x.com/ColtsNeck' },
+  ];
+  assert.deepEqual(socialAccountsFor(rows, 'marlboro').map(account => [account.name, account.handle]),
+    [['Boys soccer', '@MarlboroSoccer2'], ['Football', '@mhsmustangsfb']]);
+});
+
 test('the home page lists only directory schools with an account and rotates the first school daily', () => {
   const schools = socialSchools(rows, directory);
   assert.equal(schools.map(school => school.name).join(), 'Colts Neck,Marlboro,Shore Regional');
@@ -112,6 +122,7 @@ class Element {
   setAttribute(name, value) { this.attributes[name] = value; }
   removeAttribute(name) { delete this.attributes[name]; }
   focus() { this.focused = true; }
+  querySelector() { return this.submit; }
   find(check) { return this.children.flatMap(child => child instanceof Element ? [child, ...child.find(() => true)] : []).filter(check); }
 }
 function mountStaff({ saved = [], error = null, writeError = null } = {}) {
@@ -122,6 +133,11 @@ function mountStaff({ saved = [], error = null, writeError = null } = {}) {
   };
   const calls = [];
   let table = saved.map(row => ({ ...row }));
+  const form = document.getElementById('social-form');
+  form.elements = Object.fromEntries(['account_name', 'platform', 'url'].map(name => [name, new Element('input')]));
+  form.elements.platform.value = 'instagram';
+  form.submit = new Element('button');
+  form.reset = () => { form.elements.account_name.value = ''; form.elements.platform.value = 'instagram'; form.elements.url.value = ''; };
   const client = { from(name) {
     let action = 'select', values = null; const filters = {};
     const query = {
@@ -135,8 +151,9 @@ function mountStaff({ saved = [], error = null, writeError = null } = {}) {
         if (failure) return Promise.resolve({ data: null, error: failure }).then(resolve);
         if (action === 'insert') table.push({ id: 'new-' + table.length, ...values });
         if (action === 'update') table = table.map(row => match(row) ? { ...row, ...values } : row);
+        const affected = table.filter(match);
         if (action === 'delete') table = table.filter(row => !match(row));
-        return Promise.resolve({ data: action === 'select' ? table.filter(match) : null, error: null }).then(resolve);
+        return Promise.resolve({ data: affected, error: null }).then(resolve);
       },
     };
     return query;
@@ -145,65 +162,67 @@ function mountStaff({ saved = [], error = null, writeError = null } = {}) {
   vm.runInContext(read('js/social-links.js') + read('js/staff-social.js') + ';globalThis.start = startStaffSocial;', staff);
   const controller = staff.start(client, { currentSchool: () => ({ slug: 'marlboro', name: 'Marlboro' }) });
   const el = id => document.getElementById(id);
-  const row = label => el('social-list').children.find(item => item.children[0].textContent.trim() === label);
-  const input = label => row(label).find(child => child.tag === 'input')[0];
-  const press = (label, text) => row(label).find(child => child.tag === 'button' && child.textContent === text)[0];
+  const row = name => el('social-list').children.find(item => item.find(child => child.tag === 'input')[0]?.value === name);
+  const input = (name, index = 0) => row(name).find(child => child.tag === 'input')[index];
+  const press = (name, text) => row(name).find(child => child.tag === 'button' && child.textContent === text)[0];
   const settle = () => new Promise(resolve => setImmediate(resolve));
-  return { controller, el, row, input, press, calls, settle, rows: () => table };
+  return { controller, el, row, input, press, form, calls, settle, rows: () => table };
 }
 const writes = calls => calls.filter(call => call.action !== 'select');
 
 test('the staff tab loads one school and refuses a bad link before anything is sent', async () => {
-  const staff = mountStaff({ saved: [{ id: 'a', school_id: 'marlboro', platform: 'instagram', url: 'https://www.instagram.com/marlboro/' },
-    { id: 'b', school_id: 'colts-neck', platform: 'x', url: 'https://x.com/ColtsNeck' }] });
+  const staff = mountStaff({ saved: [{ id: 'a', school_id: 'marlboro', platform: 'instagram', account_name: 'Boys soccer', url: 'https://www.instagram.com/marlboroboysvs/' },
+    { id: 'b', school_id: 'colts-neck', platform: 'x', account_name: 'Football', url: 'https://x.com/ColtsNeck' }] });
   await staff.controller.load();
   assert.deepEqual(staff.calls[0].filters, { school_id: 'marlboro' });
-  assert.equal(staff.el('social-list').children.length, 3);
-  assert.equal(staff.input('Instagram').value, 'https://www.instagram.com/marlboro/');
-  assert.equal(staff.input('X').value, '', 'another school’s link is not shown');
-  assert.equal(staff.press('X', 'Remove'), undefined);
-  staff.input('X').value = 'https://example.org/marlboro';
-  await staff.press('X', 'Save').onclick();
+  assert.equal(staff.el('social-list').children.length, 1);
+  assert.equal(staff.input('Boys soccer', 1).value, 'https://www.instagram.com/marlboroboysvs/');
+  assert.equal(staff.row('Football'), undefined, 'another school’s link is not shown');
+  staff.form.elements.account_name.value = 'Football';
+  staff.form.elements.platform.value = 'x';
+  staff.form.elements.url.value = 'https://example.org/marlboro';
+  await staff.form.onsubmit({ preventDefault() {} });
   assert.match(staff.el('social-status').textContent, /^Paste the link to the school’s X account/);
-  assert.equal(staff.input('X').attributes['aria-invalid'], 'true');
+  assert.equal(staff.form.elements.url.attributes['aria-invalid'], 'true');
   assert.equal(writes(staff.calls).length, 0);
 });
 
-test('the staff tab adds, changes and removes a link for the selected school only', async () => {
-  const staff = mountStaff({ saved: [{ id: 'a', school_id: 'marlboro', platform: 'instagram', url: 'https://www.instagram.com/marlboro/' }] });
+test('an AD can add two X accounts, change one and remove the other for their school', async () => {
+  const staff = mountStaff();
   await staff.controller.load();
-  staff.input('Facebook').value = 'm.facebook.com/MarlboroMustangs/';
-  await staff.press('Facebook', 'Save').onclick();
-  await staff.settle();
-  assert.deepEqual({ ...writes(staff.calls)[0].values }, { school_id: 'marlboro', platform: 'facebook', url: 'https://www.facebook.com/MarlboroMustangs' });
-  assert.equal(staff.el('social-status').textContent, 'Facebook saved. It is on the public site now.');
-  staff.input('Instagram').value = 'instagram.com/marlboro.athletics';
-  await staff.press('Instagram', 'Save').onclick();
-  await staff.settle();
-  const change = writes(staff.calls)[1];
+  for (const [name, url] of [['Football', 'https://x.com/mhsmustangsfb'], ['Boys soccer', 'https://x.com/MarlboroSoccer2']]) {
+    staff.form.elements.account_name.value = name;
+    staff.form.elements.platform.value = 'x';
+    staff.form.elements.url.value = url;
+    await staff.form.onsubmit({ preventDefault() {} });
+  }
+  assert.equal(staff.rows().length, 2);
+  assert.deepEqual({ ...writes(staff.calls)[0].values }, { school_id: 'marlboro', account_name: 'Football', platform: 'x', url: 'https://x.com/mhsmustangsfb' });
+  staff.input('Boys soccer', 1).value = 'https://x.com/MarlboroSoccer2';
+  await staff.press('Boys soccer', 'Save changes').onclick();
+  const change = writes(staff.calls)[2];
   assert.equal(change.action, 'update');
-  assert.deepEqual({ ...change.values }, { url: 'https://www.instagram.com/marlboro.athletics/' });
-  assert.deepEqual(change.filters, { id: 'a' });
-  await staff.press('Instagram', 'Remove').onclick();
-  await staff.settle();
-  assert.equal(writes(staff.calls)[2].action, 'delete');
-  assert.deepEqual(writes(staff.calls)[2].filters, { id: 'a' });
-  assert.equal(staff.el('social-status').textContent, 'Instagram removed. It is off the public site.');
-  assert.deepEqual(staff.rows().map(item => item.platform), ['facebook']);
-  assert.equal(staff.input('Instagram').value, '');
+  assert.deepEqual({ ...change.values }, { account_name: 'Boys soccer', url: 'https://x.com/MarlboroSoccer2' });
+  assert.deepEqual(change.filters, { id: 'new-1', school_id: 'marlboro' });
+  await staff.press('Football', 'Remove').onclick();
+  assert.equal(writes(staff.calls)[3].action, 'delete');
+  assert.deepEqual(writes(staff.calls)[3].filters, { id: 'new-0', school_id: 'marlboro' });
+  assert.equal(staff.el('social-status').textContent, 'Football removed. It is off the public site.');
+  assert.deepEqual(staff.rows().map(item => item.account_name), ['Boys soccer']);
 });
 
 test('the staff tab says so when the table is missing or the database refuses a save', async () => {
   const missing = mountStaff({ error: { code: 'PGRST205' } });
   await missing.controller.load();
-  assert.match(missing.el('social-status').textContent, /apply the social accounts migration/);
+  assert.match(missing.el('social-status').textContent, /latest test database migration/);
   assert.equal(missing.el('social-list').children.length, 0);
   // The database refuses the write, as it does for an AD reaching for another school.
   const refused = mountStaff({ writeError: { code: '42501' } });
   await refused.controller.load();
-  refused.input('X').value = 'x.com/MarlboroAD';
-  await refused.press('X', 'Save').onclick();
-  await refused.settle();
-  assert.equal(refused.el('social-status').textContent, 'That link could not be saved. Try again.');
+  refused.form.elements.account_name.value = 'Football';
+  refused.form.elements.platform.value = 'x';
+  refused.form.elements.url.value = 'https://x.com/MarlboroAD';
+  await refused.form.onsubmit({ preventDefault() {} });
+  assert.match(refused.el('social-status').textContent, /could not be added/);
   assert.equal(refused.rows().length, 0);
 });

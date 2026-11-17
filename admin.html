@@ -383,10 +383,16 @@
             </section>
             <section id="settings-social" class="staff-section" aria-labelledby="social-accounts-title">
               <h4 id="social-accounts-title">Social media</h4>
-              <p class="staff-hint">Paste the link to each school account. A saved link shows on the school page and the conference home page right away.</p>
+              <p class="staff-hint">Add each school or team account. Links appear on the school page and conference home page right away.</p>
               <p id="social-status" class="venue-status" role="status" aria-live="polite"></p>
               <ul id="social-list" class="venue-list social-list"></ul>
-              <p class="staff-hint">Instagram shows the account’s latest posts. Facebook and X show as links. The account must be public.</p>
+              <form id="social-form" class="social-form">
+                <label>Account name <input name="account_name" required maxlength="60" placeholder="Football or Boys soccer"></label>
+                <label>Platform <select name="platform"><option value="instagram">Instagram</option><option value="facebook">Facebook</option><option value="x">X</option></select></label>
+                <label>Account link <input name="url" type="url" required maxlength="200" placeholder="https://www.instagram.com/account/"></label>
+                <button class="button primary" type="submit">Add account</button>
+              </form>
+              <p class="staff-hint">Remove takes a link off the public site. Instagram may show one public account’s posts; every account has a direct link.</p>
             </section>
           </section>
 <!-- Tournament draft editor and school-owned published-game transportation. -->

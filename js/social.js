@@ -3,7 +3,7 @@
 // the section is about to scroll into view. Facebook and X are shown as links.
 async function loadSocialRows(school) {
   if (typeof shoreSupabase === 'undefined' || !shoreSupabase.url) return [];
-  const query = 'select=school_id,platform,url' + (school ? '&school_id=eq.' + encodeURIComponent(school) : '');
+  const query = 'select=school_id,platform,url,account_name' + (school ? '&school_id=eq.' + encodeURIComponent(school) : '');
   try {
     const response = await fetch(shoreSupabase.url + '/rest/v1/school_social_accounts?' + query, {
       headers: { apikey: shoreSupabase.publishableKey, Authorization: 'Bearer ' + shoreSupabase.publishableKey },
@@ -37,7 +37,7 @@ function renderSocialAccounts(host, accounts) {
   };
   const links = node('ul', 'social-links');
   for (const account of accounts) {
-    const link = node('a', 'button secondary', account.label + ' · ' + account.handle);
+    const link = node('a', 'button secondary', account.name + ' · ' + account.label + ' ' + account.handle);
     link.href = account.url;
     link.target = '_blank';
     link.rel = 'noopener';
@@ -47,7 +47,8 @@ function renderSocialAccounts(host, accounts) {
     links.append(item);
   }
   const side = node('div', 'social-side');
-  const instagram = accounts.find(account => account.platform === 'instagram');
+  const instagram = accounts.find(account => account.platform === 'instagram' && account.name === 'School athletics')
+    ?? accounts.find(account => account.platform === 'instagram');
   side.append(links);
   if (!instagram) {
     host.replaceChildren(side);
@@ -57,7 +58,7 @@ function renderSocialAccounts(host, accounts) {
   const frame = node('div', 'social-embed');
   const status = node('p', 'social-note', 'Loading Instagram…');
   status.setAttribute('role', 'status');
-  frame.append(node('p', 'eyebrow', 'Instagram · ' + instagram.handle), status);
+  frame.append(node('p', 'eyebrow', instagram.name + ' · Instagram ' + instagram.handle), status);
   host.replaceChildren(frame, side);
 
   const show = async () => {

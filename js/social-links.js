@@ -1,4 +1,4 @@
-// Checks a school's Instagram, Facebook or X account link and tidies it into one standard form.
+// Checks school and team social links and tidies them into one standard form.
 // Shared by the staff Social media section and the public pages. No page access, so tests can run it.
 const socialPlatforms = {
   instagram: {
@@ -61,13 +61,15 @@ function socialAccount(platform, input) {
   return { url: site.link(parts[0]), handle: platform === 'facebook' ? parts[0] : '@' + parts[0] };
 }
 
-// Turns saved rows into what the public pages show, in a fixed order. A row that fails the check is left out.
+// Turns saved rows into named public links. A row that fails the check is left out.
 function socialAccountsFor(rows, school) {
-  return Object.keys(socialPlatforms).flatMap(platform => {
-    const row = rows.find(item => item.school_id === school && item.platform === platform);
-    const account = row ? socialAccount(platform, row.url) : null;
-    return account?.url ? [{ platform, label: socialPlatforms[platform].label, ...account }] : [];
-  });
+  return rows.filter(row => row.school_id === school).flatMap(row => {
+    const account = socialAccount(row.platform, row.url);
+    return account.url ? [{ platform: row.platform, label: socialPlatforms[row.platform].label,
+      name: row.account_name?.trim() || 'School athletics', ...account }] : [];
+  }).sort((a, b) => a.name.localeCompare(b.name) ||
+    Object.keys(socialPlatforms).indexOf(a.platform) - Object.keys(socialPlatforms).indexOf(b.platform) ||
+    a.handle.localeCompare(b.handle));
 }
 
 // Schools with at least one account, by name. Used for the home page's school picker.

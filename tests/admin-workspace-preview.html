@@ -36,7 +36,7 @@ const documents = [
   {id:'11111111-2222-3333-4444-666666666666', title:'Executive Committee', type:'Leadership', sport:'', school_year:'2026-27', file_path:'2026-27/exec-ab12cd35.pdf', description:'The executive committee roster for 2026-27.', note:null, added:'2026-11-14'},
 ];
 // A small in-memory table so the Social media section can add, change and remove links.
-let socialRows = [{id:'social-1', school_id:'marlboro', platform:'instagram', url:'https://www.instagram.com/instagram/'}];
+let socialRows = [{id:'social-1', school_id:'marlboro', account_name:'School athletics', platform:'instagram', url:'https://www.instagram.com/instagram/'}];
 function socialTable() {
   let action = 'select', values = null; const filters = {};
   const query = {
@@ -47,8 +47,9 @@ function socialTable() {
       const match = row => Object.entries(filters).every(([name, value]) => row[name] === value);
       if (action === 'insert') socialRows.push({id: 'social-' + Math.random(), ...values});
       if (action === 'update') socialRows = socialRows.map(row => match(row) ? {...row, ...values} : row);
+      const affected = socialRows.filter(match);
       if (action === 'delete') socialRows = socialRows.filter(row => !match(row));
-      return Promise.resolve({data: action === 'select' ? socialRows.filter(match) : null}).then(callback);
+      return Promise.resolve({data: affected}).then(callback);
     },
   };
   return query;
@@ -272,38 +273,43 @@ get('schedule-school').dispatchEvent(new Event('change'));
 await wait();
 get('staff-settings-tab').click();
 await wait();
-const socialItems = () => [...get('social-list').children];
-const socialRow = name => socialItems().find(item => item.querySelector('label').textContent.trim() === name);
+const socialItems = () => [...get('social-list').querySelectorAll('.social-account-row')];
+const socialRow = name => socialItems().find(item => item.querySelector('input').value === name);
+const socialForm = get('social-form');
+const addSocial = (name, platform, url) => {
+  socialForm.elements.account_name.value = name;
+  socialForm.elements.platform.value = platform;
+  socialForm.elements.url.value = url;
+  socialForm.dispatchEvent(new Event('submit', {bubbles:true, cancelable:true}));
+};
 check('social media sits in school settings', !get('staff-settings-panel').hidden && get('staff-settings-panel').contains(get('social-list')) && !get('staff-social-tab') && beside(get('staff-settings-panel')));
 check('school settings names the school', get('settings-school').textContent === 'Marlboro');
-check('social media lists three platforms', socialItems().length === 3);
-check('saved Instagram link can be removed', socialRow('Instagram').querySelector('input').value === 'https://www.instagram.com/instagram/' &&
-  [...socialRow('Instagram').querySelectorAll('button')].some(button => button.textContent === 'Remove'));
-const typeLink = (name, value) => { const input = socialRow(name).querySelector('input'); input.value = value; input.dispatchEvent(new Event('input')); };
-const saveLink = name => [...socialRow(name).querySelectorAll('button')].find(button => button.textContent === 'Save').click();
-typeLink('X', 'https://example.org/marlboro');
-saveLink('X');
+check('saved Instagram account can be removed', socialRow('School athletics').querySelectorAll('input')[1].value === 'https://www.instagram.com/instagram/' &&
+  [...socialRow('School athletics').querySelectorAll('button')].some(button => button.textContent === 'Remove'));
+addSocial('Football', 'x', 'https://example.org/marlboro');
 await wait();
 check('a link to another site is refused', get('social-status').textContent.startsWith('Paste the link') && socialRows.length === 1 &&
-  socialRow('X').querySelector('input').getAttribute('aria-invalid') === 'true');
-typeLink('X', 'twitter.com/X?lang=en');
-saveLink('X');
+  socialForm.elements.url.getAttribute('aria-invalid') === 'true');
+addSocial('Football', 'x', 'https://x.com/X');
 await wait();
-check('an X link is tidied and saved', socialRows.some(row => row.platform === 'x' && row.url === 'https://x.com/X' && row.school_id === 'marlboro'));
-[...socialRow('Instagram').querySelectorAll('button')].find(button => button.textContent === 'Remove').click();
+check('an X account is saved', socialRows.some(row => row.platform === 'x' && row.account_name === 'Football' && row.url === 'https://x.com/X' && row.school_id === 'marlboro'));
+addSocial('Boys soccer', 'x', 'https://x.com/Soccer');
 await wait();
-check('removing a link takes it away at once', !socialRows.some(row => row.platform === 'instagram') && socialRow('Instagram').querySelector('input').value === '');
+check('more than one X account is listed', socialItems().length === 3 && socialRows.filter(row => row.platform === 'x').length === 2);
+[...socialRow('School athletics').querySelectorAll('button')].find(button => button.textContent === 'Remove').click();
+await wait();
+check('removing a link takes it away at once', !socialRows.some(row => row.platform === 'instagram') && socialItems().length === 2);
 check('school settings no page overflow', document.documentElement.scrollWidth <= innerWidth);
 get('schedule-school').value = 'colts-neck';
 get('schedule-school').dispatchEvent(new Event('change'));
 await wait();
 check('social media follows the school picker', !get('staff-settings-panel').hidden && get('settings-school').textContent === 'Colts Neck' &&
-  socialItems().every(item => item.querySelector('input').value === ''));
+  socialItems().length === 0);
 get('view-as').value = 'office';
 get('view-as').dispatchEvent(new Event('change'));
 await wait();
 check('conference admin sees only social media in school settings, for every school', !get('staff-settings-tab').hidden && get('schedule-school').options.length === 3 &&
-  get('settings-branding').hidden && get('settings-venues').hidden && !get('settings-social').hidden && socialItems().length === 3);
+  get('settings-branding').hidden && get('settings-venues').hidden && !get('settings-social').hidden && socialItems().length === 0);
 get('view-as').value = 'ad:marlboro';
 get('view-as').dispatchEvent(new Event('change'));
 await wait();
