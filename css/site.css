@@ -412,6 +412,13 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
 .game-list li.is-postponed:not(.is-home, .is-away) time { background: var(--yellow); color: var(--ink); }
 .game-list li.is-canceled:not(.is-home, .is-away) time { background: var(--red); color: white; }
 .game-list li:only-child { padding: 0.85rem; }
+/* A Next games row opens the game pop-up: the whole row fills steel on hover. */
+.game-list li[role="button"] { cursor: pointer; }
+.game-list li[role="button"]:is(:hover, :focus-visible) { background: var(--hover); }
+.game-list li[role="button"]:focus-visible { outline-offset: -3px; }
+/* Directions on game rows: a plain link that fills steel on hover. */
+.game-directions { color: var(--ink); font-weight: 700; text-decoration: underline; }
+.game-directions:is(:hover, :focus-visible) { background: var(--hover); }
 .game-list .empty-schedule { display: block; }
 
 /* School directory cards fill with the school's color on hover. */

@@ -329,9 +329,13 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
       const details = [event.extendedProps.location, event.extendedProps.bus,
         event.extendedProps.earlyDismissal && 'Early dismissal ' + event.extendedProps.earlyDismissal].filter(Boolean);
       content.title = 'View details: ' + event.title;
-      if (inList && details.length) {
+      if (inList && (details.length || (event.extendedProps.location && !movedTo))) {
         const line = document.createElement('small');
         line.textContent = details.join(' · ');
+        // List rows get a Directions link when the game has a venue.
+        if (event.extendedProps.location && !movedTo) {
+          line.append(details.length ? ' · ' : '', createDirectionsLink(event.extendedProps.location, event.extendedProps.schools));
+        }
         content.append(line);
       }
       return { domNodes: [content] };
@@ -348,6 +352,49 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
   });
   calendar.render();
   followPreferredView(calendar);
+}
+
+// Venue addresses come from the schools' saved venue lists, which anyone may read. Loaded once, on first use,
+// as a map of "school|venue name" to address.
+let venueAddressList = null;
+function loadVenueAddresses() {
+  return venueAddressList ??= (async () => {
+    if (typeof shoreSupabase === 'undefined') return new Map();
+    try {
+      const url = new URL('/rest/v1/school_venues', shoreSupabase.url);
+      url.searchParams.set('select', 'school_id,name,address');
+      const response = await fetch(url, { signal: AbortSignal.timeout(8000),
+        headers: { apikey: shoreSupabase.publishableKey, Authorization: 'Bearer ' + shoreSupabase.publishableKey } });
+      if (!response.ok) return new Map();
+      const rows = await response.json();
+      return new Map(rows.filter(row => row.address).map(row => [row.school_id + '|' + row.name.trim().toLowerCase(), row.address]));
+    } catch { return new Map(); }
+  })();
+}
+// The venue's address: first a venue of a school in this game, then any school's venue with that name.
+function findVenueAddress(map, location, schools = []) {
+  const name = location.trim().toLowerCase();
+  for (const school of schools) if (map.has(school + '|' + name)) return map.get(school + '|' + name);
+  for (const [key, address] of map) if (key.endsWith('|' + name)) return address;
+  return '';
+}
+const directionsUrl = place => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(place);
+// A small "Directions" link for game rows. It searches the venue name, then the saved address once loaded.
+// Its clicks stay inside it, so a row that opens the game pop-up does not open as well.
+function createDirectionsLink(location, schools) {
+  const link = document.createElement('a');
+  link.className = 'game-directions';
+  link.textContent = 'Directions';
+  link.target = '_blank';
+  link.rel = 'noopener';
+  link.href = directionsUrl(location);
+  link.setAttribute('aria-label', 'Directions to ' + location + ' (opens in a new tab)');
+  for (const type of ['click', 'keydown']) link.addEventListener(type, event => event.stopPropagation());
+  loadVenueAddresses().then(map => {
+    const address = findVenueAddress(map, location, schools);
+    if (address) link.href = directionsUrl(location + ', ' + address);
+  });
+  return link;
 }
 
 // The game pop-up. A colored band names the team and the matchup: maroon on the conference calendar, and on a
@@ -376,27 +423,6 @@ function createGameDetails(calendar, { schoolColors = false } = {}) {
   // A click on the dimmed backdrop closes the pop-up.
   dialog.addEventListener?.('click', event => { if (event.target === dialog) dialog.close(); });
 
-  // Venue addresses come from the schools' saved venue lists, which anyone may read. Loaded once, on first use.
-  let venues = null;
-  const loadVenues = () => venues ??= (async () => {
-    if (typeof shoreSupabase === 'undefined') return new Map();
-    try {
-      const url = new URL('/rest/v1/school_venues', shoreSupabase.url);
-      url.searchParams.set('select', 'school_id,name,address');
-      const response = await fetch(url, { signal: AbortSignal.timeout(8000),
-        headers: { apikey: shoreSupabase.publishableKey, Authorization: 'Bearer ' + shoreSupabase.publishableKey } });
-      if (!response.ok) return new Map();
-      const rows = await response.json();
-      return new Map(rows.filter(row => row.address).map(row => [row.school_id + '|' + row.name.trim().toLowerCase(), row.address]));
-    } catch { return new Map(); }
-  })();
-  // The venue's address: first a venue of a school in this game, then any school's venue with that name.
-  const venueAddress = (map, location, schools) => {
-    const name = location.trim().toLowerCase();
-    for (const school of schools) if (map.has(school + '|' + name)) return map.get(school + '|' + name);
-    for (const [key, address] of map) if (key.endsWith('|' + name)) return address;
-    return '';
-  };
   let shown = 0;
   const dayFormat = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   const timeFormat = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' });
@@ -443,14 +469,13 @@ function createGameDetails(calendar, { schoolColors = false } = {}) {
     }));
 
     const directions = dialog.querySelector('[data-directions]');
-    const mapLink = place => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(place);
     directions.hidden = !details.location;
-    if (details.location) directions.href = mapLink(details.location);
+    if (details.location) directions.href = directionsUrl(details.location);
     // Fill in the address once the venue list has loaded, unless another game was opened meanwhile.
     const opened = ++shown;
     const schools = details.schools ?? [game.school_id, game.opponent_school_id].filter(Boolean);
-    if (details.location) loadVenues().then(map => {
-      const address = venueAddress(map, details.location, schools);
+    if (details.location) loadVenueAddresses().then(map => {
+      const address = findVenueAddress(map, details.location, schools);
       if (!address || opened !== shown) return;
       const where = [...dialog.querySelectorAll('dt')].find(term => term.textContent === 'Where')?.nextElementSibling;
       if (where) {
@@ -459,7 +484,7 @@ function createGameDetails(calendar, { schoolColors = false } = {}) {
         line.textContent = address;
         where.append(line);
       }
-      directions.href = mapLink(details.location + ', ' + address);
+      directions.href = directionsUrl(details.location + ', ' + address);
     });
     const bracket = dialog.querySelector('[data-tournament-bracket]');
     // The bracket page is switched off for now. Use "!details.tournament_id" here to bring the link back.
