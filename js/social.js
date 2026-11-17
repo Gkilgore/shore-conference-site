@@ -119,6 +119,7 @@ function renderSocialAccounts(host, accounts) {
     if (!accounts.length) return;
     renderSocialAccounts(host, accounts);
     section.hidden = false;
+    if (location.hash === '#social') requestAnimationFrame(() => section.scrollIntoView());
     return;
   }
 
@@ -126,15 +127,21 @@ function renderSocialAccounts(host, accounts) {
   const schools = socialSchools(await loadSocialRows(), directory);
   if (!schools.length) return;
   const schoolLink = document.getElementById('social-school-link');
+  const more = document.getElementById('social-more');
+  const next = document.getElementById('social-next');
   const showSchool = slug => {
     const school = schools.find(item => item.slug === slug) ?? schools[0];
     picker.value = school.slug;
     schoolLink.textContent = school.name;
     schoolLink.href = 'school.html?school=' + encodeURIComponent(school.slug);
+    more.href = schoolLink.href + '#social';
+    more.textContent = 'See more from ' + school.name + ' →';
     renderSocialAccounts(host, school.accounts);
   };
   picker.replaceChildren(...schools.map(school => new Option(school.name, school.slug)));
   picker.onchange = () => showSchool(picker.value);
-  showSchool(socialSchoolOfTheDay(schools).slug);
+  next.hidden = schools.length < 2;
+  next.onclick = () => showSchool(randomSocialSchool(schools, Math.random, picker.value).slug);
+  showSchool(randomSocialSchool(schools).slug);
   section.hidden = false;
 })();

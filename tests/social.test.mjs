@@ -6,8 +6,8 @@ import { readFileSync } from 'node:fs';
 const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const context = vm.createContext({ URL });
 vm.runInContext(read('js/social-links.js') +
-  ';globalThis.api = { socialPlatforms, socialAccount, socialAccountsFor, socialSchools, socialSchoolOfTheDay };', context);
-const { socialPlatforms, socialAccount, socialAccountsFor, socialSchools, socialSchoolOfTheDay } = context.api;
+  ';globalThis.api = { socialPlatforms, socialAccount, socialAccountsFor, socialSchools, randomSocialSchool };', context);
+const { socialPlatforms, socialAccount, socialAccountsFor, socialSchools, randomSocialSchool } = context.api;
 const url = (platform, input) => socialAccount(platform, input).url;
 
 test('account links are tidied into one form per platform', () => {
@@ -92,15 +92,14 @@ test('several team accounts on one platform appear together with their names', (
     [['Boys soccer', '@MarlboroSoccer2'], ['Football', '@mhsmustangsfb']]);
 });
 
-test('the home page lists only directory schools with an account and rotates the first school daily', () => {
+test('the home page chooses among schools with accounts and can show another', () => {
   const schools = socialSchools(rows, directory);
   assert.equal(schools.map(school => school.name).join(), 'Colts Neck,Marlboro,Shore Regional');
-  const first = socialSchoolOfTheDay(schools, new Date(2026, 10, 15));
-  const next = socialSchoolOfTheDay(schools, new Date(2026, 10, 16));
-  assert.ok(['marlboro', 'shore-regional'].includes(first.slug), 'starts on a school with Instagram');
-  assert.notEqual(first.slug, next.slug);
-  assert.equal(socialSchoolOfTheDay(socialSchools([rows[2]], directory)).slug, 'colts-neck');
-  assert.equal(socialSchoolOfTheDay([]), null);
+  assert.equal(randomSocialSchool(schools, () => 0).slug, 'colts-neck');
+  assert.equal(randomSocialSchool(schools, () => 0.9).slug, 'shore-regional');
+  assert.notEqual(randomSocialSchool(schools, () => 0, 'colts-neck').slug, 'colts-neck');
+  assert.equal(randomSocialSchool(socialSchools([rows[2]], directory)).slug, 'colts-neck');
+  assert.equal(randomSocialSchool([]), null);
 });
 
 test('the social sections sit directly beneath the upcoming games and load no platform script up front', () => {
@@ -111,6 +110,8 @@ test('the social sections sit directly beneath the upcoming games and load no pl
     assert.doesNotMatch(html, /instagram\.com|facebook\.net|platform\.twitter\.com/, page);
   }
   assert.match(read('index.html'), /<h2 id="social-title">Around the Shore<\/h2>/);
+  assert.match(read('index.html'), /id="social-next"/);
+  assert.match(read('index.html'), /id="social-more"/);
   assert.ok(read('school.html').indexOf('js/school.js') < read('school.html').indexOf('js/social.js'));
 });
 

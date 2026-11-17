@@ -5,7 +5,7 @@ Added November 15, 2026. Visitors see what a school shares on its own accounts. 
 ## What visitors see
 
 - **School page:** a Social media section directly beneath Next games. Every saved Instagram account has its own embed. X and Facebook accounts appear as profile links above the embeds. Instagram links are shown only inside the embed or as a fallback if it fails. The section is hidden when the school has no accounts.
-- **Home page:** an Around the Shore section directly beneath Upcoming conference games. It shows one school at a time, chosen from a School picker. The first school changes each day so every school with Instagram gets a turn. It is not a merged feed. The section is hidden until one school saves an account.
+- **Home page:** an Around the Shore section directly beneath Upcoming conference games. It starts with a random school that has saved accounts on each visit. Visitors can pick a school, show another random school, or follow See more to the selected school's full social section. Schools with only X or Facebook links are included. It is not a merged feed. The section is hidden until one school saves an account.
 - Every embed is labeled with the platform and account name, and every button opens the account on its own platform in a new tab.
 
 ## What each platform allows
