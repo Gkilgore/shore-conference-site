@@ -26,6 +26,8 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
   let singleTeam = false;
   // Squares are narrow, so levels are shortened there: "Boys Frsh Football".
   const shortLevel = level => ({ Varsity: 'V', Freshman: 'Frsh' })[level] ?? level;
+  // and genders to a letter: "(B) Frsh Football", "(G) JV Soccer".
+  const shortGender = gender => ({ Boys: '(B)', Girls: '(G)', Coed: '(C)' })[gender] ?? gender;
   // Month, week and day squares on a school calendar stay short: the team's name, or the opponent
   // once a sport is chosen. Clicking a game opens the full details. The conference
   // calendar keeps both schools in the square.
@@ -35,7 +37,7 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
     if (fields.school) return status && event.title.endsWith(' · ' + status) ? event.title.slice(0, -status.length - 3) : event.title;
     const team = [gender, level, sport].filter(Boolean).join(' ');
     if (!team || !event.title.startsWith(team)) return event.title;
-    if (!fields.sport?.value) return [gender, shortLevel(level), sport].filter(Boolean).join(' ');
+    if (!fields.sport?.value) return [shortGender(gender), shortLevel(level), sport].filter(Boolean).join(' ');
     let rest = event.title.slice(team.length).replace(/^\s*·?\s*/, '');
     if (status && rest.endsWith(' · ' + status)) rest = rest.slice(0, -status.length - 3);
     return rest || team;
@@ -53,7 +55,7 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
     const other = directory[involved[home ? 1 : 0]]?.name;
     const { sport, gender, level } = event.extendedProps;
     return { school: directory[slug].name, homeAway: home ? 'Home' : 'Away',
-      matchup: [gender, shortLevel(level), sport].filter(Boolean).join(' ') + (other ? (home ? ' vs. ' : ' at ') + other : '') };
+      matchup: [shortGender(gender), shortLevel(level), sport].filter(Boolean).join(' ') + (other ? (home ? ' vs. ' : ' at ') + other : '') };
   }
   // For school-specific calendars, apply colors based on home/away status using CSS variables
   // set by the school page (--school-color and --school-accent).
@@ -83,7 +85,7 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
   function teamTag(event) {
     if (fields.school || !fields.sport?.value || singleTeam) return null;
     const { gender, level } = event.extendedProps;
-    const text = [gender, shortLevel(level)].filter(Boolean).join(' ');
+    const text = [shortGender(gender), shortLevel(level)].filter(Boolean).join(' ');
     if (!text) return null;
     const tag = document.createElement('span');
     tag.className = 'game-team-tag';
@@ -287,7 +289,7 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
         top.className = 'game-head';
         const team = document.createElement('span');
         team.className = 'game-school';
-        team.textContent = [gender, shortLevel(level), sport].filter(Boolean).join(' ');
+        team.textContent = [shortGender(gender), shortLevel(level), sport].filter(Boolean).join(' ');
         top.append(team);
         if (status && status !== 'Scheduled') {
           // The square turns grey so a gold or yellow school color is never mistaken for Postponed;
