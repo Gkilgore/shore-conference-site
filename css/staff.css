@@ -151,7 +151,7 @@
 #workspace #calendar .fc-daygrid-event.staff-game .home-away-badge { margin-left: auto; padding: 0 0.3rem; font-size: 0.62rem; line-height: 1.5; }
 #workspace #calendar .fc-daygrid-event.staff-game .fc-event-title { flex: 1 0 100%; min-width: 0; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #workspace #calendar .fc-daygrid-event.staff-game-postponed { background: var(--yellow); color: var(--ink); }
-#workspace #calendar .fc-daygrid-event.staff-game-canceled { background: var(--red); color: white; }
+#workspace #calendar .fc-daygrid-event.staff-game-canceled { background: var(--school-color); color: var(--school-ink); }
 #workspace #calendar .staff-game-canceled .fc-event-title,
 #workspace #calendar .staff-game-canceled .fc-list-event-title { text-decoration: line-through; }
 #workspace #calendar .fc-list-event.staff-game-postponed td { background: #fff1c2; }
@@ -212,6 +212,11 @@
 .schedule-agenda-main { display: grid; gap: 0.25rem; min-width: 0; }
 .schedule-agenda-matchup { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.5rem; min-width: 0; }
 .schedule-agenda-matchup > strong { font-size: 0.98rem; }
+/* Tapping a game opens its pop-up with the venue, directions and bus times. */
+.schedule-agenda-game { cursor: pointer; }
+.schedule-agenda-game:hover { background: var(--hover); }
+.schedule-agenda-open { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.schedule-agenda-open:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .schedule-agenda-matchup > span:not(.home-away-badge):not(.staff-tag) { font-weight: 700; overflow-wrap: anywhere; }
 .schedule-agenda-details { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.85rem; color: var(--muted); font-size: 0.82rem; }
 .schedule-agenda-details > span + span::before { content: "·"; margin-right: 0.85rem; color: var(--steel-dark); }
@@ -279,9 +284,14 @@
   .schedule-agenda-main { gap: 0.3rem; }
   .schedule-agenda-matchup { gap: 0.25rem 0.35rem; }
   .schedule-agenda-matchup > strong { flex-basis: 100%; }
-  .schedule-agenda-details { gap: 0.2rem 0.55rem; }
-  .schedule-agenda-details > span + span::before { margin-right: 0.55rem; }
-  .schedule-agenda-actions { grid-column: 2; justify-self: end; }
+  /* Phones: Edit sits under the time, games are split by steel lines, and the venue and bus details move to the pop-up. */
+  .schedule-agenda-heading { margin-bottom: 0; }
+  .schedule-agenda-games { gap: 1px; background: var(--steel); border: var(--frame); border-top: 0; }
+  .schedule-agenda-game { grid-template-rows: auto 1fr; background: white; padding: 0.7rem 0.6rem; }
+  .schedule-agenda-details { display: none; }
+  .schedule-agenda-time { grid-column: 1; grid-row: 1; }
+  .schedule-agenda-main { grid-column: 2; grid-row: 1 / span 2; }
+  .schedule-agenda-actions { grid-column: 1; grid-row: 2; align-self: start; justify-self: start; }
   .schedule-agenda-game.quick-time-editing { grid-template-columns: minmax(0, 1fr) auto; }
   .schedule-agenda-game.quick-time-editing .schedule-agenda-time { width: min(100%, 8rem); }
   .opponent-list > li:not(.staff-empty) { grid-template-columns: minmax(0, 1fr) auto; gap: 0.35rem; }
@@ -492,7 +502,7 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
 .staff-stats li { display: grid; gap: 0.15rem; padding: 0.75rem; background: white; font-size: 0.85rem; font-weight: 500; }
 .staff-stats strong { font-size: 2rem; font-weight: 800; line-height: 1; }
 .staff-stats .is-linked { background: var(--school-color); color: var(--school-ink); }
-.staff-stats .is-problem { background: var(--red); color: white; }
+.staff-stats .is-problem { background: var(--school-color); color: var(--school-ink); }
 .staff-stats .is-attention { background: var(--yellow); color: var(--ink); }
 .staff-section { display: grid; gap: 0.5rem; margin-top: 1.5rem; padding-top: 1.25rem; border-top: var(--frame); }
 .staff-section h4 { margin: 0; font-size: 1.15rem; font-weight: 800; }
@@ -508,7 +518,7 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
   font-weight: 700;
   font-size: 0.8rem;
 }
-#link-list .staff-reason { background: var(--red); color: white; }
+#link-list .staff-reason { background: var(--school-color); color: var(--school-ink); }
 .staff-attention .staff-empty { display: block; padding: 0.85rem; color: var(--muted); }
 #game-form fieldset > label.staff-check {
   display: flex;
@@ -549,7 +559,7 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
 .import-preview td:nth-child(2) { font-weight: 800; white-space: nowrap; }
 .import-preview .is-ready td:nth-child(2), .import-preview .is-imported td:nth-child(2) { background: var(--school-color); color: var(--school-ink); }
 .import-preview .is-problem td, .import-preview .is-failed td { background: #f6dde3; }
-.import-preview .is-problem td:nth-child(2), .import-preview .is-failed td:nth-child(2) { background: var(--red); color: white; }
+.import-preview .is-problem td:nth-child(2), .import-preview .is-failed td:nth-child(2) { background: var(--school-color); color: var(--school-ink); }
 .import-preview .is-duplicate td { color: var(--muted); }
 .import-preview .is-duplicate td:nth-child(2) { background: var(--paper); }
 
@@ -606,7 +616,7 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
   line-height: 1;
   cursor: pointer;
 }
-.coach-chips button:is(:hover, :focus-visible) { background: var(--red); color: white; }
+.coach-chips button:is(:hover, :focus-visible) { background: var(--school-color); color: var(--school-ink); }
 .coach-uncovered { margin: 0; padding: 0.5rem 0.7rem; background: var(--yellow); border: var(--frame); font-weight: 500; }
 .coach-list, .coach-outbox { display: grid; gap: 1px; margin: 0; padding: 1px; list-style: none; background: var(--steel); }
 .coach-list > li, .coach-outbox > li { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1rem; padding: 0.75rem; background: white; }
@@ -634,7 +644,7 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
   letter-spacing: 0.1em;
 }
 .outbox-kind.is-changed, .outbox-kind.is-postponed { background: var(--yellow); color: var(--ink); }
-.outbox-kind.is-canceled { background: var(--red); color: white; }
+.outbox-kind.is-canceled { background: var(--school-color); color: var(--school-ink); }
 .outbox-kind.is-welcome { background: white; color: var(--ink); box-shadow: inset 0 0 0 1px var(--steel-dark); }
 .import-summary { margin: 0; font-weight: 700; }
 .import-summary:empty { display: none; }
@@ -739,7 +749,11 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
   #staff-filters-toggle { display: inline-flex; }
   #staff-filters-toggle:has(+ #staff-filters[hidden]) { display: none; }
   #staff-filters:not(.is-open) { display: none; }
+  /* With the calendar showing, Filters moves into the calendar header beside Month, List and Day. */
+  .staff-content:has(#staff-schedule-panel:not([hidden]) #calendar:not([hidden])) #staff-filters-toggle { display: none; }
+  .staff-content:has(#staff-filters[hidden]) .fc-filtersToggle-button { display: none; }
 }
+@media (min-width: 840px) { #calendar .fc-filtersToggle-button { display: none; } }
 @media (max-width: 640px) {
   #workspace-account { display: none; }
   #public-page-link { min-height: 2.4rem; padding-block: 0.3rem; }
@@ -914,6 +928,24 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
 .staff-schedule-table td.is-postponed { background: var(--yellow); font-weight: 700; }
 .staff-schedule-table td.is-canceled { background: var(--red); color: white; font-weight: 700; }
 
-/* The game editor is a pop-up over whichever tab is open. */
-.game-details.game-editor { width: min(46rem, calc(100% - 2rem)); overflow-y: auto; overscroll-behavior: contain; }
-.game-editor #game-form { margin: 0; }
+/* The game editor is a pop-up over whichever tab is open: a band in the school's color, white sections with
+   title bars in the school's second color on a pale steel page, and the save buttons held at the bottom. */
+.game-details.game-editor { --editor-gutter: clamp(1rem, 3vw, 1.25rem); width: min(46rem, calc(100% - 2rem)); padding: 0; overflow: hidden auto; overscroll-behavior: contain; background: var(--paper); }
+.game-editor #game-form { margin: 0; gap: 1rem; }
+.game-editor #game-form > :not(.game-editor-band, .game-editor-foot) { margin-inline: var(--editor-gutter); }
+.game-editor-band { display: grid; gap: 0.35rem; padding: 1rem var(--editor-gutter); background: var(--school-color); color: var(--school-ink); }
+.game-editor #game-form .game-editor-band h3 { margin: 0; color: inherit; font-size: clamp(1.4rem, 3vw, 1.9rem); }
+.game-editor-band .staff-subhead { margin: 0; font-size: clamp(0.85rem, 1.8vw, 1rem); text-transform: uppercase; letter-spacing: 0.1em; }
+.game-editor-band .staff-subhead:empty { display: none; }
+.game-editor #game-form fieldset { padding: 0 1rem 1rem; background: white; }
+#workspace #game-form legend { float: left; margin: 0 -1rem; padding: 0.6rem 1rem; background: var(--school-accent); color: var(--accent-ink); font-size: clamp(0.85rem, 1.8vw, 1.05rem); }
+.game-editor-foot { position: sticky; bottom: 0; display: grid; gap: 0.6rem; margin: 0 -1px; padding: 1rem var(--editor-gutter); border: var(--frame); border-bottom: 0; background: white; }
+/* On desktop the editor widens so each row holds more fields, and the footer sits on one line, so the whole form fits without scrolling. */
+@media (min-width: 64rem) {
+  .game-details.game-editor { width: min(64rem, calc(100% - 2rem)); }
+  .game-editor #game-form { gap: 0.75rem; }
+  .game-editor #game-form fieldset { gap: 0.65rem; }
+  .game-editor-foot { grid-template-columns: 1fr auto; align-items: center; }
+  .game-editor-foot #game-form-status { grid-row: 2; grid-column: 1 / -1; }
+  .game-editor-foot .actions { grid-row: 1; grid-column: 2; }
+}

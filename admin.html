@@ -173,8 +173,7 @@
           <section id="staff-opponents-panel" class="staff-panel" aria-labelledby="opponents-title" hidden>
             <h3 id="opponents-title" tabindex="-1">Saved schools</h3>
             <p id="opponents-status" role="status" aria-live="polite"></p>
-            <section class="staff-section" aria-labelledby="opponent-list-title">
-              <h4 id="opponent-list-title">Your schools</h4>
+            <section class="staff-section" aria-labelledby="opponents-title">
               <p class="staff-hint">Add a school you play to find it when entering games.</p>
               <form id="opponent-add-form" class="filters opponent-add-form">
                 <label>School name<input id="opponent-name" type="text" maxlength="100" autocomplete="off" required></label>
@@ -528,9 +527,10 @@
           </section>
           <dialog id="game-editor" class="game-details game-editor" aria-labelledby="game-form-title">
           <form id="game-form" class="prose" aria-labelledby="game-form-title" hidden>
-            <h3 id="game-form-title">Add a game</h3>
-            <p id="game-form-context" class="staff-subhead"></p>
-            <p class="staff-hint">Everything is required except notes and transportation.</p>
+            <div class="game-editor-band">
+              <h3 id="game-form-title">Add a game</h3>
+              <p id="game-form-context" class="staff-subhead"></p>
+            </div>
             <fieldset class="prose">
               <legend>Team and game</legend>
               <div class="filters">
@@ -587,6 +587,7 @@
               <label>Transportation notes <textarea name="transport_notes" maxlength="1000" rows="2"></textarea></label>
               <p class="staff-hint">Save the game with or without transportation details. These remind you that the team will need transportation.</p>
             </fieldset>
+            <div class="game-editor-foot">
             <p class="staff-hint">Saving posts this game to the public schedule.</p>
             <p id="game-form-status" role="status"></p>
             <div class="actions">
@@ -594,6 +595,7 @@
               <button class="button secondary" id="close-game-editor" type="button">Cancel</button>
               <button class="button secondary" id="preview-editor-transportation-email" type="button" hidden>Preview saved transportation email</button>
               <button class="button secondary" id="delete-game" type="button" hidden>Delete game</button>
+            </div>
             </div>
           </form>
           </dialog>

@@ -86,13 +86,13 @@ if (school) {
     if (!sample) {
       const schedule = await loadPublicCalendar({ scope: 'school', school: schoolSlug });
       games = publicCalendarEvents(schedule);
-      status.textContent = 'All times Eastern';
+      status.textContent = '';
       // Each renderer returns how many items it drew; empty sections stay hidden.
       const changes = renderSchoolUpdates(document.getElementById('school-updates'), schedule, schoolDirectory);
       document.getElementById('recent-updates').hidden = !changes;
       document.getElementById('school-updates-count').textContent = changes + (changes === 1 ? ' change' : ' changes');
     } else {
-      status.textContent = 'Sample schedule · Eastern Time';
+      status.textContent = 'Sample schedule';
       document.getElementById('recent-updates').hidden = true;
     }
     renderUpcoming(games, { showChanged: true, school: schoolSlug });

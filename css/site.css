@@ -285,8 +285,9 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
 .school-hero .hero-copy { margin-block: 0.3rem 0; font-size: 1rem; }
 .school-hero h1 em { font-style: normal; color: var(--school-accent); }
 @media (max-width: 640px) {
-  .school-hero .actions { flex-basis: 100%; }
-  .school-hero .actions .button { flex: 1; }
+  /* Two short buttons share one row under the school name. */
+  .school-hero .actions { flex-basis: 100%; flex-wrap: nowrap; gap: 0.5rem; }
+  .school-hero .actions .button { flex: 1 1 0; min-width: 0; min-height: 2.5rem; padding: 0.35rem 0.6rem; font-size: 0.92rem; white-space: nowrap; }
 }
 #school-logo {
   flex: none;
@@ -476,6 +477,7 @@ textarea { display: block; resize: vertical; }
 .filter-count:empty { display: none; }
 
 #calendar-filters { margin-bottom: 1rem; }
+#public-schedule-status:empty { display: none; }
 #filter-count { margin-block: 0 0.6rem; }
 /* Replaces the game count when nothing matches. */
 .calendar-empty {
@@ -603,7 +605,9 @@ textarea { display: block; resize: vertical; }
 #calendar .fc-list-event.is-canceled td.fc-list-event-time { background: var(--red); color: white; }
 #calendar .fc-list-event.is-home td.fc-list-event-time { background: var(--school-color); color: var(--school-ink); }
 #calendar .fc-list-event.is-away td.fc-list-event-time { background: var(--school-accent); color: var(--accent-ink); }
-#calendar .fc-list-event:is(.is-home, .is-away):is(.is-postponed, .is-canceled) td.fc-list-event-time { background: var(--steel); color: var(--ink); }
+/* School pages: a postponed or canceled time block is white, so the yellow or red label under the struck time
+   carries the color and the block stays apart from the steel date rows. */
+#calendar .fc-list-event:is(.is-home, .is-away):is(.is-postponed, .is-canceled) td.fc-list-event-time { background: white; color: var(--ink); }
 #calendar .fc-list-event.is-moved td.fc-list-event-time { background: white; color: var(--muted); }
 /* School pages: a square is filled with the school's color, so a status shows as a label on it. */
 #calendar :is(.fc-daygrid-event, .fc-timegrid-event).school-colored { padding: 0; border: 0; background: none; }
@@ -638,17 +642,34 @@ textarea { display: block; resize: vertical; }
 }
 #calendar .fc-more-link:is(:hover, :focus-visible) { background: var(--red); color: white; }
 #calendar .fc-list { border: 0; }
-#calendar .fc-list-day-cushion { background: var(--ink); color: white; }
+/* Date rows are steel dividers, set apart from the page and from the colored time blocks (home, away or status). */
+#calendar .fc-list-day-cushion { background: var(--steel); color: var(--ink); }
 #calendar .fc-list-day-cushion a { display: inline-block; padding-block: 0.15rem; color: inherit; text-decoration: none; font-weight: 700; }
 #calendar .fc-list-day-cushion a:is(:hover, :focus-visible) { background: var(--hover); color: var(--ink); outline: 0.2rem solid var(--hover); }
-#calendar .fc-list-event-time { font-weight: 700; font-variant-numeric: tabular-nums; }
+#calendar .fc-list-event-time { font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; vertical-align: middle; }
+#calendar .fc-list-event-time .game-status { display: block; width: max-content; margin: 0.3rem auto 0; padding: 0 0.3rem; border: 1px solid currentColor; font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
 #calendar .fc-list-event-graphic { display: none; }
 .game { overflow-wrap: anywhere; white-space: normal; }
 .game-title { font-weight: 700; }
+/* Team line above the matchup in list rows and Next games. */
+.game-card-sport { display: block; margin-bottom: 0.15rem; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+.game-list .game-card-sport { padding: 0; color: inherit; font-size: 0.78rem; }
 .game-time { display: block; }
 .game small { display: block; margin-top: 0.15rem; color: var(--muted); }
 
+/* Phones: month and arrows on the first row; the view buttons fill the second row, with Filters at its end.
+   The filters stay folded until Filters is tapped. */
+#calendar .fc-filtersToggle-button[aria-expanded="true"] { background: var(--school-color); border-color: var(--school-color); color: var(--school-ink); }
+@media (min-width: 641px) { body:not(:has(#workspace)) #calendar .fc-filtersToggle-button { display: none; } }
 @media (max-width: 640px) {
+  .game-directions-part { display: none; }
+  /* Calendar lists on phones show only the matchup; tapping it opens the pop-up with the venue and bus. */
+  #calendar .game-list-details { display: none; }
+  #calendar-filters:not(.is-open) { display: none; }
+  #calendar .fc-header-toolbar .fc-toolbar-chunk:nth-child(2) { display: flex; gap: 0.5rem; }
+  #calendar .fc-toolbar-chunk:nth-child(2) > * { margin: 0; }
+  #calendar .fc-toolbar-chunk:nth-child(2) .fc-button-group { flex: 1; }
+  #calendar .fc-toolbar-chunk:nth-child(2) .fc-button-group .fc-button { flex: 1; }
   #calendar .fc-toolbar-chunk:nth-child(2) { order: 1; flex-basis: 100%; }
   #calendar .fc-daygrid-event { margin-inline: 0.1rem; padding-inline: 0.15rem; }
   #calendar .fc-daygrid-more-link { font-size: 0.72rem; }
@@ -703,6 +724,10 @@ textarea { display: block; resize: vertical; }
   outline-color: var(--ink);
   box-shadow: none;
 }
+/* FullCalendar dims a focused event with an overlay. On a list row it covers the whole list and adds a column,
+   which showed after closing the pop-up (focus returns to the row). The outline above marks focus instead. */
+#calendar .fc-list-event:focus::before, #calendar .fc-list-event:focus::after { content: none; }
+#calendar .fc-list-event:focus { box-shadow: none; }
 .game-details {
   width: min(30rem, calc(100% - 2rem));
   max-height: calc(100% - 2rem);
@@ -735,8 +760,10 @@ textarea { display: block; resize: vertical; }
 .game-card:is(.is-postponed, .is-canceled) .game-card-band { background: var(--steel); color: var(--ink); }
 .game-card-address { display: block; color: var(--muted); font-weight: 400; }
 .game-card-body { padding: 0 1.25rem 1.25rem; }
-.game-card dl { margin-block: 1rem 1.25rem; }
+.game-card dl { grid-template-columns: 6rem minmax(0, 1fr); align-items: baseline; margin-block: 1rem 1.25rem; }
+.game-card dt { padding-top: 0; }
 .game-card dd { font-weight: 500; }
+.game-card .game-card-when { white-space: nowrap; }
 .game-card .actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .game-card .actions form { margin-left: auto; }
 

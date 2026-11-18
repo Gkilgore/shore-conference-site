@@ -13,6 +13,28 @@ function followPreferredView(calendar) {
   listViewQuery.addEventListener('change', update);
   return () => listViewQuery.removeEventListener('change', update);
 }
+
+// Squares and the game pop-up are narrow, so levels and genders are shortened: "(B) F Football", "(G) JV Soccer".
+const shortLevel = level => ({ Varsity: 'V', Freshman: 'F' })[level] ?? level;
+const shortGender = gender => ({ Boys: '(B)', Girls: '(G)', Coed: '(C)' })[gender] ?? gender;
+// List rows, Next games and the pop-up name the team on one line ("Girls Frsh Soccer") and the matchup
+// ("@ Colts Neck") on the next. Levels read Varsity, JV and Frsh.
+const cardTeam = ({ gender, level, sport } = {}) =>
+  [gender, ({ Freshman: 'Frsh' })[level] ?? level, sport].filter(Boolean).join(' ');
+function splitTeamTitle(title, details = {}) {
+  const team = [details.gender, details.level, details.sport].filter(Boolean).join(' ');
+  const at = team ? title.indexOf(team) : -1;
+  if (at < 0) return { team: '', matchup: title };
+  return { team: (title.slice(0, at) + cardTeam(details)).trim(),
+    matchup: title.slice(at + team.length).replace(/^\s*·?\s*/, '') };
+}
+function cardTeamLine(team) {
+  const line = document.createElement('span');
+  line.className = 'game-card-sport';
+  line.textContent = team;
+  return line;
+}
+
 function renderCalendar(events, { schoolSlug = null } = {}) {
   const target = document.getElementById('calendar');
   const filters = document.getElementById('calendar-filters');
@@ -24,10 +46,6 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
 
   const fields = filters.elements;
   let singleTeam = false;
-  // Squares are narrow, so levels are shortened there: "Boys F Football".
-  const shortLevel = level => ({ Varsity: 'V', Freshman: 'F' })[level] ?? level;
-  // and genders to a letter: "(B) F Football", "(G) JV Soccer".
-  const shortGender = gender => ({ Boys: '(B)', Girls: '(G)', Coed: '(C)' })[gender] ?? gender;
   // Month, week and day squares on a school calendar stay short: the team's name, or the opponent
   // once a sport is chosen. Clicking a game opens the full details. The conference
   // calendar keeps both schools in the square.
@@ -137,13 +155,34 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
   }
 
   const showGameDetails = createGameDetails(target, { schoolColors: Boolean(schoolSlug) });
+  // Phones fold the filters behind a Filters button in the calendar header; it shows how many are set.
+  // A school page's heading names the filtered team: "Full schedule", "Football schedule", "Girls JV Lacrosse schedule".
+  const heading = document.getElementById('calendar-title');
+  function syncHeading() {
+    if (!heading) return;
+    const team = cardTeam({ gender: fields.gender?.value, level: fields.level?.value, sport: fields.sport?.value });
+    heading.textContent = team ? team + ' schedule' : 'Full schedule';
+  }
+  function syncFiltersButton() {
+    syncHeading();
+    const button = target.querySelector('.fc-filtersToggle-button');
+    if (!button) return;
+    const active = [...fields].filter(field => field.name && field.value.trim()).length;
+    button.textContent = 'Filters' + (active ? ' · ' + active : '');
+    button.setAttribute('aria-expanded', String(filters.classList.contains('is-open')));
+    button.setAttribute('aria-controls', 'calendar-filters');
+  }
   const calendar = new FullCalendar.Calendar(target, {
     initialView: preferredCalendarView(),
     headerToolbar: {
       start: 'title',
-      center: 'dayGridMonth,timeGridWeek,listMonth,listDay',
+      center: 'dayGridMonth,timeGridWeek,listMonth,listDay filtersToggle',
       end: 'prev,next',
     },
+    customButtons: {
+      filtersToggle: { text: 'Filters', click: () => { filters.classList.toggle('is-open'); syncFiltersButton(); } },
+    },
+    datesSet: () => syncFiltersButton(),
     views: {
       dayGridMonth: { buttonText: 'Month', dayMaxEvents: 2 },
       timeGridWeek: { buttonText: 'Week', eventMaxStack: 2 },
@@ -162,7 +201,18 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
       if (movedTo) calendar.gotoDate(movedTo.start.slice(0, 10));
       else showGameDetails(event);
     },
-    eventDidMount({ el }) {
+    eventDidMount({ el, event }) {
+      // A postponed or canceled list row strikes out the old time and puts the status label under it.
+      const status = event.extendedProps.status;
+      const timeCell = el.querySelector?.('.fc-list-event-time');
+      if (timeCell && (status === 'Postponed' || status === 'Canceled')) {
+        const oldTime = document.createElement('s');
+        oldTime.textContent = timeCell.textContent;
+        const label = document.createElement('span');
+        label.className = 'game-status is-' + status.toLowerCase();
+        label.textContent = status;
+        timeCell.replaceChildren(oldTime, label);
+      }
       el.tabIndex = 0;
       el.setAttribute('role', 'button');
       el.setAttribute('aria-haspopup', 'dialog');
@@ -219,22 +269,20 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
       const square = inList ? null : (conferenceSquare(event) || (movedTo ? null : schoolCalendarSquare(event)));
       // For school calendars (useSchoolColor), don't try to show matchup
       // Calendar views write an away game as "@ Colts Neck" to save space.
-      title.textContent = (inList ? event.title : (square?.useSchoolColor ? squareLabel(event) : (square?.matchup ?? squareLabel(event))))
+      const listParts = inList ? splitTeamTitle(event.title, event.extendedProps) : null;
+      title.textContent = (inList ? listParts.matchup : (square?.useSchoolColor ? squareLabel(event) : (square?.matchup ?? squareLabel(event))))
         .replace(/(^| )at (?=\S)/, '$1@ ');
       // Time and Home/Away share the first line so the square stays short.
       const head = document.createElement('span');
       head.className = 'game-head';
       const displayedTime = movedTo ? '' : (event.allDay ? 'TBD' : timeText) + (movedFrom ? '*' : '');
       if (inList && movedFrom) title.textContent = '* ' + title.textContent;
-      // List rows: a Postponed or Canceled label leads the title, as in Next games.
+      // List rows: a Postponed or Canceled label goes under the struck-out time (see eventDidMount).
       const listStatus = event.extendedProps.status;
-      if (inList && listStatus && !['Scheduled', 'Moved'].includes(listStatus)) {
-        if (title.textContent.endsWith(' · ' + listStatus)) title.textContent = title.textContent.slice(0, -listStatus.length - 3);
-        const label = document.createElement('span');
-        label.className = 'game-status is-' + listStatus.toLowerCase();
-        label.textContent = listStatus;
-        title.prepend(label, ' ');
+      if (inList && listStatus && title.textContent.endsWith(' · ' + listStatus)) {
+        title.textContent = title.textContent.slice(0, -listStatus.length - 3);
       }
+      if (listParts?.team) title.prepend(cardTeamLine(listParts.team));
       if (displayedTime && (!inList || event.allDay)) {
         const time = document.createElement('span');
         time.className = 'game-time';
@@ -331,10 +379,11 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
       content.title = 'View details: ' + event.title;
       if (inList && (details.length || (event.extendedProps.location && !movedTo))) {
         const line = document.createElement('small');
+        line.className = 'game-list-details';
         line.textContent = details.join(' · ');
         // List rows get a Directions link when the game has a venue.
         if (event.extendedProps.location && !movedTo) {
-          line.append(details.length ? ' · ' : '', createDirectionsLink(event.extendedProps.location, event.extendedProps.schools));
+          line.append(directionsPart(details.length, event.extendedProps.location, event.extendedProps.schools));
         }
         content.append(line);
       }
@@ -342,8 +391,8 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
     },
   });
   filters.addEventListener('submit', event => event.preventDefault());
-  filters.addEventListener('input', () => calendar.refetchEvents());
-  filters.addEventListener('reset', () => setTimeout(() => calendar.refetchEvents(), 0));
+  filters.addEventListener('input', () => { calendar.refetchEvents(); syncFiltersButton(); });
+  filters.addEventListener('reset', () => setTimeout(() => { calendar.refetchEvents(); syncFiltersButton(); }, 0));
   // A "schedules are now posted" link opens the calendar on that season's first month with games.
   window.addEventListener('shore:season-selected', ({ detail }) => {
     if (!detail) return;
@@ -379,6 +428,13 @@ function findVenueAddress(map, location, schools = []) {
   return '';
 }
 const directionsUrl = place => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(place);
+// The Directions link with the dot before it, in one piece so phones can hide both (the pop-up has Directions).
+function directionsPart(afterText, location, schools) {
+  const part = document.createElement('span');
+  part.className = 'game-directions-part';
+  part.append(afterText ? ' · ' : '', createDirectionsLink(location, schools));
+  return part;
+}
 // A small "Directions" link for game rows. It searches the venue name, then the saved address once loaded.
 // Its clicks stay inside it, so a row that opens the game pop-up does not open as well.
 function createDirectionsLink(location, schools) {
@@ -426,7 +482,7 @@ function createGameDetails(calendar, { schoolColors = false, onEdit = null, canE
   dialog.addEventListener?.('click', event => { if (event.target === dialog) dialog.close(); });
 
   let shown = 0;
-  const dayFormat = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  const dayFormat = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   const timeFormat = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' });
   const clock = value => value ? timeFormat.format(new Date('2000-01-01T' + value)) : '';
   return event => {
@@ -449,7 +505,7 @@ function createGameDetails(calendar, { schoolColors = false, onEdit = null, canE
     const heading = dialog.querySelector('h2');
     heading.textContent = (rest || event.title).replace(/(^| )at (?=\S)/, '$1@ ');
     const teamLine = dialog.querySelector('.game-card-team');
-    teamLine.textContent = rest ? team : '';
+    teamLine.textContent = rest ? cardTeam({ gender, level, sport }) : '';
     if (status !== 'Scheduled') {
       const label = document.createElement('span');
       label.className = 'game-status is-' + status.toLowerCase();
@@ -459,11 +515,13 @@ function createGameDetails(calendar, { schoolColors = false, onEdit = null, canE
     dialog.className = 'game-details game-card is-' + status.toLowerCase() +
       (schoolColors ? ' uses-school-colors is-' + (homeAway === 'Away' ? 'away' : 'home') : '');
 
-    const when = event.start ? dayFormat.format(event.start) + ' · ' + (event.allDay ? 'Time TBD' : timeFormat.format(event.start) + ' ET')
+    // "Tue, Nov 3 · 3:45 PM" fits on one line; every calendar page already says times are Eastern.
+    const when = event.start ? dayFormat.format(event.start) + ' · ' + (event.allDay ? 'Time TBD' : timeFormat.format(event.start))
       : 'Date and time to be announced';
     const bus = details.bus || (game.transportation?.bus_departure ? 'Bus ' + clock(game.transportation.bus_departure) : '');
     const rows = [['When', when], ['Where', details.location || 'To be announced']];
     if (details.moved_from) rows.push(['Originally', details.moved_from.text]);
+    if (details.pickup) rows.push(['Pickup', details.pickup]);
     if (bus) rows.push(['Bus', bus.replace(/^Bus /, '')]);
     if (details.earlyDismissal) rows.push(['Early dismissal', details.earlyDismissal]);
     const notes = details.notes ?? game.notes;
@@ -473,6 +531,7 @@ function createGameDetails(calendar, { schoolColors = false, onEdit = null, canE
       const description = document.createElement('dd');
       term.textContent = label;
       description.textContent = value;
+      if (label === 'When') description.className = 'game-card-when';
       return [term, description];
     }));
 

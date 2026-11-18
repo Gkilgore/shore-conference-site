@@ -516,9 +516,19 @@ function startStaffSchedule(client, invite) {
       (!gender.value || game.teams.gender === gender.value));
   }
 
+  // On phones the calendar header carries its own Filters button, kept in step with the one above the panels.
+  function syncCalendarFilters() {
+    const button = calendarTarget.querySelector?.('.fc-filtersToggle-button');
+    if (!button) return;
+    button.textContent = filtersToggle.textContent;
+    button.setAttribute('aria-expanded', filtersToggle.getAttribute?.('aria-expanded') ?? 'false');
+    button.setAttribute('aria-controls', 'staff-filters');
+  }
+
   function showCount(visible) {
     const active = ['season', 'sport', 'level', 'gender'].filter(name => filterFields[name].value).length;
     filtersToggle.textContent = 'Filters' + (active ? ' · ' + active : '');
+    syncCalendarFilters();
     filterCount.textContent = visible.length === allGames.length
       ? '' : 'Showing ' + visible.length + ' of ' + allGames.length + ' games';
   }
@@ -592,7 +602,10 @@ function startStaffSchedule(client, invite) {
         (game.status === 'Scheduled' ? '' : ' · ' + game.status),
       backgroundColor: getEventColor(game),
       classNames: ['staff-game', 'staff-game-' + game.status.toLowerCase(), ...(unpublished.has(game.id) ? ['staff-game-unposted'] : [])],
-      extendedProps: { game, location: game.location, status: game.status, unpublished: unpublished.get(game.id) },
+      extendedProps: { game, location: game.location, status: game.status, unpublished: unpublished.get(game.id),
+        pickup: game.transportation?.pickup_location || '',
+        earlyDismissal: game.transportation?.early_dismissal_time
+          ? timeFormat.format(new Date(game.game_date + 'T' + game.transportation.early_dismissal_time)) : '' },
     }));
     if (!calendar) {
       showDetails = createGameDetails(calendarTarget, { schoolColors: true,
@@ -600,8 +613,9 @@ function startStaffSchedule(client, invite) {
       calendar = new FullCalendar.Calendar(calendarTarget, {
         initialView: preferredCalendarView(),
         headerToolbar: {
-          start: 'title', center: 'dayGridMonth,listMonth,listDay', end: 'prev,next',
+          start: 'title', center: 'dayGridMonth,listMonth,listDay filtersToggle', end: 'prev,next',
         },
+        customButtons: { filtersToggle: { text: 'Filters', click: () => filtersToggle.click() } },
         views: {
           dayGridMonth: { buttonText: 'Month', dayMaxEvents: 2 },
           listMonth: { buttonText: 'List' },
@@ -618,6 +632,7 @@ function startStaffSchedule(client, invite) {
           calendarTarget.classList.toggle('staff-table-mode', usesScheduleTable);
           scheduleList.hidden = !usesScheduleTable;
           if (usesScheduleTable) renderScheduleList(view);
+          syncCalendarFilters();
         },
         eventDidMount({ el, event }) {
           el.tabIndex = 0;
@@ -709,8 +724,21 @@ function startStaffSchedule(client, invite) {
         main.className = 'schedule-agenda-main';
         const headline = document.createElement('div');
         headline.className = 'schedule-agenda-matchup';
+        // The team name opens the game pop-up; on phones the details below are hidden and live there instead.
         const team = document.createElement('strong');
-        team.textContent = [game.teams.gender, game.teams.level, game.teams.sport].filter(Boolean).join(' ');
+        const open = document.createElement('button');
+        open.type = 'button';
+        open.className = 'schedule-agenda-open';
+        open.textContent = cardTeam(game.teams);
+        open.onclick = () => {
+          const event = calendar.getEventById(game.id);
+          if (event) showDetails(event);
+          else if (canEdit) openEditor(game);
+        };
+        team.append(open);
+        row.addEventListener('click', click => {
+          if (!click.target.closest('button, a, input, select, textarea, .quick-edit-controls')) open.click();
+        });
         const badge = document.createElement('span');
         badge.className = 'home-away-badge is-' + game.home_away.toLowerCase();
         badge.textContent = game.home_away;
@@ -1148,6 +1176,7 @@ function startStaffSchedule(client, invite) {
   filtersToggle.onclick = () => {
     const open = filterForm.classList.toggle('is-open');
     filtersToggle.setAttribute('aria-expanded', String(Boolean(open)));
+    syncCalendarFilters();
   };
   importButton.onclick = () => {
     openGames(false);

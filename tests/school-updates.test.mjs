@@ -175,7 +175,7 @@ test('production school pages use the complete directory and never read fictiona
   assert.equal(fetchedSchool,'asbury-park');
   assert.equal(element('school-logo').src,'assets/logos/shore-conference.svg');
   assert.equal(element('subscribe-calendar').hidden,false);
-  assert.equal(element('public-schedule-status').textContent,'All times Eastern');
+  assert.equal(element('public-schedule-status').textContent,'');
   assert.equal(element('recent-updates').hidden,true);
 });
 

@@ -105,7 +105,9 @@ function renderUpcoming(events, { showChanged = false, school = null, limit = 3 
     if (school) row.classList.add(game.home_away === 'Away' ? 'is-away' : 'is-home');
     if (!scheduled(game)) row.classList.add('is-' + game.status.toLowerCase());
     // Away games read "@ Colts Neck", as on the calendar.
-    const matchupText = text => text.replace(/(^| )at (?=\S)/, '$1@ ');
+    // The team goes on its own line above the matchup, as in the calendar list.
+    const parts = typeof splitTeamTitle === 'function' ? splitTeamTitle(game.title, game) : { team: '', matchup: game.title };
+    const matchupText = text => (parts.team ? splitTeamTitle(text, game).matchup : text).replace(/(^| )at (?=\S)/, '$1@ ');
     if (scheduled(game)) {
       title.append(matchupText(game.title));
       details.textContent = [game.start.includes('T') ? timeFormat.format(new Date(game.start)) : 'TBD',
@@ -122,9 +124,8 @@ function renderUpcoming(events, { showChanged = false, school = null, limit = 3 
       details.textContent = ['Was ' + (game.start.includes('T') ? timeFormat.format(new Date(game.start)) : 'TBD'),
         game.location, game.earlyDismissal && 'Early dismissal ' + game.earlyDismissal].filter(Boolean).join(' · ');
     }
-    if (game.location && typeof createDirectionsLink === 'function') {
-      details.append(' · ', createDirectionsLink(game.location, game.schools));
-    }
+    if (game.location && typeof directionsPart === 'function') details.append(directionsPart(true, game.location, game.schools));
+    if (parts.team) title.prepend(cardTeamLine(parts.team));
     row.append(date, title, details);
     if (upcomingDetails) {
       // The pop-up reads a calendar event; a list game carries the same fields.
