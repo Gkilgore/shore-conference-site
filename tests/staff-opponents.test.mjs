@@ -1,109 +1,104 @@
-// Verifies manually adding a non-conference opponent to a school's list.
+// Verifies saved-school add, rename, delete and school-specific staff views.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFileSync } from 'node:fs';
 
-function makeElement() {
+function element() {
   return {
-    value: '',
-    children: [],
-    replaceChildren(...children) { this.children = children; },
+    value: '', children: [], hidden: false, disabled: false,
     append(...children) { this.children.push(...children); },
-    setAttribute() {},
-    querySelector() { return submit; },
+    replaceChildren(...children) { this.children = children; },
+    setAttribute() {}, focus() {}, reset() { this.resetCount = (this.resetCount ?? 0) + 1; },
+    showModal() { this.open = true; }, close() { this.open = false; },
   };
 }
 
-test('AD can add a named opponent and duplicate names do not make a second request', async () => {
-  const nodes = new Map();
-  const submit = makeElement();
-  submit.disabled = false;
-  for (const id of ['opponents-status', 'opponent-name', 'opponent-list']) nodes.set(id, makeElement());
-  const form = makeElement();
-  form.querySelector = () => submit;
-  nodes.set('opponent-add-form', form);
-  const input = nodes.get('opponent-name');
-  let directory = [{ slug: 'marlboro', name: 'Marlboro' }];
-  let shortlist = [];
+function setup() {
+  const ids = ['opponents-status', 'opponent-add-form', 'opponent-list', 'opponent-name',
+    'opponent-address', 'delete-opponent-dialog', 'delete-opponent-summary',
+    'delete-opponent-confirm'];
+  const nodes = new Map(ids.map(id => [id, element()]));
+  let school = { slug: 'marlboro', name: 'Marlboro' };
+  let rows = [{ slug: 'colts-neck', name: 'Colts Neck', source: 'conference' }];
   const calls = [];
   const client = {
     from(table) {
-      if (table === 'opponent_directory') return {
-        select: () => ({ order: async () => ({ data: directory, error: null }) }),
-      };
-      return {
-        select: () => ({ eq: async () => ({ data: shortlist, error: null }) }),
-      };
+      assert.equal(table, 'opponent_directory');
+      return { select: () => ({ order: async () => ({
+        data: rows.filter(row => row.source !== 'custom'
+          || row.added_by_school === school.slug), error: null,
+      }) }) };
     },
     async rpc(name, args) {
       calls.push({ name, args });
-      directory = [...directory, { slug: 'north-harbor-high-school', name: args.p_name }];
-      shortlist = [...shortlist, { opponent_slug: 'north-harbor-high-school' }];
-      return { data: { slug: 'north-harbor-high-school', name: args.p_name, added: true }, error: null };
+      if (name === 'save_custom_opponent') {
+        const existing = rows.find(row => row.added_by_school === args.p_school
+          && row.name.toLowerCase() === args.p_name.toLowerCase());
+        const item = existing ?? { slug: args.p_school + '-saved', name: args.p_name,
+          address: args.p_address, source: 'custom', added_by_school: args.p_school };
+        if (!existing) rows.push(item);
+        return { data: { ...item, added: !existing }, error: null };
+      }
+      if (name === 'rename_custom_opponent') {
+        const item = rows.find(row => row.slug === args.p_slug);
+        item.name = args.p_name;
+        item.address = args.p_address;
+        return { data: item, error: null };
+      }
+      if (name === 'delete_custom_opponent') {
+        rows = rows.filter(row => row.slug !== args.p_slug);
+        return { data: null, error: null };
+      }
+      throw Error('Unexpected RPC ' + name);
     },
   };
-  const context = vm.createContext({
-    document: {
-      getElementById: id => nodes.get(id),
-      createElement: makeElement,
-    },
-  });
+  const context = vm.createContext({ document: {
+    getElementById: id => nodes.get(id),
+    createElement: element,
+  } });
   vm.runInContext(readFileSync(new URL('../js/staff-opponents.js', import.meta.url), 'utf8'), context);
-  const controller = context.startStaffOpponents(client, {
-    currentSchool: () => ({ slug: 'marlboro', name: 'Marlboro' }),
-    activeSchools: () => [{ slug: 'marlboro', name: 'Marlboro' }],
-  });
+  const controller = context.startStaffOpponents(client, { currentSchool: () => school });
+  return { nodes, controller, calls, setSchool: value => { school = value; } };
+}
+
+test('AD adds, renames and deletes only a private saved school', async () => {
+  const { nodes, controller, calls } = setup();
   await controller.load();
-  input.value = '  North Harbor High School  ';
-  let prevented = false;
-  await form.onsubmit({ preventDefault: () => { prevented = true; } });
-
-  assert.equal(prevented, true);
-  assert.equal(calls.length, 1);
-  assert.equal(calls[0].name, 'add_school_opponent');
-  assert.equal(calls[0].args.p_school, 'marlboro');
-  assert.equal(calls[0].args.p_name, 'North Harbor High School');
-  assert.deepEqual(nodes.get('opponent-list').children.map(row => row.children[0].textContent), [
-    'North Harbor High School',
-  ]);
-  assert.match(nodes.get('opponents-status').textContent, /added to your opponent list/);
-
-  input.value = 'north harbor high school';
-  await form.onsubmit({ preventDefault() {} });
-  assert.equal(calls.length, 1);
-  assert.match(nodes.get('opponents-status').textContent, /already on your opponent list/);
+  assert.match(nodes.get('opponent-list').children[0].textContent, /Schools you add/);
+  nodes.get('opponent-name').value = '  Eastview School  ';
+  nodes.get('opponent-address').value = '1 Main Street';
+  await nodes.get('opponent-add-form').onsubmit({ preventDefault() {} });
+  assert.equal(calls[0].name, 'save_custom_opponent');
+  assert.deepEqual({ ...calls[0].args }, {
+    p_school: 'marlboro', p_name: 'Eastview School', p_address: '1 Main Street',
+  });
+  let row = nodes.get('opponent-list').children[0];
+  assert.equal(row.children[0].children[0].textContent, 'Eastview School');
+  row.children[1].onclick();
+  const editForm = row.children[0];
+  editForm.children[0].value = 'New Eastview';
+  await editForm.onsubmit({ preventDefault() {} });
+  assert.equal(calls.at(-1).name, 'rename_custom_opponent');
+  row = nodes.get('opponent-list').children[0];
+  row.children[2].onclick();
+  assert.match(nodes.get('delete-opponent-summary').textContent, /Games already saved keep/);
+  await nodes.get('delete-opponent-confirm').onclick();
+  assert.equal(calls.at(-1).name, 'delete_custom_opponent');
+  assert.match(nodes.get('opponent-list').children[0].textContent, /Schools you add/);
   controller.stop();
 });
 
-test('AD cannot add an empty name or their own school', async () => {
-  const nodes = new Map();
-  const submit = makeElement();
-  const form = makeElement();
-  form.querySelector = () => submit;
-  for (const id of ['opponents-status', 'opponent-name', 'opponent-list']) nodes.set(id, makeElement());
-  nodes.set('opponent-add-form', form);
-  const calls = [];
-  const context = vm.createContext({
-    document: {
-      getElementById: id => nodes.get(id),
-      createElement: makeElement,
-    },
-  });
-  vm.runInContext(readFileSync(new URL('../js/staff-opponents.js', import.meta.url), 'utf8'), context);
-  const controller = context.startStaffOpponents({
-    from: () => ({ select: () => ({ order: async () => ({ data: [], error: null }) }) }),
-    rpc: async (...args) => { calls.push(args); return { data: null, error: null }; },
-  }, {
-    currentSchool: () => ({ slug: 'marlboro', name: 'Marlboro' }),
-    activeSchools: () => [{ slug: 'marlboro', name: 'Marlboro' }],
-  });
-
-  await form.onsubmit({ preventDefault() {} });
-  assert.match(nodes.get('opponents-status').textContent, /Enter a school name/);
-  nodes.get('opponent-name').value = 'Marlboro';
-  await form.onsubmit({ preventDefault() {} });
-  assert.match(nodes.get('opponents-status').textContent, /cannot be its own opponent/);
-  assert.equal(calls.length, 0);
+test('site admin view switches saved schools with the selected school', async () => {
+  const { controller, setSchool } = setup();
+  await controller.load();
+  await controller.saveSchool('Eastview', '');
+  assert.equal(controller.entries().length, 1);
+  setSchool({ slug: 'colts-neck', name: 'Colts Neck' });
+  controller.reset();
+  await controller.load();
+  assert.equal(controller.entries().length, 0);
+  await controller.saveSchool('Eastview', '');
+  assert.equal(controller.entries().length, 1);
   controller.stop();
 });
