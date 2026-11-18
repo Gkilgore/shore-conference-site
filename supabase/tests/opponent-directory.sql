@@ -38,6 +38,9 @@ begin
     or (public.save_custom_opponent('marlboro','Colts Neck',null)->>'source') <> 'conference' then
     raise exception 'Listed school was duplicated';
   end if;
+  if (public.save_custom_opponent('marlboro','Colts Neck High School',null)->>'slug') <> 'colts-neck' then
+    raise exception 'Full NJSIAA name did not find conference school';
+  end if;
   rejected := false;
   begin perform public.save_custom_opponent('marlboro','Marlboro High School',null);
   exception when invalid_parameter_value then rejected := true; end;

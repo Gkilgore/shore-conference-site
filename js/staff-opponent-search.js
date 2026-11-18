@@ -1,6 +1,18 @@
 // Finds opponent choices for the staff game editor and prepares saved game values.
 function searchStaffOpponents(directory, query, schoolSlug) {
-  const words = query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  const aliases = {
+    'middletown high school north': 'middletown north',
+    'middletown high school south': 'middletown south',
+    'ocean academy charter school': 'ocean academy',
+    'st. rose high school': 'saint rose',
+    'toms river high school east': 'toms river east',
+    'toms river high school north': 'toms river north',
+    'toms river high school south': 'toms river south',
+    'wall high school': 'wall township',
+  };
+  const typed = query.trim().toLocaleLowerCase();
+  const normalized = aliases[typed] ?? typed.replace(/ high school$/, '');
+  const words = normalized.split(/\s+/).filter(Boolean);
   const groups = [
     { source: 'conference', title: 'Shore Conference', items: [] },
     { source: 'custom', title: 'Your saved schools', items: [] },
