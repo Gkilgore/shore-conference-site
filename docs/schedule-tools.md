@@ -2,15 +2,15 @@
 
 **Calendar** shows the school's games by date; clicking one shows its details, with **Edit game** for ADs, and clicking an empty day adds a game on that date. **Schedule** is where ADs pick a team, see its games in a table, and add, edit or import games; games that don't match the other school's entry are flagged on their row. The game editor opens as a pop-up over either tab. The game editor offers sports from the school's team list, then limits gender and level to listed teams; it fills in the team's season automatically. Start time can be marked **TBD** until it is announced. **Transportation** lists upcoming away games with a bus departure and lets an AD save the transportation contact. Saving a scheduled game with a bus departure sends the details to that contact and copies the AD. No transportation confirmation is required; bus confirmation does not determine the game's Scheduled, Postponed or Canceled status.
 
-## Opponents
+## Saved schools
 
-Each school has its own opponent list. ADs can type a non-conference school's name to add it, or remove schools later; removing a school does not change games already saved. New names are added to the shared directory so other ADs can find them, but they are added only to the AD's own list. Adding a name does not enroll that school or enable game matching.
+The game editor searches Shore Conference schools, the current school's private saved schools, and NJSIAA schools. ADs can add a school while entering a game, or add, rename, and delete it in **Saved schools**. Another school's AD cannot see that saved school. Games already saved keep its name after deletion. See [opponent search and saved schools](opponents-njsiaa.md).
 
 Schools outside the conference can use the platform after a site admin assigns their first AD from the directory in **Staff access**. Only schools with an AD invitation can match games. Nonconference matches stay on the participating schools' schedules; only matched member-school games appear on the conference calendar.
 
-Applied `20261203000100_opponent_directory.sql` to test project `jrtcyihpdrcnhxgproyw` on November 15, 2026. The SQL permission test passed and rolled back. `add_school_opponent` checks the caller's own invitation directly, preventing an AD from adding opponents to another school's list. Both new tables have row-level security enabled; all 48 schools and 2,256 starting opponent pairs were verified. Greg handles the live project.
+Applied `20261206000100_private_opponents.sql` to test project `jrtcyihpdrcnhxgproyw` on November 17, 2026. Its SQL permission test passed and rolled back. The migration loads 452 NJSIAA schools with addresses and gives each school its own saved rows. Greg handles the live project.
 
-The security advisor added notices for signed-in access to the owner-run `add_school_opponent` and `import_opponent_directory` functions; both intentionally check staff permissions inside the function. The anonymous `game_link_status` notice cleared. No other new findings appeared. The public-calendar function was redeployed with JWT verification off; Marlboro's JSON feed returned 13 events, all including `home_away`.
+The earlier directory migration and public-calendar feed checks are documented in Git history.
 
 ## Saving and posting
 
