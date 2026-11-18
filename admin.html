@@ -13,9 +13,9 @@
   <link rel="stylesheet" href="css/staff.css">
   <link rel="stylesheet" href="css/tournament-public.css">
   <link rel="stylesheet" href="css/tournaments.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
   <script defer src="js/supabase-config.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.22/index.global.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.22/index.global.min.js" integrity="sha384-a9qx08ufzJ+0qbHzdqA+GYiSayQQB5BK2YGS/HQT9cxhQm+GhiXFj1ByVXa93ZRR" crossorigin="anonymous"></script>
   <script defer src="js/site.js"></script>
   <script defer src="data/school-directory.js"></script>
   <script defer src="js/calendar.js"></script>
@@ -575,6 +575,7 @@
                 <label id="venue-typed">Venue <input name="location" required maxlength="160" autocomplete="off"></label>
               </div>
               <label>Game notes <textarea name="notes" maxlength="1000" rows="2"></textarea></label>
+              <p class="staff-hint">Game notes appear on the public school calendar and subscription feed. Keep private student details out of them.</p>
             </fieldset>
             <fieldset class="prose" id="game-transportation-fieldset" hidden>
               <legend>Transportation</legend>
@@ -585,7 +586,7 @@
                 <label>Return time <input name="return_time" type="time"></label>
               </div>
               <label>Transportation notes <textarea name="transport_notes" maxlength="1000" rows="2"></textarea></label>
-              <p class="staff-hint">Save the game with or without transportation details. These remind you that the team will need transportation.</p>
+              <p class="staff-hint">Bus departure, pickup, early dismissal, and return times appear on the public school calendar and subscription feed. Transportation notes stay in staff view.</p>
             </fieldset>
             <div class="game-editor-foot">
             <p class="staff-hint">Saving posts this game to the public schedule.</p>

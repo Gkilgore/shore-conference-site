@@ -80,11 +80,9 @@ function socialSchools(rows, directory) {
     .sort((first, second) => first.name.localeCompare(second.name));
 }
 
-// The school shown first on the home page. It changes each day so every school with Instagram gets a turn.
-function socialSchoolOfTheDay(schools, today = new Date()) {
-  const withPosts = schools.filter(school => school.accounts.some(account => account.platform === 'instagram'));
-  const pool = withPosts.length ? withPosts : schools;
+// Choose among schools with links; exclude the current school when showing another one.
+function randomSocialSchool(schools, random = Math.random, exceptSlug = null) {
+  const pool = schools.length > 1 ? schools.filter(school => school.slug !== exceptSlug) : schools;
   if (!pool.length) return null;
-  const day = Math.floor(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) / 86400000);
-  return pool[day % pool.length];
+  return pool[Math.floor(random() * pool.length)];
 }
