@@ -52,3 +52,10 @@ test('away venue uses the chosen address only when empty', () => {
 test('result subtitle shows the town', () => {
   assert.equal(context.opponentTown('59 Five Points Road, Colts Neck NJ 07722'), 'Colts Neck');
 });
+
+test('full NJSIAA names find the existing conference school', () => {
+  assert.deepEqual(Array.from(search(schools, 'Colts Neck High School', 'marlboro')[0].items,
+    item => item.slug), ['colts-neck']);
+  assert.deepEqual(Array.from(search(schools, 'Shore Regional High School', 'marlboro')[0].items,
+    item => item.slug), ['shore-regional']);
+});

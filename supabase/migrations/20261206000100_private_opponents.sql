@@ -196,6 +196,16 @@ create function public.save_custom_opponent(p_school text, p_name text, p_addres
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare normalized_name text := regexp_replace(btrim(coalesce(p_name,'')), '[[:space:]]+', ' ', 'g');
   normalized_address text := nullif(btrim(p_address),'');
+  conference_alias text := case lower(normalized_name)
+    when 'middletown high school north' then 'middletown-north'
+    when 'middletown high school south' then 'middletown-south'
+    when 'ocean academy charter school' then 'ocean-academy'
+    when 'st. rose high school' then 'saint-rose'
+    when 'toms river high school east' then 'toms-river-east'
+    when 'toms river high school north' then 'toms-river-north'
+    when 'toms river high school south' then 'toms-river-south'
+    when 'wall high school' then 'wall-township'
+  end;
   found public.opponent_directory; new_slug text; inserted boolean := false;
 begin
   if not exists (select 1 from public.users u where u.email = shore_private.verified_staff_email()
@@ -209,12 +219,16 @@ begin
       using errcode = '22023';
   end if;
   if exists (select 1 from public.schools s where s.slug = p_school
-    and lower(s.name) = lower(regexp_replace(normalized_name, ' (high school|school)$', '', 'i'))) then
+    and (lower(s.name) = lower(regexp_replace(normalized_name, ' (high school|school)$', '', 'i'))
+      or s.slug = conference_alias)) then
     raise exception 'Your school cannot be its own opponent.' using errcode = '22023';
   end if;
   perform pg_advisory_xact_lock(hashtextextended('opponent:' || p_school || ':' || lower(normalized_name),0));
   select * into found from public.opponent_directory d
-    where lower(d.name) = lower(normalized_name)
+    where (lower(d.name) = lower(normalized_name)
+      or (d.source = 'conference' and
+        (lower(d.name) = lower(regexp_replace(normalized_name, ' (high school|school)$', '', 'i'))
+          or d.slug = conference_alias)))
       and (d.source in ('conference','njsiaa')
         or (d.source = 'custom' and d.added_by_school = p_school))
     order by case d.source when 'conference' then 0 when 'njsiaa' then 1 else 2 end, d.slug
