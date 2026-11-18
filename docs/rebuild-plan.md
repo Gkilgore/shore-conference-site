@@ -8,7 +8,7 @@ November 5, 2026 · Greg Kilgore and Alexa
 - **Each school owns its schedule.** Only that school's Athletic Director (AD) can add, import or edit its games. Nothing one school enters appears on another school's calendar.
 - **Saving posts the game (Greg's November 12 update).** For school schedules, saving a game or completing an import posts it to the public schedule; there is no draft or Publish step. This replaces the November 6 "review before publishing" decision. Games that were private before the change stay private until an AD posts them. See `posting-on-save.md`.
 - **The conference calendar is built by matching.** When two member schools publish the same game and the details agree, it appears on the conference calendar automatically.
-- **Opponents come from a shared New Jersey school directory.** Each AD keeps a school-specific shortlist. A match identity exists only while the school has AD access; a matched game between nonmember schools stays on their school calendars and never enters the conference calendar.
+- **Opponents come from searchable school names.** Each AD can find Shore Conference and NJSIAA schools while entering a game and keep a private list of schools they add. A match identity exists only while the school has AD access; a matched game between nonmember schools stays on their school calendars and never enters the conference calendar.
 - **Tournaments are the one exception** (Greg's November 9 update). Conference admins import or generate a bracket, schedule its games, review and publish. Conference publication places each game on the conference calendar and confirmed participating schools' calendars. ADs manage their own tournament transportation. See `tournaments-design.md` for the implemented workflow.
 
 ## 2. Who can do what
@@ -56,7 +56,7 @@ It names the field that differs but never shows the other school's values.
 | teams            | School, sport, gender, level (Varsity, JV, Freshman), season                                     |
 | games            | Owning school, team, date, start time, opponent and directory key, home/away, location, status, notes |
 | opponent_directory | Shared New Jersey school names and stable identifiers                                             |
-| school_opponents | Each school's AD-managed opponent shortlist                                                        |
+| school_opponents | Legacy shortlist table, kept for history and no longer used by the app                            |
 | transportation   | Game, bus departure, pickup location, return time, optional early dismissal, notes                |
 | team_publications | Which team/season-year schedules have been published and when                                   |
 | published_games  | Last approved public game values, kept separate from working drafts, with stable calendar IDs    |
@@ -69,7 +69,7 @@ It names the field that differs but never shows the other school's values.
 | school_social_accounts | The link to each school's Instagram, Facebook and X account; posts are never stored (see `social-media.md`) |
 | tournament_updates | Approved tournament match changes used by public calendar history |
 
-A game's opponent is selected from the AD's shortlist or entered as a one-off name. The shared directory can include schools outside the conference. Only two schools with current AD access and reciprocal, matching entries can link; only matched conference-member games appear on the conference calendar.
+A game's opponent is picked from search results in the game editor. An AD can save a school name and optional address privately for their own school. Old games with a one-off name keep that name. Only two schools with current AD access and reciprocal, matching entries can link; only matched conference-member games appear on the conference calendar.
 
 ## 5. Tools
 

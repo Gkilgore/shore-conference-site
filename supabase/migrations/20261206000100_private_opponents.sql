@@ -1,0 +1,283 @@
+-- Gives every school its own saved opponents and loads the NJSIAA roster for search.
+alter table public.opponent_directory
+  add column address text,
+  add column source text not null default 'custom',
+  add column added_by_school text references public.schools(slug) on delete cascade;
+
+update public.opponent_directory d set source = 'conference'
+where exists (select 1 from public.schools s where s.slug = d.slug);
+
+create function shore_private.njsiaa_roster() returns jsonb language sql set search_path = '' as $$ select '[{"name":"Abraham Clark High School","address":"122 East 6th Avenue, Roselle NJ 07203"},{"name":"Absegami High School","address":"201 S. Wrangleboro Road, Galloway NJ 08205"},{"name":"Academy Charter High School","address":"1725 Main Street, Lake Como NJ 07719"},{"name":"Academy of St. Elizabeth","address":"2 Convent Road, Convent Station NJ 07961"},{"name":"Academy of the Holy Angels","address":"315 Hillside Avenue, Demarest NJ 07627"},{"name":"Achievers Early College Prep","address":"544 Chestnut Avenue, Trenton NJ 08611"},{"name":"Al-Ghazaly Jr/Sr High School","address":"970 Black Oak Ridge Road, Wayne NJ 07470"},{"name":"Allentown High School","address":"27 High Street, Allentown NJ 08501"},{"name":"American History High School","address":"74 Montgomery Street, Newark NJ 07103"},{"name":"Arthur L. Johnson High School","address":"365 Westfield Avenue, Clark NJ 07066"},{"name":"Arthur P. Schalick High School","address":"718 Centerton Road, Pittsgrove NJ 08318"},{"name":"Arts High School","address":"550 Dr. Martin Luther King Jr. Blvd., Newark NJ 07102"},{"name":"Asbury Park High School","address":"1003 Sunset Avenue, Asbury Park NJ 07712"},{"name":"Atlantic City High School","address":"1400 North Albany Avenue, Atlantic City NJ 08401"},{"name":"Atlantic County Institute of Technology","address":"5080 Atlantic Avenue, Mays Landing NJ 08330"},{"name":"Audubon High School","address":"350 Edgewood Avenue, Audubon NJ 08106"},{"name":"Bard High School Early College Newark","address":"321 Bergen Street, Newark NJ 07103"},{"name":"Barnegat High School","address":"180 Bengal Boulevard, Barnegat NJ 08005"},{"name":"Barringer High School","address":"90 Parker Street, Newark NJ 07104"},{"name":"Bayonne High School","address":"667 Avenue A, Bayonne NJ 07002"},{"name":"Belleville High School","address":"100 Passaic Avenue, Belleville NJ 07109"},{"name":"BelovED Community Charter School","address":"531 Grand Street, Jersey City NJ 07302"},{"name":"Belvidere High School","address":"809 Oxford Street, Belvidere NJ 07823"},{"name":"Bergen Arts and Science Charter School","address":"43 Maple Avenue, Hackensack NJ 07601"},{"name":"Bergen Catholic High School","address":"1040 Oradell Avenue, Oradell NJ 07649"},{"name":"Bergen County Technical High School","address":"200 Hackensack Avenue, Hackensack NJ 07601"},{"name":"Bergenfield High School","address":"80 South Prospect Avenue, Bergenfield NJ 07621"},{"name":"Bernards High School","address":"25 Olcott Avenue, Bernardsville NJ 07924"},{"name":"Bishop Eustace Preparatory","address":"5552 Route 70, Pennsauken NJ 08109"},{"name":"Blair Academy","address":"P.O. Box 600, Blairstown NJ 07825"},{"name":"Bloomfield High School","address":"160 Broad Street, Bloomfield NJ 07003"},{"name":"Bogota High School","address":"2 Henry C. Luthin Place, Bogota NJ 07603"},{"name":"Boonton High School","address":"306 Lathrop Avenue, Boonton NJ 07005"},{"name":"Bordentown Regional High School","address":"318 Ward Avenue, Bordentown NJ 08505"},{"name":"Bound Brook High School","address":"111 West Union Avenue, Bound Brook NJ 08805"},{"name":"Brick Memorial High School","address":"2001 Lanes Mill Road, Brick NJ 08724"},{"name":"Brick Township High School","address":"346 Chambers Bridge Road, Brick NJ 08723"},{"name":"Bridgeton High School","address":"111 North West Avenue, Bridgeton NJ 08302"},{"name":"Bridgewater-Raritan High School","address":"600 Garretson Rd, Bridgewater NJ 08807"},{"name":"Buena Regional High School","address":"125 Weymouth Road, Buena NJ 08310"},{"name":"Burlington City High School","address":"100 Blue Devil Way, Burlington NJ 08016"},{"name":"Burlington County Institute of Technology Medford","address":"10 Hawkin Road, Medford NJ 08055"},{"name":"Burlington County Institute of Technology Westampton","address":"695 Woodlane Road, Westampton NJ 08060"},{"name":"Burlington Township High School","address":"610 Fountain Avenue, Burlington Twp. NJ 08016"},{"name":"Butler High School","address":"38 Bartholdi Avenue, Butler NJ 07405"},{"name":"Calvary Christian School","address":"109 White Oak Lane, Old Bridge NJ 08857"},{"name":"Camden Academy Charter School","address":"250 Federal Street, Camden NJ 08103"},{"name":"Camden Catholic High School","address":"300 Cuthbert Road, Cherry Hill NJ 08002"},{"name":"Camden County Technical School at Pennsauken","address":"6008 Browning Road, Pennsauken NJ 08109"},{"name":"Camden County Technical School at Sicklerville","address":"343 Berlin Cross Keys Road, Sicklerville NJ 08081"},{"name":"Camden High School","address":"1700 Park Blvd, Camden NJ 08103"},{"name":"Camden Prep High School","address":"1800 Copewood Street, Camden NJ 08103"},{"name":"Cape May County Technical High School","address":"188 Crest Haven Road, Cape May Ct Hse NJ 08210"},{"name":"Carteret High School","address":"199 Washington Avenue, Carteret NJ 07008"},{"name":"Cedar Creek High School","address":"1701 New York Ave, Egg Harbor City NJ 08205"},{"name":"Cedar Grove High School","address":"90 Rugby Road, Cedar Grove NJ 07009"},{"name":"Central High School","address":"246 18th Ave., Newark NJ 07108"},{"name":"Central Jersey College Prep Charter School","address":"101 Mettlers Rd, Somerset NJ 08873"},{"name":"Central Regional High School","address":"509 Forest Hills Parkway, Bayville NJ 08721"},{"name":"Chatham High School","address":"255 Lafayette Avenue, Chatham NJ 07928"},{"name":"Cherokee High School","address":"120 Tomlinson Mill Road, Marlton NJ 08053"},{"name":"Cherry Hill High School East","address":"1750 Kresson Road, Cherry Hill NJ 08003"},{"name":"Cherry Hill High School West","address":"2101 Chapel Avenue, Cherry Hill NJ 08002"},{"name":"Christian Brothers Academy","address":"850 Newman Springs Road, Lincroft NJ 07738"},{"name":"Cinnaminson High School","address":"1197 Riverton Road, Cinnaminson NJ 08077"},{"name":"Clayton High School","address":"55 Pop Kramer Blvd, Clayton NJ 08312"},{"name":"Clearview Regional High School","address":"625 Breakneck Road, Mullica Hill NJ 08062"},{"name":"Cliffside Park High School","address":"64 Riverview Avenue, Cliffside Park NJ 07010"},{"name":"Clifton High School","address":"333 Colfax Avenue, Clifton NJ 07013"},{"name":"College Achieve Central Charter School","address":"107 Westervelt Avenue, North Plainfield NJ 07060"},{"name":"College Achieve Greater Asbury Park","address":"3455 West Bangs Ave., Neptune NJ 07753"},{"name":"College Achieve Paterson Charter School","address":"5 Colt St., Paterson NJ 07505"},{"name":"Collingswood High School","address":"424 Collings Avenue, Collingswood NJ 08108"},{"name":"Colonia High School","address":"180 East Street, Colonia NJ 07067"},{"name":"Colts Neck High School","address":"59 Five Points Road, Colts Neck NJ 07722"},{"name":"Columbia High School","address":"17 Parker Avenue, Maplewood NJ 07040"},{"name":"Cranford High School","address":"201 West End Place, Cranford NJ 07016"},{"name":"Cresskill High School","address":"1 Lincoln Drive, Cresskill NJ 07626"},{"name":"Cumberland Regional High School","address":"90 Silver Lake Road, Bridgeton NJ 08302"},{"name":"David Brearley High School","address":"401 Monroe Avenue, Kenilworth NJ 07033"},{"name":"Delaware Valley Regional High School","address":"19 Senator Stout Road, Frenchtown NJ 08825"},{"name":"Delbarton School","address":"230 Mendham Road, Morristown NJ 07960"},{"name":"Delran High School","address":"50 Hartford Road, Delran NJ 08075"},{"name":"Delsea Regional High School","address":"242 Fries Mill Road, Franklinville NJ 08322"},{"name":"DePaul Catholic High School","address":"1512 Alps Road, Wayne NJ 07470"},{"name":"Deptford Township High School","address":"575 Fox Run Road, Deptford NJ 08096"},{"name":"Doane Academy","address":"350 Riverbank, Burlington NJ 08016"},{"name":"Don Bosco Prep High School","address":"492 North Franklin Turnpike, Ramsey NJ 07446"},{"name":"Donovan Catholic High School","address":"711 Hooper Avenue, Toms River NJ 08753"},{"name":"Dover High School","address":"100 Grace Street, Dover NJ 07801"},{"name":"Dumont High School","address":"101 New Milford Avenue, Dumont NJ 07628"},{"name":"Dunellen High School","address":"411 First Street, Dunellen NJ 08812"},{"name":"Dwight Morrow High School","address":"274 Knickerbocker Road, Englewood NJ 07631"},{"name":"Dwight-Englewood High School","address":"315 East Palisade Avenue, Englewood NJ 07631"},{"name":"Eagle Academy Newark","address":"279 Chancellor Ave., Newark NJ 07112"},{"name":"East Brunswick High School","address":"380 Cranbury Road, East Brunswick NJ 08816"},{"name":"East Brunswick Magnet School (MCVTS)","address":"112 Rues Lane, East Brunswick NJ 08816"},{"name":"East Orange Campus High School","address":"344 Prospect Street, East Orange NJ 07017"},{"name":"East Side High School (Newark)","address":"238 Van Buren Street, Newark NJ 07105"},{"name":"Eastern Christian High School","address":"50 Oakwood Avenue, North Haledon NJ 07508"},{"name":"Eastern Regional High School","address":"1401 Laurel Oak Rd, Voorhees Township NJ 08043"},{"name":"Eastside High School (Camden)","address":"3100 Federal Street, Camden NJ 08105"},{"name":"Eastside High School (Paterson)","address":"150 Park Avenue, Paterson NJ 07501"},{"name":"Edison Academy Magnet School (MCVTS)","address":"100 Technology Drive, Edison NJ 08837"},{"name":"Edison High School","address":"50 Boulevard of the Eagles, Edison NJ 08817"},{"name":"Egg Harbor Township High School","address":"24 High School Drive, Egg Harbor Twp NJ 08234"},{"name":"Elizabeth High School","address":"40 Morrell Street, Elizabeth NJ 07202"},{"name":"Elmwood Park Memorial High School","address":"375 River Drive, Elmwood Park NJ 07407"},{"name":"Emerson Jr.-Sr. High School","address":"131 Main Street, Emerson NJ 07630"},{"name":"Empowerment Academy Charter School","address":"70 Claremont Ave., Jersey City NJ 07302"},{"name":"Essex County-Newark Tech High School","address":"91 West Market St, Newark NJ 07103"},{"name":"Essex County-Payne Tech High School","address":"544 West Market Street, Newark NJ 07107"},{"name":"Essex County-West Caldwell Tech High School","address":"620 Passaic Avenue, West Caldwell NJ 07006"},{"name":"Ewing High School","address":"900 Parkway Avenue, Ewing NJ 08618"},{"name":"Fair Lawn High School","address":"1400 Berdan Avenue, Fair Lawn NJ 07410"},{"name":"Florence Township Memorial High School","address":"1050 Cedar Lane, Burlington NJ 08016"},{"name":"Fort Lee High School","address":"3000 Lemoine Avenue, Fort Lee NJ 07024"},{"name":"Foundation Collegiate Academy","address":"525 Adeline Street, Trenton NJ 08611"},{"name":"Franklin High School","address":"500 Elizabeth Avenue, Somerset NJ 08873"},{"name":"Franklin School","address":"80 Town Square Place, Jersey City NJ 07310"},{"name":"Freehold Boro High School","address":"2 Robertsville Road, Freehold NJ 07728"},{"name":"Freehold Township High School","address":"281 Elton-Adelphia Road, Freehold NJ 07728"},{"name":"Frisch School (The)","address":"120 West Century Road, Paramus NJ 07652"},{"name":"Garfield High School","address":"500 Palisade Avenue, Garfield NJ 07026"},{"name":"Gateway Academy High School","address":"534 Clinton Ave, Newark NJ 07108"},{"name":"Gateway Regional High School","address":"775 Tanyard Road, Woodbury Heights NJ 08097"},{"name":"Gill St. Bernard''s School","address":"25 St. Bernards Road, P.O. Box 604, Gladstone NJ 07934"},{"name":"Glassboro High School","address":"550 Bowe Boulevard, Glassboro NJ 08028"},{"name":"Glen Ridge High School","address":"200 Ridgewood Avenue, Glen Ridge NJ 07028"},{"name":"Glen Rock High School","address":"400 Hamilton Avenue, Glen Rock NJ 07452"},{"name":"Gloucester Catholic High School","address":"333 Ridgeway Street, Gloucester City NJ 08030"},{"name":"Gloucester City Jr-Sr High School","address":"1300 Market Street, Gloucester City NJ 08030"},{"name":"Gloucester County Institute of Technology","address":"1360 Tanyard Road, PO Box 800, Sewell NJ 08080"},{"name":"Golda Och Academy","address":"1418 Pleasant Valley Way, West Orange NJ 07052"},{"name":"Governor Livingston High School","address":"175 Watchung Boulevard, Berkeley Hts. NJ 07922"},{"name":"Great Oaks Legacy Charter High School","address":"17 Crawford Street, Newark NJ 07102"},{"name":"Hackensack High School","address":"135 1st Street, Hackensack NJ 07601"},{"name":"Hackettstown High School","address":"701 Warren Street, Hackettstown NJ 07840"},{"name":"Haddon Heights High School","address":"301 2nd Avenue, Haddon Heights NJ 08035"},{"name":"Haddon Township High School","address":"406 Memorial Avenue, Westmont NJ 08108"},{"name":"Haddonfield Memorial High School","address":"401 Kings Highway East, Haddonfield NJ 08033"},{"name":"Hamilton High School East (Steinert)","address":"2900 Klockner Road, Hamilton NJ 08690"},{"name":"Hamilton High School North (Nottingham)","address":"1055 Klockner Road, Hamilton NJ 08619"},{"name":"Hamilton High School West","address":"2720 South Clinton Avenue, Hamilton NJ 08610"},{"name":"Hammonton High School","address":"566 Old Forks Road, Hammonton NJ 08037"},{"name":"Hanover Park High School","address":"63 Mt. Pleasant Avenue, East Hanover NJ 07936"},{"name":"Harrison High School","address":"401 Kingsland Avenue, Harrison NJ 07029"},{"name":"Hasbrouck Heights High School","address":"365 Boulevard, Hasbrouck Hts NJ 07604"},{"name":"Hawthorne Christian Academy","address":"2000 Route 208, Hawthorne NJ 07506"},{"name":"Hawthorne High School","address":"160 Parmelee Avenue, Hawthorne NJ 07506"},{"name":"Henry Hudson Regional High School","address":"One Grand Tour, Highlands NJ 07732"},{"name":"Henry P. Becton Regional High School","address":"120 Paterson Avenue, East Rutherford NJ 07073"},{"name":"Henry Snyder High School","address":"239 Bergen Avenue, Jersey City NJ 07305"},{"name":"High Point Regional High School","address":"299 Pidgeon Hill Road, Sussex NJ 07461"},{"name":"Highland Park High School","address":"102 North Fifth Avenue, Highland Park NJ 08904"},{"name":"Highland Regional High School","address":"450 Erial Road, Blackwood NJ 08012"},{"name":"Hightstown High School","address":"25 Leshin Lane, Hightstown NJ 08520"},{"name":"Hillsborough High School","address":"466 Raider Boulevard, Hillsborough NJ 08844"},{"name":"Hillside High School","address":"1085 Liberty Avenue, Hillside NJ 07205"},{"name":"Hoboken Charter High School","address":"711 Washington St., Hoboken NJ 07030"},{"name":"Hoboken High School","address":"800 Clinton Street, Hoboken NJ 07030"},{"name":"Holmdel High School","address":"36 Crawfords Corner Road, Holmdel NJ 07733"},{"name":"Holy Cross Prep Academy","address":"5035 Route 130 South, Delran NJ 08075"},{"name":"Holy Spirit High School","address":"500 South New Road, Absecon NJ 08201"},{"name":"Hopatcong High School","address":"2 Windsor Avenue, P.O. Box 1029, Hopatcong NJ 07843"},{"name":"Hopewell Valley Central High School","address":"259 Pennington-Titusville Road, Pennington NJ 08534"},{"name":"Howell High School","address":"405 Squankum-Yellowbrook Road, Farmingdale NJ 07727"},{"name":"Hudson Catholic Regional High School","address":"790 Bergen Avenue, Jersey City NJ 07306"},{"name":"Hun School of Princeton","address":"176 Edgerstoune Road, Princeton NJ 08540"},{"name":"Hunterdon Central Regional High School","address":"84 Route 31, Flemington NJ 08822"},{"name":"Immaculata High School","address":"240 Mountain Avenue, Somerville NJ 08876"},{"name":"Immaculate Heart Academy","address":"500 Van Emburg Avenue, Twp. of Washington NJ 07676"},{"name":"Indian Hills High School","address":"97 Yawpo Avenue, Oakland NJ 07436"},{"name":"Irvington High School","address":"1253 Clinton Avenue, Irvington NJ 07111"},{"name":"Jackson Township High School","address":"125 North Hope Chapel Road, Jackson NJ 08527"},{"name":"James Caldwell High School","address":"265 Westville Avenue, West Caldwell NJ 07006"},{"name":"James J. Ferris High School","address":"35 Colgate Street, Jersey City NJ 07302"},{"name":"Jefferson Township High School","address":"1010 Weldon Road, Oak Ridge NJ 07438"},{"name":"John F. Kennedy High School","address":"61-127 Preakness Avenue, Paterson NJ 07522"},{"name":"John F. Kennedy Memorial High School","address":"200 Washington Avenue, Iselin NJ 08830"},{"name":"John P. Stevens High School","address":"855 Grove Avenue, Edison NJ 08820"},{"name":"Jonathan Dayton High School","address":"139 Mountain Avenue, Springfield NJ 07081"},{"name":"Keansburg High School","address":"140 Port Monmouth Road, Keansburg NJ 07734"},{"name":"Kearny High School","address":"336 Devon Street, Kearny NJ 07032"},{"name":"Kent Place School","address":"42 Norwood Avenue, Summit NJ 07901"},{"name":"Keyport High School","address":"351 Broad Street, Keyport NJ 07735"},{"name":"Kingsway Regional High School","address":"201 Kings Highway, Woolwich Twp NJ 08085"},{"name":"Kinnelon High School","address":"121 Kinnelon Road, Kinnelon NJ 07405"},{"name":"KIPP Cooper Norcross Academy","address":"740 Chestnut Street, Camden NJ 08105"},{"name":"Kittatinny Regional High School","address":"77 Halsey Road, Newton NJ 07860"},{"name":"Koinonia Academy","address":"1040 Plainfield Avenue, Plainfield NJ 07060"},{"name":"Lacey Township High School","address":"73 Haines Street, Lanoka Harbor NJ 08734"},{"name":"Lakeland Regional High School","address":"205 Conklintown Road, Wanaque NJ 07465"},{"name":"Lakewood High School","address":"855 Somerset Avenue, Lakewood NJ 08701"},{"name":"Lawrence High School","address":"2525 Princeton Pike, Lawrenceville NJ 08648"},{"name":"Lawrenceville School","address":"2500 Main Street, Lawrenceville NJ 08648"},{"name":"LEAP Academy University Charter","address":"130 N Broadway, Camden NJ 08102"},{"name":"Lenape High School","address":"235 Hartford Road, Medford NJ 08055"},{"name":"Lenape Valley Regional High School","address":"28 Sparta Road, Stanhope NJ 07874"},{"name":"Leonia High School","address":"100 Christie Heights Street, Leonia NJ 07605"},{"name":"Lincoln High School","address":"60 Crescent Avenue, Jersey City NJ 07304"},{"name":"Linden High School","address":"121 West St. George Avenue, Linden NJ 07036"},{"name":"Lindenwold High School","address":"801 Egg Harbor Road, Lindenwold NJ 08021"},{"name":"Livingston High School","address":"30 Robert Harp Drive, Livingston NJ 07039"},{"name":"Lodi High School","address":"99 Putnam Street, Lodi NJ 07644"},{"name":"Long Branch High School","address":"404 Indiana Ave., Long Branch NJ 07740"},{"name":"Lower Cape May Regional High School","address":"687 Route 9, Cape May NJ 08204"},{"name":"Lumen Gentium Academy","address":"910 Birch Street, Boonton NJ 07005"},{"name":"Lyndhurst High School","address":"400 Weart Avenue, Lyndhurst NJ 07071"},{"name":"Madison High School","address":"170 Ridgedale Avenue, Madison NJ 07940"},{"name":"Mahwah High School","address":"50 Ridge Road, Mahwah NJ 07430"},{"name":"Mainland Regional High School","address":"1301 Oak Avenue, Linwood NJ 08221"},{"name":"Malcolm X Shabazz High School","address":"80 Johnson Avenue, Newark NJ 07108"},{"name":"Manalapan High School","address":"20 Church Lane, Englishtown NJ 07726"},{"name":"Manasquan High School","address":"167 Broad Street, Manasquan NJ 08736"},{"name":"Manchester Regional High School","address":"70 Church Street, Haledon NJ 07508"},{"name":"Manchester Township High School","address":"101 Hawks Way, Manchester NJ 08759"},{"name":"Manville High School","address":"1100 Brooks Boulevard, Manville NJ 08835"},{"name":"Maple Shade High School","address":"180 Frederick Avenue, Maple Shade NJ 08052"},{"name":"Marion P. Thomas Charter School","address":"125 Sussex Ave., Newark NJ 07103"},{"name":"Marlboro High School","address":"95 North Main Street, Marlboro NJ 07746"},{"name":"Mary Help of Christians Academy","address":"659 Belmont Avenue, N. Haledon NJ 07508"},{"name":"Mastery High School of Camden","address":"800 Erie St., Camden NJ 08102"},{"name":"Matawan Regional High School","address":"450 Atlantic Avenue, Aberdeen NJ 07747"},{"name":"McNair Academic High School","address":"123 Coles Street, Jersey City NJ 07302"},{"name":"Memorial High School","address":"5501 Park Avenue, West New York NJ 07093"},{"name":"Metuchen High School","address":"400 Grove Avenue, Metuchen NJ 08840"},{"name":"Middle Township High School","address":"300 E. Atlantic Avenue, Cape May Ct Hse NJ 08210"},{"name":"Middlesex High School","address":"300 John F. Kennedy Drive, Middlesex NJ 08846"},{"name":"Middletown High School North","address":"63 Tindall Road, Middletown NJ 07748"},{"name":"Middletown High School South","address":"900 Nut Swamp Road, Middletown NJ 07748"},{"name":"Midland Park High School","address":"250 Prospect Street, Midland Park NJ 07432"},{"name":"Millburn High School","address":"462 Millburn Avenue, Millburn NJ 07041"},{"name":"Millville High School","address":"200 N. Wade Boulevard, Millville NJ 08332"},{"name":"Monmouth Regional High School","address":"One Norman J. Field Way, Tinton Falls NJ 07724"},{"name":"Monroe Township High School","address":"200 Schoolhouse Road, Monroe Twp NJ 08831"},{"name":"Montclair High School","address":"100 Chestnut Street, Montclair NJ 07042"},{"name":"Montclair Kimberley Academy","address":"6 Lloyd Road, Montclair NJ 07042"},{"name":"Montgomery High School","address":"1016 Route 601, Skillman NJ 08558"},{"name":"Montville Township High School","address":"100 Horseneck Road, Montville NJ 07045"},{"name":"Moorestown Friends School","address":"110 East Main Street, Moorestown NJ 08057"},{"name":"Moorestown High School","address":"350 Bridgeboro Road, Moorestown NJ 08057"},{"name":"Morris Catholic High School","address":"200 Morris Avenue, Denville NJ 07834"},{"name":"Morris County School of Technology","address":"400 East Main Street, Denville NJ 07834"},{"name":"Morris Hills High School","address":"520 West Main Street, Rockaway NJ 07866"},{"name":"Morris Knolls High School","address":"50 Knoll Drive, Rockaway NJ 07866"},{"name":"Morristown High School","address":"50 Early Street, Morristown NJ 07960"},{"name":"Morristown-Beard School","address":"70 Whippany Road, Morristown NJ 07960"},{"name":"Mother Seton Regional High School","address":"1 Valley Road, Clark NJ 07066"},{"name":"Mount Olive High School","address":"18 Corey Road, Flanders NJ 07836"},{"name":"Mount Saint Dominic Academy","address":"3 Ryerson Avenue, Caldwell NJ 07006"},{"name":"Mount Saint Mary Academy","address":"1645 Rt. 22 at Terrill Rd, Watchung NJ 07069"},{"name":"Mountain Lakes High School","address":"96 Powerville Road, Mountain Lakes NJ 07046"},{"name":"Neptune High School","address":"55 Neptune Boulevard, Neptune NJ 07753"},{"name":"New Brunswick High School","address":"1000 Somerset Street, New Brunswick NJ 08901"},{"name":"New Egypt High School","address":"117 Evergreen Road, New Egypt NJ 08533"},{"name":"New Milford High School","address":"330 River Rd, New Milford NJ 07646"},{"name":"New Providence High School","address":"35 Pioneer Drive, New Providence NJ 07974"},{"name":"Newark Academy","address":"91 South Orange Avenue, Livingston NJ 07039"},{"name":"Newark Collegiate Academy","address":"129 Littleton Avenue, Newark NJ 07103"},{"name":"Newark Lab High School","address":"18 Norfolk St., Newark NJ 07103"},{"name":"Newark School of Data Science and Information Technology","address":"746 Sanford Ave., Newark NJ 07106"},{"name":"Newark School of Global Studies","address":"24 Crane St., Newark NJ 07104"},{"name":"Newark Vocational High","address":"301 West Kinney Street, Newark NJ 07103"},{"name":"Newton High School","address":"44 Ryerson Avenue, Newton NJ 07860"},{"name":"NJSIAA","address":"1161 Route 130 N., Robbinsville NJ 08691"},{"name":"Noor-ul-Iman School","address":"4137 Route 1 South, Monmouth Junction NJ 08852"},{"name":"North Arlington High School","address":"222 Ridge Road, North Arlington NJ 07031"},{"name":"North Bergen High School","address":"7417 Kennedy Boulevard, North Bergen NJ 07047"},{"name":"North Brunswick Township High School","address":"98 Raider Road, North Brunswick NJ 08902"},{"name":"North Hunterdon High School","address":"1445 Route 31, Annandale NJ 08801"},{"name":"North Plainfield High School","address":"34 Wilson Avenue, No. Plainfield NJ 07060"},{"name":"North Star Academy Charter","address":"377 Washington St, 4th - 6th Floors, Newark NJ 07102"},{"name":"North Warren Regional High School","address":"10 Noe Road, Blairstown NJ 07825"},{"name":"Northern Burlington Regional High School","address":"160 Mansfield Road East, Columbus NJ 08022"},{"name":"Northern Highlands Regional High School","address":"298 Hillside Avenue, Allendale NJ 07401"},{"name":"Northern Valley Regional at Demarest","address":"150 Knickerbocker Road, Demarest NJ 07627"},{"name":"Northern Valley Regional at Old Tappan","address":"140 Central Ave, Old Tappan NJ 07675"},{"name":"Notre Dame High School","address":"601 Lawrence Road, Lawrenceville NJ 08648"},{"name":"Nutley High School","address":"300 Franklin Avenue, Nutley NJ 07110"},{"name":"Oak Knoll School","address":"44 Blackburn Road, Summit NJ 07901"},{"name":"Oakcrest High School","address":"1824 Dr. Dennis Foreman Drive, Mays Landing NJ 08330"},{"name":"Ocean Academy Charter School","address":"1626 Massachusetts Ave., Lakewood Twp NJ 08701"},{"name":"Ocean City High School","address":"501 Atlantic Avenue, Ocean City NJ 08226"},{"name":"Ocean Township High School","address":"550 West Park Avenue, Oakhurst NJ 07755"},{"name":"Old Bridge High School","address":"4209 Route 516, Matawan NJ 07747"},{"name":"Orange High School","address":"400 Lincoln Avenue, Orange NJ 07050"},{"name":"Oratory Catholic Prep School","address":"425 Morris Avenue, Summit NJ 07901"},{"name":"Our Lady of Mercy Academy","address":"1001 Main Road, Newfield NJ 08344"},{"name":"Overbrook High School","address":"1200 Turnerville Road, Pine Hill NJ 08021"},{"name":"Palisades Park Jr-Sr High School","address":"1 Veterans Plaza, Palisades Park NJ 07650"},{"name":"Palmyra High School","address":"311 W. 5th Street, Palmyra NJ 08065"},{"name":"Paramus Catholic High School","address":"425 Paramus Road, Paramus NJ 07652"},{"name":"Paramus High School","address":"99 E. Century Road, Paramus NJ 07652"},{"name":"Park Ridge High School","address":"2 Park Avenue, Park Ridge NJ 07656"},{"name":"Parsippany High School","address":"309 Baldwin Road, Parsippany NJ 07054"},{"name":"Parsippany Hills High School","address":"20 Rita Drive, P.O. Box 52, Morris Plains NJ 07950"},{"name":"Pascack Hills High School","address":"225 W. Grand Avenue, Montvale NJ 07645"},{"name":"Pascack Valley High School","address":"200 Piermont Avenue, Hillsdale NJ 07642"},{"name":"Passaic Arts and Science Charter School","address":"7 St. Francis Way, Passaic NJ 07055"},{"name":"Passaic County Technical Institute","address":"45 Reinhardt Road, Wayne NJ 07470"},{"name":"Passaic High School","address":"663 Main Ave., Passaic NJ 07055"},{"name":"Passaic Valley High School","address":"100 East Main Street, Little Falls NJ 07424"},{"name":"Paterson Arts and Science Charter School","address":"225 Grand St., Paterson NJ 07501"},{"name":"Paterson Charter School Science & Technology","address":"196 W. Railway Ave., Paterson NJ 07503"},{"name":"Paul VI High School","address":"901 Hopkins Road, Ste. B, Haddonfield NJ 08033"},{"name":"Paulsboro High School","address":"670 North Delaware Street, Paulsboro NJ 08066"},{"name":"Peddie School","address":"201 S. Main St., Hightstown NJ 08520"},{"name":"Pemberton Township High School","address":"148 Arney''s Mount Road, Pemberton NJ 08068"},{"name":"Pennington School","address":"112 West Delaware Avenue, Pennington NJ 08534"},{"name":"Penns Grove High School","address":"334 Harding Highway, Carneys Point NJ 08069"},{"name":"Pennsauken High School","address":"800 Hylton Road, Pennsauken NJ 08110"},{"name":"Pennsville Memorial High School","address":"110 South Broadway, Pennsville NJ 08070"},{"name":"Pequannock Township High School","address":"85 Sunset Road, Pompton Plains NJ 07444"},{"name":"Perth Amboy High School","address":"931 Convery Blvd, Perth Amboy NJ 08861"},{"name":"Perth Amboy Magnet School (MCVTS)","address":"457 High Street, Perth Amboy NJ 08861"},{"name":"Phillipsburg High School","address":"1 Stateliner Boulevard, Phillipsburg NJ 08865"},{"name":"Pinelands Regional High School","address":"565 Nugentown Road, Little Egg Harbor NJ 08087"},{"name":"Pingry School","address":"131 Martinsville Road, Basking Ridge NJ 07920"},{"name":"Pioneer Academy","address":"164 Totowa Road, Wayne NJ 07470"},{"name":"Piscataway High School","address":"100 Behmer Road, Piscataway NJ 08854"},{"name":"Piscataway Magnet School (MCVTS)","address":"21 Suttons Lane, Piscataway NJ 08854"},{"name":"Pitman High School","address":"225 Linden Avenue, Pitman NJ 08071"},{"name":"Plainfield High School","address":"950 Park Avenue, Plainfield NJ 07060"},{"name":"Pleasantville High School","address":"701 Mill Road, Pleasantville NJ 08232"},{"name":"Point Pleasant Beach High School","address":"700 Trenton Avenue, Pt Pleasant Bch NJ 08742"},{"name":"Point Pleasant Borough High School","address":"830 Laura Herbert Drive, Pt Pleasant NJ 08742"},{"name":"Pompton Lakes High School","address":"44 Lakeside Avenue, Pompton Lakes NJ 07442"},{"name":"Pope John XXIII High School","address":"28 Andover Road, Sparta NJ 07871"},{"name":"Princeton Day School","address":"650 Great Road, Princeton NJ 08540"},{"name":"Princeton High School","address":"151 Moore Street, Princeton NJ 08540"},{"name":"Rahway High School","address":"1012 Madison Avenue, Rahway NJ 07065"},{"name":"Ramapo High School","address":"331 George Street, Franklin Lakes NJ 07417"},{"name":"Ramsey High School","address":"256 E. Main Street, Ramsey NJ 07446"},{"name":"Rancocas Valley Regional High School","address":"520 Jacksonville Road, Mount Holly NJ 08060"},{"name":"Randolph High School","address":"511 Millbrook Avenue, Randolph NJ 07869"},{"name":"Ranney School","address":"235 Hope Road, Tinton Falls NJ 07724"},{"name":"Raritan High School","address":"419 Middle Road, Hazlet NJ 07730"},{"name":"Red Bank Catholic High School","address":"112 Broad Street, Red Bank NJ 07701"},{"name":"Red Bank Regional High School","address":"101 Ridge Road, Little Silver NJ 07739"},{"name":"Ridge High School","address":"268 South Finley Avenue, Basking Ridge NJ 07920"},{"name":"Ridgefield Memorial High School","address":"555 Walnut Street, Ridgefield NJ 07657"},{"name":"Ridgefield Park Jr-Sr High School","address":"1 Ozzie Nelson Drive, Ridgefield Park NJ 07660"},{"name":"Ridgewood High School","address":"627 East Ridgewood Avenue, Ridgewood NJ 07451"},{"name":"River Dell Regional High School","address":"55 Pyle Street, Oradell NJ 07649"},{"name":"Riverside High School","address":"112 E. Washington Street, Riverside NJ 08075"},{"name":"Robbinsville High School","address":"155 Robbinsville-Edinburg Road, Robbinsville NJ 08691"},{"name":"Roselle Catholic High School","address":"350 Raritan Road, Roselle NJ 07203"},{"name":"Roselle Park High School","address":"185 W. Webster Avenue, Roselle Park NJ 07204"},{"name":"Roxbury High School","address":"1 Bryant Drive, Succasunna NJ 07876"},{"name":"Rumson-Fair Haven Regional High School","address":"74 Ridge Road, Rumson NJ 07760"},{"name":"Rutgers Prep School","address":"1345 Easton Avenue, Somerset NJ 08873"},{"name":"Rutherford High School","address":"56 Elliott Place, Rutherford NJ 07070"},{"name":"Saddle Brook High School","address":"355 Mayhill Street, Saddle Brook NJ 07663"},{"name":"Saddle River Day School","address":"147 Chestnut Ridge Road, Saddle River NJ 07458"},{"name":"Saint Augustine Prep School","address":"611 N. Cedar Avenue, Richland NJ 08350"},{"name":"Saint Dominic Academy","address":"2572 John F. Kennedy Blvd, Jersey City NJ 07304"},{"name":"Saint John Vianney High School","address":"540A Line Road, Holmdel NJ 07733"},{"name":"Saint Joseph Academy","address":"328 Vine St., Hammonton NJ 08037"},{"name":"Saint Joseph High School Metuchen","address":"145 Plainfield Avenue, Metuchen NJ 08840"},{"name":"Saint Joseph Regional High School","address":"40 Chestnut Ridge Road, Montvale NJ 07645"},{"name":"Saint Mary High School","address":"64 Chestnut Street, Rutherford NJ 07070"},{"name":"Saint Peter''s Prep High School","address":"144 Grand Street, Jersey City NJ 07302"},{"name":"Saint Thomas Aquinas High School","address":"1 Tingley Lane, Edison NJ 08820"},{"name":"Saint Vincent Academy","address":"228 W. Market Street, Newark NJ 07103"},{"name":"Salem County Career & Technical HS","address":"880 Route 45, Woodstown NJ 08098"},{"name":"Salem High School","address":"219 Walnut Street, Salem NJ 08079"},{"name":"Sayreville War Memorial High School","address":"820 Washington Road, Parlin NJ 08859"},{"name":"Science Park High School","address":"260 Norfolk Street, Newark NJ 07103"},{"name":"Scotch Plains-Fanwood High School","address":"667 Westfield Road, Scotch Plains NJ 07076"},{"name":"Secaucus High School","address":"11 Mill Ridge Road, Secaucus NJ 07094"},{"name":"Seneca High School","address":"110 Carranza Road, Tabernacle NJ 08088"},{"name":"Seton Hall Preparatory School","address":"120 Northfield Avenue, West Orange NJ 07052"},{"name":"Shawnee High School","address":"600 Tabernacle Road, Medford NJ 08055"},{"name":"Shore Regional High School","address":"132 Monmouth Park Highway, West Long Branch NJ 07764"},{"name":"Somerset County Vo-Tech High School","address":"14 Vogt Drive/PO Box 6350, Bridgewater NJ 08807"},{"name":"Somerville High School","address":"222 Davenport Street, Somerville NJ 08876"},{"name":"South Amboy High School","address":"200 Gov. H.G. Hoffman Plaza, South Amboy NJ 08879"},{"name":"South Brunswick High School","address":"750 Ridge Road, Monmouth Jct NJ 08852"},{"name":"South Hunterdon Regional High School","address":"301 Mt. Airy-Harbourton Road, Lambertville NJ 08530"},{"name":"South Plainfield High School","address":"200 Lake Street, So. Plainfield NJ 07080"},{"name":"South River High School","address":"11 Montgomery Street, South River NJ 08882"},{"name":"Southern Regional High School","address":"90 Cedar Bridge Road, Manahawkin NJ 08050"},{"name":"Sparta High School","address":"70 West Mountain Road, Sparta NJ 07871"},{"name":"Spotswood High School","address":"105 Summerhill Road, Spotswood NJ 08884"},{"name":"St. Benedict''s Preparatory School","address":"520 Dr. Martin Luther King, Jr. Blvd., Newark NJ 07102"},{"name":"St. Rose High School","address":"607 Seventh Avenue, Belmar NJ 07719"},{"name":"Sterling High School","address":"501 S. Warwick Road, Somerdale NJ 08083"},{"name":"Stuart Country Day School","address":"1200 Stuart Road, Princeton NJ 08540"},{"name":"Summit High School","address":"125 Kent Place Boulevard, Summit NJ 07901"},{"name":"Sussex County Technical High School","address":"105 North Church Road, Sparta NJ 07871"},{"name":"Teaneck High School","address":"100 Elizabeth Avenue, Teaneck NJ 07666"},{"name":"Technology High School (Newark)","address":"187 Broadway, Newark NJ 07104"},{"name":"Tenafly High School","address":"19 Columbus Drive, Tenafly NJ 07670"},{"name":"The Patrick School","address":"99 Clarksville Rd., West Windsor NJ 08550"},{"name":"Thomas Edison EnergySmart Charter School","address":"150 Pierce Street, 2nd Floor, Somerset NJ 08873"},{"name":"Thrive Charter School","address":"175 Leonard Avenue, Hamilton NJ 08610"},{"name":"Timber Creek High School","address":"501 Jarvis Road, Erial NJ 08081"},{"name":"Timothy Christian School","address":"2008 Ethel Road, Piscataway NJ 08854"},{"name":"Toms River High School East","address":"1225 Raider Way, Toms River NJ 08753"},{"name":"Toms River High School North","address":"1245 Old Freehold Road, Toms River NJ 08753"},{"name":"Toms River High School South","address":"55 Hyers Street, Toms River NJ 08753"},{"name":"Trenton Central High School","address":"400 Chambers Street, Trenton NJ 08609"},{"name":"Trinity Hall","address":"101 Corregidor Road, Tinton Falls NJ 07724"},{"name":"Triton Regional High School","address":"250 Schubert Avenue, Runnemede NJ 08078"},{"name":"Union Catholic Regional High School","address":"1600 Martine Avenue, Scotch Plains NJ 07076"},{"name":"Union City High School","address":"2500 Kennedy Blvd., Union City NJ 07087"},{"name":"Union High School","address":"2350 North Third Street, Union NJ 07083"},{"name":"University Academy Charter","address":"275 West Side Avenue, Jersey City NJ 07305"},{"name":"University High School","address":"55 Clinton Place, Newark NJ 07108"},{"name":"Vernon Township High School","address":"1832 County Route 565, Glenwood NJ 07418"},{"name":"Verona High School","address":"151 Fairview Avenue, Verona NJ 07044"},{"name":"Villa Walsh Academy","address":"455 Western Avenue, Morristown NJ 07960"},{"name":"Vineland High School","address":"2880 E. Chestnut Avenue, Vineland NJ 08361"},{"name":"Voorhees High School","address":"256 County Road 513, Glen Gardner NJ 08826"},{"name":"Waldwick High School","address":"155 Wyckoff Avenue, Waldwick NJ 07463"},{"name":"Wall High School","address":"1630 18th Avenue, Wall NJ 07719"},{"name":"Wallington High School","address":"234 Main Avenue, Wallington NJ 07057"},{"name":"Wallkill Valley Regional High School","address":"10 Grumm Road, Hamburg NJ 07419"},{"name":"Wardlaw-Hartridge School","address":"1295 Inman Avenue, Edison NJ 08820"},{"name":"Warren County Technical School","address":"1500 Route 57, Washington NJ 07882"},{"name":"Warren Hills Regional High School","address":"41 Jackson Valley Road, Washington NJ 07882"},{"name":"Washington Township High School","address":"529 Hurffville Cross Keys Road, Sewell NJ 08080"},{"name":"Watchung Hills Reg High School","address":"108 Stirling Road, Warren NJ 07059"},{"name":"Wayne Hills High School","address":"272 Berdan Avenue, Wayne NJ 07470"},{"name":"Wayne Valley High School","address":"551 Valley Road, Wayne NJ 07470"},{"name":"Weehawken High School","address":"53 Liberty Place, Weehawken NJ 07086"},{"name":"Weequahic High School","address":"279 Chancellor Avenue, Newark NJ 07112"},{"name":"West Deptford High School","address":"1600 Old Crown Point Road, Westville NJ 08093"},{"name":"West Essex High School","address":"65 West Greenbrook Rd, North Caldwell NJ 07006"},{"name":"West Milford Township High School","address":"67 Highlander Drive, West Milford NJ 07480"},{"name":"West Morris Central High School","address":"259 Bartley Road, Chester NJ 07930"},{"name":"West Morris Mendham High School","address":"65 East Main Street, Mendham NJ 07945"},{"name":"West Orange High School","address":"51 Conforti Avenue, West Orange NJ 07052"},{"name":"West Side High School","address":"403 South Orange Avenue, Newark NJ 07103"},{"name":"West Windsor-Plainsboro High School North","address":"90 Grovers Mill Road, Plainsboro NJ 08536"},{"name":"West Windsor-Plainsboro High School South","address":"346 Clarksville Road, West Windsor NJ 08550"},{"name":"Westfield High School","address":"550 Dorian Road, Westfield NJ 07090"},{"name":"Westwood Regional High School","address":"701 Ridgewood Road, Washington Twp NJ 07676"},{"name":"Whippany Park High School","address":"165 Whippany Road, Whippany NJ 07981"},{"name":"Wilberforce School","address":"75 Mapleton Rd., Princeton NJ 08540"},{"name":"Wildwood Catholic Academy","address":"1500 Central Avenue, N. Wildwood NJ 08260"},{"name":"Wildwood High School","address":"4300 Pacific Avenue, Wildwood NJ 08260"},{"name":"William L. Dickinson High School","address":"2 Palisade Avenue, Jersey City NJ 07306"},{"name":"Williamstown High School","address":"700 North Tuckahoe Road, Williamstown NJ 08094"},{"name":"Willingboro High School","address":"20 S. John F. Kennedy Way, Willingboro NJ 08046"},{"name":"Winslow Township High School","address":"10 Cooper Folly Road, Atco NJ 08004"},{"name":"Wood-Ridge High School","address":"258 Hackensack Street, Wood-Ridge NJ 07075"},{"name":"Woodbridge Academy Magnet School (MCVTS)","address":"1 Convery Boulevard, Woodbridge NJ 07095"},{"name":"Woodbridge High School","address":"1 Samuel Lupo Place, Woodbridge NJ 07095"},{"name":"Woodbury High School","address":"25 N. Broad Street, Woodbury NJ 08096"},{"name":"Woodstown High School","address":"140 East Avenue, Woodstown NJ 08098"}]'::jsonb; $$;
+with roster as (
+  select item->>'name' as name, nullif(btrim(item->>'address'), '') as address,
+    trim(both '-' from regexp_replace(lower(item->>'name'), '[^a-z0-9]+', '-', 'g')) as slug
+  from jsonb_array_elements(shore_private.njsiaa_roster()) item
+), mapped as (
+  select r.*, coalesce(
+    case r.name
+      when 'Middletown High School North' then 'middletown-north'
+      when 'Middletown High School South' then 'middletown-south'
+      when 'Ocean Academy Charter School' then 'ocean-academy'
+      when 'Ranney School' then 'ranney-school'
+      when 'St. Rose High School' then 'saint-rose'
+      when 'Toms River High School East' then 'toms-river-east'
+      when 'Toms River High School North' then 'toms-river-north'
+      when 'Toms River High School South' then 'toms-river-south'
+      when 'Wall High School' then 'wall-township'
+    end,
+    (select s.slug from public.schools s
+      where lower(s.name) = lower(regexp_replace(r.name, ' (high school|school)$', '', 'i'))
+      limit 1)) as conference_slug
+  from roster r
+)
+update public.opponent_directory d set address = m.address
+from mapped m where d.slug = m.conference_slug and d.source = 'conference';
+
+with roster as (
+  select item->>'name' as name, nullif(btrim(item->>'address'), '') as address,
+    trim(both '-' from regexp_replace(lower(item->>'name'), '[^a-z0-9]+', '-', 'g')) as slug
+  from jsonb_array_elements(shore_private.njsiaa_roster()) item
+)
+insert into public.opponent_directory(slug, name, address, source)
+select r.slug, r.name, r.address, 'njsiaa' from roster r
+where not exists (
+  select 1 from public.opponent_directory d
+  where d.source = 'conference' and (
+    lower(d.name) = lower(regexp_replace(r.name, ' (high school|school)$', '', 'i'))
+    or (r.name, d.slug) in (
+      ('Middletown High School North','middletown-north'),
+      ('Middletown High School South','middletown-south'),
+      ('Ocean Academy Charter School','ocean-academy'),
+      ('Ranney School','ranney-school'),
+      ('St. Rose High School','saint-rose'),
+      ('Toms River High School East','toms-river-east'),
+      ('Toms River High School North','toms-river-north'),
+      ('Toms River High School South','toms-river-south'),
+      ('Wall High School','wall-township')
+    )
+  )
+)
+on conflict (slug) do update set name = excluded.name, address = excluded.address,
+  source = 'njsiaa', updated_at = statement_timestamp()
+where public.opponent_directory.source = 'njsiaa';
+
+-- Move old shared manual rows to the newly seeded school when their names match.
+update public.games g set opponent_directory_slug = n.slug
+from public.opponent_directory old, public.opponent_directory n
+where g.opponent_directory_slug = old.slug and old.source = 'custom'
+  and old.added_by_school is null and n.source = 'njsiaa'
+  and lower(old.name) = lower(n.name);
+delete from public.school_opponents so using public.opponent_directory old,
+  public.opponent_directory n
+where so.opponent_slug = old.slug and old.source = 'custom'
+  and old.added_by_school is null and n.source = 'njsiaa'
+  and lower(old.name) = lower(n.name);
+delete from public.opponent_directory old
+where old.source = 'custom' and old.added_by_school is null
+  and exists (select 1 from public.opponent_directory n
+    where n.source = 'njsiaa' and lower(n.name) = lower(old.name));
+
+-- Give each remaining legacy manual school to each school that used it.
+do $$
+declare old record; owner_slug text; copy_slug text; first_owner text;
+begin
+  for old in select slug, name from public.opponent_directory
+    where source = 'custom' and added_by_school is null
+  loop
+    first_owner := null;
+    for owner_slug in
+      select school_id from public.school_opponents where opponent_slug = old.slug
+      union select school_id from public.games where opponent_directory_slug = old.slug
+      order by 1
+    loop
+      if first_owner is null then
+        first_owner := owner_slug;
+        update public.opponent_directory set added_by_school = owner_slug where slug = old.slug;
+      else
+        copy_slug := left(trim(both '-' from regexp_replace(lower(old.name), '[^a-z0-9]+', '-', 'g')), 54)
+          || '-' || substr(md5(owner_slug || ':' || lower(old.name)), 1, 12);
+        insert into public.opponent_directory(slug,name,source,added_by_school)
+        values (copy_slug,old.name,'custom',owner_slug);
+        update public.games set opponent_directory_slug = copy_slug
+        where school_id = owner_slug and opponent_directory_slug = old.slug;
+      end if;
+    end loop;
+    if first_owner is null then
+      delete from public.opponent_directory where slug = old.slug;
+    end if;
+  end loop;
+end;
+$$;
+
+alter table public.opponent_directory
+  add constraint opponent_directory_source_check
+    check (source in ('conference','njsiaa','custom')),
+  add constraint opponent_directory_owner_check
+    check ((source = 'custom' and added_by_school is not null)
+      or (source in ('conference','njsiaa') and added_by_school is null));
+create unique index opponent_directory_custom_name_unique
+  on public.opponent_directory(added_by_school, lower(name)) where source = 'custom';
+create index opponent_directory_owner_idx on public.opponent_directory(added_by_school)
+  where source = 'custom';
+
+drop policy "Read opponent directory" on public.opponent_directory;
+create policy "Read listed opponents" on public.opponent_directory
+  for select to anon, authenticated
+  using (source in ('conference','njsiaa'));
+create policy "Read own saved schools" on public.opponent_directory
+  for select to authenticated
+  using (source = 'custom' and shore_private.can_manage_schedule(added_by_school));
+revoke all on public.opponent_directory from public, anon, authenticated;
+grant select on public.opponent_directory to anon, authenticated;
+
+-- school_opponents remains for historical references but the app no longer uses it.
+comment on table public.school_opponents is 'Legacy opponent shortlists; no longer used by the app.';
+revoke all on public.school_opponents from public, anon, authenticated;
+
+drop function public.add_school_opponent(text,text);
+
+create or replace function public.import_opponent_directory(p_rows jsonb)
+returns jsonb language plpgsql security definer set search_path = '' as $$
+declare actor_role text; imported integer;
+begin
+  select u.role into actor_role from public.users u
+  where u.email = shore_private.verified_staff_email();
+  if actor_role is distinct from 'site_admin' then
+    raise exception 'Only a site admin can update the school list.' using errcode = '42501';
+  end if;
+  if jsonb_typeof(p_rows) is distinct from 'array' or jsonb_array_length(p_rows) > 2000 then
+    raise exception 'Upload up to 2,000 schools at a time.' using errcode = '22023';
+  end if;
+  if exists (
+    select 1 from jsonb_array_elements(p_rows) item
+    where jsonb_typeof(item) is distinct from 'object'
+      or char_length(btrim(coalesce(item->>'name',''))) not between 1 and 100
+      or coalesce(item->>'slug','') !~ '^[a-z0-9]+(-[a-z0-9]+)*$'
+      or char_length(coalesce(item->>'slug','')) > 80
+      or item->>'slug' <> trim(both '-' from regexp_replace(lower(item->>'name'), '[^a-z0-9]+', '-', 'g'))
+      or char_length(coalesce(item->>'address','')) > 300
+  ) or exists (
+    select 1 from jsonb_array_elements(p_rows) item
+    group by item->>'slug' having count(*) > 1
+  ) then
+    raise exception 'Each row needs a unique school name, matching slug and optional address.' using errcode = '22023';
+  end if;
+  insert into public.opponent_directory(slug,name,address,source)
+  select item->>'slug', btrim(item->>'name'), nullif(btrim(item->>'address'),''),
+    'njsiaa' from jsonb_array_elements(p_rows) item
+  where not exists (
+    select 1 from public.opponent_directory d
+    where d.source = 'conference' and (
+      lower(d.name) = lower(regexp_replace(item->>'name', ' (high school|school)$', '', 'i'))
+      or (item->>'name', d.slug) in (
+        ('Middletown High School North','middletown-north'),
+        ('Middletown High School South','middletown-south'),
+        ('Ocean Academy Charter School','ocean-academy'),
+        ('Ranney School','ranney-school'),
+        ('St. Rose High School','saint-rose'),
+        ('Toms River High School East','toms-river-east'),
+        ('Toms River High School North','toms-river-north'),
+        ('Toms River High School South','toms-river-south'),
+        ('Wall High School','wall-township')
+      )
+    )
+  )
+  on conflict (slug) do update set name = excluded.name, address = excluded.address,
+    updated_at = statement_timestamp()
+  where public.opponent_directory.source = 'njsiaa';
+  get diagnostics imported = row_count;
+  return jsonb_build_object('imported',imported);
+end;
+$$;
+revoke all on function public.import_opponent_directory(jsonb) from public, anon, authenticated;
+grant execute on function public.import_opponent_directory(jsonb) to authenticated;
+
+create function public.save_custom_opponent(p_school text, p_name text, p_address text)
+returns jsonb language plpgsql security definer set search_path = '' as $$
+declare normalized_name text := regexp_replace(btrim(coalesce(p_name,'')), '[[:space:]]+', ' ', 'g');
+  normalized_address text := nullif(btrim(p_address),'');
+  found public.opponent_directory; new_slug text; inserted boolean := false;
+begin
+  if not exists (select 1 from public.users u where u.email = shore_private.verified_staff_email()
+    and (u.role = 'site_admin' or (u.role = 'ad' and u.school_id = p_school))) then
+    raise exception 'This account cannot edit that school.' using errcode = '42501';
+  end if;
+  if not exists (select 1 from public.schools s where s.slug = p_school)
+    or char_length(normalized_name) not between 1 and 100
+    or char_length(coalesce(normalized_address,'')) > 300 then
+    raise exception 'Enter a school name of up to 100 characters and an address of up to 300 characters.'
+      using errcode = '22023';
+  end if;
+  if exists (select 1 from public.schools s where s.slug = p_school
+    and lower(s.name) = lower(regexp_replace(normalized_name, ' (high school|school)$', '', 'i'))) then
+    raise exception 'Your school cannot be its own opponent.' using errcode = '22023';
+  end if;
+  perform pg_advisory_xact_lock(hashtextextended('opponent:' || p_school || ':' || lower(normalized_name),0));
+  select * into found from public.opponent_directory d
+    where lower(d.name) = lower(normalized_name)
+      and (d.source in ('conference','njsiaa')
+        or (d.source = 'custom' and d.added_by_school = p_school))
+    order by case d.source when 'conference' then 0 when 'njsiaa' then 1 else 2 end, d.slug
+    limit 1;
+  if found.slug is null then
+    new_slug := left(trim(both '-' from regexp_replace(lower(normalized_name), '[^a-z0-9]+', '-', 'g')), 54)
+      || '-' || substr(md5(p_school || ':' || lower(normalized_name)),1,12);
+    insert into public.opponent_directory(slug,name,address,source,added_by_school)
+      values(new_slug,normalized_name,normalized_address,'custom',p_school);
+    select * into found from public.opponent_directory where slug = new_slug;
+    inserted := true;
+  end if;
+  return jsonb_build_object('slug',found.slug,'name',found.name,'address',found.address,
+    'source',found.source,'added_by_school',found.added_by_school,'added',inserted);
+end;
+$$;
+revoke all on function public.save_custom_opponent(text,text,text) from public, anon, authenticated;
+grant execute on function public.save_custom_opponent(text,text,text) to authenticated;
+
+create function public.rename_custom_opponent(p_slug text, p_name text, p_address text)
+returns jsonb language plpgsql security definer set search_path = '' as $$
+declare found public.opponent_directory;
+  normalized_name text := regexp_replace(btrim(coalesce(p_name,'')), '[[:space:]]+', ' ', 'g');
+  normalized_address text := nullif(btrim(p_address),'');
+begin
+  select * into found from public.opponent_directory where slug = p_slug for update;
+  if found.slug is null or found.source <> 'custom' then
+    raise exception 'Only your saved schools can be changed.' using errcode = '42501';
+  end if;
+  if not exists (select 1 from public.users u where u.email = shore_private.verified_staff_email()
+    and (u.role = 'site_admin' or (u.role = 'ad' and u.school_id = found.added_by_school))) then
+    raise exception 'Only your saved schools can be changed.' using errcode = '42501';
+  end if;
+  if char_length(normalized_name) not between 1 and 100
+    or char_length(coalesce(normalized_address,'')) > 300 then
+    raise exception 'Check the school name and address.' using errcode = '22023';
+  end if;
+  update public.opponent_directory set name = normalized_name, address = normalized_address,
+    updated_at = statement_timestamp() where slug = p_slug returning * into found;
+  return jsonb_build_object('slug',found.slug,'name',found.name,'address',found.address,
+    'source',found.source,'added_by_school',found.added_by_school);
+end;
+$$;
+revoke all on function public.rename_custom_opponent(text,text,text) from public, anon, authenticated;
+grant execute on function public.rename_custom_opponent(text,text,text) to authenticated;
+
+create function public.delete_custom_opponent(p_slug text)
+returns void language plpgsql security definer set search_path = '' as $$
+declare found public.opponent_directory;
+begin
+  select * into found from public.opponent_directory where slug = p_slug for update;
+  if found.slug is null or found.source <> 'custom' then
+    raise exception 'Only your saved schools can be deleted.' using errcode = '42501';
+  end if;
+  if not exists (select 1 from public.users u where u.email = shore_private.verified_staff_email()
+    and (u.role = 'site_admin' or (u.role = 'ad' and u.school_id = found.added_by_school))) then
+    raise exception 'Only your saved schools can be deleted.' using errcode = '42501';
+  end if;
+  delete from public.school_opponents where opponent_slug = p_slug;
+  delete from public.opponent_directory where slug = p_slug;
+end;
+$$;
+revoke all on function public.delete_custom_opponent(text) from public, anon, authenticated;
+grant execute on function public.delete_custom_opponent(text) to authenticated;
+
+ drop function shore_private.njsiaa_roster();

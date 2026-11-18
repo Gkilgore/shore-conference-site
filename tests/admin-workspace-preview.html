@@ -24,6 +24,13 @@ for (const script of markup.querySelectorAll('script[src]')) {
   });
 }
 const schools = ['colts-neck', 'marlboro', 'shore-regional'].map(slug => ({slug, name: shoreSchools[slug].name}));
+const opponentDirectory = [
+  {slug:'colts-neck',name:'Colts Neck',address:'59 Five Points Road, Colts Neck NJ 07722',source:'conference',added_by_school:null},
+  {slug:'marlboro',name:'Marlboro',address:'95 North Main Street, Marlboro NJ 07746',source:'conference',added_by_school:null},
+  {slug:'shore-regional',name:'Shore Regional',address:'West Long Branch NJ 07764',source:'conference',added_by_school:null},
+  {slug:'eastview-test',name:'Eastview Test School',address:'Eastview NJ 07700',source:'custom',added_by_school:'marlboro'},
+  {slug:'abraham-clark-high-school',name:'Abraham Clark High School',address:'Roselle NJ 07203',source:'njsiaa',added_by_school:null},
+];
 const accounts = [
   {name:'Zoe Example', email:'zoe@example.org', role:'ad', school_id:'marlboro', access_revision:1},
   {name:'Alex Example', email:'alex@example.org', role:'ad', school_id:'colts-neck', access_revision:1},
@@ -93,13 +100,20 @@ const client = {
   functions: {invoke: async (name, options) => { transportationEmails.push({name,options}); return {data:{sent:true}}; }},
   from(table) {
     if (table === 'school_social_accounts') return socialTable();
-    const result = {data: table === 'schools' ? schools : table === 'conference_documents' ? documents
+    const result = {data: table === 'schools' ? schools : table === 'opponent_directory' ? opponentDirectory
+      : table === 'conference_documents' ? documents
       : table === 'games' ? previewGames : table === 'teams' ? listedTeams : []};
     const query = {then: callback => Promise.resolve(result).then(callback)};
     for (const name of ['select','order','eq','maybeSingle','insert','delete']) query[name] = () => query;
     return query;
   },
   async rpc(name, args) {
+    if (name === 'save_custom_opponent') {
+      const item = {slug:'preview-' + opponentDirectory.length,name:args.p_name,address:args.p_address,
+        source:'custom',added_by_school:args.p_school};
+      opponentDirectory.push(item);
+      return {data:{...item,added:true}};
+    }
     if (name === 'list_staff_access') return {data:{actor_role:'site_admin',accounts}};
     if (name === 'review_schedule_publication' && showTeams) return {data:previewGroups};
     if (name === 'game_link_status' && showTeams) return {data:previewGames.map((game, index) => ({game_id:game.id, linked:index % 3 !== 1, reason:index % 3 !== 1 ? 'On the conference calendar' : 'Time doesn’t match'}))};

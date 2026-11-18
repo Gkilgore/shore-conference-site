@@ -21,7 +21,9 @@ function startStaffSchedule(client, invite) {
   const accessTab = document.getElementById('staff-access-tab');
   const accessPanel = document.getElementById('staff-access-workspace');
   let opponents;
-  const access = startStaffAccess(client, invite, () => schools, () => opponents?.directory() ?? []);
+  let opponentPicker;
+  const access = startStaffAccess(client, invite, () => schools,
+    () => (opponents?.directory() ?? []).filter(item => item.source !== 'custom'));
   const tournamentsTab = document.getElementById('staff-tournaments-tab');
   // Tournament tools are off for now, except the conference admin view uploading a finished schedule.
   // selectView shows the tab for that view only.
@@ -79,7 +81,7 @@ function startStaffSchedule(client, invite) {
     currentSchool, coaches: () => coachList.coaches(), onImported: () => coachList.load(),
   });
   const importer = startStaffImport(client, {
-    currentSchool, schools: () => schools, opponents: () => opponents.entries(), existingGames: () => allGames,
+    currentSchool, schools: () => schools, opponents: () => opponents.directory(), existingGames: () => allGames,
     onImported: date => { feedback(''); gamesNext.hidden = false; loadGames(date); },
     post: ids => publication.post(ids),
     sendTransportationEmail: id => transportation.sendForSavedGame(id),
@@ -140,8 +142,21 @@ function startStaffSchedule(client, invite) {
   const saveButton = form.querySelector('#save-draft');
   const venues = startStaffVenues(client, { currentSchool, schools: () => schools, fields });
   opponents = startStaffOpponents(client, {
-    currentSchool, activeSchools: () => schools,
-    onChanged: () => syncOpponentOptions(),
+    currentSchool, onChanged: () => opponentPicker?.refresh(),
+  });
+  opponentPicker = startStaffOpponentPicker({
+    currentSchool, directory: () => opponents.directory(),
+    saveSchool: (name, address) => opponents.saveSchool(name, address),
+    onSelect: item => {
+      const selected = opponentSelection(item);
+      fields.opponent_school_id.value = selected.opponent_school_id ?? '';
+      fields.opponent_directory_slug.value = selected.opponent_directory_slug ?? '';
+      fields.opponent_name.value = selected.opponent_name ?? '';
+      if (item) {
+        fields.location.value = opponentAwayVenue(fields.home_away.value, fields.location.value, item);
+        venues.sync(fields.location.value);
+      }
+    },
   });
   let canEdit = invite.role !== 'conference_office';
   const options = (schools) => schools.map(school => new Option(school.name, school.slug));
@@ -318,43 +333,16 @@ function startStaffSchedule(client, invite) {
     else status.textContent = 'No school is assigned to this account.';
   }
 
-  function syncOpponent() {
-    const choice = fields.opponent_school_id.value;
-    const other = choice === '__other';
-    const slug = choice.startsWith('directory:')
-      ? choice.slice('directory:'.length)
-      : choice && !other ? choice : '';
-    fields.opponent_directory_slug.value = slug;
-    document.getElementById('opponent-other').hidden = !other;
-    fields.opponent_name.required = other;
-    fields.opponent_name.disabled = !other;
-    if (!other) fields.opponent_name.value = '';
-  }
-
   function syncOpponentOptions(game = activeGame) {
-    if (!fields?.opponent_school_id || !opponents) return;
-    const school = currentSchool();
-    const entries = opponents.entries();
     const savedSlug = game?.opponent_directory_slug || game?.opponent_school_id;
-    if (savedSlug && !entries.some(item => item.slug === savedSlug)) {
-      const saved = opponents.entry(savedSlug) ?? schools.find(item => item.slug === savedSlug);
-      if (saved) entries.push({ slug: saved.slug, name: saved.name });
-    }
-    const choices = [new Option('Choose an opponent', '')];
-    for (const item of entries.filter(entry => entry.slug !== school?.slug)) {
-      const hasSchoolProfile = schools.some(candidate => candidate.slug === item.slug);
-      const isMember = schools.some(candidate => candidate.slug === item.slug && candidate.is_conference_member);
-      choices.push(new Option(item.name + (hasSchoolProfile ? ' (school profile)' : ' (directory only)'),
-        isMember ? item.slug : 'directory:' + item.slug));
-    }
-    choices.push(new Option('Other opponent', '__other'));
-    fields.opponent_school_id.replaceChildren(...choices);
-    const selected = savedSlug
-      ? schools.some(item => item.slug === savedSlug && item.is_conference_member) ? savedSlug : 'directory:' + savedSlug
-      : game?.opponent_name ? '__other' : fields.opponent_school_id.value;
-    fields.opponent_school_id.value = selected;
-    if (game?.opponent_name && selected === '__other') fields.opponent_name.value = game.opponent_name;
-    syncOpponent();
+    const item = savedSlug
+      ? opponents.entry(savedSlug) ?? (schools.find(school => school.slug === savedSlug
+        && school.is_conference_member)
+        ? { ...schools.find(school => school.slug === savedSlug), source: 'conference' }
+        : null) ?? (game?.opponent_name
+        ? { slug: savedSlug, name: game.opponent_name, source: 'custom' } : null)
+      : game?.opponent_name ? { name: game.opponent_name } : null;
+    opponentPicker.set(item);
   }
 
   function edit(game) {
@@ -1130,9 +1118,11 @@ function startStaffSchedule(client, invite) {
   editorDialog.addEventListener('cancel', event => { event.preventDefault(); askToLeave(leaveEditor); });
   preview.onchange = selectView;
   selector.onchange = selectSchool;
-  fields.opponent_school_id.onchange = syncOpponent;
   fields.home_away.onchange = () => {
     document.getElementById('game-transportation-fieldset').hidden = fields.home_away.value !== 'Away';
+    fields.location.value = opponentAwayVenue(fields.home_away.value, fields.location.value,
+      opponentPicker.selected());
+    venues.sync(fields.location.value);
   };
   closeEditor.onclick = () => askToLeave(leaveEditor);
   form.oninput = () => { dirty = true; syncStatusHint(); };
@@ -1212,24 +1202,20 @@ function startStaffSchedule(client, invite) {
       return;
     }
     if (opponents.state() !== 'ready') {
-      formStatus.textContent = 'The opponent list could not load. Refresh before saving this game.';
+      formStatus.textContent = 'Schools could not load. Refresh before saving this game.';
       return;
     }
     const input = Object.fromEntries(new FormData(form));
     for (const name of Object.keys(input)) {
       if (typeof input[name] === 'string') input[name] = input[name].trim() || null;
     }
-    const opponentChoice = fields.opponent_school_id.value;
-    const directorySlug = opponentChoice.startsWith('directory:')
-      ? opponentChoice.slice('directory:'.length)
-      : opponentChoice && opponentChoice !== '__other' ? opponentChoice : null;
-    const opponentProfile = schools.find(item => item.slug === directorySlug);
-    const memberOpponent = opponentProfile?.is_conference_member ? opponentProfile : null;
-    input.opponent_school_id = memberOpponent?.slug ?? null;
-    input.opponent_directory_slug = directorySlug;
-    input.opponent_name = opponentChoice === '__other'
-      ? fields.opponent_name.value.trim() || null
-      : memberOpponent ? null : opponents.entry(directorySlug)?.name ?? opponentProfile?.name ?? null;
+    const chosenOpponent = opponentPicker.selected();
+    if (!chosenOpponent) {
+      formStatus.textContent = 'Choose a school from the results.';
+      document.getElementById('game-opponent-search').focus();
+      return;
+    }
+    Object.assign(input, opponentSelection(chosenOpponent));
     input.start_time = startTimeTbd.checked ? null : fields.start_time.value || null;
     input.school_id = selector.value;
     input.id = activeGame?.id ?? null;

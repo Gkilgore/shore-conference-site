@@ -1,211 +1,198 @@
-// Manages each school's opponent shortlist and adds non-conference schools by name.
-function startStaffOpponents(client, { currentSchool, activeSchools, onChanged = () => {} }) {
+// Loads searchable opponents and manages each school's private saved schools.
+function startStaffOpponents(client, { currentSchool, onChanged = () => {} }) {
   const status = document.getElementById('opponents-status');
-  const nameInput = document.getElementById('opponent-name');
   const addForm = document.getElementById('opponent-add-form');
   const list = document.getElementById('opponent-list');
-  const submit = addForm.querySelector('button[type="submit"]');
-  let directory = [];
-  let selected = new Set();
-  let directoryState = 'loading';
-  let request = 0;
-  let saving = false;
-  let active = true;
-
-  function getDirectoryEntry(slug) {
-    return directory.find(item => item.slug === slug) ?? null;
-  }
-
-  function hasSchoolProfile(slug) {
-    return activeSchools().some(item => item.slug === slug);
-  }
-
-  function entries() {
-    return [...selected].map(getDirectoryEntry).filter(Boolean)
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }
+  const deleteDialog = document.getElementById('delete-opponent-dialog');
+  const deleteSummary = document.getElementById('delete-opponent-summary');
+  const deleteConfirm = document.getElementById('delete-opponent-confirm');
+  let directory = [], state = 'loading', request = 0, active = true, deleting = null;
+  const entry = slug => directory.find(item => item.slug === slug) ?? null;
+  const entries = () => directory.filter(item => item.source === 'custom'
+    && item.added_by_school === currentSchool()?.slug).sort((a, b) => a.name.localeCompare(b.name));
+  const errorText = (error, fallback) => error?.code === '42501'
+    ? 'You do not have access to change this school.'
+    : error?.code === '23505' ? 'That school is already saved.'
+    : error?.code === '22023' ? error.message : fallback;
 
   function render() {
-    const school = currentSchool();
-    if (!school) return;
-    submit.disabled = saving;
-    const ownEntries = entries().filter(item => item.slug !== school.slug);
-    list.replaceChildren(...(ownEntries.length ? ownEntries.map(item => {
+    const own = entries();
+    list.replaceChildren(...(own.length ? own.map(item => {
       const row = document.createElement('li');
       const label = document.createElement('span');
-      label.className = 'opponent-entry-name';
-      label.textContent = item.name;
-      const identity = document.createElement('span');
-      identity.className = 'opponent-entry-identity';
-      identity.textContent = hasSchoolProfile(item.slug) ? 'School profile' : 'Directory only';
+      label.className = 'opponent-entry-details';
+      const name = document.createElement('strong');
+      name.textContent = item.name;
+      label.append(name);
+      if (item.address) {
+        const address = document.createElement('small');
+        address.textContent = item.address;
+        label.append(address);
+      }
+      const rename = document.createElement('button');
+      rename.type = 'button';
+      rename.className = 'button secondary';
+      rename.textContent = 'Rename';
+      rename.setAttribute('aria-label', 'Rename ' + item.name);
+      rename.onclick = () => editRow(row, item);
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'button secondary';
-      remove.textContent = 'Remove';
-      remove.setAttribute('aria-label', 'Remove ' + item.name + ' from your opponent list');
-      remove.onclick = () => removeOpponent(item);
-      row.append(label, identity, remove);
+      remove.textContent = 'Delete';
+      remove.setAttribute('aria-label', 'Delete ' + item.name);
+      remove.onclick = () => {
+        deleting = item;
+        deleteSummary.textContent = 'Delete ' + item.name + '? Games already saved keep the school’s name.';
+        deleteDialog.showModal();
+      };
+      row.append(label, rename, remove);
       return row;
     }) : [Object.assign(document.createElement('li'), {
-      className: 'staff-empty',
-      textContent: directoryState === 'ready' ? 'Your opponent list is empty.' : 'Your opponent list could not load.',
+      className: 'staff-empty', textContent: 'Schools you add while entering games show up here.',
     })]));
     onChanged();
   }
 
-  async function loadDirectory(force = false) {
-    if (directoryState === 'ready' && !force) return true;
-    directoryState = 'loading';
-    try {
-      const { data, error } = await client.from('opponent_directory').select('slug,name').order('name');
-      if (!active) return false;
+  function editRow(row, item) {
+    const form = document.createElement('form');
+    form.className = 'filters opponent-rename-form';
+    const name = document.createElement('input');
+    name.value = item.name;
+    name.maxLength = 100;
+    name.required = true;
+    name.setAttribute('aria-label', 'School name');
+    const address = document.createElement('input');
+    address.value = item.address ?? '';
+    address.maxLength = 300;
+    address.setAttribute('aria-label', 'Address, optional');
+    const save = document.createElement('button');
+    save.type = 'submit';
+    save.className = 'button primary';
+    save.textContent = 'Save';
+    const cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.className = 'button secondary';
+    cancel.textContent = 'Cancel';
+    cancel.onclick = render;
+    form.append(name, address, save, cancel);
+    form.onsubmit = async event => {
+      event.preventDefault();
+      save.disabled = true;
+      const { error } = await client.rpc('rename_custom_opponent', {
+        p_slug: item.slug, p_name: name.value.trim(), p_address: address.value.trim() || null,
+      });
+      if (!active) return;
       if (error) {
-        directoryState = 'error';
-        status.textContent = ['42P01', 'PGRST205'].includes(error.code)
-          ? 'The opponent list is not set up yet. Ask the site admin to apply the opponent directory migration.'
-          : 'The opponent list could not load. Check your connection or access, then try again.';
-        return false;
+        status.textContent = errorText(error, 'The school could not be changed. Try again.');
+        save.disabled = false;
+      } else {
+        await loadDirectory(true);
+        render();
+        status.textContent = 'School updated.';
       }
+    };
+    row.replaceChildren(form);
+    name.focus();
+  }
+
+  async function loadDirectory(force = false) {
+    if (state === 'ready' && !force) return true;
+    const current = ++request;
+    state = 'loading';
+    try {
+      const { data, error } = await client.from('opponent_directory')
+        .select('slug,name,address,source,added_by_school').order('name');
+      if (!active || current !== request) return false;
+      if (error) throw error;
       directory = data ?? [];
-      directoryState = 'ready';
+      state = 'ready';
+      onChanged();
       return true;
     } catch {
-      if (!active) return false;
-      directoryState = 'error';
-      status.textContent = 'The opponent list could not load. Check your connection, then try again.';
+      if (!active || current !== request) return false;
+      state = 'error';
+      status.textContent = 'Schools could not load. Check your connection and try again.';
       return false;
     }
   }
 
   async function load() {
-    const school = currentSchool();
-    const current = ++request;
-    selected = new Set();
-    nameInput.value = '';
-    list.replaceChildren();
-    if (!school) return false;
-    status.textContent = 'Loading your opponent list…';
-    if (!await loadDirectory()) {
-      if (active && current === request) render();
-      return false;
-    }
-    try {
-      const { data, error } = await client.from('school_opponents')
-        .select('opponent_slug').eq('school_id', school.slug);
-      if (!active || current !== request) return false;
-      if (error) {
-        status.textContent = 'Your opponent list could not load. Check your access, then try again.';
-        render();
-        return false;
-      }
-      selected = new Set((data ?? []).map(item => item.opponent_slug));
-      status.textContent = '';
-      render();
-      return true;
-    } catch {
-      if (!active || current !== request) return false;
-      status.textContent = 'Your opponent list could not load. Check your connection, then try again.';
-      render();
-      return false;
-    }
+    status.textContent = 'Loading schools…';
+    const ready = await loadDirectory(true);
+    if (!active) return false;
+    if (ready) status.textContent = '';
+    render();
+    return ready;
   }
 
-  async function addOpponent() {
+  async function saveSchool(name, address = '') {
     const school = currentSchool();
-    const name = nameInput.value.trim().replace(/\s+/g, ' ');
-    if (!school) return;
-    if (!name) {
-      status.textContent = 'Enter a school name to add it to your list.';
-      return;
+    const cleaned = name.trim().replace(/\s+/g, ' ');
+    if (!school || !cleaned) {
+      status.textContent = 'Enter a school name.';
+      return null;
     }
-    if (name.length > 100) {
-      status.textContent = 'School names must be 100 characters or fewer.';
-      return;
-    }
-    if (name.toLocaleLowerCase() === school.name.trim().toLocaleLowerCase()) {
+    if (cleaned.toLocaleLowerCase() === school.name.trim().toLocaleLowerCase()) {
       status.textContent = 'Your school cannot be its own opponent.';
-      return;
+      return null;
     }
-    if (entries().some(item => item.name.trim().toLocaleLowerCase() === name.toLocaleLowerCase())) {
-      status.textContent = name + ' is already on your opponent list.';
-      return;
-    }
-
-    saving = true;
-    submit.disabled = true;
     try {
-      const { data, error } = await client.rpc('add_school_opponent', {
-        p_school: school.slug,
-        p_name: name,
+      const { data, error } = await client.rpc('save_custom_opponent', {
+        p_school: school.slug, p_name: cleaned, p_address: address.trim() || null,
       });
-      if (!active) return;
+      if (!active) return null;
       if (error) {
-        if (['42883', '42P01', 'PGRST202', 'PGRST205'].includes(error.code)) {
-          status.textContent = 'Manual opponent lists are not set up yet. Ask the site admin to apply the opponent directory migration.';
-        } else if (error.code === '42501') {
-          status.textContent = 'You do not have permission to change this school’s opponent list.';
-        } else if (error.code === '22023') {
-          status.textContent = error.message || 'Check the school name and try again.';
-        } else {
-          status.textContent = 'The opponent was not added. Check your connection and try again.';
-        }
-        return;
+        status.textContent = errorText(error, 'The school could not be saved. Try again.');
+        return null;
       }
-      nameInput.value = '';
       await loadDirectory(true);
-      const refreshed = await load();
-      status.textContent = data?.added
-        ? (refreshed ? data.name + ' was added to your opponent list.'
-          : data.name + ' was added, but the list could not refresh. Reload the tab to see it.')
-        : data?.name + ' is already on your opponent list.';
+      render();
+      status.textContent = data.added ? data.name + ' was saved.' : data.name + ' is ready to select.';
+      return entry(data.slug) ?? data;
     } catch {
-      if (active) status.textContent = 'The opponent was not added. Check your connection and try again.';
-    } finally {
-      if (active) {
-        saving = false;
-        submit.disabled = false;
-      }
+      if (active) status.textContent = 'The school could not be saved. Try again.';
+      return null;
     }
   }
 
-  async function removeOpponent(item) {
-    const school = currentSchool();
-    if (!school || !selected.has(item.slug)) return;
-    try {
-      const { error } = await client.from('school_opponents').delete()
-        .eq('school_id', school.slug).eq('opponent_slug', item.slug);
-      if (!active) return;
-      if (error) {
-        status.textContent = 'That school could not be removed. Refresh the list and try again.';
-        return;
-      }
-      await load();
-      status.textContent = item.name + ' was removed. Games already saved keep their opponent.';
-    } catch {
-      if (active) status.textContent = 'That school could not be removed. Check your connection and try again.';
+  addForm.onsubmit = async event => {
+    event.preventDefault();
+    const saved = await saveSchool(document.getElementById('opponent-name').value,
+      document.getElementById('opponent-address').value);
+    if (saved) addForm.reset();
+  };
+  deleteConfirm.onclick = async () => {
+    if (!deleting) return;
+    deleteConfirm.disabled = true;
+    const item = deleting;
+    const { error } = await client.rpc('delete_custom_opponent', { p_slug: item.slug });
+    deleteConfirm.disabled = false;
+    if (!active) return;
+    if (error) {
+      status.textContent = errorText(error, 'The school could not be deleted. Try again.');
+      return;
     }
-  }
-
-  addForm.onsubmit = event => { event.preventDefault(); return addOpponent(); };
+    deleting = null;
+    deleteDialog.close();
+    await loadDirectory(true);
+    render();
+    status.textContent = item.name + ' was deleted. Saved games keep its name.';
+  };
 
   return {
-    load,
-    loadDirectory,
-    entries,
-    directory: () => directory,
-    entry: getDirectoryEntry,
-    state: () => directoryState,
+    load, loadDirectory, saveSchool, entries, entry, directory: () => directory, state: () => state,
     reset() {
       request++;
-      selected = new Set();
-      nameInput.value = '';
+      directory = [];
+      state = 'loading';
+      addForm.reset();
       list.replaceChildren();
       status.textContent = '';
     },
     stop() {
       active = false;
       request++;
-      addForm.onsubmit = null;
+      addForm.onsubmit = deleteConfirm.onclick = null;
       list.replaceChildren();
     },
   };
