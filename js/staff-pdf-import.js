@@ -11,10 +11,10 @@
   const fileInput = document.getElementById('import-file');
   if (!fileInput) return;
 
-  // Store original change handler and wrap it
+  // Wrap the onchange handler to intercept PDF files
   const originalOnChange = fileInput.onchange;
   
-  fileInput.addEventListener('change', async function(event) {
+  fileInput.onchange = async function(event) {
     const files = Array.from(this.files);
     const csvFiles = files.filter(f => /\.csv$/i.test(f.name));
     const pdfFiles = files.filter(f => /\.pdf$/i.test(f.name));
@@ -46,10 +46,8 @@
     // Trigger original change handler (which will trigger the import preview)
     if (originalOnChange) {
       originalOnChange.call(this, event);
-    } else {
-      this.dispatchEvent(new Event('change', { bubbles: true }));
     }
-  });
+  };
 
   async function convertPdfsToCSV(pdfFiles) {
     const convertedFiles = [];
