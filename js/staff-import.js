@@ -5,7 +5,7 @@ const importAliases = {
   game_date: 'date', time: 'start_time', start: 'start_time', 'home/away': 'home_away', home_or_away: 'home_away', 'h/a': 'home_away',
   venue: 'location', facility: 'location', 'bus departure': 'bus_departure', bus: 'bus_departure', pickup: 'pickup_location',
   'early dismissal': 'early_dismissal_time', 'early dismissal time': 'early_dismissal_time',
-  return: 'return_time', opponents: 'opponent', transportation_notes: 'transport_notes', game_notes: 'notes',
+  return: 'return_time', opponents: 'opponent', 'opponents/title': 'opponent', transportation_notes: 'transport_notes', game_notes: 'notes',
 };
 
 function parseCsv(text) {
