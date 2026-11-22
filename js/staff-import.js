@@ -507,6 +507,7 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     // Home/Away - editable
     const haTd = document.createElement('td');
     const haSelect = document.createElement('select');
+    haSelect.className = 'import-home-away';
     haSelect.append(...['Home', 'Away'].map(val => {
       const opt = document.createElement('option');
       opt.value = val;
