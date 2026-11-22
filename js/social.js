@@ -29,21 +29,48 @@ function loadInstagramEmbeds() {
 }
 
 let stopSocialScrolling = [];
-function autoScrollSocial(list, button) {
+function autoScrollSocial(list, controls) {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const label = list.getAttribute('aria-label');
+  const makeButton = (text, description) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'button secondary social-scroll-button';
+    button.textContent = text;
+    button.setAttribute('aria-label', description);
+    return button;
+  };
+  const previous = makeButton('‹', 'Previous ' + label);
+  const button = makeButton('', '');
+  const next = makeButton('›', 'Next ' + label);
+  controls.replaceChildren(previous, button, next);
   let paused = reducedMotion.matches;
   let hovering = false;
   let focused = false;
   const updateButton = () => {
-    button.textContent = (paused ? 'Play ' : 'Pause ') + list.getAttribute('aria-label') + ' scrolling';
+    button.textContent = paused ? 'Play' : 'Pause';
+    button.setAttribute('aria-label', button.textContent + ' ' + label + ' scrolling');
   };
   const onClick = () => { paused = !paused; updateButton(); };
+  const move = direction => {
+    const max = list.scrollWidth - list.clientWidth;
+    if (max <= 0) return;
+    const step = list.children[1]?.offsetLeft - list.children[0]?.offsetLeft || list.clientWidth;
+    const target = direction > 0
+      ? (list.scrollLeft >= max - 1 ? 0 : Math.min(list.scrollLeft + step, max))
+      : (list.scrollLeft <= 1 ? max : Math.max(list.scrollLeft - step, 0));
+    list.scrollTo({ left: target, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+  };
+  const onPrevious = () => { paused = true; updateButton(); move(-1); };
+  const onNext = () => { paused = true; updateButton(); move(1); };
   const onEnter = () => { hovering = true; };
   const onLeave = () => { hovering = false; };
   const onFocus = () => { focused = true; };
   const onBlur = event => { if (!list.contains(event.relatedTarget)) focused = false; };
   const onMotionChange = event => { if (event.matches) { paused = true; updateButton(); } };
   button.addEventListener('click', onClick);
+  previous.addEventListener('click', onPrevious);
+  next.addEventListener('click', onNext);
   list.addEventListener('pointerenter', onEnter);
   list.addEventListener('pointerleave', onLeave);
   list.addEventListener('focusin', onFocus);
@@ -52,15 +79,13 @@ function autoScrollSocial(list, button) {
   updateButton();
   const timer = setInterval(() => {
     if (paused || hovering || focused || document.hidden || !list.clientWidth) return;
-    const max = list.scrollWidth - list.clientWidth;
-    if (max <= 0) return;
-    const step = list.children[1]?.offsetLeft - list.children[0]?.offsetLeft || list.clientWidth;
-    list.scrollTo({ left: list.scrollLeft >= max - 1 ? 0 : Math.min(list.scrollLeft + step, max),
-      behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+    move(1);
   }, 5000);
   return () => {
     clearInterval(timer);
     button.removeEventListener('click', onClick);
+    previous.removeEventListener('click', onPrevious);
+    next.removeEventListener('click', onNext);
     list.removeEventListener('pointerenter', onEnter);
     list.removeEventListener('pointerleave', onLeave);
     list.removeEventListener('focusin', onFocus);
@@ -85,14 +110,9 @@ function renderSocialAccounts(host, accounts) {
     if (!group.length) continue;
     const links = node('ul', 'social-links');
     if (group.length >= 4) {
-      linkGroups.push(node('p', 'social-scroll-hint', 'Scroll sideways for more ' + group[0].label + ' accounts.'));
-      const button = node('button', 'button secondary social-scroll-control');
-      button.type = 'button';
-      linkGroups.push(button);
       links.classList.add('social-scroll');
       links.setAttribute('tabindex', '0');
       links.setAttribute('aria-label', group[0].label + ' accounts');
-      scrollGroups.push([links, button]);
     }
     for (const account of group) {
       const link = node('a', 'button secondary', account.name + ' · ' + account.label + ' ' + account.handle);
@@ -105,19 +125,24 @@ function renderSocialAccounts(host, accounts) {
       links.append(item);
     }
     linkGroups.push(links);
+    if (group.length >= 4) {
+      const controls = node('div', 'social-scroll-controls');
+      linkGroups.push(controls);
+      scrollGroups.push([links, controls]);
+    }
   }
   document.getElementById('social-links').replaceChildren(...linkGroups);
   const instagramAccounts = accounts.filter(account => account.platform === 'instagram');
   const scrollInstagram = instagramAccounts.length >= 4;
-  document.getElementById('social-instagram-hint').hidden = !scrollInstagram;
-  const instagramButton = document.getElementById('social-instagram-scroll');
-  instagramButton.hidden = !scrollInstagram;
+  const instagramControls = document.getElementById('social-instagram-controls');
+  instagramControls.hidden = !scrollInstagram;
+  instagramControls.replaceChildren();
   host.classList.toggle('social-scroll', scrollInstagram);
   if (scrollInstagram) {
     host.setAttribute('tabindex', '0');
     host.setAttribute('role', 'region');
     host.setAttribute('aria-label', 'Instagram accounts');
-    scrollGroups.push([host, instagramButton]);
+    scrollGroups.push([host, instagramControls]);
   } else {
     host.removeAttribute('tabindex');
     host.removeAttribute('role');

@@ -907,12 +907,13 @@ textarea { display: block; resize: vertical; }
 .social-embed blockquote { margin: 0; }
 .social-links { display: flex; flex-wrap: wrap; gap: 0.65rem; margin: 0 0 0.75rem; padding: 0; list-style: none; }
 .social-links .button { overflow-wrap: anywhere; }
-.social-scroll { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 1.5rem) / 3); grid-template-columns: none; overflow-x: auto; overscroll-behavior-x: contain; }
-.social-links.social-scroll { gap: 0.75rem; }
+.social-scroll { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 1.5rem) / 3); grid-template-columns: none; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; }
+.social-scroll::-webkit-scrollbar { display: none; }
+.social-links.social-scroll { gap: 0.75rem; margin-bottom: 0; }
 .social-links.social-scroll .button { width: 100%; }
 .social-scroll:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
-.social-scroll-hint { margin: 0 0 0.4rem; font-size: 0.92rem; color: var(--muted); }
-.social-scroll-control { margin-bottom: 0.5rem; }
+.social-scroll-controls { display: flex; justify-content: flex-end; gap: 0.4rem; margin: 0.5rem 0 0.75rem; }
+.social-scroll-button { min-width: 2.75rem; min-height: 2.75rem; padding: 0.3rem 0.7rem; }
 @media (max-width: 640px) {
   .social-scroll { grid-auto-columns: 85%; }
 }

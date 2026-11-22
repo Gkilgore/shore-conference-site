@@ -151,8 +151,7 @@ test('public accounts auto-scroll by platform, pause accessibly, and reset when 
   }
   const elements = {
     'social-links': new PublicElement(),
-    'social-instagram-hint': new PublicElement(),
-    'social-instagram-scroll': new PublicElement('button'),
+    'social-instagram-controls': new PublicElement(),
   };
   const document = { createElement: tag => new PublicElement(tag), getElementById: id => elements[id] || null };
   class IntersectionObserver { observe() {} }
@@ -180,9 +179,9 @@ test('public accounts auto-scroll by platform, pause accessibly, and reset when 
   assert.equal(host.children.length, 4);
   assert.equal(host.classList.contains('social-scroll'), true);
   assert.equal(host.attributes.tabindex, '0');
-  assert.equal(elements['social-instagram-hint'].hidden, false);
-  const [hint, facebookButton, facebook, x] = elements['social-links'].children;
-  assert.match(hint.textContent, /Facebook/);
+  assert.equal(elements['social-instagram-controls'].hidden, false);
+  const [facebook, facebookControls, x] = elements['social-links'].children;
+  const facebookButton = facebookControls.children[1];
   assert.equal(facebook.classList.contains('social-scroll'), true);
   assert.equal(facebook.children.length, 4);
   assert.equal(x.classList.contains('social-scroll'), false);
@@ -200,7 +199,17 @@ test('public accounts auto-scroll by platform, pause accessibly, and reset when 
   host.scrollLeft = 300;
   tickInstagram();
   assert.equal(host.scrollLeft, 0);
-  const button = elements['social-instagram-scroll'];
+  const [previous, button, next] = elements['social-instagram-controls'].children;
+  assert.equal(previous.attributes['aria-label'], 'Previous Instagram accounts');
+  assert.equal(next.attributes['aria-label'], 'Next Instagram accounts');
+  next.events.click();
+  assert.equal(host.scrollLeft, 100);
+  assert.equal(button.textContent, 'Play');
+  tickInstagram();
+  assert.equal(host.scrollLeft, 100);
+  previous.events.click();
+  assert.equal(host.scrollLeft, 0);
+  button.events.click();
   button.events.click();
   assert.match(button.textContent, /^Play/);
   tickInstagram();
@@ -226,13 +235,20 @@ test('public accounts auto-scroll by platform, pause accessibly, and reset when 
   assert.equal(host.classList.contains('social-scroll'), false);
   assert.equal(host.attributes.tabindex, undefined);
   assert.equal(host.scrollLeft, 0);
-  assert.equal(elements['social-instagram-hint'].hidden, true);
-  assert.equal(button.hidden, true);
+  assert.equal(elements['social-instagram-controls'].hidden, true);
   assert.equal(timers.size, 1);
   assert.equal(facebookButton.events.click, undefined);
-  assert.match(elements['social-links'].children[0].textContent, /X/);
-  assert.match(elements['social-links'].children[1].textContent, /^Play/);
-  assert.equal(elements['social-links'].children[2].classList.contains('social-scroll'), true);
+  const [xScroller, xControls] = elements['social-links'].children;
+  assert.equal(xScroller.classList.contains('social-scroll'), true);
+  assert.match(xControls.children[1].textContent, /^Play/);
+  xScroller.clientWidth = 300;
+  xScroller.scrollWidth = 600;
+  xScroller.scrollLeft = 0;
+  xControls.children[0].events.click();
+  assert.equal(xScroller.scrollLeft, 300);
+  assert.equal(xScroller.lastScroll.behavior, 'auto');
+  [...timers.values()][0]();
+  assert.equal(xScroller.scrollLeft, 300);
 });
 
 function mountStaff({ saved = [], error = null, writeError = null } = {}) {
