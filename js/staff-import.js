@@ -247,8 +247,8 @@ async function previewScheduleFiles(files, check, teamInfo) {
     
     // Handle PDF files: attempt extraction via PDF.js if available
     if (/\.pdf$/i.test(file.name)) {
-      if (!window.pdfjsLib) {
-        errors.push(file.name + ': PDF reader not available. Try uploading as CSV instead.');
+      if (typeof window === 'undefined' || !window.pdfjsLib) {
+        errors.push(file.name + ': PDF could not be converted. Try uploading as CSV instead.');
         continue;
       }
       try {
@@ -359,12 +359,13 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
   const template = document.getElementById('import-template');
   const summary = document.getElementById('import-summary');
   const table = document.getElementById('import-preview');
-  const save = document.getElementById('import-save');
+  const saveBtn = document.getElementById('import-save');
   const clear = document.getElementById('import-clear');
   const errorList = document.getElementById('import-file-errors');
   let rows = [];
   let fileErrors = [], requestNumber = 0;
   let active = true;
+  let editingState = {};
 
   function check(cells, header, seen, teamInfo) {
     const raw = Object.fromEntries(importColumns.map(name => [name, (cells[header.indexOf(name)] ?? '').trim()]));
@@ -411,8 +412,11 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
 
     const key = [game.sport, game.gender, game.level, game.game_date, game.start_time].join('|');
     let state = problems.length ? 'problem' : 'ready';
-    if (state === 'ready' && existingGames().some(saved => [saved.teams.sport, saved.teams.gender, saved.teams.level,
-      saved.game_date, saved.start_time?.slice(0, 5) ?? null].join('|') === key)) {
+    if (state === 'ready' && existingGames().some(saved => {
+      const savedKey = [saved.teams.sport, saved.teams.gender, saved.teams.level,
+        saved.game_date, saved.start_time ? saved.start_time.slice(0, 5) : null].join('|');
+      return savedKey === key;
+    })) {
       state = 'duplicate';
       problems.push('Already on the schedule');
     } else if (state === 'ready' && seen.has(key)) {
@@ -423,6 +427,24 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     return { game, state, problems, raw };
   }
 
+  function validateGameData(game) {
+    const problems = [];
+    if (!game.game_date) problems.push('Date is missing');
+    if (!game.start_time && game.start_time !== null) problems.push('Start time must be set');
+    if (!game.sport) problems.push('Sport is missing');
+    if (!game.home_away) problems.push('Home or away is missing');
+    if (!game.opponent_name && !game.opponent_school_id) problems.push('Opponent is missing');
+    if (!game.location) problems.push('Location is missing');
+    if (game.opponent_name && game.opponent_name.length > 100) problems.push('Opponent is too long');
+    if (game.location && game.location.length > 160) problems.push('Location is too long');
+    if ((game.notes ?? '').length > 1000 || (game.transport_notes ?? '').length > 1000) problems.push('Notes are too long');
+    return problems;
+  }
+
+  function getRowKey(game) {
+    return [game.sport, game.gender, game.level, game.game_date, game.start_time].join('|');
+  }
+
   let heldNote = '';
   function show() {
     errorList.hidden = !fileErrors.length;
@@ -431,8 +453,8 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     rows.forEach(row => counts[row.state]++);
     table.hidden = !rows.length;
     clear.hidden = !rows.length && !fileErrors.length;
-    save.hidden = !counts.ready;
-    save.textContent = 'Import and post ' + counts.ready + (counts.ready === 1 ? ' game' : ' games');
+    saveBtn.hidden = !rows.length;
+    saveBtn.textContent = 'Confirm & Save Schedule';
     const labels = { ready: 'Ready', problem: 'Needs a fix', duplicate: 'Skipped', imported: 'Posted',
       held: 'Saved, not posted', failed: 'Failed' };
     table.tBodies[0].replaceChildren(...rows.map((row, index) => {
@@ -473,10 +495,11 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     requestNumber++;
     rows = [];
     fileErrors = [];
+    editingState = {};
     fileInput.value = '';
     fileInput.disabled = clear.disabled = false;
     summary.textContent = '';
-    save.disabled = false;
+    saveBtn.disabled = false;
     show();
   }
 
@@ -496,6 +519,7 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     const files = Array.from(fileInput.files);
     rows = [];
     fileErrors = [];
+    editingState = {};
     summary.textContent = files.length ? 'Reading files…' : '';
     if (!files.length) return show();
     const selectedTeam = getSelectedTeam();
@@ -509,13 +533,13 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     show();
   };
 
-  save.onclick = async () => {
+  saveBtn.onclick = async () => {
     const request = requestNumber;
     const ready = rows.filter(row => row.state === 'ready');
     // One batch across all files. The saved games are posted together once every row has been tried.
     const batch = crypto.randomUUID();
     ready.forEach(row => { row.game.import_batch = batch; });
-    save.disabled = true;
+    saveBtn.disabled = true;
     fileInput.disabled = true;
     clear.disabled = true;
     for (const [index, row] of ready.entries()) {
@@ -544,7 +568,7 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     }
     fileInput.disabled = false;
     clear.disabled = false;
-    save.disabled = false;
+    saveBtn.disabled = false;
     show();
     const imported = ready.filter(row => row.state === 'imported' || row.state === 'held');
     if (imported.length) onImported(imported[0].game.game_date);
@@ -557,7 +581,7 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     stop() {
       active = false;
       requestNumber++;
-      fileInput.onchange = template.onclick = save.onclick = clear.onclick = null;
+      fileInput.onchange = template.onclick = saveBtn.onclick = clear.onclick = null;
     },
   };
 }
