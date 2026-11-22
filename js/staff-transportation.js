@@ -9,6 +9,14 @@ function startStaffTransportation(client, invite, selectedSchool, gameTitle) {
   const previewFromEditor = document.getElementById('preview-editor-transportation-email');
   const dialog = document.getElementById('transportation-draft');
   const submit = form.querySelector('button[type="submit"]');
+  
+  console.log('startStaffTransportation initialized', { form: !!form, email: !!email, submit: !!submit });
+  
+  if (!form || !email || !status || !submit) {
+    console.error('Transportation form elements not found', { form, email, status, submit });
+    return {};
+  }
+  
   let active = true;
   let requestNumber = 0;
 
@@ -81,10 +89,12 @@ function startStaffTransportation(client, invite, selectedSchool, gameTitle) {
   }
 
   form.onsubmit = async event => {
+    console.log('Form submitted');
     event.preventDefault();
     const request = ++requestNumber;
     const school = selectedSchool().slug;
     const address = email.value.trim();
+    console.log('Adding contact for school:', school, 'email:', address);
     
     if (!address) {
       status.textContent = 'Please enter an email address.';
@@ -98,6 +108,7 @@ function startStaffTransportation(client, invite, selectedSchool, gameTitle) {
     if (!active || request !== requestNumber) return;
     
     if (error) {
+      console.error('Transportation contact insert error:', error);
       if (error.message.includes('unique')) {
         status.textContent = 'This email is already added.';
       } else {
@@ -110,6 +121,14 @@ function startStaffTransportation(client, invite, selectedSchool, gameTitle) {
       await load();
     }
   };
+
+  // Fallback: also handle button click directly in case form submission doesn't fire
+  submit.addEventListener('click', (event) => {
+    console.log('Button clicked');
+    if (form.reportValidity()) {
+      form.dispatchEvent(new Event('submit'));
+    }
+  });
 
   function clear(button) {
     button.hidden = true;
