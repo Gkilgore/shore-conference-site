@@ -1,14 +1,20 @@
 // Extracts schedule data from sports schedule PDFs and converts to CSV format for import.
 // Integrates with the existing CSV import preview system.
 
+console.log('[PDF Import] Script loaded');
+
 (async function setupPdfImport() {
-  // Wait a tick to ensure DOM is fully ready
-  await new Promise(resolve => setTimeout(resolve, 0));
+  console.log('[PDF Import] Setup function started');
+  
+  // Wait for DOM to be ready
+  await new Promise(resolve => setTimeout(resolve, 100));
 
   if (!window.pdfjsLib) {
-    console.warn('PDF.js not loaded, PDF import unavailable');
+    console.warn('[PDF Import] PDF.js not loaded, PDF import unavailable');
     return;
   }
+
+  console.log('[PDF Import] PDF.js available');
 
   // Set the worker URL for PDF.js
   window.pdfjsLib.GlobalWorkerOptions.workerSrc = 
@@ -18,57 +24,62 @@
   const uploadBtn = document.getElementById('import-upload');
   
   if (!fileInput) {
-    console.warn('import-file input not found');
+    console.warn('[PDF Import] import-file input not found');
     return;
   }
   
   if (!uploadBtn) {
-    console.warn('import-upload button not found');
+    console.warn('[PDF Import] import-upload button not found');
     return;
   }
 
-  console.log('PDF import initialized');
+  console.log('[PDF Import] Both file input and upload button found, initializing');
 
   // Enable/disable upload button when files are selected
   fileInput.addEventListener('change', function() {
-    console.log('File input changed, files:', this.files.length);
+    console.log('[PDF Import] File input changed, files:', this.files.length);
     uploadBtn.disabled = this.files.length === 0;
+    console.log('[PDF Import] Upload button disabled:', uploadBtn.disabled);
   });
 
   // Handle upload button click
   uploadBtn.addEventListener('click', async function(event) {
     event.preventDefault();
-    console.log('Upload button clicked');
+    console.log('[PDF Import] Upload button clicked');
     
     const files = Array.from(fileInput.files);
+    console.log('[PDF Import] Files from input:', files.length);
+    
     if (files.length === 0) {
-      console.log('No files selected');
+      console.log('[PDF Import] No files selected');
       return;
     }
 
-    console.log('Processing files:', files.map(f => f.name));
+    console.log('[PDF Import] Processing files:', files.map(f => f.name).join(', '));
 
     const csvFiles = files.filter(f => /\.csv$/i.test(f.name));
     const pdfFiles = files.filter(f => /\.pdf$/i.test(f.name));
 
-    console.log('CSV files:', csvFiles.length, 'PDF files:', pdfFiles.length);
+    console.log('[PDF Import] CSV files:', csvFiles.length, 'PDF files:', pdfFiles.length);
 
     // If we have PDFs to convert, process them first
     if (pdfFiles.length > 0) {
       try {
-        console.log('Converting PDFs...');
+        console.log('[PDF Import] Starting PDF conversion...');
         const convertedFiles = await convertPdfsToCSV(pdfFiles);
-        console.log('Converted', convertedFiles.length, 'PDFs');
+        console.log('[PDF Import] Successfully converted', convertedFiles.length, 'PDFs');
         
         // Combine converted PDFs with any CSV files
         const allFiles = [...convertedFiles, ...csvFiles];
+        console.log('[PDF Import] Total files to process:', allFiles.length);
+        
         // Create a new DataTransfer with all files
         const dataTransfer = new DataTransfer();
         allFiles.forEach(f => dataTransfer.items.add(f));
         fileInput.files = dataTransfer.files;
-        console.log('Updated file input with', fileInput.files.length, 'files');
+        console.log('[PDF Import] File input updated, now has:', fileInput.files.length, 'files');
       } catch (error) {
-        console.error('PDF conversion error:', error);
+        console.error('[PDF Import] PDF conversion error:', error);
         // Let the user know there was an error
         const errorList = document.getElementById('import-file-errors');
         if (errorList) {
@@ -76,16 +87,27 @@
           const item = document.createElement('li');
           item.textContent = 'Error reading PDF: ' + error.message;
           errorList.appendChild(item);
+          console.log('[PDF Import] Error message displayed to user');
         }
         return;
       }
     } else {
-      console.log('No PDFs to convert, only CSV files');
+      console.log('[PDF Import] No PDFs to convert, only CSV files');
     }
 
     // Trigger the original file input change handler to show preview
-    // This dispatches the change event which staff-import.js is listening for
-    console.log('Dispatching change event');
+    console.log('[PDF Import] Triggering import preview...');
+    
+    // Try to call the onchange handler directly if it exists
+    if (typeof fileInput.onchange === 'function') {
+      console.log('[PDF Import] Calling fileInput.onchange directly');
+      fileInput.onchange();
+    } else {
+      console.log('[PDF Import] No onchange handler found on fileInput');
+    }
+    
+    // Also dispatch the event for any addEventListener listeners
+    console.log('[PDF Import] Dispatching change event');
     fileInput.dispatchEvent(new Event('change', { bubbles: true }));
   });
 
