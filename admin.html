@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="css/tournaments.css">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
   <script defer src="js/supabase-config.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.3.136/build/pdf.min.js" integrity="sha384-p66YfE+PaB7KeFKfVxLgF/fJSmZU9PkEcHMZPEWc7HXjdZZHSe/5KrGPZxUhVvGFM" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.22/index.global.min.js" integrity="sha384-a9qx08ufzJ+0qbHzdqA+GYiSayQQB5BK2YGS/HQT9cxhQm+GhiXFj1ByVXa93ZRR" crossorigin="anonymous"></script>
   <script defer src="js/site.js"></script>
   <script defer src="data/school-directory.js"></script>
@@ -27,6 +28,7 @@
   <script defer src="js/seasons.js"></script>
   <script defer src="js/staff-overview.js"></script>
   <script defer src="js/staff-import.js"></script>
+  <script defer src="js/staff-pdf-import.js"></script>
   <script defer src="js/staff-opponent-search.js"></script>
   <script defer src="js/staff-opponent-picker.js"></script>
   <script defer src="js/staff-opponents.js"></script>
@@ -145,7 +147,7 @@
               <h4 id="import-title" tabindex="-1">Import games</h4>
               <p class="staff-hint">Choose one or more CSV files and check the rows. Importing posts the games to the public schedule.</p>
               <div class="import-controls">
-                <label>CSV files <input id="import-file" type="file" accept=".csv,text/csv" multiple></label>
+                <label>CSV or PDF files <input id="import-file" type="file" accept=".csv,text/csv,.pdf,application/pdf" multiple></label>
                 <button id="import-template" class="button secondary" type="button">Download template</button>
               </div>
               <p id="import-summary" role="status"></p>

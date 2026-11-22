@@ -127,12 +127,13 @@ class Element {
   find(check) { return this.children.flatMap(child => child instanceof Element ? [child, ...child.find(() => true)] : []).filter(check); }
 }
 
-test('public accounts auto-scroll by platform, pause accessibly, and reset when schools change', () => {
+test('public accounts wait for Instagram embeds, move smoothly, and reset when schools change', async () => {
   class PublicElement extends Element {
     constructor(tag) {
       super(tag);
       this.className = '';
       this.events = {};
+      this.dataset = {};
       this.classList = {
         add: name => this.classList.toggle(name, true),
         toggle: (name, enabled) => {
@@ -148,13 +149,28 @@ test('public accounts auto-scroll by platform, pause accessibly, and reset when 
     removeEventListener(name) { delete this.events[name]; }
     contains(target) { return this === target || this.children.includes(target); }
     scrollTo(options) { this.scrollLeft = options.left; this.lastScroll = options; }
+    querySelector(selector) { return selector === 'iframe.instagram-media-rendered' ? this.embed : null; }
+    remove() { this.removed = true; }
   }
   const elements = {
     'social-links': new PublicElement(),
     'social-instagram-controls': new PublicElement(),
   };
-  const document = { createElement: tag => new PublicElement(tag), getElementById: id => elements[id] || null };
-  class IntersectionObserver { observe() {} }
+  let script;
+  const document = { createElement: tag => new PublicElement(tag), getElementById: id => elements[id] || null,
+    head: { append(element) { script = element; } } };
+  let near;
+  class IntersectionObserver {
+    constructor(callback) { this.callback = callback; near = this; }
+    observe(target) { this.target = target; }
+    disconnect() { this.disconnected = true; }
+  }
+  const watchers = [];
+  class MutationObserver {
+    constructor(callback) { this.callback = callback; watchers.push(this); }
+    observe(target) { this.target = target; }
+    disconnect() { this.disconnected = true; }
+  }
   let reduced = false;
   const mediaQueries = [];
   const matchMedia = () => {
@@ -167,8 +183,13 @@ test('public accounts auto-scroll by platform, pause accessibly, and reset when 
   let timerId = 0;
   const setInterval = (fn, delay) => { assert.equal(delay, 5000); timers.set(++timerId, fn); return timerId; };
   const clearInterval = id => timers.delete(id);
-  const publicPage = vm.createContext({ document, window: { IntersectionObserver, matchMedia },
-    IntersectionObserver, setInterval, clearInterval });
+  const timeouts = new Map();
+  const setTimeout = fn => { timeouts.set(++timerId, fn); return timerId; };
+  const clearTimeout = id => timeouts.delete(id);
+  let processes = 0;
+  const publicPage = vm.createContext({ document, window: { IntersectionObserver, matchMedia,
+    instgrm: { Embeds: { process() { processes++; } } } },
+    IntersectionObserver, MutationObserver, setInterval, clearInterval, setTimeout, clearTimeout });
   vm.runInContext(read('js/social.js') + ';globalThis.render = renderSocialAccounts;', publicPage);
   const host = new PublicElement();
   const accounts = (platform, count) => Array.from({ length: count }, (_, i) => ({
@@ -195,10 +216,35 @@ test('public accounts auto-scroll by platform, pause accessibly, and reset when 
   host.children[1].offsetLeft = 100;
   const tickInstagram = [...timers.values()][1];
   tickInstagram();
+  assert.equal(host.scrollLeft, 0, 'automatic movement waits until embeds finish loading');
+  assert.equal(near.target, host, 'the whole strip loads when it approaches the viewport');
+  const firstNear = near;
+  near.callback([{ isIntersecting: true }]);
+  assert.equal(watchers.length, 4);
+  assert.equal(host.children.every(frame => frame.children.length === 3), true);
+  script.onload();
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(processes, 1, 'Instagram processes all profiles together');
+  for (const watcher of watchers.slice(0, 3)) {
+    watcher.target.embed = new PublicElement('iframe');
+    watcher.callback();
+    watcher.target.embed.events.load();
+  }
+  tickInstagram();
+  assert.equal(host.scrollLeft, 0, 'movement waits for every profile');
+  watchers[3].target.embed = new PublicElement('iframe');
+  watchers[3].callback();
+  tickInstagram();
+  assert.equal(host.scrollLeft, 0, 'movement also waits for the iframe content to load');
+  watchers[3].target.embed.events.load();
+  assert.equal(timeouts.size, 0);
+  tickInstagram();
   assert.equal(host.scrollLeft, 100);
   host.scrollLeft = 300;
   tickInstagram();
-  assert.equal(host.scrollLeft, 0);
+  assert.equal(host.scrollLeft, 200, 'automatic movement reverses one card at the end');
+  host.scrollLeft = 0;
   const [previous, button, next] = elements['social-instagram-controls'].children;
   assert.equal(previous.attributes['aria-label'], 'Previous Instagram accounts');
   assert.equal(next.attributes['aria-label'], 'Next Instagram accounts');
@@ -237,6 +283,7 @@ test('public accounts auto-scroll by platform, pause accessibly, and reset when 
   assert.equal(host.scrollLeft, 0);
   assert.equal(elements['social-instagram-controls'].hidden, true);
   assert.equal(timers.size, 1);
+  assert.equal(firstNear.disconnected, true);
   assert.equal(facebookButton.events.click, undefined);
   const [xScroller, xControls] = elements['social-links'].children;
   assert.equal(xScroller.classList.contains('social-scroll'), true);
@@ -249,6 +296,26 @@ test('public accounts auto-scroll by platform, pause accessibly, and reset when 
   assert.equal(xScroller.lastScroll.behavior, 'auto');
   [...timers.values()][0]();
   assert.equal(xScroller.scrollLeft, 300);
+
+  reduced = false;
+  publicPage.render(host, accounts('instagram', 4));
+  near.callback([{ isIntersecting: true }]);
+  const recentWatchers = watchers.slice(-4);
+  recentWatchers[0].target.embed = new PublicElement('iframe');
+  recentWatchers[0].callback();
+  for (const timeout of [...timeouts.values()]) timeout();
+  assert.equal(host.children[0].children[1].hidden, true, 'a rendered iframe is kept if its load event was missed');
+  assert.match(host.children[1].children[1].children[0], /didn’t load/);
+  host.scrollLeft = 0;
+  host.children[0].offsetLeft = 0;
+  host.children[1].offsetLeft = 100;
+  [...timers.values()][0]();
+  assert.equal(host.scrollLeft, 100, 'a failed profile does not block the slider');
+  publicPage.render(host, accounts('instagram', 4));
+  near.callback([{ isIntersecting: true }]);
+  assert.equal(timeouts.size, 4);
+  publicPage.render(host, []);
+  assert.equal(timeouts.size, 0, 'pending profile loads are cleaned up when changing schools');
 });
 
 function mountStaff({ saved = [], error = null, writeError = null } = {}) {

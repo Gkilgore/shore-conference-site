@@ -29,7 +29,7 @@ function loadInstagramEmbeds() {
 }
 
 let stopSocialScrolling = [];
-function autoScrollSocial(list, controls) {
+function autoScrollSocial(list, controls, ready = () => true) {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const label = list.getAttribute('aria-label');
   const makeButton = (text, description) => {
@@ -47,6 +47,7 @@ function autoScrollSocial(list, controls) {
   let paused = reducedMotion.matches;
   let hovering = false;
   let focused = false;
+  let autoDirection = 1;
   const updateButton = () => {
     button.textContent = paused ? 'Play' : 'Pause';
     button.setAttribute('aria-label', button.textContent + ' ' + label + ' scrolling');
@@ -78,8 +79,11 @@ function autoScrollSocial(list, controls) {
   reducedMotion.addEventListener('change', onMotionChange);
   updateButton();
   const timer = setInterval(() => {
-    if (paused || hovering || focused || document.hidden || !list.clientWidth) return;
-    move(1);
+    if (paused || hovering || focused || document.hidden || !list.clientWidth || !ready()) return;
+    const max = list.scrollWidth - list.clientWidth;
+    if (list.scrollLeft >= max - 1) autoDirection = -1;
+    else if (list.scrollLeft <= 1) autoDirection = 1;
+    move(autoDirection);
   }, 5000);
   return () => {
     clearInterval(timer);
@@ -157,53 +161,71 @@ function renderSocialAccounts(host, accounts) {
     return { frame, status, instagram };
   });
   host.replaceChildren(...frames.map(item => item.frame));
-  stopSocialScrolling = scrollGroups.map(([list, button]) => autoScrollSocial(list, button));
+  let instagramReady = !frames.length;
+  stopSocialScrolling = scrollGroups.map(([list, controls]) =>
+    autoScrollSocial(list, controls, () => list !== host || instagramReady));
 
-  for (const { frame, status, instagram } of frames) {
-  const show = async () => {
-    // Instagram's script swaps this quote for its own frame holding the account's latest posts.
-    const quote = node('blockquote', 'instagram-media');
-    quote.dataset.instgrmPermalink = instagram.url;
-    quote.dataset.instgrmVersion = '14';
-    const fallback = node('a', '', 'View ' + instagram.handle + ' on Instagram');
-    fallback.href = instagram.url;
-    quote.append(fallback);
-    frame.append(quote);
-    // Instagram marks its frame "rendered" once the posts have arrived.
-    const loaded = () => {
-      const embed = frame.querySelector('iframe.instagram-media-rendered');
-      if (!embed) return false;
-      embed.title = 'Instagram posts from ' + instagram.handle;
-      status.hidden = true;
-      return true;
+  if (frames.length) {
+    let active = true;
+    let pending = frames.length;
+    const cleanup = [];
+    const show = () => {
+      const failures = frames.map(({ frame, status, instagram }) => {
+        const quote = node('blockquote', 'instagram-media');
+        quote.dataset.instgrmPermalink = instagram.url;
+        quote.dataset.instgrmVersion = '14';
+        const fallback = node('a', '', 'View ' + instagram.handle + ' on Instagram');
+        fallback.href = instagram.url;
+        quote.append(fallback);
+        frame.append(quote);
+        let settled = false;
+        let embed;
+        const onLoad = () => finish(false);
+        const finish = failed => {
+          if (settled || !active) return;
+          settled = true;
+          watcher.disconnect();
+          embed?.removeEventListener('load', onLoad);
+          clearTimeout(timeout);
+          if (failed) {
+            quote.remove();
+            frame.querySelector('iframe')?.remove();
+            const open = node('a', '', 'Open ' + instagram.handle + ' on Instagram');
+            open.href = instagram.url;
+            open.target = '_blank';
+            open.rel = 'noopener';
+            status.replaceChildren('Instagram didn’t load here. ', open);
+          } else {
+            status.hidden = true;
+          }
+          if (--pending === 0) instagramReady = true;
+        };
+        const watcher = new MutationObserver(() => {
+          embed = frame.querySelector('iframe.instagram-media-rendered');
+          if (!embed) return;
+          embed.title = 'Instagram posts from ' + instagram.handle;
+          watcher.disconnect();
+          embed.addEventListener('load', onLoad, { once: true });
+        });
+        watcher.observe(frame, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+        const timeout = setTimeout(() => finish(!embed), 12000);
+        cleanup.push(() => { watcher.disconnect(); embed?.removeEventListener('load', onLoad); clearTimeout(timeout); });
+        return () => finish(true);
+      });
+      loadInstagramEmbeds().catch(() => failures.forEach(fail => fail()));
     };
-    const failed = () => {
-      if (loaded()) return;
-      quote.remove();
-      frame.querySelector('iframe')?.remove();
-      const open = node('a', '', 'Open ' + instagram.handle + ' on Instagram');
-      open.href = instagram.url;
-      open.target = '_blank';
-      open.rel = 'noopener';
-      status.replaceChildren('Instagram didn’t load here. ', open);
-    };
-    const watcher = new MutationObserver(() => { if (loaded()) watcher.disconnect(); });
-    watcher.observe(frame, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
-    setTimeout(() => { watcher.disconnect(); failed(); }, 12000);
-    try {
-      await loadInstagramEmbeds();
-    } catch {
-      watcher.disconnect();
-      failed();
+    if (!('IntersectionObserver' in window)) {
+      show();
+    } else {
+      const near = new IntersectionObserver(entries => {
+        if (!entries.some(entry => entry.isIntersecting)) return;
+        near.disconnect();
+        if (active) show();
+      }, { rootMargin: '300px' });
+      near.observe(host);
+      cleanup.push(() => near.disconnect());
     }
-  };
-  if (!('IntersectionObserver' in window)) { show(); continue; }
-  const near = new IntersectionObserver(entries => {
-    if (!entries.some(entry => entry.isIntersecting)) return;
-    near.disconnect();
-    show();
-  }, { rootMargin: '300px' });
-  near.observe(frame);
+    stopSocialScrolling.push(() => { active = false; cleanup.forEach(stop => stop()); });
   }
 }
 
