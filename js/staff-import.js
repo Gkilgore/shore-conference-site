@@ -277,7 +277,7 @@ async function previewScheduleFiles(files, check, teamInfo) {
         }
 
         // Build CSV
-        const header = 'date,start_time,home_away,opponent,location,sport,season,status,notes';
+        const header = 'date,start_time,home_away,opponent,location,sport,notes';
         const csvRows = [header];
         
         games.forEach(game => {
@@ -288,8 +288,6 @@ async function previewScheduleFiles(files, check, teamInfo) {
             game.opponent || '',
             game.location || '',
             game.sport || '',
-            game.season || '',
-            game.status || '',
             game.notes || ''
           ];
           csvRows.push(row.map(cell => escapeCsvCell(String(cell))).join(','));
@@ -376,10 +374,8 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     if (game.sport && game.sport.length > 60) problems.push('Sport is too long');
     game.gender = teamInfo?.gender || null;
     game.level = teamInfo?.level || null;
-    game.season = raw.season
-      ? pickValue(raw.season, { Fall: ['fall'], Winter: ['winter'], Spring: ['spring'] })
-      : game.sport && seasonOf(game.sport, game.gender);
-    if (!game.season || game.season === 'Other') { game.season = null; problems.push('Add a season (Fall, Winter or Spring)'); }
+    game.season = game.sport && seasonOf(game.sport, game.gender);
+    if (!game.season || game.season === 'Other') game.season = null;
     game.home_away = need('home_away', 'Home or away') && pickValue(raw.home_away, { Home: ['home', 'h', 'vs'], Away: ['away', 'a', 'at', '@'] });
     if (raw.home_away && !game.home_away) problems.push('Home or away must be Home or Away');
     const opponent = need('opponent', 'Opponent');
@@ -394,10 +390,7 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     if (game.opponent_name && game.opponent_name.length > 100) problems.push('Opponent is too long');
     game.location = need('location', 'Location');
     if (game.location && game.location.length > 160) problems.push('Location is too long');
-    game.status = raw.status
-      ? pickValue(raw.status, { Scheduled: ['scheduled'], Postponed: ['postponed'], Canceled: ['canceled', 'cancelled'] })
-      : 'Scheduled';
-    if (!game.status) problems.push('Status must be Scheduled, Postponed or Canceled');
+    game.status = 'Scheduled';
     for (const [name, label] of [['bus_departure', 'Bus departure'], ['early_dismissal_time', 'Early dismissal'],
       ['return_time', 'Return time']]) {
       game[name] = raw[name] ? importTime(raw[name]) : null;
@@ -481,8 +474,8 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
 
   template.onclick = () => {
     const lines = [importColumns.join(','),
-      '2026-11-09,3:45 PM,Soccer,Fall,Home,Colts Neck,Marlboro Turf Field,Scheduled,,,,,,',
-      '2026-11-12,4:00 PM,Field Hockey,Fall,Away,Shore Regional,Shore Regional Turf Field,Scheduled,3:00 PM,Front loop,1:30 PM,6:30 PM,,'];
+      '2026-11-09,3:45 PM,Soccer,Home,Colts Neck,Marlboro Turf Field,,,,,,',
+      '2026-11-12,4:00 PM,Field Hockey,Away,Shore Regional,Shore Regional Turf Field,3:00 PM,Front loop,1:30 PM,6:30 PM,,'];
     const link = document.createElement('a');
     link.href = URL.createObjectURL(new Blob([lines.join('\r\n') + '\r\n'], { type: 'text/csv' }));
     link.download = 'game-import-template.csv';
