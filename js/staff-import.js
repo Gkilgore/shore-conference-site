@@ -39,6 +39,14 @@ function importDate(value) {
     [month, day, year] = match.slice(1);
     if (year.length === 2) year = '20' + year;
   }
+  // Handle text format like "TUESDAY, DEC 08, 2026" or "MONDAY, JANUARY 04, 2027"
+  if (!match && (match = value.match(/^[A-Za-z]+,\s*([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4})$/))) {
+    const monthName = match[1].toUpperCase();
+    day = match[2];
+    year = match[3];
+    const months = { JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6, JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12 };
+    month = months[monthName.substring(0, 3)];
+  }
   if (!match) return null;
   const date = new Date(Number(year), Number(month) - 1, Number(day));
   if (date.getMonth() !== Number(month) - 1 || date.getDate() !== Number(day)) return null;
