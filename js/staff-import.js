@@ -72,7 +72,7 @@ function timeLabel(time) {
 }
 
 function pickValue(value, choices) {
-  const key = value.trim().toLowerCase().replace(/[.']/g, '');
+  let key = value.trim().toLowerCase().replace(/[.'"@–—-]/g, '');
   for (const [result, words] of Object.entries(choices)) if (words.includes(key)) return result;
   return null;
 }
@@ -385,8 +385,13 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     game.level = teamInfo?.level || null;
     game.season = game.sport && seasonOf(game.sport, game.gender);
     if (!game.season || game.season === 'Other') game.season = null;
-    game.home_away = need('home_away', 'Home or away') && pickValue(raw.home_away, { Home: ['home', 'h', 'vs'], Away: ['away', 'a', 'at', '@'] });
-    if (raw.home_away && !game.home_away) problems.push('Home or away must be Home or Away');
+    if (raw.home_away) {
+      game.home_away = pickValue(raw.home_away, { Home: ['home', 'h', 'vs'], Away: ['away', 'a', 'at', '@'] });
+      if (!game.home_away) problems.push('Home or away must be Home or Away');
+    } else {
+      problems.push('Home or away is missing');
+      game.home_away = null;
+    }
     const opponent = need('opponent', 'Opponent');
     const listed = opponent && opponents().find(item =>
       [item.name.toLowerCase(), item.slug].includes(opponent.toLowerCase()));
