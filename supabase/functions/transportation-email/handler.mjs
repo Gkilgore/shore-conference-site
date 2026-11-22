@@ -91,8 +91,8 @@ export function createHandler({
       ]);
       const transport = transportRows[0];
       if (!transport?.bus_departure) return json(200, { sent: false, skipped: true });
-      const contact = contacts[0]?.email;
-      if (!contact) return json(409, { error: 'Add the school\u2019s transportation contact email, then save the game again.' });
+      const contactEmails = contacts.map(c => c.email);
+      if (contactEmails.length === 0) return json(409, { error: 'Add the school\u2019s transportation contact email, then save the game again.' });
       if (!teams[0] || !schools[0]) throw new Error('School schedule information could not be checked.');
 
       const team = [teams[0].gender, teams[0].level, teams[0].sport].join(' ');
@@ -101,7 +101,7 @@ export function createHandler({
       const subject = 'Scheduled bus \u00b7 ' + schoolName + ' \u00b7 ' + team + ' \u00b7 ' + game.game_date;
       const message = {
         from: fromAddress,
-        to: [contact],
+        to: contactEmails,
         cc: [user.email],
         subject,
         text: [

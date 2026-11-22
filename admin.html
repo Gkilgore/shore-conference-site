@@ -246,14 +246,20 @@
               <ul id="bus-list" class="game-list"></ul>
             </section>
             <section class="staff-section">
-            <h4>Transportation contact</h4>
+            <h4>Transportation contacts</h4>
+            <p class="staff-hint">Email addresses added here will receive bus departure information when it's saved.</p>
             <form id="transportation-contact-form" class="prose">
-              <label for="transportation-email">Coordinator email</label>
-              <input id="transportation-email" type="email" maxlength="254" autocomplete="off">
-              <p>Leave this blank to clear the contact.</p>
-              <div><button class="button primary" type="submit">Save contact</button></div>
+              <label for="transportation-email">Add contact email</label>
+              <div>
+                <input id="transportation-email" type="email" maxlength="254" autocomplete="off" placeholder="coordinator@school.edu">
+                <button class="button primary" type="submit">Add</button>
+              </div>
               <p id="transportation-contact-status" role="status"></p>
             </form>
+            <div id="transportation-contacts-list">
+              <p>Active transportation contacts:</p>
+              <ul id="transportation-contacts"></ul>
+            </div>
             </section>
           </section>
           <section id="staff-coaches-panel" class="staff-panel" aria-labelledby="coaches-title" hidden>

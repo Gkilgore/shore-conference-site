@@ -3,6 +3,8 @@ function startStaffTransportation(client, invite, selectedSchool, gameTitle) {
   const form = document.getElementById('transportation-contact-form');
   const email = document.getElementById('transportation-email');
   const status = document.getElementById('transportation-contact-status');
+  const contactsList = document.getElementById('transportation-contacts-list');
+  const contactsUL = document.getElementById('transportation-contacts');
   const preview = document.getElementById('preview-transportation-email');
   const previewFromEditor = document.getElementById('preview-editor-transportation-email');
   const dialog = document.getElementById('transportation-draft');
@@ -13,9 +15,51 @@ function startStaffTransportation(client, invite, selectedSchool, gameTitle) {
   const dateFormat = new Intl.DateTimeFormat('en-US', { dateStyle: 'full' });
   const timeFormat = new Intl.DateTimeFormat('en-US', { timeStyle: 'short' });
 
-  function readContact(school) {
+  function readContacts(school) {
     return client.from('school_transportation_contacts')
-      .select('email').eq('school_id', school).maybeSingle();
+      .select('id, email').eq('school_id', school).order('created_at');
+  }
+
+  async function renderContacts(contacts) {
+    contactsUL.innerHTML = '';
+    if (contacts.length === 0) {
+      contactsList.style.display = 'none';
+      return;
+    }
+    contactsList.style.display = 'block';
+    for (const contact of contacts) {
+      const li = document.createElement('li');
+      
+      const email_span = document.createElement('span');
+      email_span.textContent = contact.email;
+      
+      const badge = document.createElement('span');
+      badge.className = 'badge';
+      badge.textContent = 'Will receive emails';
+      
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'button secondary';
+      removeBtn.textContent = 'Remove';
+      removeBtn.onclick = async () => {
+        removeBtn.disabled = true;
+        const { error } = await client.from('school_transportation_contacts').delete().eq('id', contact.id);
+        if (!active) return;
+        if (error) {
+          status.textContent = 'Could not remove contact. Try again.';
+          removeBtn.disabled = false;
+        } else {
+          status.textContent = 'Contact removed.';
+          email.value = '';
+          await load();
+        }
+      };
+      
+      li.appendChild(email_span);
+      li.appendChild(badge);
+      li.appendChild(removeBtn);
+      contactsUL.appendChild(li);
+    }
   }
 
   async function load() {
@@ -23,16 +67,17 @@ function startStaffTransportation(client, invite, selectedSchool, gameTitle) {
     const school = selectedSchool().slug;
     form.reset();
     submit.disabled = true;
-    status.textContent = 'Loading contact…';
-    const { data, error } = await readContact(school);
+    status.textContent = 'Loading contacts…';
+    const { data, error } = await readContacts(school);
     if (!active || request !== requestNumber) return;
     if (error) {
-      status.textContent = 'The contact could not be loaded. Open Transportation again to retry.';
+      status.textContent = 'Contacts could not be loaded. Open Transportation again to retry.';
       return;
     }
-    email.value = data?.email ?? '';
+    email.value = '';
     status.textContent = '';
     submit.disabled = false;
+    await renderContacts(data || []);
   }
 
   form.onsubmit = async event => {
@@ -40,16 +85,31 @@ function startStaffTransportation(client, invite, selectedSchool, gameTitle) {
     const request = ++requestNumber;
     const school = selectedSchool().slug;
     const address = email.value.trim();
+    
+    if (!address) {
+      status.textContent = 'Please enter an email address.';
+      return;
+    }
+    
     submit.disabled = true;
-    status.textContent = 'Saving contact…';
-    const contacts = client.from('school_transportation_contacts');
-    const { error } = address
-      ? await contacts.upsert({ school_id: school, email: address })
-      : await contacts.delete().eq('school_id', school);
+    status.textContent = 'Adding contact…';
+    const { error } = await client.from('school_transportation_contacts').insert({ school_id: school, email: address });
+    
     if (!active || request !== requestNumber) return;
-    status.textContent = error ? 'The contact could not be saved. Try again.'
-      : address ? 'Transportation contact saved.' : 'Transportation contact cleared.';
-    submit.disabled = false;
+    
+    if (error) {
+      if (error.message.includes('unique')) {
+        status.textContent = 'This email is already added.';
+      } else {
+        status.textContent = 'The contact could not be added. Try again.';
+      }
+      submit.disabled = false;
+    } else {
+      status.textContent = 'Contact added!';
+      email.value = '';
+      submit.disabled = false;
+      await load();
+    }
   };
 
   function clear(button) {
@@ -92,7 +152,7 @@ function startStaffTransportation(client, invite, selectedSchool, gameTitle) {
     const bus = game.transportation;
     const date = new Date(game.game_date + 'T12:00');
     const time = value => value ? timeFormat.format(new Date(game.game_date + 'T' + value)) + ' ET' : 'Not specified';
-    document.getElementById('transportation-draft-to').textContent = 'Looking up contact…';
+    document.getElementById('transportation-draft-to').textContent = 'Looking up contacts…';
     document.getElementById('transportation-draft-cc').textContent =
       invite.role === 'ad' ? invite.email : 'The school AD’s email will be copied when an AD sends it.';
     document.getElementById('transportation-draft-subject').textContent =
@@ -112,10 +172,13 @@ function startStaffTransportation(client, invite, selectedSchool, gameTitle) {
       ...(bus.notes ? ['Transportation notes: ' + bus.notes] : []),
     ].join('\n');
     dialog.showModal();
-    const { data, error } = await readContact(school.slug);
+    const { data, error } = await readContacts(school.slug);
     if (!active || request !== requestNumber || !dialog.open) return;
-    document.getElementById('transportation-draft-to').textContent = error
-      ? 'Could not load the contact.' : data?.email ?? 'No contact saved. Add one in Transportation.';
+    if (error || !data || data.length === 0) {
+      document.getElementById('transportation-draft-to').textContent = 'No contacts saved. Add one in Transportation.';
+    } else {
+      document.getElementById('transportation-draft-to').textContent = data.map(c => c.email).join(', ');
+    }
   }
 
   return {
