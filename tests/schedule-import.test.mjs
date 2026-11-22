@@ -138,8 +138,8 @@ test('CSV import emails a scheduled bus and reports delivery failure without los
   await input.onchange();
   await elements.get('import-save').onclick();
   assert.match(elements.get('import-summary').textContent, /transportation email was not sent/i);
-  // After removing File and Sport columns, with problems: problems in children[6], status in children[1]
-  assert.match(elements.get('import-preview').tBodies[0].children[0].children[6].textContent,
+  // After separating H/A and Opponent: problems in children[7], status in children[1]
+  assert.match(elements.get('import-preview').tBodies[0].children[0].children[7].textContent,
     /Transportation email not sent: Transportation contact is missing/);
   assert.match(elements.get('import-preview').tBodies[0].children[0].children[1].textContent, /Posted/);
   controller.stop();

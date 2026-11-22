@@ -504,8 +504,8 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     timeTd.append(timeInput);
     tr.append(timeTd);
 
-    // Home/Away and Opponent - editable
-    const matchupTd = document.createElement('td');
+    // Home/Away - editable
+    const haTd = document.createElement('td');
     const haSelect = document.createElement('select');
     haSelect.append(...['Home', 'Away'].map(val => {
       const opt = document.createElement('option');
@@ -521,7 +521,11 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
         show();
       });
     }
-    
+    haTd.append(haSelect);
+    tr.append(haTd);
+
+    // Opponent - editable
+    const oppTd = document.createElement('td');
     const oppInput = document.createElement('input');
     oppInput.type = 'text';
     oppInput.value = game.opponent_name || game.opponent_directory_slug || '';
@@ -533,13 +537,8 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
         show();
       });
     }
-    matchupTd.append(haSelect, oppInput);
-    if (matchupTd.style) {
-      matchupTd.style.display = 'grid';
-      matchupTd.style.gridTemplateColumns = 'auto 1fr';
-      matchupTd.style.gap = '0.4rem';
-    }
-    tr.append(matchupTd);
+    oppTd.append(oppInput);
+    tr.append(oppTd);
 
     // Location - editable
     const locTd = document.createElement('td');
