@@ -462,11 +462,6 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     const tr = document.createElement('tr');
     tr.className = 'is-' + state;
 
-    // File
-    const fileTd = document.createElement('td');
-    fileTd.textContent = row.source.file;
-    tr.append(fileTd);
-
     // Row number
     const rowNumTd = document.createElement('td');
     rowNumTd.textContent = String(row.source.row);
@@ -508,22 +503,6 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     }
     timeTd.append(timeInput);
     tr.append(timeTd);
-
-    // Sport - editable
-    const sportTd = document.createElement('td');
-    const sportInput = document.createElement('input');
-    sportInput.type = 'text';
-    sportInput.value = game.sport || '';
-    sportInput.placeholder = 'Sport';
-    if (typeof sportInput.addEventListener === 'function') {
-      sportInput.addEventListener('change', () => {
-        game.sport = sportInput.value || null;
-        row.state = validateRow(row);
-        show();
-      });
-    }
-    sportTd.append(sportInput);
-    tr.append(sportTd);
 
     // Home/Away and Opponent - editable
     const matchupTd = document.createElement('td');
@@ -578,14 +557,16 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     locTd.append(locInput);
     tr.append(locTd);
 
-    // Problems
-    const problemsTd = document.createElement('td');
+    // Problems - only show if there are problems
     const problemsText = [...row.problems];
     if (row.emailError) {
       problemsText.push('Transportation email not sent: ' + row.emailError);
     }
-    problemsTd.textContent = problemsText.join('; ');
-    tr.append(problemsTd);
+    if (problemsText.length > 0) {
+      const problemsTd = document.createElement('td');
+      problemsTd.textContent = problemsText.join('; ');
+      tr.append(problemsTd);
+    }
 
     // Actions (delete button)
     const actionsTd = document.createElement('td');

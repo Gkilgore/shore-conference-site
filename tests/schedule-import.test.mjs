@@ -55,8 +55,8 @@ test('TBD start times are valid import rows and display as TBD', async () => {
   await input.onchange();
   const [row] = elements.get('import-preview').tBodies[0].children;
   assert.equal(row.className, 'is-ready');
-  // New editable UI: time input at index 4 should have empty value for TBD
-  const timeCell = row.children[4];
+  // After removing File and Sport columns: time input at index 3
+  const timeCell = row.children[3];
   assert.ok(timeCell.children && timeCell.children.length > 0, 'Time cell should contain input element');
   controller.stop();
 });
@@ -138,10 +138,10 @@ test('CSV import emails a scheduled bus and reports delivery failure without los
   await input.onchange();
   await elements.get('import-save').onclick();
   assert.match(elements.get('import-summary').textContent, /transportation email was not sent/i);
-  // With new editable UI, problems are in children[8], status in children[2]
-  assert.match(elements.get('import-preview').tBodies[0].children[0].children[8].textContent,
+  // After removing File and Sport columns, with problems: problems in children[6], status in children[1]
+  assert.match(elements.get('import-preview').tBodies[0].children[0].children[6].textContent,
     /Transportation email not sent: Transportation contact is missing/);
-  assert.match(elements.get('import-preview').tBodies[0].children[0].children[2].textContent, /Posted/);
+  assert.match(elements.get('import-preview').tBodies[0].children[0].children[1].textContent, /Posted/);
   controller.stop();
 });
 
