@@ -80,12 +80,7 @@ function startStaffSchedule(client, invite) {
   const coachImport = startCoachImport(client, {
     currentSchool, coaches: () => coachList.coaches(), onImported: () => coachList.load(),
   });
-  const importer = startStaffImport(client, {
-    currentSchool, schools: () => schools, opponents: () => opponents.directory(), existingGames: () => allGames,
-    onImported: date => { feedback(''); gamesNext.hidden = false; loadGames(date); },
-    post: ids => publication.post(ids),
-    sendTransportationEmail: id => transportation.sendForSavedGame(id),
-  });
+  let importer;
   // Conference admins and site admins keep the Shore Conference logo and colors on every tab.
   let viewRole = invite.role;
   const conferenceView = () => viewRole === 'conference_office' || (isSiteAdmin && !preview.value);
@@ -118,6 +113,13 @@ function startStaffSchedule(client, invite) {
     teams: () => teams.all(), links: () => overview.links(), states: () => publication.states(),
     schoolName: slug => schools.find(school => school.slug === slug)?.name,
     openGame: game => openEditor(game), canEdit: () => canEdit,
+  });
+  importer = startStaffImport(client, {
+    currentSchool, schools: () => schools, opponents: () => opponents.directory(), existingGames: () => allGames,
+    onImported: date => { feedback(''); gamesNext.hidden = false; loadGames(date); },
+    post: ids => publication.post(ids),
+    sendTransportationEmail: id => transportation.sendForSavedGame(id),
+    getSelectedTeam: () => teamSchedule.selected(),
   });
   // Add game starts with a team filled in, from My Teams or the Schedule tab's picker.
   function addGameFor(team) {

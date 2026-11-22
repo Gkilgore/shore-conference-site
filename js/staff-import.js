@@ -1,6 +1,6 @@
 // Imports games from a CSV file: reads it, previews every row, flags problems, then saves the ready rows.
-const importColumns = ['date', 'start_time', 'sport', 'gender', 'level', 'season', 'home_away', 'opponent',
-  'location', 'status', 'bus_departure', 'pickup_location', 'early_dismissal_time', 'return_time', 'transport_notes', 'notes'];
+const importColumns = ['date', 'start_time', 'sport', 'home_away', 'opponent',
+  'location', 'bus_departure', 'pickup_location', 'early_dismissal_time', 'return_time', 'transport_notes', 'notes'];
 const importAliases = {
   game_date: 'date', time: 'start_time', start: 'start_time', 'home/away': 'home_away', home_or_away: 'home_away',
   venue: 'location', 'bus departure': 'bus_departure', bus: 'bus_departure', pickup: 'pickup_location',
@@ -231,7 +231,7 @@ function escapeCsvCell(value) {
 }
 
 // Combines file previews before any saves, with one duplicate set and accurate file/row labels.
-async function previewScheduleFiles(files, check) {
+async function previewScheduleFiles(files, check, teamInfo) {
   const rows = [], errors = [], seen = new Set();
   if (files.length > 20) return { rows, errors: ['Choose up to 20 files at a time.'] };
   for (const file of files) {
@@ -277,7 +277,7 @@ async function previewScheduleFiles(files, check) {
         }
 
         // Build CSV
-        const header = 'date,start_time,home_away,opponent,location,sport,gender,level,status,notes';
+        const header = 'date,start_time,home_away,opponent,location,sport,season,status,notes';
         const csvRows = [header];
         
         games.forEach(game => {
@@ -288,8 +288,7 @@ async function previewScheduleFiles(files, check) {
             game.opponent || '',
             game.location || '',
             game.sport || '',
-            game.gender || '',
-            game.level || '',
+            game.season || '',
             game.status || '',
             game.notes || ''
           ];
@@ -313,7 +312,7 @@ async function previewScheduleFiles(files, check) {
           return { rows: [], errors: [...errors, 'Import up to 500 games at a time across all selected files.'] };
         }
         
-        rows.push(...dataRows.map((cells,index) => ({ ...check(cells,header2,seen), source: { file: file.name, row: index+2 } })));
+        rows.push(...dataRows.map((cells,index) => ({ ...check(cells,header2,seen,teamInfo), source: { file: file.name, row: index+2 } })));
       } catch (error) {
         // Check if it's a scanned PDF (image-based)
         const errorMsg = error.message || '';
@@ -338,18 +337,18 @@ async function previewScheduleFiles(files, check) {
         const key = name.trim().toLowerCase();
         return importAliases[key] ?? importAliases[key.replace(/ /g, '_')] ?? key.replace(/ /g, '_');
       });
-      const missing = ['date','start_time','sport','gender','level','home_away','opponent','location'].filter(name => !header.includes(name));
+      const missing = ['date','start_time','sport','home_away','opponent','location'].filter(name => !header.includes(name));
       if (missing.length) { errors.push(file.name + ': missing columns: ' + missing.join(', ') + '. Start from the template.'); continue; }
       if (!dataRows.length) { errors.push(file.name + ': has a header row but no games.'); continue; }
       if (rows.length + dataRows.length > 500) return { rows: [], errors: [...errors, 'Import up to 500 games at a time across all selected files.'] };
-      rows.push(...dataRows.map((cells,index) => ({ ...check(cells,header,seen), source: { file: file.name, row: index+2 } })));
+      rows.push(...dataRows.map((cells,index) => ({ ...check(cells,header,seen,teamInfo), source: { file: file.name, row: index+2 } })));
     }
   }
   return { rows, errors };
 }
 
 function startStaffImport(client, { currentSchool, schools, opponents = () => [], existingGames, onImported, sendTransportationEmail,
-  post = async () => ({ ok: true, held: [], heldIds: new Set() }) }) {
+  getSelectedTeam = () => null, post = async () => ({ ok: true, held: [], heldIds: new Set() }) }) {
   const fileInput = document.getElementById('import-file');
   const template = document.getElementById('import-template');
   const summary = document.getElementById('import-summary');
@@ -361,7 +360,7 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
   let fileErrors = [], requestNumber = 0;
   let active = true;
 
-  function check(cells, header, seen) {
+  function check(cells, header, seen, teamInfo) {
     const raw = Object.fromEntries(importColumns.map(name => [name, (cells[header.indexOf(name)] ?? '').trim()]));
     const problems = [];
     const need = (name, label) => { if (!raw[name]) problems.push(label + ' is missing'); return raw[name]; };
@@ -375,10 +374,8 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     if (raw.start_time && !timeIsTbd && !game.start_time) problems.push('Use a time like 3:45 PM, 15:45 or TBD');
     game.sport = need('sport', 'Sport') && raw.sport.replace(/\s+/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase());
     if (game.sport && game.sport.length > 60) problems.push('Sport is too long');
-    game.gender = need('gender', 'Gender') && pickValue(raw.gender, { Boys: ['boys', 'b', 'boy', 'mens'], Girls: ['girls', 'g', 'girl', 'womens'], Coed: ['coed', 'co-ed', 'mixed'] });
-    if (raw.gender && !game.gender) problems.push('Gender must be Boys, Girls or Coed');
-    game.level = need('level', 'Level') && pickValue(raw.level, { Varsity: ['varsity', 'v', 'var'], JV: ['jv', 'junior varsity'], Freshman: ['freshman', 'fr', 'f', '9th', 'frosh'] });
-    if (raw.level && !game.level) problems.push('Level must be Varsity, JV or Freshman');
+    game.gender = teamInfo?.gender || null;
+    game.level = teamInfo?.level || null;
     game.season = raw.season
       ? pickValue(raw.season, { Fall: ['fall'], Winter: ['winter'], Spring: ['spring'] })
       : game.sport && seasonOf(game.sport, game.gender);
@@ -484,8 +481,8 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
 
   template.onclick = () => {
     const lines = [importColumns.join(','),
-      '2026-11-09,3:45 PM,Soccer,Girls,Varsity,Fall,Home,Colts Neck,Marlboro Turf Field,Scheduled,,,,,,',
-      '2026-11-12,4:00 PM,Field Hockey,Girls,JV,Fall,Away,Shore Regional,Shore Regional Turf Field,Scheduled,3:00 PM,Front loop,1:30 PM,6:30 PM,,'];
+      '2026-11-09,3:45 PM,Soccer,Fall,Home,Colts Neck,Marlboro Turf Field,Scheduled,,,,,,',
+      '2026-11-12,4:00 PM,Field Hockey,Fall,Away,Shore Regional,Shore Regional Turf Field,Scheduled,3:00 PM,Front loop,1:30 PM,6:30 PM,,'];
     const link = document.createElement('a');
     link.href = URL.createObjectURL(new Blob([lines.join('\r\n') + '\r\n'], { type: 'text/csv' }));
     link.download = 'game-import-template.csv';
@@ -500,7 +497,9 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     fileErrors = [];
     summary.textContent = files.length ? 'Reading files…' : '';
     if (!files.length) return show();
-    const preview = await previewScheduleFiles(files, check);
+    const selectedTeam = getSelectedTeam();
+    const teamInfo = selectedTeam ? { gender: selectedTeam.gender, level: selectedTeam.level } : null;
+    const preview = await previewScheduleFiles(files, check, teamInfo);
     if (!active || request !== requestNumber) return;
     rows = preview.rows.sort((a,b) => [a.game.sport,a.game.gender,a.game.level,a.game.season].join('|')
       .localeCompare([b.game.sport,b.game.gender,b.game.level,b.game.season].join('|')));
