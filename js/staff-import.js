@@ -72,10 +72,17 @@ function pickValue(value, choices) {
 // Combines file previews before any saves, with one duplicate set and accurate file/row labels.
 async function previewScheduleFiles(files, check) {
   const rows = [], errors = [], seen = new Set();
-  if (files.length > 20) return { rows, errors: ['Choose up to 20 CSV files at a time.'] };
+  if (files.length > 20) return { rows, errors: ['Choose up to 20 files at a time.'] };
   for (const file of files) {
     if (file.size > 1048576) { errors.push(file.name + ': over 1 MB. Split this file into smaller files.'); continue; }
-    if (!/\.csv$/i.test(file.name)) { errors.push(file.name + ': choose a CSV file.'); continue; }
+    if (!/\.csv$/i.test(file.name)) { 
+      if (/\.pdf$/i.test(file.name)) {
+        errors.push(file.name + ': PDF could not be converted. Try uploading as CSV instead.');
+      } else {
+        errors.push(file.name + ': choose a CSV or PDF file.');
+      }
+      continue; 
+    }
     let text;
     try { text = await file.text(); } catch { errors.push(file.name + ': could not be read. Choose it again.'); continue; }
     const [headerRow = [], ...dataRows] = parseCsv(text);

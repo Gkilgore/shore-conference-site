@@ -36,10 +36,46 @@ console.log('[PDF Import] Script loaded');
   console.log('[PDF Import] Both file input and upload button found, initializing');
 
   // Enable/disable upload button when files are selected
-  fileInput.addEventListener('change', function() {
+  // Also auto-convert PDFs if selected
+  fileInput.addEventListener('change', async function() {
     console.log('[PDF Import] File input changed, files:', this.files.length);
     uploadBtn.disabled = this.files.length === 0;
     console.log('[PDF Import] Upload button disabled:', uploadBtn.disabled);
+    
+    const files = Array.from(this.files);
+    const pdfFiles = files.filter(f => /\.pdf$/i.test(f.name));
+    const csvFiles = files.filter(f => /\.csv$/i.test(f.name));
+    
+    // Auto-convert PDFs if any are selected
+    if (pdfFiles.length > 0) {
+      console.log('[PDF Import] PDFs detected, auto-converting...');
+      try {
+        const convertedFiles = await convertPdfsToCSV(pdfFiles);
+        console.log('[PDF Import] Successfully converted', convertedFiles.length, 'PDFs');
+        
+        // Replace files with converted CSVs + any original CSVs
+        const allFiles = [...convertedFiles, ...csvFiles];
+        const dataTransfer = new DataTransfer();
+        allFiles.forEach(f => dataTransfer.items.add(f));
+        fileInput.files = dataTransfer.files;
+        console.log('[PDF Import] File input updated with', fileInput.files.length, 'converted CSVs');
+        
+        // Trigger the onchange handler to process converted files
+        if (fileInput.onchange) {
+          console.log('[PDF Import] Triggering onchange handler');
+          fileInput.onchange({ target: fileInput });
+        }
+      } catch (error) {
+        console.error('[PDF Import] PDF conversion error:', error);
+        const errorList = document.getElementById('import-file-errors');
+        if (errorList) {
+          errorList.hidden = false;
+          const item = document.createElement('li');
+          item.textContent = 'Error converting PDF: ' + error.message;
+          errorList.appendChild(item);
+        }
+      }
+    }
   });
 
   // Handle upload button click

@@ -160,3 +160,22 @@ test('combined preview over 500 rows is rejected without a partial import batch'
   assert.equal(result.rows.length,0);
   assert.match(result.errors.at(-1),/500/);
 });
+
+test('PDF file triggers appropriate error message', async () => {
+  assert.equal(typeof context.previewScheduleFiles, 'function');
+  const result = await context.previewScheduleFiles([
+    new File(['fake pdf content'], 'schedule.pdf'),
+  ], () => ({ state: 'ready', game: {}, raw: {}, problems: [] }));
+  assert.equal(result.rows.length, 0);
+  assert.match(result.errors[0], /schedule.pdf.*PDF could not be converted/i);
+});
+
+test('mixed CSV and other files show helpful error', async () => {
+  assert.equal(typeof context.previewScheduleFiles, 'function');
+  const result = await context.previewScheduleFiles([
+    new File([header + '\n' + row], 'valid.csv'),
+    new File(['data'], 'invalid.txt'),
+  ], () => ({ state: 'ready', game: {}, raw: {}, problems: [] }));
+  assert.equal(result.rows.length, 1);
+  assert.match(result.errors[0], /invalid.txt.*choose a CSV or PDF file/i);
+});
