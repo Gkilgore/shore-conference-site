@@ -912,6 +912,7 @@ textarea { display: block; resize: vertical; }
 .social-links.social-scroll .button { width: 100%; }
 .social-scroll:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
 .social-scroll-hint { margin: 0 0 0.4rem; font-size: 0.92rem; color: var(--muted); }
+.social-scroll-control { margin-bottom: 0.5rem; }
 @media (max-width: 640px) {
   .social-scroll { grid-auto-columns: 85%; }
 }

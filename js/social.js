@@ -28,7 +28,50 @@ function loadInstagramEmbeds() {
   return instagramScript.then(() => window.instgrm?.Embeds?.process());
 }
 
+let stopSocialScrolling = [];
+function autoScrollSocial(list, button) {
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let paused = reducedMotion.matches;
+  let hovering = false;
+  let focused = false;
+  const updateButton = () => {
+    button.textContent = (paused ? 'Play ' : 'Pause ') + list.getAttribute('aria-label') + ' scrolling';
+  };
+  const onClick = () => { paused = !paused; updateButton(); };
+  const onEnter = () => { hovering = true; };
+  const onLeave = () => { hovering = false; };
+  const onFocus = () => { focused = true; };
+  const onBlur = event => { if (!list.contains(event.relatedTarget)) focused = false; };
+  const onMotionChange = event => { if (event.matches) { paused = true; updateButton(); } };
+  button.addEventListener('click', onClick);
+  list.addEventListener('pointerenter', onEnter);
+  list.addEventListener('pointerleave', onLeave);
+  list.addEventListener('focusin', onFocus);
+  list.addEventListener('focusout', onBlur);
+  reducedMotion.addEventListener('change', onMotionChange);
+  updateButton();
+  const timer = setInterval(() => {
+    if (paused || hovering || focused || document.hidden || !list.clientWidth) return;
+    const max = list.scrollWidth - list.clientWidth;
+    if (max <= 0) return;
+    const step = list.children[1]?.offsetLeft - list.children[0]?.offsetLeft || list.clientWidth;
+    list.scrollTo({ left: list.scrollLeft >= max - 1 ? 0 : Math.min(list.scrollLeft + step, max),
+      behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+  }, 5000);
+  return () => {
+    clearInterval(timer);
+    button.removeEventListener('click', onClick);
+    list.removeEventListener('pointerenter', onEnter);
+    list.removeEventListener('pointerleave', onLeave);
+    list.removeEventListener('focusin', onFocus);
+    list.removeEventListener('focusout', onBlur);
+    reducedMotion.removeEventListener('change', onMotionChange);
+  };
+}
+
 function renderSocialAccounts(host, accounts) {
+  stopSocialScrolling.forEach(stop => stop());
+  stopSocialScrolling = [];
   const node = (tag, className, text) => {
     const element = document.createElement(tag);
     if (className) element.className = className;
@@ -36,15 +79,20 @@ function renderSocialAccounts(host, accounts) {
     return element;
   };
   const linkGroups = [];
+  const scrollGroups = [];
   for (const platform of ['facebook', 'x']) {
     const group = accounts.filter(account => account.platform === platform);
     if (!group.length) continue;
     const links = node('ul', 'social-links');
     if (group.length >= 4) {
       linkGroups.push(node('p', 'social-scroll-hint', 'Scroll sideways for more ' + group[0].label + ' accounts.'));
+      const button = node('button', 'button secondary social-scroll-control');
+      button.type = 'button';
+      linkGroups.push(button);
       links.classList.add('social-scroll');
       links.setAttribute('tabindex', '0');
       links.setAttribute('aria-label', group[0].label + ' accounts');
+      scrollGroups.push([links, button]);
     }
     for (const account of group) {
       const link = node('a', 'button secondary', account.name + ' · ' + account.label + ' ' + account.handle);
@@ -62,11 +110,14 @@ function renderSocialAccounts(host, accounts) {
   const instagramAccounts = accounts.filter(account => account.platform === 'instagram');
   const scrollInstagram = instagramAccounts.length >= 4;
   document.getElementById('social-instagram-hint').hidden = !scrollInstagram;
+  const instagramButton = document.getElementById('social-instagram-scroll');
+  instagramButton.hidden = !scrollInstagram;
   host.classList.toggle('social-scroll', scrollInstagram);
   if (scrollInstagram) {
     host.setAttribute('tabindex', '0');
     host.setAttribute('role', 'region');
     host.setAttribute('aria-label', 'Instagram accounts');
+    scrollGroups.push([host, instagramButton]);
   } else {
     host.removeAttribute('tabindex');
     host.removeAttribute('role');
@@ -81,6 +132,7 @@ function renderSocialAccounts(host, accounts) {
     return { frame, status, instagram };
   });
   host.replaceChildren(...frames.map(item => item.frame));
+  stopSocialScrolling = scrollGroups.map(([list, button]) => autoScrollSocial(list, button));
 
   for (const { frame, status, instagram } of frames) {
   const show = async () => {

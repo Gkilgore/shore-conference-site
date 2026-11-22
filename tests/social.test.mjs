@@ -127,11 +127,12 @@ class Element {
   find(check) { return this.children.flatMap(child => child instanceof Element ? [child, ...child.find(() => true)] : []).filter(check); }
 }
 
-test('public accounts scroll by platform only when that platform has four or more', () => {
+test('public accounts auto-scroll by platform, pause accessibly, and reset when schools change', () => {
   class PublicElement extends Element {
     constructor(tag) {
       super(tag);
       this.className = '';
+      this.events = {};
       this.classList = {
         add: name => this.classList.toggle(name, true),
         toggle: (name, enabled) => {
@@ -142,14 +143,33 @@ test('public accounts scroll by platform only when that platform has four or mor
         contains: name => this.className.split(' ').includes(name),
       };
     }
+    getAttribute(name) { return this.attributes[name]; }
+    addEventListener(name, callback) { this.events[name] = callback; }
+    removeEventListener(name) { delete this.events[name]; }
+    contains(target) { return this === target || this.children.includes(target); }
+    scrollTo(options) { this.scrollLeft = options.left; this.lastScroll = options; }
   }
   const elements = {
     'social-links': new PublicElement(),
     'social-instagram-hint': new PublicElement(),
+    'social-instagram-scroll': new PublicElement('button'),
   };
   const document = { createElement: tag => new PublicElement(tag), getElementById: id => elements[id] || null };
   class IntersectionObserver { observe() {} }
-  const publicPage = vm.createContext({ document, window: { IntersectionObserver }, IntersectionObserver });
+  let reduced = false;
+  const mediaQueries = [];
+  const matchMedia = () => {
+    const media = { matches: reduced, events: {}, addEventListener(name, fn) { this.events[name] = fn; },
+      removeEventListener(name) { delete this.events[name]; } };
+    mediaQueries.push(media);
+    return media;
+  };
+  const timers = new Map();
+  let timerId = 0;
+  const setInterval = (fn, delay) => { assert.equal(delay, 5000); timers.set(++timerId, fn); return timerId; };
+  const clearInterval = id => timers.delete(id);
+  const publicPage = vm.createContext({ document, window: { IntersectionObserver, matchMedia },
+    IntersectionObserver, setInterval, clearInterval });
   vm.runInContext(read('js/social.js') + ';globalThis.render = renderSocialAccounts;', publicPage);
   const host = new PublicElement();
   const accounts = (platform, count) => Array.from({ length: count }, (_, i) => ({
@@ -161,22 +181,58 @@ test('public accounts scroll by platform only when that platform has four or mor
   assert.equal(host.classList.contains('social-scroll'), true);
   assert.equal(host.attributes.tabindex, '0');
   assert.equal(elements['social-instagram-hint'].hidden, false);
-  const [hint, facebook, x] = elements['social-links'].children;
+  const [hint, facebookButton, facebook, x] = elements['social-links'].children;
   assert.match(hint.textContent, /Facebook/);
   assert.equal(facebook.classList.contains('social-scroll'), true);
   assert.equal(facebook.children.length, 4);
   assert.equal(x.classList.contains('social-scroll'), false);
   assert.equal(x.children.length, 3);
+  assert.equal(timers.size, 2);
+
+  host.clientWidth = 300;
+  host.scrollWidth = 600;
+  host.scrollLeft = 0;
+  host.children[0].offsetLeft = 0;
+  host.children[1].offsetLeft = 100;
+  const tickInstagram = [...timers.values()][1];
+  tickInstagram();
+  assert.equal(host.scrollLeft, 100);
+  host.scrollLeft = 300;
+  tickInstagram();
+  assert.equal(host.scrollLeft, 0);
+  const button = elements['social-instagram-scroll'];
+  button.events.click();
+  assert.match(button.textContent, /^Play/);
+  tickInstagram();
+  assert.equal(host.scrollLeft, 0);
+  button.events.click();
+  host.events.focusin();
+  tickInstagram();
+  assert.equal(host.scrollLeft, 0);
+  host.events.focusout({ relatedTarget: null });
+  host.events.pointerenter();
+  tickInstagram();
+  assert.equal(host.scrollLeft, 0);
+  host.events.pointerleave();
+  tickInstagram();
+  assert.equal(host.scrollLeft, 100);
+  mediaQueries[1].events.change({ matches: true });
+  assert.match(button.textContent, /^Play/);
 
   host.scrollLeft = 100;
+  reduced = true;
   publicPage.render(host, [...accounts('instagram', 3), ...accounts('x', 4)]);
   assert.equal(host.children.length, 3);
   assert.equal(host.classList.contains('social-scroll'), false);
   assert.equal(host.attributes.tabindex, undefined);
   assert.equal(host.scrollLeft, 0);
   assert.equal(elements['social-instagram-hint'].hidden, true);
+  assert.equal(button.hidden, true);
+  assert.equal(timers.size, 1);
+  assert.equal(facebookButton.events.click, undefined);
   assert.match(elements['social-links'].children[0].textContent, /X/);
-  assert.equal(elements['social-links'].children[1].classList.contains('social-scroll'), true);
+  assert.match(elements['social-links'].children[1].textContent, /^Play/);
+  assert.equal(elements['social-links'].children[2].classList.contains('social-scroll'), true);
 });
 
 function mountStaff({ saved = [], error = null, writeError = null } = {}) {
