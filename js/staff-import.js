@@ -533,7 +533,20 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     oppInput.placeholder = 'Opponent';
     if (typeof oppInput.addEventListener === 'function') {
       oppInput.addEventListener('change', () => {
-        game.opponent_name = oppInput.value || null;
+        const newValue = oppInput.value || null;
+        game.opponent_name = newValue;
+        // When opponent is manually edited, check if it matches a directory entry
+        if (newValue) {
+          const listed = opponents().find(item =>
+            [item.name.toLowerCase(), item.slug].includes(newValue.toLowerCase()));
+          const member = listed && schools().find(item =>
+            item.slug === listed.slug && item.is_conference_member);
+          game.opponent_school_id = member && member.slug !== game.school_id ? member.slug : null;
+          game.opponent_directory_slug = listed?.slug ?? null;
+        } else {
+          game.opponent_school_id = null;
+          game.opponent_directory_slug = null;
+        }
         row.state = validateRow(row);
         show();
       });
@@ -664,6 +677,33 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     show();
   };
 
+  function sanitizeGameForSave(game) {
+    // Create a copy to avoid mutating the original
+    const sanitized = { ...game };
+    // Ensure all fields that the backend expects are present, using null for missing values
+    // The backend will handle null values appropriately
+    sanitized.id = sanitized.id || null;
+    sanitized.revision = sanitized.revision || null;
+    // Ensure required string fields are not undefined
+    if (sanitized.school_id === undefined) sanitized.school_id = null;
+    if (sanitized.sport === undefined) sanitized.sport = null;
+    if (sanitized.gender === undefined) sanitized.gender = null;
+    if (sanitized.level === undefined) sanitized.level = null;
+    if (sanitized.season === undefined) sanitized.season = null;
+    if (sanitized.home_away === undefined) sanitized.home_away = null;
+    if (sanitized.location === undefined) sanitized.location = null;
+    if (sanitized.status === undefined) sanitized.status = null;
+    // Optional fields
+    if (sanitized.opponent_name === undefined) sanitized.opponent_name = null;
+    if (sanitized.opponent_school_id === undefined) sanitized.opponent_school_id = null;
+    if (sanitized.opponent_directory_slug === undefined) sanitized.opponent_directory_slug = null;
+    if (sanitized.notes === undefined) sanitized.notes = null;
+    if (sanitized.pickup_location === undefined) sanitized.pickup_location = null;
+    if (sanitized.transport_notes === undefined) sanitized.transport_notes = null;
+    if (sanitized.import_batch === undefined) sanitized.import_batch = null;
+    return sanitized;
+  }
+
   saveBtn.onclick = async () => {
     const request = requestNumber;
     const ready = rows.filter(row => row.state === 'ready');
@@ -676,12 +716,15 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     for (const [index, row] of ready.entries()) {
       if (!active || request !== requestNumber) return;
       summary.textContent = 'Importing ' + (index + 1) + ' of ' + ready.length + '…';
-      const { data, error } = await client.rpc('save_staff_game', { input: row.game });
+      const sanitized = sanitizeGameForSave(row.game);
+      const { data, error } = await client.rpc('save_staff_game', { input: sanitized });
       if (!active || request !== requestNumber) return;
       row.state = error ? 'failed' : 'held';
       row.id = data;
-      if (error) row.problems.push('Could not be saved. Check this row and try again.');
-      else if (row.game.status === 'Scheduled' && row.game.bus_departure && sendTransportationEmail) {
+      if (error) {
+        const errorMsg = error.message || (typeof error === 'string' ? error : 'Could not be saved. Check this row and try again.');
+        row.problems.push(errorMsg);
+      } else if (row.game.status === 'Scheduled' && row.game.bus_departure && sendTransportationEmail) {
         const result = await sendTransportationEmail(data);
         if (!active || request !== requestNumber) return;
         if (!result.ok) row.emailError = result.message;
