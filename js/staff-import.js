@@ -568,20 +568,6 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
       tr.append(problemsTd);
     }
 
-    // Actions (delete button)
-    const actionsTd = document.createElement('td');
-    const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = 'Remove';
-    deleteBtn.className = 'button secondary import-delete-row';
-    if (typeof deleteBtn.addEventListener === 'function') {
-      deleteBtn.addEventListener('click', () => {
-        rows.splice(rowIndex, 1);
-        show();
-      });
-    }
-    actionsTd.append(deleteBtn);
-    tr.append(actionsTd);
-
     return tr;
   }
 
