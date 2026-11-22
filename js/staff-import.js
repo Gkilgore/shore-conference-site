@@ -69,32 +69,281 @@ function pickValue(value, choices) {
   return null;
 }
 
+// Helper functions for PDF text parsing
+function parsePdfScheduleText(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+  const games = [];
+  let currentDate = null;
+  let i = 0;
+
+  // Pattern for day of week with date (e.g., "TUESDAY, DEC 08, 2026")
+  const datePattern = /^(MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY|SATURDAY|SUNDAY),?\s+([A-Z]+)\s+(\d{1,2}),?\s+(\d{4})/i;
+  
+  // Pattern for time (e.g., "4:00pm", "5:30pm")
+  const timePattern = /^\d{1,2}:\d{2}\s*(am|pm|a\.m\.|p\.m\.)?/i;
+
+  while (i < lines.length) {
+    const line = lines[i];
+    
+    // Check for date line
+    const dateMatch = line.match(datePattern);
+    if (dateMatch) {
+      const monthStr = dateMatch[2];
+      const day = dateMatch[3];
+      const year = dateMatch[4];
+      currentDate = parseMonthDayYear(monthStr, day, year);
+      i++;
+      continue;
+    }
+
+    // Check for time line
+    if (currentDate && timePattern.test(line)) {
+      const timeStr = formatTime(line);
+      
+      // Look ahead for the rest of the game info
+      let homeAway = '';
+      let opponent = '';
+      let location = '';
+      let status = '';
+      let j = i + 1;
+
+      // Next line should have home/away indicator (H or A)
+      if (j < lines.length) {
+        const nextLine = lines[j];
+        if (nextLine === 'H' || nextLine.match(/^Home/i)) {
+          homeAway = 'Home';
+          j++;
+        } else if (nextLine === 'A' || nextLine.match(/^Away/i) || nextLine === '@') {
+          homeAway = 'Away';
+          j++;
+        }
+      }
+
+      // Look for opponent name and other details in next few lines
+      while (j < lines.length && j < i + 10) {
+        const nextLine = lines[j];
+        
+        // Stop if we hit another date
+        if (nextLine.match(datePattern)) break;
+        
+        // Check if this line has opponent info
+        const opMatch = nextLine.match(/(?:@\s+|vs\.?\s+|VS\s+)(.+?)(?:\s*\/|$)/i);
+        if (opMatch) {
+          opponent = opMatch[1].trim();
+          // Remove extra info after the opponent name
+          opponent = opponent.replace(/\s+or\s+.*/i, '').replace(/\s+\(.*\)/, '').trim();
+        }
+        
+        // Check for game type (SCRIMMAGE, GAME, TOURNAMENT, Play Day)
+        if (nextLine.match(/^(SCRIMMAGE|GAME|TOURNAMENT|Play Day)/i)) {
+          status = 'Scheduled';
+          j++;
+          break;
+        }
+        
+        // Check for facility/location - but skip if it's just a category label
+        if (nextLine.match(/(?:Gym|Gymnasium|Field|School|Court|Arena|Main|North|South|East|West|Off Site)/i)
+            && !nextLine.match(/^(Sport|Start Time|H\/A|Opponents|Type|Facility|Girls Varsity)$/i)) {
+          if (!location) {
+            location = nextLine;
+          }
+        }
+        
+        j++;
+      }
+
+      // Add the game if we have enough info
+      if (currentDate && timeStr) {
+        games.push({
+          date: currentDate,
+          start_time: timeStr,
+          home_away: homeAway || 'Home',
+          opponent: opponent.replace(/\s+\/.*$/, '').trim() || 'TBD',
+          location: location.replace(/\s+-.*$/, '').trim() || 'TBD',
+          sport: 'Basketball',
+          gender: 'Girls',
+          level: 'Varsity',
+          status: status || 'Scheduled',
+          notes: ''
+        });
+      }
+
+      i = j;
+      continue;
+    }
+
+    i++;
+  }
+
+  return games;
+}
+
+function parseMonthDayYear(monthStr, day, year) {
+  const monthMap = {
+    'JAN': '01', 'JANUARY': '01',
+    'FEB': '02', 'FEBRUARY': '02',
+    'MAR': '03', 'MARCH': '03',
+    'APR': '04', 'APRIL': '04',
+    'MAY': '05',
+    'JUN': '06', 'JUNE': '06',
+    'JUL': '07', 'JULY': '07',
+    'AUG': '08', 'AUGUST': '08',
+    'SEP': '09', 'SEPTEMBER': '09',
+    'OCT': '10', 'OCTOBER': '10',
+    'NOV': '11', 'NOVEMBER': '11',
+    'DEC': '12', 'DECEMBER': '12'
+  };
+
+  const month = monthMap[monthStr.toUpperCase()];
+  if (!month) return null;
+
+  return `${year}-${month}-${String(day).padStart(2, '0')}`;
+}
+
+function formatTime(timeStr) {
+  // Convert "4:00pm" to "16:00" format, keeping "TBD" as-is
+  if (timeStr.toLowerCase() === 'tbd') return 'TBD';
+  
+  const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(am|pm|a\.m\.|p\.m\.)?/i);
+  if (!match) return timeStr;
+
+  let hour = Number(match[1]);
+  const minute = match[2];
+  const meridiem = match[3];
+
+  if (meridiem) {
+    if (hour === 12) {
+      hour = meridiem.toLowerCase().startsWith('a') ? 0 : 12;
+    } else if (meridiem.toLowerCase().startsWith('p')) {
+      hour += 12;
+    }
+  }
+
+  return `${String(hour).padStart(2, '0')}:${minute}`;
+}
+
+function escapeCsvCell(value) {
+  if (!value) return '';
+  if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+    return '"' + value.replace(/"/g, '""') + '"';
+  }
+  return value;
+}
+
 // Combines file previews before any saves, with one duplicate set and accurate file/row labels.
 async function previewScheduleFiles(files, check) {
   const rows = [], errors = [], seen = new Set();
   if (files.length > 20) return { rows, errors: ['Choose up to 20 files at a time.'] };
   for (const file of files) {
     if (file.size > 1048576) { errors.push(file.name + ': over 1 MB. Split this file into smaller files.'); continue; }
-    if (!/\.csv$/i.test(file.name)) { 
-      if (/\.pdf$/i.test(file.name)) {
-        errors.push(file.name + ': PDF could not be converted. Try uploading as CSV instead.');
-      } else {
-        errors.push(file.name + ': choose a CSV or PDF file.');
+    
+    // Handle PDF files: attempt extraction via PDF.js if available
+    if (/\.pdf$/i.test(file.name)) {
+      if (!window.pdfjsLib) {
+        errors.push(file.name + ': PDF reader not available. Try uploading as CSV instead.');
+        continue;
       }
-      continue; 
+      try {
+        const pdf = await window.pdfjsLib.getDocument(await file.arrayBuffer()).promise;
+        let allText = '';
+        
+        // Extract all text from all pages
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const textContent = await page.getTextContent();
+          
+          // Build text from items, grouping by Y position for better line preservation
+          const itemsByY = {};
+          textContent.items.forEach(item => {
+            const y = Math.round(item.y);
+            if (!itemsByY[y]) itemsByY[y] = [];
+            itemsByY[y].push(item.str);
+          });
+          
+          // Sort by Y coordinate (descending, since PDF Y goes top to bottom)
+          const sortedLines = Object.keys(itemsByY)
+            .sort((a, b) => Number(b) - Number(a))
+            .map(y => itemsByY[y].join(' '));
+          
+          allText += sortedLines.join('\n') + '\n';
+        }
+        
+        // Parse the extracted text
+        const games = parsePdfScheduleText(allText);
+        
+        if (games.length === 0) {
+          errors.push(file.name + ': no games could be extracted. Check the PDF format.');
+          continue;
+        }
+
+        // Build CSV
+        const header = 'date,start_time,home_away,opponent,location,sport,gender,level,status,notes';
+        const csvRows = [header];
+        
+        games.forEach(game => {
+          const row = [
+            game.date || '',
+            game.start_time || '',
+            game.home_away || '',
+            game.opponent || '',
+            game.location || '',
+            game.sport || '',
+            game.gender || '',
+            game.level || '',
+            game.status || '',
+            game.notes || ''
+          ];
+          csvRows.push(row.map(cell => escapeCsvCell(String(cell))).join(','));
+        });
+
+        const csvText = csvRows.join('\n');
+        const cells = parseCsv(csvText);
+        const [headerRow = [], ...dataRows] = cells;
+        const header2 = headerRow.map(name => {
+          const key = name.trim().toLowerCase();
+          return importAliases[key] ?? importAliases[key.replace(/ /g, '_')] ?? key.replace(/ /g, '_');
+        });
+        
+        if (dataRows.length === 0) {
+          errors.push(file.name + ': PDF extracted no games.');
+          continue;
+        }
+        
+        if (rows.length + dataRows.length > 500) {
+          return { rows: [], errors: [...errors, 'Import up to 500 games at a time across all selected files.'] };
+        }
+        
+        rows.push(...dataRows.map((cells,index) => ({ ...check(cells,header2,seen), source: { file: file.name, row: index+2 } })));
+      } catch (error) {
+        // Check if it's a scanned PDF (image-based)
+        const errorMsg = error.message || '';
+        const isScannedPdf = errorMsg.includes('page is not structured') || errorMsg.includes('no text') || !allText || allText.trim().length === 0;
+        
+        if (isScannedPdf || (allText && allText.trim().split('\n').filter(l => l.trim()).length < 3)) {
+          errors.push(file.name + ': This is a scanned PDF image. Please convert it to text with OCR (optical character recognition) or save it as a CSV instead.');
+        } else {
+          errors.push(file.name + ': PDF could not be read (' + error.message + '). Check the format and try again.');
+        }
+        continue;
+      }
+    } else if (!/\.csv$/i.test(file.name)) {
+      errors.push(file.name + ': choose a CSV or PDF file.');
+      continue;
+    } else {
+      // Handle CSV files
+      let text;
+      try { text = await file.text(); } catch { errors.push(file.name + ': could not be read. Choose it again.'); continue; }
+      const [headerRow = [], ...dataRows] = parseCsv(text);
+      const header = headerRow.map(name => {
+        const key = name.trim().toLowerCase();
+        return importAliases[key] ?? importAliases[key.replace(/ /g, '_')] ?? key.replace(/ /g, '_');
+      });
+      const missing = ['date','start_time','sport','gender','level','home_away','opponent','location'].filter(name => !header.includes(name));
+      if (missing.length) { errors.push(file.name + ': missing columns: ' + missing.join(', ') + '. Start from the template.'); continue; }
+      if (!dataRows.length) { errors.push(file.name + ': has a header row but no games.'); continue; }
+      if (rows.length + dataRows.length > 500) return { rows: [], errors: [...errors, 'Import up to 500 games at a time across all selected files.'] };
+      rows.push(...dataRows.map((cells,index) => ({ ...check(cells,header,seen), source: { file: file.name, row: index+2 } })));
     }
-    let text;
-    try { text = await file.text(); } catch { errors.push(file.name + ': could not be read. Choose it again.'); continue; }
-    const [headerRow = [], ...dataRows] = parseCsv(text);
-    const header = headerRow.map(name => {
-      const key = name.trim().toLowerCase();
-      return importAliases[key] ?? importAliases[key.replace(/ /g, '_')] ?? key.replace(/ /g, '_');
-    });
-    const missing = ['date','start_time','sport','gender','level','home_away','opponent','location'].filter(name => !header.includes(name));
-    if (missing.length) { errors.push(file.name + ': missing columns: ' + missing.join(', ') + '. Start from the template.'); continue; }
-    if (!dataRows.length) { errors.push(file.name + ': has a header row but no games.'); continue; }
-    if (rows.length + dataRows.length > 500) return { rows: [], errors: [...errors, 'Import up to 500 games at a time across all selected files.'] };
-    rows.push(...dataRows.map((cells,index) => ({ ...check(cells,header,seen), source: { file: file.name, row: index+2 } })));
   }
   return { rows, errors };
 }
