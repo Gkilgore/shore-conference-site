@@ -1,15 +1,24 @@
-// Shows school social media beneath the upcoming games: one school on its own page, a school picker on Home.
+// Shows school social media beneath the upcoming games, including a conference-wide option on Home.
 // Posts stay on the platform. This site saves only each account's link and loads Instagram's own embed when
 // the section is about to scroll into view. Facebook and X are shown as links.
 async function loadSocialRows(school) {
   if (typeof shoreSupabase === 'undefined' || !shoreSupabase.url) return [];
   const query = 'select=school_id,platform,url,account_name' + (school ? '&school_id=eq.' + encodeURIComponent(school) : '');
   try {
-    const response = await fetch(shoreSupabase.url + '/rest/v1/school_social_accounts?' + query, {
-      headers: { apikey: shoreSupabase.publishableKey, Authorization: 'Bearer ' + shoreSupabase.publishableKey },
-      signal: AbortSignal.timeout(15000) });
-    return response.ok ? await response.json() : [];
-  } catch {
+    const rows = [];
+    while (true) {
+      const response = await fetch(shoreSupabase.url + '/rest/v1/school_social_accounts?' + query +
+        '&order=id.asc&limit=500&offset=' + rows.length, {
+        headers: { apikey: shoreSupabase.publishableKey, Authorization: 'Bearer ' + shoreSupabase.publishableKey },
+        signal: AbortSignal.timeout(15000) });
+      if (!response.ok) throw new Error('Social accounts request failed (' + response.status + ').');
+      const page = await response.json();
+      if (!Array.isArray(page)) throw new Error('Social accounts response was not a list.');
+      if (!page.length) return rows;
+      rows.push(...page);
+    }
+  } catch (error) {
+    console.error('Could not load social accounts:', error);
     return [];
   }
 }
@@ -107,6 +116,7 @@ function renderSocialAccounts(host, accounts) {
     if (text) element.textContent = text;
     return element;
   };
+  const accountName = account => (account.schoolName ? account.schoolName + ' · ' : '') + account.name;
   const linkGroups = [];
   const scrollGroups = [];
   for (const platform of ['facebook', 'x']) {
@@ -119,7 +129,7 @@ function renderSocialAccounts(host, accounts) {
       links.setAttribute('aria-label', group[0].label + ' accounts');
     }
     for (const account of group) {
-      const link = node('a', 'button secondary', account.name + ' · ' + account.label + ' ' + account.handle);
+      const link = node('a', 'button secondary', accountName(account) + ' · ' + account.label + ' ' + account.handle);
       link.href = account.url;
       link.target = '_blank';
       link.rel = 'noopener';
@@ -157,7 +167,7 @@ function renderSocialAccounts(host, accounts) {
     const frame = node('div', 'social-embed');
     const status = node('p', 'social-note', 'Loading Instagram…');
     status.setAttribute('role', 'status');
-    frame.append(node('p', 'eyebrow', instagram.name + ' · Instagram ' + instagram.handle), status);
+    frame.append(node('p', 'eyebrow', accountName(instagram) + ' · Instagram ' + instagram.handle), status);
     return { frame, status, instagram };
   });
   host.replaceChildren(...frames.map(item => item.frame));
@@ -203,7 +213,7 @@ function renderSocialAccounts(host, accounts) {
         const watcher = new MutationObserver(() => {
           embed = frame.querySelector('iframe.instagram-media-rendered');
           if (!embed) return;
-          embed.title = 'Instagram posts from ' + instagram.handle;
+          embed.title = 'Instagram posts from ' + (instagram.schoolName ? instagram.schoolName + ' · ' : '') + instagram.handle;
           watcher.disconnect();
           embed.addEventListener('load', onLoad, { once: true });
         });
@@ -247,25 +257,38 @@ function renderSocialAccounts(host, accounts) {
     return;
   }
 
-  // Home shows one school at a time, chosen from the picker.
+  // Home starts with all conference schools; visitors can choose one school instead.
   const schools = socialSchools(await loadSocialRows(), directory);
   if (!schools.length) return;
+  const allSchools = '';
+  const conferenceAccounts = conferenceSocialAccounts(schools);
   const schoolLink = document.getElementById('social-school-link');
   const more = document.getElementById('social-more');
   const next = document.getElementById('social-next');
   const showSchool = slug => {
+    if (slug === allSchools) {
+      picker.value = allSchools;
+      schoolLink.textContent = 'All Conference Schools';
+      schoolLink.href = 'schools.html';
+      more.href = 'schools.html';
+      more.textContent = 'Browse schools →';
+      next.hidden = false;
+      renderSocialAccounts(host, conferenceAccounts);
+      return;
+    }
     const school = schools.find(item => item.slug === slug) ?? schools[0];
     picker.value = school.slug;
     schoolLink.textContent = school.name;
     schoolLink.href = 'school.html?school=' + encodeURIComponent(school.slug);
     more.href = schoolLink.href + '#social';
     more.textContent = 'See more from ' + school.name + ' →';
+    next.hidden = schools.length < 2;
     renderSocialAccounts(host, school.accounts);
   };
-  picker.replaceChildren(...schools.map(school => new Option(school.name, school.slug)));
+  picker.replaceChildren(new Option('All Conference Schools', allSchools),
+    ...schools.map(school => new Option(school.name, school.slug)));
   picker.onchange = () => showSchool(picker.value);
-  next.hidden = schools.length < 2;
   next.onclick = () => showSchool(randomSocialSchool(schools, Math.random, picker.value).slug);
-  showSchool(randomSocialSchool(schools).slug);
+  showSchool(allSchools);
   section.hidden = false;
 })();

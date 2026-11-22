@@ -9,13 +9,21 @@
     'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.3.136/build/pdf.worker.min.js';
 
   const fileInput = document.getElementById('import-file');
-  if (!fileInput) return;
+  const uploadBtn = document.getElementById('import-upload');
+  if (!fileInput || !uploadBtn) return;
 
-  // Wrap the onchange handler to intercept PDF files
-  const originalOnChange = fileInput.onchange;
-  
-  fileInput.onchange = async function(event) {
-    const files = Array.from(this.files);
+  // Enable/disable upload button when files are selected
+  fileInput.addEventListener('change', function() {
+    uploadBtn.disabled = this.files.length === 0;
+  });
+
+  // Handle upload button click
+  uploadBtn.addEventListener('click', async function(event) {
+    event.preventDefault();
+    
+    const files = Array.from(fileInput.files);
+    if (files.length === 0) return;
+
     const csvFiles = files.filter(f => /\.csv$/i.test(f.name));
     const pdfFiles = files.filter(f => /\.pdf$/i.test(f.name));
 
@@ -43,11 +51,10 @@
       }
     }
 
-    // Trigger original change handler (which will trigger the import preview)
-    if (originalOnChange) {
-      originalOnChange.call(this, event);
-    }
-  };
+    // Trigger the original file input change handler to show preview
+    // This dispatches the change event which staff-import.js is listening for
+    fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+  });
 
   async function convertPdfsToCSV(pdfFiles) {
     const convertedFiles = [];

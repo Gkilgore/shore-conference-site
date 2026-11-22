@@ -86,3 +86,29 @@ function randomSocialSchool(schools, random = Math.random, exceptSlug = null) {
   if (!pool.length) return null;
   return pool[Math.floor(random() * pool.length)];
 }
+
+// Mix schools before interleaving their accounts so one school's teams do not fill the opening cards.
+function conferenceSocialAccounts(schools, random = Math.random) {
+  const shuffle = values => {
+    const mixed = [...values];
+    for (let i = mixed.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [mixed[i], mixed[j]] = [mixed[j], mixed[i]];
+    }
+    return mixed;
+  };
+  const shuffled = shuffle(schools);
+  const result = [];
+  for (const platform of Object.keys(socialPlatforms)) {
+    const groups = shuffled.map(school => ({
+      school,
+      accounts: shuffle(school.accounts.filter(account => account.platform === platform)),
+    }));
+    for (let i = 0; groups.some(group => i < group.accounts.length); i++) {
+      for (const { school, accounts } of groups) {
+        if (accounts[i]) result.push({ ...accounts[i], schoolName: school.name });
+      }
+    }
+  }
+  return result;
+}

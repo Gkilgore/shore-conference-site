@@ -6,8 +6,8 @@ import { readFileSync } from 'node:fs';
 const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const context = vm.createContext({ URL });
 vm.runInContext(read('js/social-links.js') +
-  ';globalThis.api = { socialPlatforms, socialAccount, socialAccountsFor, socialSchools, randomSocialSchool };', context);
-const { socialPlatforms, socialAccount, socialAccountsFor, socialSchools, randomSocialSchool } = context.api;
+  ';globalThis.api = { socialPlatforms, socialAccount, socialAccountsFor, socialSchools, randomSocialSchool, conferenceSocialAccounts };', context);
+const { socialPlatforms, socialAccount, socialAccountsFor, socialSchools, randomSocialSchool, conferenceSocialAccounts } = context.api;
 const url = (platform, input) => socialAccount(platform, input).url;
 
 test('account links are tidied into one form per platform', () => {
@@ -102,6 +102,53 @@ test('the home page chooses among schools with accounts and can show another', (
   assert.equal(randomSocialSchool([]), null);
 });
 
+test('conference accounts mix schools, interleave their teams, and keep every valid account', () => {
+  const entries = [
+    { school_id: 'marlboro', platform: 'instagram', account_name: 'Football', url: 'https://instagram.com/marlborofb' },
+    { school_id: 'marlboro', platform: 'instagram', account_name: 'Soccer', url: 'https://instagram.com/marlborosoccer' },
+    { school_id: 'shore-regional', platform: 'instagram', url: 'https://instagram.com/shoreregional' },
+    { school_id: 'colts-neck', platform: 'instagram', url: 'https://instagram.com/coltsneck' },
+    { school_id: 'colts-neck', platform: 'x', url: 'https://x.com/coltsneck' },
+    { school_id: 'closed-school', platform: 'instagram', url: 'https://instagram.com/closed' },
+  ];
+  const schools = socialSchools(entries, directory);
+  const first = conferenceSocialAccounts(schools, () => 0);
+  const second = conferenceSocialAccounts(schools, () => 0.99);
+  const instagram = first.filter(account => account.platform === 'instagram');
+  assert.equal(first.length, 5);
+  assert.equal(new Set(instagram.slice(0, 3).map(account => account.schoolName)).size, 3);
+  assert.notEqual(first[0].schoolName, second[0].schoolName);
+  assert.equal(first[4].schoolName, 'Colts Neck');
+  assert.equal(schools.find(school => school.slug === 'marlboro').accounts[0].schoolName, undefined);
+  const onlyMarlboro = schools.filter(school => school.slug === 'marlboro');
+  assert.notEqual(conferenceSocialAccounts(onlyMarlboro, () => 0)[0].handle,
+    conferenceSocialAccounts(onlyMarlboro, () => 0.99)[0].handle);
+});
+
+test('social account loading reads every page and does not return a partial result on failure', async () => {
+  const requests = [];
+  let fail = false;
+  const errors = [];
+  const page = vm.createContext({ document: { getElementById: () => null }, AbortSignal,
+    shoreSupabase: { url: 'https://example.test', publishableKey: 'public' },
+    console: { error: (...args) => errors.push(args) },
+    fetch: async url => {
+      requests.push(url);
+      const offset = Number(new URL(url).searchParams.get('offset'));
+      if (fail && offset) return { ok: false, status: 503 };
+      return { ok: true, json: async () => [0, 1, 2].slice(offset, offset + 2).map(id => ({ id })) };
+    },
+  });
+  vm.runInContext(read('js/social.js') + ';globalThis.load = loadSocialRows;', page);
+  const result = await page.load();
+  assert.equal(result.length, 3);
+  assert.deepEqual(requests.map(url => new URL(url).searchParams.get('offset')), ['0', '2', '3']);
+  assert.ok(requests.every(url => new URL(url).searchParams.get('order') === 'id.asc'));
+  fail = true;
+  assert.equal((await page.load('marlboro')).length, 0);
+  assert.equal(errors.length, 1);
+});
+
 test('the social sections sit directly beneath the upcoming games and load no platform script up front', () => {
   for (const page of ['school.html', 'index.html']) {
     const html = read(page);
@@ -126,6 +173,58 @@ class Element {
   querySelector() { return this.submit; }
   find(check) { return this.children.flatMap(child => child instanceof Element ? [child, ...child.find(() => true)] : []).filter(check); }
 }
+
+test('home defaults to all schools and preserves individual-school selection', async () => {
+  class PublicElement extends Element {
+    constructor(tag) {
+      super(tag);
+      this.events = {};
+      this.classList = { add() {}, toggle() {} };
+    }
+    getAttribute(name) { return this.attributes[name]; }
+    addEventListener(name, callback) { this.events[name] = callback; }
+    removeEventListener(name) { delete this.events[name]; }
+  }
+  const elements = Object.fromEntries(['social', 'social-accounts', 'social-school', 'social-links',
+    'social-instagram-controls', 'social-school-link', 'social-more', 'social-next']
+    .map(id => [id, new PublicElement()]));
+  const document = { createElement: tag => new PublicElement(tag), getElementById: id => elements[id] || null };
+  const saved = [
+    { school_id: 'marlboro', platform: 'x', url: 'https://x.com/marlboroad' },
+    { school_id: 'colts-neck', platform: 'x', url: 'https://x.com/coltsneck' },
+    { school_id: 'shore-regional', platform: 'x', url: 'https://x.com/shoreregional' },
+    { school_id: 'marlboro', platform: 'x', account_name: 'Football', url: 'https://x.com/marlborofb' },
+    { school_id: 'closed-school', platform: 'x', url: 'https://x.com/closed' },
+  ];
+  const media = { matches: false, addEventListener() {}, removeEventListener() {} };
+  const page = vm.createContext({ document, window: { matchMedia: () => media }, URL, AbortSignal,
+    shoreSupabase: { url: 'https://example.test', publishableKey: 'public' }, shoreSchools: directory,
+    fetch: async url => ({ ok: true, json: async () => Number(new URL(url).searchParams.get('offset')) ? [] : saved }),
+    Option: class { constructor(text, value) { this.text = text; this.value = value; } },
+    setInterval: () => 1, clearInterval() {},
+  });
+  vm.runInContext(read('js/social-links.js') + read('js/social.js'), page);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(elements.social.hidden, false);
+  assert.equal(elements['social-school'].value, '');
+  assert.equal(elements['social-school'].children[0].text, 'All Conference Schools');
+  assert.equal(elements['social-school-link'].textContent, 'All Conference Schools');
+  assert.equal(elements['social-more'].href, 'schools.html');
+  const links = elements['social-links'].children[0];
+  assert.equal(links.children.length, 4);
+  assert.ok(links.children.every(item => /Marlboro|Colts Neck|Shore Regional/.test(item.children[0].textContent)));
+  elements['social-school'].value = 'marlboro';
+  elements['social-school'].onchange();
+  assert.equal(elements['social-school-link'].textContent, 'Marlboro');
+  assert.equal(elements['social-more'].href, 'school.html?school=marlboro#social');
+  assert.equal(elements['social-links'].children[0].children.length, 2);
+  assert.doesNotMatch(elements['social-links'].children[0].children[0].children[0].textContent, /^Marlboro ·/);
+  elements['social-school'].value = '';
+  elements['social-school'].onchange();
+  assert.equal(elements['social-links'].children[0].children.length, 4);
+  elements['social-next'].onclick();
+  assert.notEqual(elements['social-school'].value, '');
+});
 
 test('public accounts wait for Instagram embeds, move smoothly, and reset when schools change', async () => {
   class PublicElement extends Element {
@@ -196,8 +295,11 @@ test('public accounts wait for Instagram embeds, move smoothly, and reset when s
     platform, label: platform === 'x' ? 'X' : platform === 'facebook' ? 'Facebook' : 'Instagram',
     name: 'Team ' + i, handle: '@team' + i, url: 'https://example.com/team' + i,
   }));
-  publicPage.render(host, [...accounts('instagram', 4), ...accounts('facebook', 4), ...accounts('x', 3)]);
+  const instagramAccounts = accounts('instagram', 4);
+  instagramAccounts[0].schoolName = 'Marlboro';
+  publicPage.render(host, [...instagramAccounts, ...accounts('facebook', 4), ...accounts('x', 3)]);
   assert.equal(host.children.length, 4);
+  assert.match(host.children[0].children[0].textContent, /^Marlboro · Team 0/);
   assert.equal(host.classList.contains('social-scroll'), true);
   assert.equal(host.attributes.tabindex, '0');
   assert.equal(elements['social-instagram-controls'].hidden, false);
@@ -231,6 +333,7 @@ test('public accounts wait for Instagram embeds, move smoothly, and reset when s
     watcher.callback();
     watcher.target.embed.events.load();
   }
+  assert.equal(watchers[0].target.embed.title, 'Instagram posts from Marlboro · @team0');
   tickInstagram();
   assert.equal(host.scrollLeft, 0, 'movement waits for every profile');
   watchers[3].target.embed = new PublicElement('iframe');
