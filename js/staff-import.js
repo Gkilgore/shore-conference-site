@@ -72,7 +72,13 @@ function timeLabel(time) {
 }
 
 function pickValue(value, choices) {
-  let key = value.trim().toLowerCase().replace(/[.'"@–—-]/g, '');
+  let key = value.trim().toLowerCase();
+  // For single-character symbols like @, check before stripping
+  if (key === '@' || key === 'a' || key === 'h') {
+    for (const [result, words] of Object.entries(choices)) if (words.includes(key)) return result;
+  }
+  // Strip punctuation for multi-character patterns
+  key = key.replace(/[.'"–—-]/g, '');
   for (const [result, words] of Object.entries(choices)) if (words.includes(key)) return result;
   return null;
 }
