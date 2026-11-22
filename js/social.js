@@ -35,19 +35,44 @@ function renderSocialAccounts(host, accounts) {
     if (text) element.textContent = text;
     return element;
   };
-  const links = node('ul', 'social-links');
-  for (const account of accounts.filter(account => account.platform !== 'instagram')) {
-    const link = node('a', 'button secondary', account.name + ' · ' + account.label + ' ' + account.handle);
-    link.href = account.url;
-    link.target = '_blank';
-    link.rel = 'noopener';
-    link.append(node('span', 'visually-hidden', ' (opens in a new tab)'));
-    const item = node('li');
-    item.append(link);
-    links.append(item);
+  const linkGroups = [];
+  for (const platform of ['facebook', 'x']) {
+    const group = accounts.filter(account => account.platform === platform);
+    if (!group.length) continue;
+    const links = node('ul', 'social-links');
+    if (group.length >= 4) {
+      linkGroups.push(node('p', 'social-scroll-hint', 'Scroll sideways for more ' + group[0].label + ' accounts.'));
+      links.classList.add('social-scroll');
+      links.setAttribute('tabindex', '0');
+      links.setAttribute('aria-label', group[0].label + ' accounts');
+    }
+    for (const account of group) {
+      const link = node('a', 'button secondary', account.name + ' · ' + account.label + ' ' + account.handle);
+      link.href = account.url;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.append(node('span', 'visually-hidden', ' (opens in a new tab)'));
+      const item = node('li');
+      item.append(link);
+      links.append(item);
+    }
+    linkGroups.push(links);
   }
-  document.getElementById('social-links').replaceChildren(...(links.childElementCount ? [links] : []));
+  document.getElementById('social-links').replaceChildren(...linkGroups);
   const instagramAccounts = accounts.filter(account => account.platform === 'instagram');
+  const scrollInstagram = instagramAccounts.length >= 4;
+  document.getElementById('social-instagram-hint').hidden = !scrollInstagram;
+  host.classList.toggle('social-scroll', scrollInstagram);
+  if (scrollInstagram) {
+    host.setAttribute('tabindex', '0');
+    host.setAttribute('role', 'region');
+    host.setAttribute('aria-label', 'Instagram accounts');
+  } else {
+    host.removeAttribute('tabindex');
+    host.removeAttribute('role');
+    host.removeAttribute('aria-label');
+  }
+  host.scrollLeft = 0;
   const frames = instagramAccounts.map(instagram => {
     const frame = node('div', 'social-embed');
     const status = node('p', 'social-note', 'Loading Instagram…');

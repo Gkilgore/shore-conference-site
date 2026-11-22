@@ -126,6 +126,59 @@ class Element {
   querySelector() { return this.submit; }
   find(check) { return this.children.flatMap(child => child instanceof Element ? [child, ...child.find(() => true)] : []).filter(check); }
 }
+
+test('public accounts scroll by platform only when that platform has four or more', () => {
+  class PublicElement extends Element {
+    constructor(tag) {
+      super(tag);
+      this.className = '';
+      this.classList = {
+        add: name => this.classList.toggle(name, true),
+        toggle: (name, enabled) => {
+          const names = new Set(this.className.split(' ').filter(Boolean));
+          if (enabled) names.add(name); else names.delete(name);
+          this.className = [...names].join(' ');
+        },
+        contains: name => this.className.split(' ').includes(name),
+      };
+    }
+  }
+  const elements = {
+    'social-links': new PublicElement(),
+    'social-instagram-hint': new PublicElement(),
+  };
+  const document = { createElement: tag => new PublicElement(tag), getElementById: id => elements[id] || null };
+  class IntersectionObserver { observe() {} }
+  const publicPage = vm.createContext({ document, window: { IntersectionObserver }, IntersectionObserver });
+  vm.runInContext(read('js/social.js') + ';globalThis.render = renderSocialAccounts;', publicPage);
+  const host = new PublicElement();
+  const accounts = (platform, count) => Array.from({ length: count }, (_, i) => ({
+    platform, label: platform === 'x' ? 'X' : platform === 'facebook' ? 'Facebook' : 'Instagram',
+    name: 'Team ' + i, handle: '@team' + i, url: 'https://example.com/team' + i,
+  }));
+  publicPage.render(host, [...accounts('instagram', 4), ...accounts('facebook', 4), ...accounts('x', 3)]);
+  assert.equal(host.children.length, 4);
+  assert.equal(host.classList.contains('social-scroll'), true);
+  assert.equal(host.attributes.tabindex, '0');
+  assert.equal(elements['social-instagram-hint'].hidden, false);
+  const [hint, facebook, x] = elements['social-links'].children;
+  assert.match(hint.textContent, /Facebook/);
+  assert.equal(facebook.classList.contains('social-scroll'), true);
+  assert.equal(facebook.children.length, 4);
+  assert.equal(x.classList.contains('social-scroll'), false);
+  assert.equal(x.children.length, 3);
+
+  host.scrollLeft = 100;
+  publicPage.render(host, [...accounts('instagram', 3), ...accounts('x', 4)]);
+  assert.equal(host.children.length, 3);
+  assert.equal(host.classList.contains('social-scroll'), false);
+  assert.equal(host.attributes.tabindex, undefined);
+  assert.equal(host.scrollLeft, 0);
+  assert.equal(elements['social-instagram-hint'].hidden, true);
+  assert.match(elements['social-links'].children[0].textContent, /X/);
+  assert.equal(elements['social-links'].children[1].classList.contains('social-scroll'), true);
+});
+
 function mountStaff({ saved = [], error = null, writeError = null } = {}) {
   const elements = new Map();
   const document = {
