@@ -107,7 +107,6 @@ function startStaffTransportation(client, invite, selectedSchool, gameTitle) {
     } else {
       status.textContent = 'Contact added!';
       email.value = '';
-      submit.disabled = false;
       await load();
     }
   };
