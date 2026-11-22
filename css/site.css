@@ -899,7 +899,7 @@ textarea { display: block; resize: vertical; }
 .section + .social-section.section { margin-top: 0; padding-top: 0; }
 .social-section .filters label { flex: 0 1 16rem; }
 .social-school { margin: 0 0 0.75rem; font-size: 1.25rem; }
-.social-accounts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 23rem)); gap: 0.75rem; }
+.social-accounts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
 .social-accounts:empty { display: none; }
 .social-embed { min-width: 0; min-height: 10rem; padding: clamp(0.75rem, 2.5vw, 1.25rem); background: white; border: var(--frame); }
 /* Instagram sets its own rounded frame on the embed; these keep it square and inside narrow phones. */
