@@ -569,7 +569,11 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
 
     // Problems
     const problemsTd = document.createElement('td');
-    problemsTd.textContent = row.problems.join('; ');
+    const problemsText = [...row.problems];
+    if (row.emailError) {
+      problemsText.push('Transportation email not sent: ' + row.emailError);
+    }
+    problemsTd.textContent = problemsText.join('; ');
     tr.append(problemsTd);
 
     // Actions (delete button)

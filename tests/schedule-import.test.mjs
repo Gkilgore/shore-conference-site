@@ -138,7 +138,8 @@ test('CSV import emails a scheduled bus and reports delivery failure without los
   await input.onchange();
   await elements.get('import-save').onclick();
   assert.match(elements.get('import-summary').textContent, /transportation email was not sent/i);
-  assert.match(elements.get('import-preview').tBodies[0].children[0].children.at(-1).textContent,
+  // With new editable UI, problems are in children[8], status in children[2]
+  assert.match(elements.get('import-preview').tBodies[0].children[0].children[8].textContent,
     /Transportation email not sent: Transportation contact is missing/);
   assert.match(elements.get('import-preview').tBodies[0].children[0].children[2].textContent, /Posted/);
   controller.stop();
