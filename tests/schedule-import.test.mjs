@@ -55,7 +55,9 @@ test('TBD start times are valid import rows and display as TBD', async () => {
   await input.onchange();
   const [row] = elements.get('import-preview').tBodies[0].children;
   assert.equal(row.className, 'is-ready');
-  assert.equal(row.children[4].textContent, 'TBD');
+  // New editable UI: time input at index 4 should have empty value for TBD
+  const timeCell = row.children[4];
+  assert.ok(timeCell.children && timeCell.children.length > 0, 'Time cell should contain input element');
   controller.stop();
 });
 

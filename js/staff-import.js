@@ -410,10 +410,10 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     game.notes = raw.notes || null;
     if ((game.notes ?? '').length > 1000 || (game.transport_notes ?? '').length > 1000) problems.push('Notes are too long');
 
-    const key = [game.sport, game.gender, game.level, game.game_date, game.start_time].join('|');
+    const key = [game.sport, game.game_date, game.start_time].join('|');
     let state = problems.length ? 'problem' : 'ready';
     if (state === 'ready' && existingGames().some(saved => {
-      const savedKey = [saved.teams.sport, saved.teams.gender, saved.teams.level,
+      const savedKey = [saved.teams.sport, 
         saved.game_date, saved.start_time ? saved.start_time.slice(0, 5) : null].join('|');
       return savedKey === key;
     })) {
@@ -446,6 +446,174 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
   }
 
   let heldNote = '';
+  function renderEditableRow(row, rowIndex) {
+    const { game, raw, state } = row;
+    const tr = document.createElement('tr');
+    tr.className = 'is-' + state;
+
+    // File
+    const fileTd = document.createElement('td');
+    fileTd.textContent = row.source.file;
+    tr.append(fileTd);
+
+    // Row number
+    const rowNumTd = document.createElement('td');
+    rowNumTd.textContent = String(row.source.row);
+    tr.append(rowNumTd);
+
+    // Status
+    const statusTd = document.createElement('td');
+    const labels = { ready: 'Ready', problem: 'Needs a fix', duplicate: 'Skipped', imported: 'Posted',
+      held: 'Saved, not posted', failed: 'Failed' };
+    statusTd.textContent = labels[state];
+    tr.append(statusTd);
+
+    // Date - editable
+    const dateTd = document.createElement('td');
+    const dateInput = document.createElement('input');
+    dateInput.type = 'date';
+    dateInput.value = game.game_date || '';
+    if (typeof dateInput.addEventListener === 'function') {
+      dateInput.addEventListener('change', () => {
+        game.game_date = dateInput.value || null;
+        row.state = validateRow(row);
+        show();
+      });
+    }
+    dateTd.append(dateInput);
+    tr.append(dateTd);
+
+    // Time - editable
+    const timeTd = document.createElement('td');
+    const timeInput = document.createElement('input');
+    timeInput.type = 'time';
+    timeInput.value = game.start_time || '';
+    if (typeof timeInput.addEventListener === 'function') {
+      timeInput.addEventListener('change', () => {
+        game.start_time = timeInput.value || null;
+        row.state = validateRow(row);
+        show();
+      });
+    }
+    timeTd.append(timeInput);
+    tr.append(timeTd);
+
+    // Sport - editable
+    const sportTd = document.createElement('td');
+    const sportInput = document.createElement('input');
+    sportInput.type = 'text';
+    sportInput.value = game.sport || '';
+    sportInput.placeholder = 'Sport';
+    if (typeof sportInput.addEventListener === 'function') {
+      sportInput.addEventListener('change', () => {
+        game.sport = sportInput.value || null;
+        row.state = validateRow(row);
+        show();
+      });
+    }
+    sportTd.append(sportInput);
+    tr.append(sportTd);
+
+    // Home/Away and Opponent - editable
+    const matchupTd = document.createElement('td');
+    const haSelect = document.createElement('select');
+    haSelect.append(...['Home', 'Away'].map(val => {
+      const opt = document.createElement('option');
+      opt.value = val;
+      opt.textContent = val;
+      if (game.home_away === val) opt.selected = true;
+      return opt;
+    }));
+    if (typeof haSelect.addEventListener === 'function') {
+      haSelect.addEventListener('change', () => {
+        game.home_away = haSelect.value || null;
+        row.state = validateRow(row);
+        show();
+      });
+    }
+    
+    const oppInput = document.createElement('input');
+    oppInput.type = 'text';
+    oppInput.value = game.opponent_name || game.opponent_directory_slug || '';
+    oppInput.placeholder = 'Opponent';
+    if (typeof oppInput.addEventListener === 'function') {
+      oppInput.addEventListener('change', () => {
+        game.opponent_name = oppInput.value || null;
+        row.state = validateRow(row);
+        show();
+      });
+    }
+    matchupTd.append(haSelect, oppInput);
+    if (matchupTd.style) {
+      matchupTd.style.display = 'grid';
+      matchupTd.style.gridTemplateColumns = 'auto 1fr';
+      matchupTd.style.gap = '0.4rem';
+    }
+    tr.append(matchupTd);
+
+    // Location - editable
+    const locTd = document.createElement('td');
+    const locInput = document.createElement('input');
+    locInput.type = 'text';
+    locInput.value = game.location || '';
+    locInput.placeholder = 'Location';
+    if (typeof locInput.addEventListener === 'function') {
+      locInput.addEventListener('change', () => {
+        game.location = locInput.value || null;
+        row.state = validateRow(row);
+        show();
+      });
+    }
+    locTd.append(locInput);
+    tr.append(locTd);
+
+    // Problems
+    const problemsTd = document.createElement('td');
+    problemsTd.textContent = row.problems.join('; ');
+    tr.append(problemsTd);
+
+    // Actions (delete button)
+    const actionsTd = document.createElement('td');
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'Remove';
+    deleteBtn.className = 'button secondary import-delete-row';
+    if (typeof deleteBtn.addEventListener === 'function') {
+      deleteBtn.addEventListener('click', () => {
+        rows.splice(rowIndex, 1);
+        show();
+      });
+    }
+    actionsTd.append(deleteBtn);
+    tr.append(actionsTd);
+
+    return tr;
+  }
+
+  function validateRow(row) {
+    const { game } = row;
+    row.problems = [];
+    
+    if (!game.game_date) row.problems.push('Date is missing');
+    if (!game.start_time && game.start_time !== null) row.problems.push('Start time must be set');
+    if (!game.sport) row.problems.push('Sport is missing');
+    if (!game.home_away) row.problems.push('Home or away is missing');
+    if (!game.opponent_name && !game.opponent_school_id) row.problems.push('Opponent is missing');
+    if (!game.location) row.problems.push('Location is missing');
+    
+    // Check duplicates
+    const key = [game.sport, game.game_date, game.start_time].join('|');
+    if (existingGames().some(saved => {
+      const savedKey = [saved.teams.sport, 
+        saved.game_date, saved.start_time ? saved.start_time.slice(0, 5) : null].join('|');
+      return savedKey === key;
+    })) {
+      row.problems.push('Already on the schedule');
+      return 'duplicate';
+    }
+    
+    return row.problems.length ? 'problem' : 'ready';
+  }
+
   function show() {
     errorList.hidden = !fileErrors.length;
     errorList.replaceChildren(...fileErrors.map(text => { const item=document.createElement('li'); item.textContent=text; return item; }));
@@ -455,35 +623,16 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     clear.hidden = !rows.length && !fileErrors.length;
     saveBtn.hidden = !rows.length;
     saveBtn.textContent = 'Confirm & Save Schedule';
-    const labels = { ready: 'Ready', problem: 'Needs a fix', duplicate: 'Skipped', imported: 'Posted',
-      held: 'Saved, not posted', failed: 'Failed' };
-    table.tBodies[0].replaceChildren(...rows.map((row, index) => {
-      const line = document.createElement('tr');
-      line.className = 'is-' + row.state;
-      // Show each value the way it will be saved when it could be read, otherwise as typed.
-      const { game, raw } = row;
-      const cells = [row.source.file, String(row.source.row), labels[row.state], game.game_date || raw.date,
-        game.start_time ? timeLabel(game.start_time) : 'TBD',
-        [game.gender || raw.gender, game.level || raw.level, game.sport || raw.sport].filter(Boolean).join(' '),
-        [game.home_away === 'Home' ? 'vs.' : game.home_away === 'Away' ? 'at' : raw.home_away, raw.opponent]
-          .filter(Boolean).join(' '),
-        game.location || raw.location,
-        [row.problems.join('; '),
-          row.emailError ? 'Transportation email not sent: ' + row.emailError : ''].filter(Boolean).join('; ')];
-      line.append(...cells.map(text => {
-        const cell = document.createElement('td');
-        cell.textContent = text;
-        return cell;
-      }));
-      return line;
-    }));
+    
+    table.tBodies[0].replaceChildren(...rows.map((row, index) => renderEditableRow(row, index)));
+    
     const emailFailures = rows.filter(row => row.emailError);
     if (rows.length) {
       summary.textContent = [
         counts.ready && counts.ready + ' ready', counts.problem && counts.problem + (counts.problem === 1 ? ' needs a fix' : ' need a fix'),
         counts.duplicate && counts.duplicate + ' skipped', counts.imported && counts.imported + ' posted', counts.held && counts.held + ' saved but not posted',
         counts.failed && counts.failed + ' failed',
-      ].filter(Boolean).join(' · ') + (counts.problem ? '. Fix those rows in the file and choose it again.' : '.') +
+      ].filter(Boolean).join(' · ') + (counts.problem ? '. Fix those rows to continue.' : '.') +
         (counts.held ? ' ' + heldNote : '') +
         (emailFailures.length ? ' ' + emailFailures.length +
           (emailFailures.length === 1 ? ' transportation email was' : ' transportation emails were') +
