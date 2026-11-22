@@ -261,7 +261,7 @@ function renderSocialAccounts(host, accounts) {
   const schools = socialSchools(await loadSocialRows(), directory);
   if (!schools.length) return;
   const allSchools = '';
-  const conferenceAccounts = conferenceSocialAccounts(schools);
+  const conferenceAccounts = conferenceSocialAccounts(schools).filter(account => account.platform === 'instagram');
   const schoolLink = document.getElementById('social-school-link');
   const more = document.getElementById('social-more');
   const next = document.getElementById('social-next');
@@ -274,6 +274,12 @@ function renderSocialAccounts(host, accounts) {
       more.textContent = 'Browse schools →';
       next.hidden = false;
       renderSocialAccounts(host, conferenceAccounts);
+      if (!conferenceAccounts.length) {
+        const note = document.createElement('p');
+        note.className = 'social-note';
+        note.textContent = 'No Instagram accounts yet. Choose a school to see its social media.';
+        document.getElementById('social-links').append(note);
+      }
       return;
     }
     const school = schools.find(item => item.slug === slug) ?? schools[0];

@@ -174,7 +174,7 @@ class Element {
   find(check) { return this.children.flatMap(child => child instanceof Element ? [child, ...child.find(() => true)] : []).filter(check); }
 }
 
-test('home defaults to all schools and preserves individual-school selection', async () => {
+async function mountPublicHome(saved) {
   class PublicElement extends Element {
     constructor(tag) {
       super(tag);
@@ -189,15 +189,10 @@ test('home defaults to all schools and preserves individual-school selection', a
     'social-instagram-controls', 'social-school-link', 'social-more', 'social-next']
     .map(id => [id, new PublicElement()]));
   const document = { createElement: tag => new PublicElement(tag), getElementById: id => elements[id] || null };
-  const saved = [
-    { school_id: 'marlboro', platform: 'x', url: 'https://x.com/marlboroad' },
-    { school_id: 'colts-neck', platform: 'x', url: 'https://x.com/coltsneck' },
-    { school_id: 'shore-regional', platform: 'x', url: 'https://x.com/shoreregional' },
-    { school_id: 'marlboro', platform: 'x', account_name: 'Football', url: 'https://x.com/marlborofb' },
-    { school_id: 'closed-school', platform: 'x', url: 'https://x.com/closed' },
-  ];
   const media = { matches: false, addEventListener() {}, removeEventListener() {} };
-  const page = vm.createContext({ document, window: { matchMedia: () => media }, URL, AbortSignal,
+  class IntersectionObserver { observe() {} disconnect() {} }
+  const page = vm.createContext({ document, window: { matchMedia: () => media, IntersectionObserver },
+    IntersectionObserver, URL, AbortSignal,
     shoreSupabase: { url: 'https://example.test', publishableKey: 'public' }, shoreSchools: directory,
     fetch: async url => ({ ok: true, json: async () => Number(new URL(url).searchParams.get('offset')) ? [] : saved }),
     Option: class { constructor(text, value) { this.text = text; this.value = value; } },
@@ -205,25 +200,52 @@ test('home defaults to all schools and preserves individual-school selection', a
   });
   vm.runInContext(read('js/social-links.js') + read('js/social.js'), page);
   await new Promise(resolve => setImmediate(resolve));
+  return elements;
+}
+
+test('all schools shows only Instagram while individual schools keep their X and Facebook links', async () => {
+  const elements = await mountPublicHome([
+    { school_id: 'marlboro', platform: 'x', url: 'https://x.com/marlboroad' },
+    { school_id: 'marlboro', platform: 'facebook', url: 'https://facebook.com/marlboro' },
+    { school_id: 'colts-neck', platform: 'x', url: 'https://x.com/coltsneck' },
+    { school_id: 'marlboro', platform: 'instagram', url: 'https://instagram.com/marlboro' },
+    { school_id: 'marlboro', platform: 'instagram', url: 'https://instagram.com/marlborofb' },
+    { school_id: 'colts-neck', platform: 'instagram', url: 'https://instagram.com/coltsneck' },
+    { school_id: 'shore-regional', platform: 'instagram', url: 'https://instagram.com/shoreregional' },
+    { school_id: 'closed-school', platform: 'instagram', url: 'https://instagram.com/closed' },
+  ]);
   assert.equal(elements.social.hidden, false);
   assert.equal(elements['social-school'].value, '');
   assert.equal(elements['social-school'].children[0].text, 'All Conference Schools');
   assert.equal(elements['social-school-link'].textContent, 'All Conference Schools');
   assert.equal(elements['social-more'].href, 'schools.html');
-  const links = elements['social-links'].children[0];
-  assert.equal(links.children.length, 4);
-  assert.ok(links.children.every(item => /Marlboro|Colts Neck|Shore Regional/.test(item.children[0].textContent)));
+  assert.equal(elements['social-links'].children.length, 0);
+  assert.equal(elements['social-accounts'].children.length, 4);
+  assert.ok(elements['social-accounts'].children.every(frame => /Marlboro|Colts Neck|Shore Regional/.test(frame.children[0].textContent)));
   elements['social-school'].value = 'marlboro';
   elements['social-school'].onchange();
   assert.equal(elements['social-school-link'].textContent, 'Marlboro');
   assert.equal(elements['social-more'].href, 'school.html?school=marlboro#social');
-  assert.equal(elements['social-links'].children[0].children.length, 2);
+  assert.equal(elements['social-links'].children.length, 2);
+  assert.match(elements['social-links'].children[0].children[0].children[0].textContent, /Facebook/);
+  assert.match(elements['social-links'].children[1].children[0].children[0].textContent, / X /);
   assert.doesNotMatch(elements['social-links'].children[0].children[0].children[0].textContent, /^Marlboro ·/);
   elements['social-school'].value = '';
   elements['social-school'].onchange();
-  assert.equal(elements['social-links'].children[0].children.length, 4);
+  assert.equal(elements['social-links'].children.length, 0);
+  assert.equal(elements['social-accounts'].children.length, 4);
   elements['social-next'].onclick();
   assert.notEqual(elements['social-school'].value, '');
+});
+
+test('all schools explains when there are no Instagram accounts but still offers other school links', async () => {
+  const elements = await mountPublicHome([{ school_id: 'marlboro', platform: 'x', url: 'https://x.com/marlboroad' }]);
+  assert.equal(elements.social.hidden, false);
+  assert.match(elements['social-links'].children[0].textContent, /No Instagram accounts yet/);
+  assert.equal(elements['social-accounts'].children.length, 0);
+  elements['social-school'].value = 'marlboro';
+  elements['social-school'].onchange();
+  assert.match(elements['social-links'].children[0].children[0].children[0].textContent, / X /);
 });
 
 test('public accounts wait for Instagram embeds, move smoothly, and reset when schools change', async () => {
