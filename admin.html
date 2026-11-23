@@ -612,6 +612,78 @@
             </div>
           </form>
           </dialog>
+          <dialog id="copy-schedule-dialog" class="game-details game-editor" aria-labelledby="copy-schedule-title">
+          <form id="copy-schedule-form" class="prose" aria-labelledby="copy-schedule-title">
+            <div class="game-editor-band">
+              <h3 id="copy-schedule-title">Copy schedule</h3>
+              <p class="staff-subhead">Copy one team's games to another team</p>
+            </div>
+            <fieldset class="prose">
+              <legend>Teams</legend>
+              <div class="filters">
+                <label>Copy from team
+                  <select name="copy-source-team" required><option value="">Select a team</option></select>
+                </label>
+                <label>To team
+                  <select name="copy-target-team" required><option value="">Select a team</option></select>
+                </label>
+              </div>
+            </fieldset>
+            <fieldset class="prose">
+              <legend>Adjust games</legend>
+              <div class="copy-adjust-grid">
+                <div class="copy-adjust-col">
+                  <p class="copy-adjust-heading">Adjust the time by</p>
+                  <div class="copy-shift-row">
+                    <label>Hours <input type="number" name="copy-shift-hours" min="0" max="23" step="1" placeholder="0" inputmode="numeric"></label>
+                    <div class="copy-toggle" role="radiogroup" aria-label="Hours earlier or later"><label><input type="radio" name="copy-shift-hours-dir" value="-1"><span>Earlier</span></label><label><input type="radio" name="copy-shift-hours-dir" value="1" checked><span>Later</span></label></div>
+                  </div>
+                  <div class="copy-shift-row">
+                    <label>Minutes <input type="number" name="copy-shift-minutes" min="0" max="59" step="1" placeholder="0" inputmode="numeric"></label>
+                    <div class="copy-toggle" role="radiogroup" aria-label="Minutes earlier or later"><label><input type="radio" name="copy-shift-minutes-dir" value="-1"><span>Earlier</span></label><label><input type="radio" name="copy-shift-minutes-dir" value="1" checked><span>Later</span></label></div>
+                  </div>
+                  <div class="copy-shift-row">
+                    <label>Days <input type="number" name="copy-shift-days" min="0" max="365" step="1" placeholder="0" inputmode="numeric"></label>
+                    <div class="copy-toggle" role="radiogroup" aria-label="Days earlier or later"><label><input type="radio" name="copy-shift-days-dir" value="-1"><span>Earlier</span></label><label><input type="radio" name="copy-shift-days-dir" value="1" checked><span>Later</span></label></div>
+                  </div>
+                </div>
+                <div class="copy-adjust-col">
+                  <p class="copy-adjust-heading">Other changes</p>
+                  <div class="copy-switch-row">
+                    <span class="copy-switch-label" id="copy-time-tbd-label">Set time to TBD</span>
+                    <div class="copy-toggle" role="radiogroup" aria-labelledby="copy-time-tbd-label"><label><input type="radio" name="copy-time-tbd" value="yes"><span>Yes</span></label><label><input type="radio" name="copy-time-tbd" value="no" checked><span>No</span></label></div>
+                  </div>
+                  <div class="copy-switch-row">
+                    <span class="copy-switch-label" id="copy-swap-home-away-label">Switch home and away</span>
+                    <div class="copy-toggle" role="radiogroup" aria-labelledby="copy-swap-home-away-label"><label><input type="radio" name="copy-swap-home-away" value="yes"><span>Yes</span></label><label><input type="radio" name="copy-swap-home-away" value="no" checked><span>No</span></label></div>
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+            <fieldset class="prose">
+              <legend>Location</legend>
+              <label class="staff-check"><input type="radio" name="copy-location-option" value="same" checked> Keep same locations</label>
+              <label class="staff-check"><input type="radio" name="copy-location-option" value="home"> Change the home game facility</label>
+              <div class="filters copy-option-fields" hidden>
+                <label class="copy-home-venue-pick">Home facility <select name="copy-home-venue"></select></label>
+                <label class="copy-home-venue-typed">Home facility <input type="text" name="copy-home-location" maxlength="160" placeholder="JV Field"></label>
+                <p class="staff-hint">Only home games move. Away games keep the other school's site.</p>
+              </div>
+              <p class="staff-hint copy-swap-hint" hidden>Switching home and away keeps each game's location. Change the home game facility if needed.</p>
+            </fieldset>
+            <fieldset class="prose">
+              <legend>Preview</legend>
+              <div class="copy-schedule-preview-region" role="region" aria-label="Preview of games to copy" aria-live="polite"></div>
+            </fieldset>
+            <div class="game-editor-foot">
+            <p class="staff-hint">Copying posts these games to the public schedule.</p>
+            <div class="actions">
+              <button name="copy-confirm" class="button primary" type="submit" disabled>Copy schedule</button>
+              <button name="copy-cancel" class="button secondary" type="button">Cancel</button>
+            </div>
+            </div>
+          </form>
+          </dialog>
         </div>
       </div>
     </section>
@@ -689,47 +761,6 @@
       </dl>
       <pre id="transportation-draft-body"></pre>
       <form method="dialog"><button class="button secondary" autofocus>Close</button></form>
-    </dialog>
-    <dialog id="copy-schedule-dialog" class="game-details" aria-labelledby="copy-schedule-title">
-      <form method="dialog">
-        <button aria-label="Close" class="button dialog-close" type="submit">&times;</button>
-      </form>
-      <h2 id="copy-schedule-title">Copy schedule</h2>
-      <div class="filters">
-        <label>Copy from team
-          <select name="copy-source-team" required>
-            <option value="">Select a team</option>
-          </select>
-        </label>
-        <label>To team
-          <select name="copy-target-team" required>
-            <option value="">Select a team</option>
-          </select>
-        </label>
-      </div>
-      <fieldset>
-        <legend>Time adjustment</legend>
-        <label><input type="radio" name="copy-time-option" value="same" checked> Keep same times</label>
-        <label><input type="radio" name="copy-time-option" value="offset"> Adjust by offset
-          <input type="number" name="copy-time-offset" min="-12" max="12" step="1" placeholder="0" hidden>
-          <select name="copy-time-offset-unit" hidden><option value="hours">hours</option><option value="minutes">minutes</option></select>
-        </label>
-        <label><input type="radio" name="copy-time-option" value="single"> Use single time
-          <input type="time" name="copy-single-time" hidden>
-        </label>
-      </fieldset>
-      <fieldset>
-        <legend>Location</legend>
-        <label><input type="radio" name="copy-location-option" value="same" checked> Keep same locations</label>
-        <label><input type="radio" name="copy-location-option" value="bulk"> Replace all with
-          <input type="text" name="copy-bulk-location" maxlength="160" placeholder="New location" hidden>
-        </label>
-      </fieldset>
-      <div role="region" aria-label="Preview of games to copy" aria-live="polite"></div>
-      <div class="actions">
-        <button name="copy-confirm" class="button primary" type="button" disabled>Copy schedule</button>
-        <form method="dialog"><button class="button secondary" autofocus>Cancel</button></form>
-      </div>
     </dialog>
   </main>
   <footer class="site-footer"><div class="wrap">The Shore Conference <span>New Jersey Athletics</span></div></footer>

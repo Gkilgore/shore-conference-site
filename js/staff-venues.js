@@ -166,6 +166,8 @@ function startStaffVenues(client, { currentSchool, schools, fields }) {
   return {
     load,
     sync: syncPicker,
+    // The school's own venues, for bulk-changing home games in Copy schedule.
+    homeNames: () => currentSchool() ? namesFor(currentSchool().slug) : [],
     showSettings() {
       status.textContent = '';
       showSettings();
