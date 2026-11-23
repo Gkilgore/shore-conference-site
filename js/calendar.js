@@ -47,6 +47,11 @@ function cardTeamLine(team) {
   return line;
 }
 
+// A school's own game, home or away (not a "moved" note).
+function isHomeAway(event) {
+  return ['Home', 'Away'].includes(event.extendedProps.home_away);
+}
+
 function renderCalendar(events, { schoolSlug = null } = {}) {
   const target = document.getElementById('calendar');
   const filters = document.getElementById('calendar-filters');
@@ -73,6 +78,16 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
     if (status && rest.endsWith(' · ' + status)) rest = rest.slice(0, -status.length - 3);
     return matchupParts(rest).matchup || team;
   }
+  // Conference calendar: a scheduled game takes the home school's main color (saved by the school when the page
+  // loaded it, otherwise the site's school list). Postponed, canceled and moved games keep their status colors.
+  function conferenceHomeColor(event) {
+    if (!fields.school) return null;
+    const { status, homeColor, moved_to: movedTo, schools: involved = [] } = event.extendedProps;
+    if (movedTo || (status && status !== 'Scheduled')) return null;
+    const directory = typeof shoreSchools !== 'undefined' ? shoreSchools : sampleSchools;
+    const color = homeColor || directory[involved[0]]?.color;
+    return /^#[0-9a-f]{6}$/i.test(color ?? '') ? color : null;
+  }
   // Conference calendar squares keep the conference colors (navy, yellow for postponed, red for
   // canceled). Each has three lines: the school's name (the picked school's when the School filter is
   // set, otherwise the home school), the time, then the team and opponent.
@@ -89,8 +104,8 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
       matchup: [shortGender(gender), shortLevel(level), displaySport({ gender, sport })].filter(Boolean).join(' ') +
         (other ? (home ? ' vs. ' : ' @ ') + other : '') };
   }
-  // For school-specific calendars, apply colors based on home/away status using CSS variables
-  // set by the school page (--school-color and --school-accent).
+  // School calendars: a home game is filled with the school's main color; an away game is light grey with a
+  // frame in that color, so home and away tell apart at a glance whatever the school's second color is.
   function schoolCalendarSquare(event) {
     if (fields.school || !schoolSlug) return null;
     // Handle both direct property (sample data) and extendedProps (real FullCalendar events)
@@ -99,8 +114,8 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
     const isHome = homeAway === 'Home';
     // Store the CSS variable name so we can apply it, and also store the computed color value
     return { 
-      color: isHome ? 'var(--school-color)' : 'var(--school-accent)',
-      colorVariable: isHome ? '--school-color' : '--school-accent',
+      color: isHome ? 'var(--school-color)' : 'var(--paper)',
+      colorVariable: isHome ? '--school-color' : '--paper',
       homeAway: homeAway,
       useSchoolColor: true  // Flag to indicate this uses school colors, not conference display
     };
@@ -219,13 +234,33 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
       // A postponed or canceled list row strikes out the old time and puts the status label under it.
       const status = event.extendedProps.status;
       const timeCell = el.querySelector?.('.fc-list-event-time');
-      if (timeCell && (status === 'Postponed' || status === 'Canceled')) {
+      if (timeCell && schoolSlug && !event.extendedProps.moved_to && isHomeAway(event)) {
+        const word = document.createElement('span');
+        word.className = 'list-home-away';
+        word.textContent = event.extendedProps.home_away;
+        timeCell.replaceChildren(word);
+        if (status === 'Postponed' || status === 'Canceled') {
+          const label = document.createElement('span');
+          label.className = 'game-status is-' + status.toLowerCase();
+          label.textContent = status;
+          timeCell.append(label);
+        }
+      } else if (timeCell && (status === 'Postponed' || status === 'Canceled')) {
         const oldTime = document.createElement('s');
         oldTime.textContent = timeCell.textContent;
         const label = document.createElement('span');
         label.className = 'game-status is-' + status.toLowerCase();
         label.textContent = status;
         timeCell.replaceChildren(oldTime, label);
+      }
+      const homeColor = conferenceHomeColor(event);
+      if (homeColor) {
+        const ink = readableInk(homeColor);
+        if (timeCell) timeCell.style.cssText += ';background:' + homeColor + ';color:' + ink;
+        else {
+          for (const [name, value] of [['--fc-event-bg-color', homeColor], ['--fc-event-border-color', homeColor],
+            ['--fc-event-text-color', ink], ['background', homeColor], ['color', ink]]) el.style.setProperty(name, value);
+        }
       }
       el.tabIndex = 0;
       el.setAttribute('role', 'button');
@@ -290,11 +325,20 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
       const head = document.createElement('span');
       head.className = 'game-head';
       const displayedTime = movedTo ? '' : (event.allDay ? 'TBD' : timeText) + (movedFrom ? '*' : '');
-      if (inList && movedFrom) title.textContent = '* ' + title.textContent;
+      if (inList && movedFrom && !(schoolSlug && isHomeAway(event))) title.textContent = '* ' + title.textContent;
       // List rows: a Postponed or Canceled label goes under the struck-out time (see eventDidMount).
       const listStatus = event.extendedProps.status;
       if (inList && listStatus && title.textContent.endsWith(' · ' + listStatus)) {
         title.textContent = title.textContent.slice(0, -listStatus.length - 3);
+      }
+      // School pages: the colored block on the left says Home or Away (see eventDidMount), so the time leads
+      // the opponent here, struck through when the game is postponed or canceled.
+      if (inList && schoolSlug && !movedTo && isHomeAway(event)) {
+        const when = document.createElement(listStatus === 'Postponed' || listStatus === 'Canceled' ? 's' : 'strong');
+        when.className = 'game-list-time';
+        when.textContent = (event.allDay || !event.start ? 'TBD'
+          : new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(event.start)) + (movedFrom ? '*' : '');
+        title.prepend(when, ' · ');
       }
       if (listParts?.team) title.prepend(cardTeamLine(listParts.team));
       if (displayedTime && (!inList || event.allDay)) {
@@ -339,12 +383,8 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
         content.classList.add('has-school-color');
         // Use setProperty for CSS variables to work in inline styles
         content.style.setProperty('background', square.color);
-        // For CSS variables, use the CSS variable for text color
-        if (square.colorVariable) {
-          content.style.setProperty('color', square.colorVariable === '--school-color' 
-            ? 'var(--school-ink)' 
-            : 'var(--accent-ink)');
-        }
+        content.style.setProperty('color', square.homeAway === 'Home' ? 'var(--school-ink)' : 'var(--ink)');
+        if (square.homeAway !== 'Home') content.classList.add('is-away-square');
         // Two lines: the team on the left with the time on the right (a Postponed or Canceled label takes
         // the time's place), then the opponent. "vs." or "at" says home or away, so no badge is needed.
         const { sport, gender, level } = event.extendedProps;

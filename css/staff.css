@@ -150,6 +150,8 @@
 #workspace #calendar .fc-daygrid-event.staff-game .fc-event-time { font-weight: 800; flex: none; }
 #workspace #calendar .fc-daygrid-event.staff-game .home-away-badge { margin-left: auto; padding: 0 0.3rem; font-size: 0.62rem; line-height: 1.5; }
 #workspace #calendar .fc-daygrid-event.staff-game .fc-event-title { flex: 1 0 100%; min-width: 0; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Away games: light grey framed in the school's main color; home games are filled with it. */
+#workspace #calendar .fc-daygrid-event.staff-game-away { background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 1px var(--school-color); }
 #workspace #calendar .fc-daygrid-event.staff-game-postponed { background: var(--yellow); color: var(--ink); }
 #workspace #calendar .fc-daygrid-event.staff-game-canceled { background: var(--school-color); color: var(--school-ink); }
 #workspace #calendar .staff-game-canceled .fc-event-title,

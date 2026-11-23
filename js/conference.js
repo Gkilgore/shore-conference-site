@@ -34,12 +34,31 @@ function conferenceEvents(games) {
   });
 }
 
+// Each school's saved main color, so a conference game shows in its home school's color.
+// If it can't load, the calendar falls back to the site's school list.
+async function loadSchoolColors() {
+  try {
+    const url = new URL('/rest/v1/schools', shoreSupabase.url);
+    url.searchParams.set('select', 'slug,primary_color');
+    const response = await fetch(url, {
+      headers: { apikey: shoreSupabase.publishableKey, Authorization: 'Bearer ' + shoreSupabase.publishableKey },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!response.ok) return {};
+    return Object.fromEntries((await response.json()).filter(row => row.primary_color).map(row => [row.slug, row.primary_color]));
+  } catch {
+    return {};
+  }
+}
+
 (async () => {
   const sample = new URLSearchParams(location.search).get('sample') === '1';
   const status = document.getElementById('public-schedule-status');
   try {
-    const games = sample ? conferenceEvents(sampleGames)
-      : publicCalendarEvents(await loadPublicCalendar({ scope: 'conference' }));
+    const [schedule, colors] = sample ? [null, {}]
+      : await Promise.all([loadPublicCalendar({ scope: 'conference' }), loadSchoolColors()]);
+    const games = sample ? conferenceEvents(sampleGames) : publicCalendarEvents(schedule);
+    games.forEach(game => { game.homeColor = colors[game.schools?.[0]] ?? null; });
     if (status) status.textContent = sample ? 'Sample schedule' : '';
     if (document.getElementById('calendar')) renderCalendar(games);
     if (document.getElementById('upcoming')) renderUpcoming(games, { showChanged: true });
