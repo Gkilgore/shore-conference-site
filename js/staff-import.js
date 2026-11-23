@@ -390,7 +390,10 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     game.gender = teamInfo?.gender || null;
     game.level = teamInfo?.level || null;
     game.season = game.sport && seasonOf(game.sport, game.gender);
-    if (!game.season || game.season === 'Other') game.season = null;
+    if (!game.season || game.season === 'Other') {
+      problems.push(`${game.sport}${game.gender ? ' for ' + game.gender : ''} is not a recognized sport. Use an official New Jersey high school sport.`);
+      game.season = null;
+    }
     if (raw.home_away) {
       game.home_away = pickValue(raw.home_away, { Home: ['home', 'h', 'vs'], Away: ['away', 'a', 'at', '@'] });
       if (!game.home_away) problems.push('Home or away must be Home or Away');
@@ -443,6 +446,7 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     if (!game.game_date) problems.push('Date is missing');
     if (!game.start_time && game.start_time !== null) problems.push('Start time must be set');
     if (!game.sport) problems.push('Sport is missing');
+    if (!game.season) problems.push('Sport is not a recognized season. Use an official New Jersey high school sport.');
     if (!game.home_away) problems.push('Home or away is missing');
     if (!game.opponent_name && !game.opponent_school_id) problems.push('Opponent is missing');
     if (!game.location) problems.push('Location is missing');
