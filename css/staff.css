@@ -544,9 +544,11 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
 #import-summary { margin: 0; font-weight: 700; }
 #import-summary:empty { display: none; }
 .import-table-wrap { overflow-x: auto; }
-.import-preview { width: 100%; border-collapse: collapse; border: var(--frame); font-size: 0.88rem; }
+/* Import preview: status, date, time and home/away keep fixed widths; opponent and location stack in the
+   widest column so both names show in full. Problems sit on their own line under the game. */
+.import-preview { width: 100%; min-width: 40rem; table-layout: fixed; border-collapse: collapse; border: var(--frame); font-size: 0.88rem; }
 .import-preview th {
-  padding: 0.45rem 0.6rem;
+  padding: 0.45rem 0.5rem;
   background: var(--ink);
   color: white;
   font-size: 0.72rem;
@@ -555,13 +557,33 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
   letter-spacing: 0.1em;
   white-space: nowrap;
 }
-.import-preview td { padding: 0.45rem 0.6rem; border-top: 1px solid var(--rule); background: white; vertical-align: top; }
-.import-preview td:nth-child(2) { font-weight: 800; white-space: nowrap; }
-.import-preview .is-ready td:nth-child(2), .import-preview .is-imported td:nth-child(2) { background: var(--school-color); color: var(--school-ink); }
+.import-preview th:nth-child(1) { width: 7.5rem; }
+.import-preview th:nth-child(2) { width: 9.5rem; }
+.import-preview th:nth-child(3) { width: 8rem; }
+.import-preview th:nth-child(4) { width: 6.5rem; }
+.import-preview td { padding: 0.4rem 0.5rem; border-top: 1px solid var(--rule); background: white; vertical-align: top; }
+.import-preview td :is(input, select) { width: 100%; min-height: 2.4rem; padding: 0.3rem 0.45rem; font-size: 0.9rem; }
+.import-preview .import-game-cell { display: grid; gap: 0.3rem; }
+.import-preview .import-note { color: var(--muted); font-size: 0.8rem; }
+.import-preview tr:not(.import-problem-row) td:first-child { font-weight: 800; }
+.import-preview tr:not(.import-problem-row) td:first-child small { display: block; margin-top: 0.2rem; font-size: 0.75rem; font-weight: 400; }
+.import-preview :is(.is-ready, .is-imported, .is-problem, .is-failed):not(.import-problem-row) td:first-child { background: var(--school-color); color: var(--school-ink); }
+.import-preview .is-held:not(.import-problem-row) td:first-child { background: var(--yellow); color: var(--ink); }
 .import-preview .is-problem td, .import-preview .is-failed td { background: #f6dde3; }
-.import-preview .is-problem td:nth-child(2), .import-preview .is-failed td:nth-child(2) { background: var(--school-color); color: var(--school-ink); }
 .import-preview .is-duplicate td { color: var(--muted); }
-.import-preview .is-duplicate td:nth-child(2) { background: var(--paper); }
+.import-preview .is-duplicate:not(.import-problem-row) td:first-child { background: var(--paper); }
+.import-preview .import-problem-row td { border-top: 0; padding-top: 0; font-weight: 700; }
+.import-preview .import-problem-row.is-duplicate td { font-weight: 400; }
+
+/* After saving: a framed box whose title bar says whether it worked (school color), needs attention (yellow) or failed (maroon). */
+.import-result { display: grid; gap: 0.6rem; padding: 0 1rem 1rem; border: var(--frame); background: white; }
+.import-result:focus { outline: 3px solid var(--ink); outline-offset: 2px; }
+.import-result-title { margin: 0 -1rem; padding: 0.75rem 1rem; font-size: 1.05rem; font-weight: 800; }
+.import-result.is-success .import-result-title { background: var(--school-color); color: var(--school-ink); }
+.import-result.is-warning .import-result-title { background: var(--yellow); color: var(--ink); }
+.import-result.is-error .import-result-title { background: var(--red); color: white; }
+.import-result-list { display: grid; gap: 0.35rem; margin: 0; padding-left: 1.2rem; }
+.import-result .actions { margin: 0; }
 .import-editable input, .import-editable select, .import-editable textarea {
   width: 100%;
   padding: 0.3rem 0.4rem;

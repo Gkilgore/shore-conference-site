@@ -8,7 +8,7 @@ vm.runInContext(readFileSync(new URL('../js/staff-import.js',import.meta.url),'u
 const header='date,start_time,sport,gender,level,home_away,opponent,location';
 const row='2031-09-01,3:00 PM,Soccer,Girls,Varsity,Home,Visitor,Field';
 
-function mountImport(existingGames = [], client = {}, sendTransportationEmail, directory = [], schoolList = []) {
+function mountImport(existingGames = [], client = {}, sendTransportationEmail, directory = [], schoolList = [], post) {
   const elements = new Map();
   const makeElement = tag => ({
     tag, children: [], hidden: false, disabled: false, textContent: '',
@@ -30,7 +30,7 @@ function mountImport(existingGames = [], client = {}, sendTransportationEmail, d
   const controller = context.startStaffImport(client, {
     currentSchool: () => ({slug:'marlboro'}), schools: () => schoolList, opponents: () => directory,
     existingGames: () => existingGames,
-    onImported() {}, sendTransportationEmail,
+    onImported() {}, sendTransportationEmail, ...(post ? {post} : {}),
   });
   return {controller, elements};
 }
@@ -56,8 +56,8 @@ test('TBD start times are valid import rows and display as TBD', async () => {
   await input.onchange();
   const [row] = elements.get('import-preview').tBodies[0].children;
   assert.equal(row.className, 'is-ready');
-  // After removing File and Sport columns: time input at index 3
-  const timeCell = row.children[3];
+  // Columns: status, date, time, home/away, opponent and location.
+  const timeCell = row.children[2];
   assert.ok(timeCell.children && timeCell.children.length > 0, 'Time cell should contain input element');
   controller.stop();
 });
@@ -155,10 +155,10 @@ test('CSV import emails a scheduled bus and reports delivery failure without los
   await input.onchange();
   await elements.get('import-save').onclick();
   assert.match(elements.get('import-summary').textContent, /transportation email was not sent/i);
-  // After separating H/A and Opponent: problems in children[7] (removed Action column, Problems now 8th)
-  assert.match(elements.get('import-preview').tBodies[0].children[0].children[7].textContent,
+  // Problems sit on their own line under the game row.
+  assert.match(elements.get('import-preview').tBodies[0].children[1].children[0].textContent,
     /Transportation email not sent: Transportation contact is missing/);
-  assert.match(elements.get('import-preview').tBodies[0].children[0].children[1].textContent, /Posted/);
+  assert.match(elements.get('import-preview').tBodies[0].children[0].children[0].children[0].textContent, /Posted/);
   controller.stop();
 });
 
@@ -247,4 +247,41 @@ test('a combined boys and girls sport reads as coed with its core sport', () => 
 test('a file with no recognizable header row still names the missing columns', async () => {
   const result = await context.previewScheduleFiles([new File(['Title only\nfoo,bar\n1,2'], 'odd.csv')], () => ({}), null);
   assert.match(result.errors[0], /missing columns: date, start_time, sport, home_away, opponent, location/);
+});
+
+test('after saving, a result box says what was saved and that it is on the public schedule', async () => {
+  const {controller, elements} = mountImport([], {
+    async rpc() { return {data:'saved-game',error:null}; },
+  });
+  const input = elements.get('import-file');
+  input.files = [new File([header + '\n' + row], 'one.csv')];
+  await input.onchange();
+  assert.equal(elements.get('import-result').hidden, true);
+  await elements.get('import-save').onclick();
+  assert.equal(elements.get('import-result').hidden, false);
+  assert.equal(elements.get('import-result').className, 'import-result is-success');
+  assert.equal(elements.get('import-result-title').textContent,
+    'Import complete. 1 game was saved and posted to the public schedule.');
+  assert.match(elements.get('import-result-list').children[0].textContent, /^Soccer: 1 game posted on the public calendar$/);
+  assert.equal(elements.get('import-result-public').hidden, false);
+  assert.equal(elements.get('import-save').hidden, true);
+  elements.get('import-result-done').onclick();
+  assert.equal(elements.get('import-result').hidden, true);
+  controller.stop();
+});
+
+test('games saved but held back from posting show a warning naming the team to post', async () => {
+  const {controller, elements} = mountImport([], {
+    async rpc() { return {data:'held-game',error:null}; },
+  }, undefined, [], [], async ids => ({ok:true, held:['Girls Varsity Soccer'], heldIds:new Set(ids)}));
+  const input = elements.get('import-file');
+  input.files = [new File([header + '\n' + row], 'one.csv')];
+  await input.onchange();
+  await elements.get('import-save').onclick();
+  assert.equal(elements.get('import-result').className, 'import-result is-warning');
+  assert.equal(elements.get('import-result-title').textContent,
+    '1 game was saved. 1 game is not on the public schedule yet.');
+  assert.ok(elements.get('import-result-list').children.some(item => /choose Post schedule for Girls Varsity Soccer/.test(item.textContent)));
+  assert.equal(elements.get('import-result-public').hidden, true);
+  controller.stop();
 });
