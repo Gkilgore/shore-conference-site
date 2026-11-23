@@ -1,4 +1,4 @@
-// Copy an existing team's schedule to another team, shifting times and dates, switching home and away, or replacing locations.
+// Copy an existing team's schedule to another team, shifting times and dates, switching home and away, or changing the home facility.
 function startStaffCopySchedule(client, { currentSchool, teams, homeVenues = () => [], onCopied }) {
   const dialog = document.getElementById('copy-schedule-dialog');
   if (!dialog) return { open: () => {}, stop: () => {} };
@@ -12,10 +12,6 @@ function startStaffCopySchedule(client, { currentSchool, teams, homeVenues = () 
   const hoursInput = field('copy-shift-hours');
   const minutesInput = field('copy-shift-minutes');
   const daysInput = field('copy-shift-days');
-  const startDateInput = field('copy-start-date');
-  const startDateField = dialog.querySelector('.copy-start-date');
-  const startDateHint = dialog.querySelector('.copy-start-date-hint');
-  const bulkLocationInput = field('copy-bulk-location');
   const homeVenueSelect = field('copy-home-venue');
   const homeLocationInput = field('copy-home-location');
   const homeVenuePick = dialog.querySelector('.copy-home-venue-pick');
@@ -39,22 +35,14 @@ function startStaffCopySchedule(client, { currentSchool, teams, homeVenues = () 
     return day.toISOString().slice(0, 10);
   }
 
-  function daysBetween(from, to) {
-    return Math.round((Date.parse(to + 'T12:00:00Z') - Date.parse(from + 'T12:00:00Z')) / 86400000);
-  }
-
   // Everything the AD chose, read once so the preview and the copy use the same rules.
   function settings() {
-    const firstDate = gamesToCopy.map(game => game.game_date).sort()[0];
-    const setStartDate = yes('copy-set-start-date');
     return {
       minutes: Number(checked('copy-shift-hours-dir')) * amount(hoursInput) * 60
         + Number(checked('copy-shift-minutes-dir')) * amount(minutesInput),
-      days: setStartDate ? (startDateInput.value && firstDate ? daysBetween(firstDate, startDateInput.value) : 0)
-        : Number(checked('copy-shift-days-dir')) * amount(daysInput),
+      days: Number(checked('copy-shift-days-dir')) * amount(daysInput),
       tbd: yes('copy-time-tbd'),
       swap: yes('copy-swap-home-away'),
-      location: checked('copy-location-option') === 'bulk' ? bulkLocationInput.value.trim() : '',
       homeLocation: checked('copy-location-option') === 'home' ? homeLocation() : '',
     };
   }
@@ -74,7 +62,7 @@ function startStaffCopySchedule(client, { currentSchool, teams, homeVenues = () 
     const flip = { Home: 'Away', Away: 'Home' };
     const homeAway = choice.swap ? flip[game.home_away] ?? game.home_away : game.home_away;
     // The home facility follows the switched side, so a game that becomes home gets the new facility.
-    const location = choice.location || (homeAway === 'Home' && choice.homeLocation) || game.location;
+    const location = (homeAway === 'Home' && choice.homeLocation) || game.location;
     return { game_date: date, start_time: time, home_away: homeAway, location };
   }
 
@@ -115,15 +103,10 @@ function startStaffCopySchedule(client, { currentSchool, teams, homeVenues = () 
 
   function syncChoices() {
     const tbd = yes('copy-time-tbd');
-    const setStartDate = yes('copy-set-start-date');
-    // TBD replaces the hour and minute shift; a set start date replaces the day shift.
+    // TBD replaces the hour and minute shift.
     for (const name of ['copy-shift-hours', 'copy-shift-minutes']) {
       dialog.querySelectorAll('[name="' + name + '"], [name="' + name + '-dir"]').forEach(input => { input.disabled = tbd; });
     }
-    dialog.querySelectorAll('[name="copy-shift-days"], [name="copy-shift-days-dir"]').forEach(input => { input.disabled = setStartDate; });
-    startDateField.hidden = !setStartDate;
-    startDateHint.hidden = !setStartDate;
-    bulkLocationInput.closest('.copy-option-fields').hidden = checked('copy-location-option') !== 'bulk';
     homeVenueSelect.closest('.copy-option-fields').hidden = checked('copy-location-option') !== 'home';
     homeVenueTyped.hidden = !homeVenuePick.hidden && homeVenueSelect.value !== otherVenue;
     swapHint.hidden = !yes('copy-swap-home-away') || checked('copy-location-option') !== 'same';
@@ -139,9 +122,7 @@ function startStaffCopySchedule(client, { currentSchool, teams, homeVenues = () 
     if (!sourceTeam || !targetTeam) { previewContainer.textContent = 'Select both a source and target team.'; return; }
     if (sourceTeam.key === targetTeam.key) { previewContainer.textContent = 'Source and target teams must be different.'; return; }
     if (!gamesToCopy.length) { previewContainer.textContent = sourceTeam.label + ' has no games to copy.'; return; }
-    if (yes('copy-set-start-date') && !startDateInput.value) { previewContainer.textContent = 'Choose the first game date.'; return; }
     if (checked('copy-location-option') === 'home' && !homeLocation()) { previewContainer.textContent = 'Choose the home game facility.'; return; }
-    if (checked('copy-location-option') === 'bulk' && !bulkLocationInput.value.trim()) { previewContainer.textContent = 'Enter the location for every game.'; return; }
 
     const choice = settings();
     const summary = document.createElement('p');

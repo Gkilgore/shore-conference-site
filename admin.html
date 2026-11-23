@@ -648,22 +648,17 @@
                   </div>
                 </div>
                 <div class="copy-adjust-col">
+                  <p class="copy-adjust-heading">Other changes</p>
                   <div class="copy-switch-row">
-                    <span class="copy-switch-label" id="copy-time-tbd-label">Or set time to TBD</span>
+                    <span class="copy-switch-label" id="copy-time-tbd-label">Set time to TBD</span>
                     <div class="copy-toggle" role="radiogroup" aria-labelledby="copy-time-tbd-label"><label><input type="radio" name="copy-time-tbd" value="yes"><span>Yes</span></label><label><input type="radio" name="copy-time-tbd" value="no" checked><span>No</span></label></div>
                   </div>
                   <div class="copy-switch-row">
-                    <span class="copy-switch-label" id="copy-set-start-date-label">Or set start date</span>
-                    <div class="copy-toggle" role="radiogroup" aria-labelledby="copy-set-start-date-label"><label><input type="radio" name="copy-set-start-date" value="yes"><span>Yes</span></label><label><input type="radio" name="copy-set-start-date" value="no" checked><span>No</span></label></div>
-                  </div>
-                  <label class="copy-start-date" hidden>First game date <input type="date" name="copy-start-date"></label>
-                  <p class="staff-hint copy-start-date-hint" hidden>The first game moves to this date. Later games keep the same number of days between them.</p>
-                </div>
-              </div>
-              <div class="copy-switch-row">
-                <span class="copy-switch-label" id="copy-swap-home-away-label">Switch home and away</span>
+                    <span class="copy-switch-label" id="copy-swap-home-away-label">Switch home and away</span>
                     <div class="copy-toggle" role="radiogroup" aria-labelledby="copy-swap-home-away-label"><label><input type="radio" name="copy-swap-home-away" value="yes"><span>Yes</span></label><label><input type="radio" name="copy-swap-home-away" value="no" checked><span>No</span></label></div>
                   </div>
+                </div>
+              </div>
             </fieldset>
             <fieldset class="prose">
               <legend>Location</legend>
@@ -674,11 +669,7 @@
                 <label class="copy-home-venue-typed">Home facility <input type="text" name="copy-home-location" maxlength="160" placeholder="JV Field"></label>
                 <p class="staff-hint">Only home games move. Away games keep the other school's site.</p>
               </div>
-              <label class="staff-check"><input type="radio" name="copy-location-option" value="bulk"> Use one location for every game</label>
-              <div class="filters copy-option-fields" hidden>
-                <label>Location <input type="text" name="copy-bulk-location" maxlength="160" placeholder="New location"></label>
-              </div>
-              <p class="staff-hint copy-swap-hint" hidden>Switching home and away keeps each game's location. Change the home game facility above if needed.</p>
+              <p class="staff-hint copy-swap-hint" hidden>Switching home and away keeps each game's location. Change the home game facility if needed.</p>
             </fieldset>
             <fieldset class="prose">
               <legend>Preview</legend>
