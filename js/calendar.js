@@ -315,6 +315,9 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
       if (inList && listStatus && title.textContent.endsWith(' · ' + listStatus)) {
         title.textContent = title.textContent.slice(0, -listStatus.length - 3);
       }
+      // School pages: a Home or Away tag leads the opponent in List rows, as on the month squares.
+      const listHomeAway = inList && schoolSlug && !movedTo ? createHomeAwayBadge(event.extendedProps.home_away) : null;
+      if (listHomeAway) title.prepend(listHomeAway, ' ');
       if (listParts?.team) title.prepend(cardTeamLine(listParts.team));
       if (displayedTime && (!inList || event.allDay)) {
         const time = document.createElement('span');

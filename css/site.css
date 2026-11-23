@@ -403,11 +403,9 @@ button.staff-link { font-family: inherit; background: white; color: var(--ink); 
   border-color: white;
   color: var(--ink);
 }
-#calendar .fc-list-event .home-away-badge.is-home {
-  background: white;
-  border-color: var(--steel-dark);
-  color: var(--ink);
-}
+/* List rows on school pages: Home filled with the school color, Away white framed in it, like the time block. */
+#calendar .fc-list-event .home-away-badge { margin-right: 0.35rem; padding: 0.05rem 0.45rem; font-size: 0.72rem; vertical-align: 0.1em; }
+#calendar .fc-list-event .home-away-badge.is-home { background: var(--school-color); border-color: var(--school-color); color: var(--school-ink); }
 /* Next games: the date block takes the calendar colors (see renderUpcoming). */
 .game-list li.is-away time { background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 1px var(--school-color); }
 .game-list li:is(.is-home, .is-away):is(.is-postponed, .is-canceled) time { background: var(--steel); color: var(--ink); }
