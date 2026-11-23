@@ -461,13 +461,28 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     
     // If a team is selected, validate the CSV sport matches (with fuzzy matching)
     if (game.sport && teamInfo?.sport) {
-      const matched = matchSport(game.sport, game.gender);
-      if (!matched || matched !== teamInfo.sport) {
-        problems.push(`"${raw.sport}" does not match the team sport "${teamInfo.sport}". The CSV sport must match the selected team.`);
-        game.sport = teamInfo.sport; // Use the team's sport
-      } else {
-        game.sport = matched; // Use the matched (corrected) name
+      // Extract core sport name: remove gender and level prefixes
+      let sportToMatch = game.sport;
+      for (const prefix of ['Girls', 'Boys', 'Coed', 'Varsity', 'JV', 'Freshman']) {
+        if (sportToMatch.startsWith(prefix + ' ')) {
+          sportToMatch = sportToMatch.slice(prefix.length + 1);
+        }
       }
+      
+      // Extract core sport from team sport similarly
+      let teamSportCore = teamInfo.sport;
+      for (const prefix of ['Girls', 'Boys', 'Coed', 'Varsity', 'JV', 'Freshman']) {
+        if (teamSportCore.startsWith(prefix + ' ')) {
+          teamSportCore = teamSportCore.slice(prefix.length + 1);
+        }
+      }
+      
+      // Fuzzy match the core sport names
+      const matched = matchSport(sportToMatch, null); // Don't use gender in matching, focus on core name
+      if (matched && editDistanceSimilarity(matched, teamSportCore) < 0.75) {
+        problems.push(`"${raw.sport}" does not match the team sport "${teamInfo.sport}".`);
+      }
+      game.sport = teamInfo.sport; // Always use the team's exact sport name
     } else if (game.sport && !teamInfo?.sport) {
       // If no team is selected, we need a valid sport to determine season
       const matched = matchSport(game.sport, game.gender);
