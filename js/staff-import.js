@@ -1,12 +1,54 @@
 // Imports games from a CSV file: reads it, previews every row, flags problems, then saves the ready rows.
 const importColumns = ['date', 'start_time', 'sport', 'home_away', 'opponent',
   'location', 'bus_departure', 'pickup_location', 'early_dismissal_time', 'return_time', 'transport_notes', 'notes'];
-const importAliases = {
-  game_date: 'date', time: 'start_time', start: 'start_time', 'home/away': 'home_away', home_or_away: 'home_away', 'h/a': 'home_away',
-  venue: 'location', facility: 'location', 'bus departure': 'bus_departure', bus: 'bus_departure', pickup: 'pickup_location',
-  'early dismissal': 'early_dismissal_time', 'early dismissal time': 'early_dismissal_time',
-  return: 'return_time', opponents: 'opponent', 'opponents/title': 'opponent', transportation_notes: 'transport_notes', game_notes: 'notes',
-};
+// Schedule formats the importer can read. Each entry maps a file's column names (lowercase) to the site's fields.
+// To teach the importer a new format, add an entry with that file's column names; columns not listed are ignored.
+// The header row may sit below title lines, so exported reports work without editing.
+const importFormats = [
+  { name: 'Shore Conference template', columns: {
+    game_date: 'date', time: 'start_time', start: 'start_time', 'home/away': 'home_away', home_or_away: 'home_away',
+    venue: 'location', 'bus departure': 'bus_departure', bus: 'bus_departure', pickup: 'pickup_location',
+    'early dismissal': 'early_dismissal_time', 'early dismissal time': 'early_dismissal_time',
+    return: 'return_time', opponents: 'opponent', transportation_notes: 'transport_notes', game_notes: 'notes',
+  } },
+  // "Sports Schedule Report" export: a title line, then Number, Start Date, Start Time, Sport, H/A, Opponents/Title, Type, Facility.
+  { name: 'Sports Schedule Report', columns: {
+    'start date': 'date', 'start time': 'start_time', 'h/a': 'home_away', 'opponents/title': 'opponent', facility: 'location',
+  } },
+];
+const importAliases = Object.assign({}, ...importFormats.map(format => format.columns));
+const requiredImportColumns = ['date', 'start_time', 'sport', 'home_away', 'opponent', 'location'];
+
+function importHeader(row) {
+  return row.map(name => {
+    const key = name.trim().toLowerCase();
+    return importAliases[key] ?? importAliases[key.replace(/ /g, '_')] ?? key.replace(/ /g, '_');
+  });
+}
+
+// The header is the first of the opening rows that names every required column.
+// If none does, report what the closest row is missing.
+function findImportHeader(rows) {
+  let best = { index: 0, header: importHeader(rows[0] ?? []), missing: requiredImportColumns };
+  for (let index = 0; index < Math.min(rows.length, 10); index++) {
+    const header = importHeader(rows[index]);
+    const missing = requiredImportColumns.filter(name => !header.includes(name));
+    if (!missing.length) return { index, header, missing };
+    if (missing.length < best.missing.length) best = { index, header, missing };
+  }
+  return best;
+}
+
+// Gender and level written into a sport name, as in "BOYS VARSITY BASKETBALL" or "Boys and Girls VARSITY SWIMMING".
+function sportParts(value) {
+  const text = value.replace(/\s+/g, ' ').trim();
+  const boys = /\bboys\b/i.test(text), girls = /\bgirls\b/i.test(text);
+  const gender = boys && girls || /\bcoed\b/i.test(text) ? 'Coed' : boys ? 'Boys' : girls ? 'Girls' : null;
+  const level = /\b(jv|junior varsity)\b/i.test(text) ? 'JV' : /\bfreshman\b/i.test(text) ? 'Freshman'
+    : /\bvarsity\b/i.test(text) ? 'Varsity' : null;
+  const core = text.replace(/\b(boys|girls|coed|and|junior varsity|varsity|jv|freshman)\b|&/gi, ' ').replace(/\s+/g, ' ').trim();
+  return { gender, level, core: core || text };
+}
 
 function parseCsv(text) {
   const rows = [[]];
@@ -54,7 +96,9 @@ function importDate(value) {
 }
 
 function importTime(value) {
-  const match = value.trim().toLowerCase().match(/^(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?)?$/);
+  // Exported reports may add a time zone ("2:30 PM EST"); games are local, so drop it.
+  const plain = value.trim().toLowerCase().replace(/\s+(e|c|m|p)[sd]?t$/, '');
+  const match = plain.match(/^(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?)?$/);
   if (!match) return null;
   let hour = Number(match[1]);
   const minute = Number(match[2] ?? 0);
@@ -83,11 +127,23 @@ function pickValue(value, choices) {
   return null;
 }
 
-// Keep schedule-format notes separate from the opponent's name.
-function importedOpponent(value) {
-  const plain = value.trim().replace(/^(?:@|at|vs\.?)\s+/i, '');
+// Keep schedule-format notes separate from the opponent's name. Reports may repeat the name
+// ("vs Manalapan  vs Manalapan") or add an event title after a slash ("vs Saint Rose / Senior Night").
+function importedOpponentParts(value) {
+  const strip = text => text.trim().replace(/^(?:@|at|vs\.?)\s+/i, '').trim();
+  let plain = strip(value);
   const format = plain.match(/\s*\/\s*(VS\/JV\s+\d+\s+quarters?)\s*$/i);
-  return (format ? plain.slice(0, format.index) : plain).trim();
+  if (format) plain = plain.slice(0, format.index);
+  const titled = plain.match(/^(.*?)\s+\/\s+(.+)$/);
+  const title = titled ? titled[2].trim() : null;
+  if (titled) plain = titled[1];
+  const repeated = plain.match(/^(.+?)\s+(?:@|at|vs\.?)\s+(.+)$/i);
+  if (repeated && repeated[1].trim().toLowerCase() === repeated[2].trim().toLowerCase()) plain = repeated[1];
+  return { name: plain.replace(/\s+/g, ' ').trim(), title };
+}
+
+function importedOpponent(value) {
+  return importedOpponentParts(value).name;
 }
 
 // Fuzzy match a sport name to known sports, correcting minor spelling errors.
@@ -419,16 +475,13 @@ async function previewScheduleFiles(files, check, teamInfo) {
       // Handle CSV files
       let text;
       try { text = await file.text(); } catch { errors.push(file.name + ': could not be read. Choose it again.'); continue; }
-      const [headerRow = [], ...dataRows] = parseCsv(text);
-      const header = headerRow.map(name => {
-        const key = name.trim().toLowerCase();
-        return importAliases[key] ?? importAliases[key.replace(/ /g, '_')] ?? key.replace(/ /g, '_');
-      });
-      const missing = ['date','start_time','sport','home_away','opponent','location'].filter(name => !header.includes(name));
+      const allRows = parseCsv(text);
+      const { index: headerIndex, header, missing } = findImportHeader(allRows);
+      const dataRows = allRows.slice(headerIndex + 1);
       if (missing.length) { errors.push(file.name + ': missing columns: ' + missing.join(', ') + '. Start from the template.'); continue; }
       if (!dataRows.length) { errors.push(file.name + ': has a header row but no games.'); continue; }
       if (rows.length + dataRows.length > 500) return { rows: [], errors: [...errors, 'Import up to 500 games at a time across all selected files.'] };
-      rows.push(...dataRows.map((cells,index) => ({ ...check(cells,header,seen,teamInfo), source: { file: file.name, row: index+2 } })));
+      rows.push(...dataRows.map((cells,index) => ({ ...check(cells,header,seen,teamInfo), source: { file: file.name, row: headerIndex+index+2 } })));
     }
   }
   return { rows, errors };
@@ -462,28 +515,17 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     if (raw.start_time && !timeIsTbd && !game.start_time) problems.push('Use a time like 3:45 PM, 15:45 or TBD');
     game.sport = need('sport', 'Sport') && raw.sport.replace(/\s+/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase());
     if (game.sport && game.sport.length > 60) problems.push('Sport is too long');
-    game.gender = teamInfo?.gender || null;
-    game.level = teamInfo?.level || null;
+    const written = game.sport ? sportParts(game.sport) : { gender: null, level: null, core: '' };
+    game.gender = teamInfo?.gender || written.gender;
+    game.level = teamInfo?.level || written.level;
     game.season = teamInfo?.season || null;
     
     // If a team is selected, validate the CSV sport matches (with fuzzy matching)
     if (game.sport && teamInfo?.sport) {
-      // Extract core sport name: remove gender and level prefixes
-      let sportToMatch = game.sport;
-      for (const prefix of ['Girls', 'Boys', 'Coed', 'Varsity', 'JV', 'Freshman']) {
-        if (sportToMatch.startsWith(prefix + ' ')) {
-          sportToMatch = sportToMatch.slice(prefix.length + 1);
-        }
-      }
-      
-      // Extract core sport from team sport similarly
-      let teamSportCore = teamInfo.sport;
-      for (const prefix of ['Girls', 'Boys', 'Coed', 'Varsity', 'JV', 'Freshman']) {
-        if (teamSportCore.startsWith(prefix + ' ')) {
-          teamSportCore = teamSportCore.slice(prefix.length + 1);
-        }
-      }
-      
+      // Compare core sport names, without gender or level words.
+      const sportToMatch = written.core;
+      const teamSportCore = sportParts(teamInfo.sport).core;
+
       // Fuzzy match the core sport names
       const matched = matchSport(sportToMatch, null); // Don't use gender in matching, focus on core name
       if (matched && editDistanceSimilarity(matched, teamSportCore) < 0.75) {
@@ -492,7 +534,7 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
       game.sport = teamInfo.sport; // Always use the team's exact sport name
     } else if (game.sport && !teamInfo?.sport) {
       // If no team is selected, we need a valid sport to determine season
-      const matched = matchSport(game.sport, game.gender);
+      const matched = matchSport(written.core, game.gender);
       if (matched) {
         game.sport = matched;
         game.season = seasonOf(game.sport, game.gender);
@@ -508,7 +550,7 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
       problems.push('Home or away is missing');
       game.home_away = null;
     }
-    const opponent = importedOpponent(need('opponent', 'Opponent'));
+    const { name: opponent, title: eventTitle } = importedOpponentParts(need('opponent', 'Opponent'));
     const listed = opponent && opponents().find(item =>
       [item.name.toLowerCase(), item.slug].includes(opponent.toLowerCase()));
     const member = listed && schools().find(item =>
@@ -528,7 +570,8 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     }
     game.pickup_location = raw.pickup_location || null;
     game.transport_notes = raw.transport_notes || null;
-    game.notes = raw.notes || null;
+    // An event title from the opponent cell ("Senior Night") becomes the game note when the file has none.
+    game.notes = raw.notes || eventTitle || null;
     if ((game.notes ?? '').length > 1000 || (game.transport_notes ?? '').length > 1000) problems.push('Notes are too long');
 
     const key = [game.sport, game.game_date, game.start_time].join('|');

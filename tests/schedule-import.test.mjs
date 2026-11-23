@@ -199,3 +199,52 @@ test('mixed CSV and other files show helpful error', async () => {
   assert.equal(result.rows.length, 1);
   assert.match(result.errors[0], /invalid.txt.*choose a CSV or PDF file/i);
 });
+
+// A "Sports Schedule Report" export: a title line above the columns, Start Date, time zones, doubled opponents and event titles.
+const scheduleReport = [
+  'Sports Schedule Report: Example High SchoolDate Range: 11/22/2031-Gender: BOYSLevel: varsitySport: BASKETBALL,,,Print Time: 7:26:33 PM',
+  'Number,Start Date,Start Time,Sport,H/A,Opponents/Title,Type,Facility',
+  '1,12/8/2031 ,4:00 PM EST ,BOYS VARSITY BASKETBALL ,H , vs Visitor  vs Visitor ,SCRIMMAGE ,"Main Gym"',
+  '2,12/11/2031 ,6:45 PM  ,BOYS VARSITY BASKETBALL ,A ,  vs Host  @ Host ,GAME ,"Host Gym"',
+  '3,12/15/2031 ,10:00 AM  ,BOYS VARSITY BASKETBALL ,H , vs TBD / Holiday Tournament ,GAME ,"Main Gym"',
+].join('\n');
+
+test('schedule report exports import without editing: title line, Start Date, time zone, doubled opponent, event title', async () => {
+  const saved = [];
+  const {controller, elements} = mountImport([], {
+    async rpc(_name, {input}) { saved.push(input); return {data:'saved-game',error:null}; },
+  });
+  const input = elements.get('import-file');
+  input.files = [new File([scheduleReport], 'report.csv')];
+  await input.onchange();
+  await elements.get('import-save').onclick();
+  assert.equal(saved.length, 3);
+  assert.deepEqual(saved.map(game => [game.game_date, game.start_time, game.home_away, game.opponent_name, game.location]), [
+    ['2031-12-08', '16:00', 'Home', 'Visitor', 'Main Gym'],
+    ['2031-12-11', '18:45', 'Away', 'Host', 'Host Gym'],
+    ['2031-12-15', '10:00', 'Home', 'TBD', 'Main Gym'],
+  ]);
+  assert.equal(saved[2].notes, 'Holiday Tournament');
+  assert.deepEqual([saved[0].sport, saved[0].gender, saved[0].level, saved[0].season], ['Basketball', 'Boys', 'Varsity', 'Winter']);
+  controller.stop();
+});
+
+test('schedule report row numbers count the title line', async () => {
+  const result = await context.previewScheduleFiles([new File([scheduleReport], 'report.csv')], (cells) => ({cells}), null);
+  assert.equal(result.errors.length, 0);
+  assert.equal(JSON.stringify(result.rows.map(row => row.source.row)), '[3,4,5]');
+});
+
+test('a combined boys and girls sport reads as coed with its core sport', () => {
+  const sports = vm.createContext({});
+  vm.runInContext(readFileSync(new URL('../js/seasons.js',import.meta.url),'utf8'), sports);
+  vm.runInContext(readFileSync(new URL('../js/staff-import.js',import.meta.url),'utf8'), sports);
+  const parts = sports.sportParts('Boys and Girls VARSITY SWIMMING');
+  assert.deepEqual([parts.gender, parts.level, parts.core], ['Coed', 'Varsity', 'SWIMMING']);
+  assert.equal(sports.matchSport(parts.core, null), 'Swimming');
+});
+
+test('a file with no recognizable header row still names the missing columns', async () => {
+  const result = await context.previewScheduleFiles([new File(['Title only\nfoo,bar\n1,2'], 'odd.csv')], () => ({}), null);
+  assert.match(result.errors[0], /missing columns: date, start_time, sport, home_away, opponent, location/);
+});
