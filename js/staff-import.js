@@ -457,19 +457,27 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     if (game.sport && game.sport.length > 60) problems.push('Sport is too long');
     game.gender = teamInfo?.gender || null;
     game.level = teamInfo?.level || null;
+    game.season = teamInfo?.season || null;
     
-    // Try to match the sport, with fuzzy matching for typos
-    if (game.sport) {
+    // If a team is selected, validate the CSV sport matches (with fuzzy matching)
+    if (game.sport && teamInfo?.sport) {
+      const matched = matchSport(game.sport, game.gender);
+      if (!matched || matched !== teamInfo.sport) {
+        problems.push(`"${raw.sport}" does not match the team sport "${teamInfo.sport}". The CSV sport must match the selected team.`);
+        game.sport = teamInfo.sport; // Use the team's sport
+      } else {
+        game.sport = matched; // Use the matched (corrected) name
+      }
+    } else if (game.sport && !teamInfo?.sport) {
+      // If no team is selected, we need a valid sport to determine season
       const matched = matchSport(game.sport, game.gender);
       if (matched) {
-        game.sport = matched; // Auto-correct the sport name
+        game.sport = matched;
         game.season = seasonOf(game.sport, game.gender);
       } else {
         problems.push(`"${raw.sport}" is not a recognized sport. Use an official New Jersey high school sport.`);
         game.season = null;
       }
-    } else {
-      game.season = null;
     }
     if (raw.home_away) {
       game.home_away = pickValue(raw.home_away, { Home: ['home', 'h', 'vs'], Away: ['away', 'a', 'at', '@'] });
@@ -748,7 +756,12 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     summary.textContent = files.length ? 'Reading files…' : '';
     if (!files.length) return show();
     const selectedTeam = getSelectedTeam();
-    const teamInfo = selectedTeam ? { gender: selectedTeam.gender, level: selectedTeam.level } : null;
+    const teamInfo = selectedTeam ? { 
+      gender: selectedTeam.gender, 
+      level: selectedTeam.level,
+      sport: selectedTeam.sport,
+      season: selectedTeam.season
+    } : null;
     const preview = await previewScheduleFiles(files, check, teamInfo);
     if (!active || request !== requestNumber) return;
     rows = preview.rows.sort((a,b) => [a.game.sport,a.game.gender,a.game.level,a.game.season].join('|')
