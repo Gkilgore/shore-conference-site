@@ -604,11 +604,10 @@ function startStaffSchedule(client, invite) {
     calendarGames = entries;
     renderScheduleList();
     const school = currentSchool();
-    // Use school colors for home/away distinction when not in conference view
+    // Home games in the school's main color; away games light grey with a frame in that color (see staff.css).
     const getEventColor = (game) => {
-      if (game.status !== 'Scheduled' || !school) return null;
-      const isHome = game.home_away === 'Home';
-      return isHome ? school.primary_color : school.accent_color;
+      if (game.status !== 'Scheduled' || !school || game.home_away !== 'Home') return null;
+      return school.primary_color;
     };
     const events = entries.map(game => ({
       id: game.id,
@@ -616,7 +615,8 @@ function startStaffSchedule(client, invite) {
       title: gameTitle(game) + (game.start_time ? '' : ' · TBD') +
         (game.status === 'Scheduled' ? '' : ' · ' + game.status),
       backgroundColor: getEventColor(game),
-      classNames: ['staff-game', 'staff-game-' + game.status.toLowerCase(), ...(unpublished.has(game.id) ? ['staff-game-unposted'] : [])],
+      classNames: ['staff-game', 'staff-game-' + game.status.toLowerCase(), ...(unpublished.has(game.id) ? ['staff-game-unposted'] : []),
+        ...(game.status === 'Scheduled' && game.home_away === 'Away' ? ['staff-game-away'] : [])],
       extendedProps: { game, location: game.location, status: game.status, unpublished: unpublished.get(game.id),
         pickup: game.transportation?.pickup_location || '',
         earlyDismissal: game.transportation?.early_dismissal_time
