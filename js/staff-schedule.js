@@ -119,6 +119,7 @@ function startStaffSchedule(client, invite) {
   const copySchedule = startStaffCopySchedule(client, {
     currentSchool,
     teams: () => teams.all(),
+    homeVenues: () => venues.homeNames(),
     onCopied: (copied, failed) => {
       feedback(copied + ' game' + (copied === 1 ? '' : 's') + ' copied' + (failed ? '. ' + failed + ' failed.' : '.'));
       loadGames();

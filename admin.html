@@ -630,25 +630,55 @@
               </div>
             </fieldset>
             <fieldset class="prose">
-              <legend>Start times</legend>
-              <label class="staff-check"><input type="radio" name="copy-time-option" value="same" checked> Keep same times</label>
-              <label class="staff-check"><input type="radio" name="copy-time-option" value="offset"> Shift every game</label>
-              <div class="filters copy-option-fields" hidden>
-                <label>Shift by <input type="number" name="copy-time-offset" min="-12" max="12" step="1" placeholder="0"></label>
-                <label>Unit <select name="copy-time-offset-unit"><option value="hours">hours</option><option value="minutes">minutes</option></select></label>
+              <legend>Adjust games</legend>
+              <div class="copy-adjust-grid">
+                <div class="copy-adjust-col">
+                  <p class="copy-adjust-heading">Adjust the time by</p>
+                  <div class="copy-shift-row">
+                    <label>Hours <input type="number" name="copy-shift-hours" min="0" max="23" step="1" placeholder="0" inputmode="numeric"></label>
+                    <div class="copy-toggle" role="radiogroup" aria-label="Hours earlier or later"><label><input type="radio" name="copy-shift-hours-dir" value="-1"><span>Earlier</span></label><label><input type="radio" name="copy-shift-hours-dir" value="1" checked><span>Later</span></label></div>
+                  </div>
+                  <div class="copy-shift-row">
+                    <label>Minutes <input type="number" name="copy-shift-minutes" min="0" max="59" step="1" placeholder="0" inputmode="numeric"></label>
+                    <div class="copy-toggle" role="radiogroup" aria-label="Minutes earlier or later"><label><input type="radio" name="copy-shift-minutes-dir" value="-1"><span>Earlier</span></label><label><input type="radio" name="copy-shift-minutes-dir" value="1" checked><span>Later</span></label></div>
+                  </div>
+                  <div class="copy-shift-row">
+                    <label>Days <input type="number" name="copy-shift-days" min="0" max="365" step="1" placeholder="0" inputmode="numeric"></label>
+                    <div class="copy-toggle" role="radiogroup" aria-label="Days earlier or later"><label><input type="radio" name="copy-shift-days-dir" value="-1"><span>Earlier</span></label><label><input type="radio" name="copy-shift-days-dir" value="1" checked><span>Later</span></label></div>
+                  </div>
+                </div>
+                <div class="copy-adjust-col">
+                  <div class="copy-switch-row">
+                    <span class="copy-switch-label" id="copy-time-tbd-label">Or set time to TBD</span>
+                    <div class="copy-toggle" role="radiogroup" aria-labelledby="copy-time-tbd-label"><label><input type="radio" name="copy-time-tbd" value="yes"><span>Yes</span></label><label><input type="radio" name="copy-time-tbd" value="no" checked><span>No</span></label></div>
+                  </div>
+                  <div class="copy-switch-row">
+                    <span class="copy-switch-label" id="copy-set-start-date-label">Or set start date</span>
+                    <div class="copy-toggle" role="radiogroup" aria-labelledby="copy-set-start-date-label"><label><input type="radio" name="copy-set-start-date" value="yes"><span>Yes</span></label><label><input type="radio" name="copy-set-start-date" value="no" checked><span>No</span></label></div>
+                  </div>
+                  <label class="copy-start-date" hidden>First game date <input type="date" name="copy-start-date"></label>
+                  <p class="staff-hint copy-start-date-hint" hidden>The first game moves to this date. Later games keep the same number of days between them.</p>
+                </div>
               </div>
-              <label class="staff-check"><input type="radio" name="copy-time-option" value="single"> Use one start time for every game</label>
-              <div class="filters copy-option-fields" hidden>
-                <label>Start time <input type="time" name="copy-single-time"></label>
-              </div>
+              <div class="copy-switch-row">
+                <span class="copy-switch-label" id="copy-swap-home-away-label">Switch home and away</span>
+                    <div class="copy-toggle" role="radiogroup" aria-labelledby="copy-swap-home-away-label"><label><input type="radio" name="copy-swap-home-away" value="yes"><span>Yes</span></label><label><input type="radio" name="copy-swap-home-away" value="no" checked><span>No</span></label></div>
+                  </div>
             </fieldset>
             <fieldset class="prose">
               <legend>Location</legend>
               <label class="staff-check"><input type="radio" name="copy-location-option" value="same" checked> Keep same locations</label>
+              <label class="staff-check"><input type="radio" name="copy-location-option" value="home"> Change the home game facility</label>
+              <div class="filters copy-option-fields" hidden>
+                <label class="copy-home-venue-pick">Home facility <select name="copy-home-venue"></select></label>
+                <label class="copy-home-venue-typed">Home facility <input type="text" name="copy-home-location" maxlength="160" placeholder="JV Field"></label>
+                <p class="staff-hint">Only home games move. Away games keep the other school's site.</p>
+              </div>
               <label class="staff-check"><input type="radio" name="copy-location-option" value="bulk"> Use one location for every game</label>
               <div class="filters copy-option-fields" hidden>
                 <label>Location <input type="text" name="copy-bulk-location" maxlength="160" placeholder="New location"></label>
               </div>
+              <p class="staff-hint copy-swap-hint" hidden>Switching home and away keeps each game's location. Change the home game facility above if needed.</p>
             </fieldset>
             <fieldset class="prose">
               <legend>Preview</legend>
