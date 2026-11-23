@@ -47,6 +47,11 @@ function cardTeamLine(team) {
   return line;
 }
 
+// A school's own game, home or away (not a "moved" note).
+function isHomeAway(event) {
+  return ['Home', 'Away'].includes(event.extendedProps.home_away);
+}
+
 function renderCalendar(events, { schoolSlug = null } = {}) {
   const target = document.getElementById('calendar');
   const filters = document.getElementById('calendar-filters');
@@ -229,7 +234,18 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
       // A postponed or canceled list row strikes out the old time and puts the status label under it.
       const status = event.extendedProps.status;
       const timeCell = el.querySelector?.('.fc-list-event-time');
-      if (timeCell && (status === 'Postponed' || status === 'Canceled')) {
+      if (timeCell && schoolSlug && !event.extendedProps.moved_to && isHomeAway(event)) {
+        const word = document.createElement('span');
+        word.className = 'list-home-away';
+        word.textContent = event.extendedProps.home_away;
+        timeCell.replaceChildren(word);
+        if (status === 'Postponed' || status === 'Canceled') {
+          const label = document.createElement('span');
+          label.className = 'game-status is-' + status.toLowerCase();
+          label.textContent = status;
+          timeCell.append(label);
+        }
+      } else if (timeCell && (status === 'Postponed' || status === 'Canceled')) {
         const oldTime = document.createElement('s');
         oldTime.textContent = timeCell.textContent;
         const label = document.createElement('span');
@@ -309,15 +325,21 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
       const head = document.createElement('span');
       head.className = 'game-head';
       const displayedTime = movedTo ? '' : (event.allDay ? 'TBD' : timeText) + (movedFrom ? '*' : '');
-      if (inList && movedFrom) title.textContent = '* ' + title.textContent;
+      if (inList && movedFrom && !(schoolSlug && isHomeAway(event))) title.textContent = '* ' + title.textContent;
       // List rows: a Postponed or Canceled label goes under the struck-out time (see eventDidMount).
       const listStatus = event.extendedProps.status;
       if (inList && listStatus && title.textContent.endsWith(' · ' + listStatus)) {
         title.textContent = title.textContent.slice(0, -listStatus.length - 3);
       }
-      // School pages: a Home or Away tag leads the opponent in List rows, as on the month squares.
-      const listHomeAway = inList && schoolSlug && !movedTo ? createHomeAwayBadge(event.extendedProps.home_away) : null;
-      if (listHomeAway) title.prepend(listHomeAway, ' ');
+      // School pages: the colored block on the left says Home or Away (see eventDidMount), so the time leads
+      // the opponent here, struck through when the game is postponed or canceled.
+      if (inList && schoolSlug && !movedTo && isHomeAway(event)) {
+        const when = document.createElement(listStatus === 'Postponed' || listStatus === 'Canceled' ? 's' : 'strong');
+        when.className = 'game-list-time';
+        when.textContent = (event.allDay || !event.start ? 'TBD'
+          : new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(event.start)) + (movedFrom ? '*' : '');
+        title.prepend(when, ' · ');
+      }
       if (listParts?.team) title.prepend(cardTeamLine(listParts.team));
       if (displayedTime && (!inList || event.allDay)) {
         const time = document.createElement('span');
