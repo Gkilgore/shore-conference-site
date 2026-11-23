@@ -20,6 +20,18 @@ const away = { ...home, id: 'game-two', school_id: 'colts-neck', home_away: 'Awa
 const options = { scope: 'school', school: 'marlboro' };
 const project = (games, opts = options, directory = schools) => publicSchedule(directory, games, opts);
 
+test('fictional demo games are labeled in school, conference, and subscription calendars', () => {
+  const demoHome = { ...home, notes: 'DEMO ONLY: Fictional schedule.' };
+  const demoAway = { ...away, notes: demoHome.notes };
+  const schoolEvent = project([demoHome]).events[0];
+  const conferenceEvent = project([demoHome, demoAway], { scope: 'conference' }).events[0];
+  assert.match(schoolEvent.title, /^\[DEMO\] /);
+  assert.match(conferenceEvent.title, /^\[DEMO\] /);
+  assert.match(buildCalendar(project([demoHome])), /SUMMARY:\[DEMO\] /);
+  assert.match(buildCalendar(project([demoHome, demoAway], { scope: 'conference' })), /SUMMARY:\[DEMO\] /);
+  assert.doesNotMatch(project([home]).events[0].title, /\[DEMO\]/);
+});
+
 test('public school and conference events retain the home-side value for calendar labels', () => {
   const homeEvent = project([home]).events[0];
   const awayEvent = project([away], {scope: 'school', school: 'colts-neck'}).events[0];

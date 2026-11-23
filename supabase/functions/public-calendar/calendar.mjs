@@ -115,9 +115,9 @@ export function publicSchedule(schools, games, options, tournamentGames = [], mo
     const team = game.teams;
     const opponent = directory.get(game.opponent_school_id)?.name ?? game.opponent_name ?? 'Opponent';
     const teamName = [team.gender, team.level, team.sport].join(' ');
-    const title = isConference
+    const title = (game.notes?.startsWith('DEMO ONLY:') ? '[DEMO] ' : '') + (isConference
       ? teamName + ' \u00b7 ' + opponent + ' at ' + directory.get(game.school_id).name
-      : teamName + (game.home_away === 'Home' ? ' vs. ' : ' at ') + opponent;
+      : teamName + (game.home_away === 'Home' ? ' vs. ' : ' at ') + opponent);
     const event = {
       id: game.feed_id ?? game.id, revision: game.revision, updated_at: game.updated_at,
       title: title + (game.status === 'Scheduled' ? '' : ' \u00b7 ' + game.status),
