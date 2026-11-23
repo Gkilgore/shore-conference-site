@@ -9,7 +9,7 @@ function controllerFor(invoke) {
   const getElementById = id => {
     if (!elements.has(id)) elements.set(id, {
       hidden: true, value: '', textContent: '', open: false, reset() {}, showModal() {}, close() {},
-      querySelector() { return { disabled: false }; },
+      querySelector() { return { disabled: false, addEventListener() {} }; },
     });
     return elements.get(id);
   };

@@ -472,7 +472,7 @@ function mountStaffSchedule(role) {
   });
   for(const file of ['staff-import.js','tournament-engine.js'])vm.runInContext(readFileSync(new URL('../js/'+file,import.meta.url),'utf8'),context);
   vm.runInContext(readFileSync(new URL('../js/tournament-public.js',import.meta.url),'utf8').split('(async () => {')[0],context);
-  for(const name of ['startStaffAccess','startStaffOverview','startStaffCoaches','startCoachImport','startStaffImport','startStaffSettings','startStaffPublication','startStaffTransportation','startStaffVenues','startStaffDocuments','startStaffSocial','startStaffTeams','startStaffTeamSchedule','startStaffOpponents'])context[name]=stub;
+  for(const name of ['startStaffAccess','startStaffOverview','startStaffCoaches','startCoachImport','startStaffImport','startStaffSettings','startStaffPublication','startStaffTransportation','startStaffVenues','startStaffDocuments','startStaffSocial','startStaffTeams','startStaffTeamSchedule','startStaffCopySchedule','startStaffOpponents'])context[name]=stub;
   context.startStaffOpponentPicker=()=>({set(){},selected(){return null;},refresh(){}});
   for(const file of ['staff-tournaments.js','staff-schedule.js'])vm.runInContext(readFileSync(new URL('../js/'+file,import.meta.url),'utf8'),context);
   let tournamentStarts=0;
