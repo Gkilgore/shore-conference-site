@@ -38,6 +38,7 @@
   <script defer src="js/staff-coaches.js"></script>
   <script defer src="js/staff-teams.js"></script>
   <script defer src="js/staff-team-schedule.js"></script>
+  <script defer src="js/staff-copy-schedule.js"></script>
   <script defer src="js/staff-venues.js"></script>
   <script defer src="js/staff-coach-import.js"></script>
   <script defer src="data/conference-resources.js"></script>
@@ -135,6 +136,7 @@
               <div class="actions games-actions">
                 <button id="add-calendar-game" class="button primary" type="button" hidden>Add game</button>
                 <button id="import-games" class="button secondary" type="button" aria-expanded="false" aria-controls="import-section" hidden>Import games</button>
+                <button id="copy-schedule-button" class="button secondary" type="button" hidden>Copy schedule</button>
               </div>
             </div>
             <p id="games-feedback" role="status"></p>
@@ -213,6 +215,7 @@
               </fieldset>
               <div class="actions"><button id="team-save" class="button primary" type="submit">Add team</button></div>
             </form>
+            <div class="actions"><button id="copy-schedule-button-teams" class="button secondary" type="button" hidden>Copy schedule</button></div>
             <ul id="team-list" class="team-list"></ul>
             <section id="team-prep-section" class="staff-section team-prep-section" hidden>
               <h4>Start next year's schedules</h4>
@@ -686,6 +689,47 @@
       </dl>
       <pre id="transportation-draft-body"></pre>
       <form method="dialog"><button class="button secondary" autofocus>Close</button></form>
+    </dialog>
+    <dialog id="copy-schedule-dialog" class="game-details" aria-labelledby="copy-schedule-title">
+      <form method="dialog">
+        <button aria-label="Close" class="button dialog-close" type="submit">&times;</button>
+      </form>
+      <h2 id="copy-schedule-title">Copy schedule</h2>
+      <div class="filters">
+        <label>Copy from team
+          <select name="copy-source-team" required>
+            <option value="">Select a team</option>
+          </select>
+        </label>
+        <label>To team
+          <select name="copy-target-team" required>
+            <option value="">Select a team</option>
+          </select>
+        </label>
+      </div>
+      <fieldset>
+        <legend>Time adjustment</legend>
+        <label><input type="radio" name="copy-time-option" value="same" checked> Keep same times</label>
+        <label><input type="radio" name="copy-time-option" value="offset"> Adjust by offset
+          <input type="number" name="copy-time-offset" min="-12" max="12" step="1" placeholder="0" hidden>
+          <select name="copy-time-offset-unit" hidden><option value="hours">hours</option><option value="minutes">minutes</option></select>
+        </label>
+        <label><input type="radio" name="copy-time-option" value="single"> Use single time
+          <input type="time" name="copy-single-time" hidden>
+        </label>
+      </fieldset>
+      <fieldset>
+        <legend>Location</legend>
+        <label><input type="radio" name="copy-location-option" value="same" checked> Keep same locations</label>
+        <label><input type="radio" name="copy-location-option" value="bulk"> Replace all with
+          <input type="text" name="copy-bulk-location" maxlength="160" placeholder="New location" hidden>
+        </label>
+      </fieldset>
+      <div role="region" aria-label="Preview of games to copy" aria-live="polite"></div>
+      <div class="actions">
+        <button name="copy-confirm" class="button primary" type="button" disabled>Copy schedule</button>
+        <form method="dialog"><button class="button secondary" autofocus>Cancel</button></form>
+      </div>
     </dialog>
   </main>
   <footer class="site-footer"><div class="wrap">The Shore Conference <span>New Jersey Athletics</span></div></footer>

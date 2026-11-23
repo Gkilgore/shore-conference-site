@@ -9,6 +9,8 @@ function startStaffSchedule(client, invite) {
   const roleLabels = { ad: 'Athletic director', conference_office: 'Conference admin', site_admin: 'Site admin' };
   const publicLink = document.getElementById('public-page-link');
   const importButton = document.getElementById('import-games');
+  const copyScheduleButton = document.getElementById('copy-schedule-button');
+  const copyScheduleButtonTeams = document.getElementById('copy-schedule-button-teams');
   const unpublishedBar = document.getElementById('unpublished-bar');
   const discardDialog = document.getElementById('discard-dialog');
   let unpublished = new Map();
@@ -113,6 +115,15 @@ function startStaffSchedule(client, invite) {
     teams: () => teams.all(), links: () => overview.links(), states: () => publication.states(),
     schoolName: slug => schools.find(school => school.slug === slug)?.name,
     openGame: game => openEditor(game), canEdit: () => canEdit,
+  });
+  const copySchedule = startStaffCopySchedule(client, {
+    currentSchool,
+    teams: () => teams.all(),
+    onCopied: (copied, failed) => {
+      feedback(copied + ' game' + (copied === 1 ? '' : 's') + ' copied' + (failed ? '. ' + failed + ' failed.' : '.'));
+      loadGames();
+      teams.render();
+    },
   });
   importer = startStaffImport(client, {
     currentSchool, schools: () => schools, opponents: () => opponents.directory(), existingGames: () => allGames,
@@ -446,6 +457,7 @@ function startStaffSchedule(client, invite) {
     scheduleFeedback.textContent = '';
     addGame.hidden = !canEdit;
     importButton.hidden = !canEdit;
+    if (copyScheduleButton) copyScheduleButton.hidden = !canEdit;
     transportationTab.hidden = !canEdit;
     settingsTab.hidden = false;
     opponentsTab.hidden = !canEdit;
@@ -967,6 +979,8 @@ function startStaffSchedule(client, invite) {
     selector.parentElement.hidden = false;
     addGame.hidden = !canEdit;
     importButton.hidden = !canEdit;
+    if (copyScheduleButton) copyScheduleButton.hidden = !canEdit;
+    if (copyScheduleButtonTeams) copyScheduleButtonTeams.hidden = !canEdit;
     setHeading();
     closeEditorDialog();
     filterForm.hidden = true;
@@ -1185,6 +1199,12 @@ function startStaffSchedule(client, invite) {
     showImport(true);
     document.getElementById('import-file').focus();
   };
+  if (copyScheduleButton) {
+    copyScheduleButton.onclick = () => copySchedule.open();
+  }
+  if (copyScheduleButtonTeams) {
+    copyScheduleButtonTeams.onclick = () => copySchedule.open();
+  }
   gamesTab.onclick = () => openGames();
   document.getElementById('games-view-schedule').onclick = () => showSchedule(true);
   document.getElementById('games-review').onclick = () => openTeams();
