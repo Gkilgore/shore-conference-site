@@ -83,7 +83,14 @@ function pickValue(value, choices) {
   return null;
 }
 
-// Fuzzy match a sport name to known sports, correcting minor spelling errors
+// Keep schedule-format notes separate from the opponent's name.
+function importedOpponent(value) {
+  const plain = value.trim().replace(/^(?:@|at|vs\.?)\s+/i, '');
+  const format = plain.match(/\s*\/\s*(VS\/JV\s+\d+\s+quarters?)\s*$/i);
+  return (format ? plain.slice(0, format.index) : plain).trim();
+}
+
+// Fuzzy match a sport name to known sports, correcting minor spelling errors.
 function matchSport(input, gender) {
   if (!input) return null;
   
@@ -501,7 +508,7 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
       problems.push('Home or away is missing');
       game.home_away = null;
     }
-    const opponent = need('opponent', 'Opponent');
+    const opponent = importedOpponent(need('opponent', 'Opponent'));
     const listed = opponent && opponents().find(item =>
       [item.name.toLowerCase(), item.slug].includes(opponent.toLowerCase()));
     const member = listed && schools().find(item =>

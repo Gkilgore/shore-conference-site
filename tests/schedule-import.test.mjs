@@ -73,6 +73,22 @@ test('TBD rows are compared safely with games already saved without a time', asy
   controller.stop();
 });
 
+test('CSV import drops schedule-format text from the opponent', async () => {
+  const saved = [];
+  const {controller, elements} = mountImport([], {
+    async rpc(_name, {input}) { saved.push(input); return {data:'saved-game',error:null}; },
+  });
+  const input = elements.get('import-file');
+  input.files = [new File([header+'\n2031-09-01,4:00 PM,Basketball,Girls,Varsity,Away,@ Wall / VS/JV 6 quarters,North Gym'], 'wall.csv')];
+  await input.onchange();
+  await elements.get('import-save').onclick();
+  assert.equal(saved.length, 1);
+  assert.equal(saved[0].opponent_name, 'Wall');
+  assert.equal(saved[0].notes, null);
+  assert.equal(saved[0].home_away, 'Away');
+  controller.stop();
+});
+
 test('CSV import saves an optional early-dismissal time and flags an invalid one', async () => {
   const saved = [];
   const {controller, elements} = mountImport([], {

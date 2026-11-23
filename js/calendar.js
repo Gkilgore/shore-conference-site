@@ -19,14 +19,26 @@ const shortLevel = level => ({ Varsity: 'V', Freshman: 'F' })[level] ?? level;
 const shortGender = gender => ({ Boys: '(B)', Girls: '(G)', Coed: '(C)' })[gender] ?? gender;
 // List rows, Next games and the pop-up name the team on one line ("Girls Frsh Soccer") and the matchup
 // ("@ Colts Neck") on the next. Levels read Varsity, JV and Frsh.
+const displaySport = ({ gender, sport } = {}) =>
+  gender && sport?.toLowerCase().startsWith(gender.toLowerCase() + ' ')
+    ? sport.slice(gender.length + 1) : sport;
 const cardTeam = ({ gender, level, sport } = {}) =>
-  [gender, ({ Freshman: 'Frsh' })[level] ?? level, sport].filter(Boolean).join(' ');
+  [gender, ({ Freshman: 'Frsh' })[level] ?? level, displaySport({ gender, sport })].filter(Boolean).join(' ');
+function matchupParts(text) {
+  const format = text.match(/\s*\/\s*(VS\/JV\s+\d+\s+quarters?)\s*$/i);
+  let matchup = (format ? text.slice(0, format.index) : text).trim();
+  const away = matchup.match(/^(?:at|@)\s+/i);
+  const home = matchup.match(/^vs\.?\s+/i);
+  if (away) matchup = '@ ' + matchup.slice(away[0].length).replace(/^(?:at|@)\s+/i, '').trim();
+  else if (home) matchup = 'vs. ' + matchup.slice(home[0].length).replace(/^vs\.?\s+/i, '').trim();
+  return { matchup };
+}
 function splitTeamTitle(title, details = {}) {
   const team = [details.gender, details.level, details.sport].filter(Boolean).join(' ');
   const at = team ? title.indexOf(team) : -1;
   if (at < 0) return { team: '', matchup: title };
   return { team: (title.slice(0, at) + cardTeam(details)).trim(),
-    matchup: title.slice(at + team.length).replace(/^\s*·?\s*/, '') };
+    matchup: matchupParts(title.slice(at + team.length).replace(/^\s*·?\s*/, '')).matchup };
 }
 function cardTeamLine(team) {
   const line = document.createElement('span');
@@ -55,10 +67,11 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
     if (fields.school) return status && event.title.endsWith(' · ' + status) ? event.title.slice(0, -status.length - 3) : event.title;
     const team = [gender, level, sport].filter(Boolean).join(' ');
     if (!team || !event.title.startsWith(team)) return event.title;
-    if (!fields.sport?.value) return [shortGender(gender), shortLevel(level), sport].filter(Boolean).join(' ');
+    if (!fields.sport?.value) return [shortGender(gender), shortLevel(level), displaySport({ gender, sport })]
+      .filter(Boolean).join(' ');
     let rest = event.title.slice(team.length).replace(/^\s*·?\s*/, '');
     if (status && rest.endsWith(' · ' + status)) rest = rest.slice(0, -status.length - 3);
-    return rest || team;
+    return matchupParts(rest).matchup || team;
   }
   // Conference calendar squares keep the conference colors (navy, yellow for postponed, red for
   // canceled). Each has three lines: the school's name (the picked school's when the School filter is
@@ -73,7 +86,8 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
     const other = directory[involved[home ? 1 : 0]]?.name;
     const { sport, gender, level } = event.extendedProps;
     return { school: directory[slug].name, homeAway: home ? 'Home' : 'Away',
-      matchup: [shortGender(gender), shortLevel(level), sport].filter(Boolean).join(' ') + (other ? (home ? ' vs. ' : ' @ ') + other : '') };
+      matchup: [shortGender(gender), shortLevel(level), displaySport({ gender, sport })].filter(Boolean).join(' ') +
+        (other ? (home ? ' vs. ' : ' @ ') + other : '') };
   }
   // For school-specific calendars, apply colors based on home/away status using CSS variables
   // set by the school page (--school-color and --school-accent).
@@ -97,7 +111,7 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
     const team = [gender, level, sport].filter(Boolean).join(' ');
     let rest = team && event.title.startsWith(team) ? event.title.slice(team.length).replace(/^\s*·?\s*/, '') : event.title;
     if (status && rest.endsWith(' · ' + status)) rest = rest.slice(0, -status.length - 3);
-    return (rest || event.title).replace(/(^| )at (?=\S)/, '$1@ ');
+    return matchupParts(rest || event.title).matchup;
   }
   // With one sport on screen, a short label such as "Girls JV" beside the time tells its teams apart.
   function teamTag(event) {
@@ -503,7 +517,8 @@ function createGameDetails(calendar, { schoolColors = false, onEdit = null, canE
     let rest = event.title.replace(new RegExp(' · (' + status + '|TBD)$'), '').replace(/ · TBD$/, '');
     if (team && rest.startsWith(team)) rest = rest.slice(team.length).replace(/^\s*·?\s*/, '');
     const heading = dialog.querySelector('h2');
-    heading.textContent = (rest || event.title).replace(/(^| )at (?=\S)/, '$1@ ');
+    const formatted = matchupParts(rest || event.title);
+    heading.textContent = formatted.matchup;
     const teamLine = dialog.querySelector('.game-card-team');
     teamLine.textContent = rest ? cardTeam({ gender, level, sport }) : '';
     if (status !== 'Scheduled') {
@@ -524,7 +539,8 @@ function createGameDetails(calendar, { schoolColors = false, onEdit = null, canE
     if (details.pickup) rows.push(['Pickup', details.pickup]);
     if (bus) rows.push(['Bus', bus.replace(/^Bus /, '')]);
     if (details.earlyDismissal) rows.push(['Early dismissal', details.earlyDismissal]);
-    const notes = details.notes ?? game.notes;
+    const notes = (details.notes ?? game.notes ?? '')
+      .replace(/(?:^|\s*·\s*)VS\/JV\s+\d+\s+quarters?\s*$/i, '').trim();
     if (notes) rows.push(['Notes', notes]);
     dialog.querySelector('dl').replaceChildren(...rows.flatMap(([label, value]) => {
       const term = document.createElement('dt');
