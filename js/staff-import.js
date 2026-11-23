@@ -83,6 +83,74 @@ function pickValue(value, choices) {
   return null;
 }
 
+// Fuzzy match a sport name to known sports, correcting minor spelling errors
+function matchSport(input, gender) {
+  if (!input) return null;
+  
+  // Build list of all known sports
+  const knownSports = [];
+  for (const season of ['Fall', 'Winter', 'Spring']) {
+    knownSports.push(...sportSeasons[season]);
+  }
+  
+  // Normalize input
+  const normalized = input.trim();
+  
+  // Try exact case-insensitive match first
+  const exact = knownSports.find(sport => sport.toLowerCase() === normalized.toLowerCase());
+  if (exact) return exact;
+  
+  // Try with gender prefix (e.g., "Tennis" -> "Girls Tennis" or "Boys Tennis")
+  if (gender) {
+    const withGender = knownSports.find(sport => 
+      sport.toLowerCase() === (gender + ' ' + normalized).toLowerCase());
+    if (withGender) return withGender;
+  }
+  
+  // Fuzzy match: find closest match by edit distance
+  const threshold = 0.75; // 75% similarity required
+  let bestMatch = null;
+  let bestScore = threshold;
+  
+  for (const sport of knownSports) {
+    const score = editDistanceSimilarity(normalized, sport);
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = sport;
+    }
+  }
+  
+  return bestMatch;
+}
+
+// Calculate string similarity using normalized edit distance (0 to 1, where 1 is identical)
+function editDistanceSimilarity(a, b) {
+  a = a.toLowerCase();
+  b = b.toLowerCase();
+  const maxLen = Math.max(a.length, b.length);
+  if (maxLen === 0) return 1;
+  const distance = editDistance(a, b);
+  return 1 - (distance / maxLen);
+}
+
+// Calculate edit distance (Levenshtein distance)
+function editDistance(a, b) {
+  const matrix = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(0));
+  for (let i = 0; i <= a.length; i++) matrix[0][i] = i;
+  for (let j = 0; j <= b.length; j++) matrix[j][0] = j;
+  for (let j = 1; j <= b.length; j++) {
+    for (let i = 1; i <= a.length; i++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      matrix[j][i] = Math.min(
+        matrix[j][i - 1] + 1,
+        matrix[j - 1][i] + 1,
+        matrix[j - 1][i - 1] + cost
+      );
+    }
+  }
+  return matrix[b.length][a.length];
+}
+
 // Helper functions for PDF text parsing
 function parsePdfScheduleText(text) {
   const lines = text.split('\n').map(l => l.trim()).filter(l => l);
@@ -389,9 +457,18 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     if (game.sport && game.sport.length > 60) problems.push('Sport is too long');
     game.gender = teamInfo?.gender || null;
     game.level = teamInfo?.level || null;
-    game.season = game.sport && seasonOf(game.sport, game.gender);
-    if (!game.season || game.season === 'Other') {
-      problems.push(`${game.sport}${game.gender ? ' for ' + game.gender : ''} is not a recognized sport. Use an official New Jersey high school sport.`);
+    
+    // Try to match the sport, with fuzzy matching for typos
+    if (game.sport) {
+      const matched = matchSport(game.sport, game.gender);
+      if (matched) {
+        game.sport = matched; // Auto-correct the sport name
+        game.season = seasonOf(game.sport, game.gender);
+      } else {
+        problems.push(`"${raw.sport}" is not a recognized sport. Use an official New Jersey high school sport.`);
+        game.season = null;
+      }
+    } else {
       game.season = null;
     }
     if (raw.home_away) {
