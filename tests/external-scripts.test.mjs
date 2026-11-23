@@ -9,6 +9,8 @@ const digests = new Map([
     'sha384-a9qx08ufzJ+0qbHzdqA+GYiSayQQB5BK2YGS/HQT9cxhQm+GhiXFj1ByVXa93ZRR'],
   ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js',
     'sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O'],
+  ['https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
+    'sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e'],
 ]);
 
 test('fixed CDN scripts use their verified hashes and anonymous CORS', () => {
@@ -24,4 +26,6 @@ test('fixed CDN scripts use their verified hashes and anonymous CORS', () => {
     }
   }
   assert.ok(checked >= 4, 'expected fixed CDN scripts on staff and calendar pages');
+  const admin = readFileSync(new URL('admin.html', root), 'utf8');
+  assert.match(admin, /pdfjs-dist@3\.11\.174\/build\/pdf\.min\.js/, 'staff PDF import needs the browser PDF.js script');
 });

@@ -25,6 +25,7 @@ function mountImport(existingGames = [], client = {}, sendTransportationEmail, d
     createElement: makeElement,
   };
   const context = vm.createContext({document, seasonOf: () => 'Fall', crypto: {randomUUID: () => 'import-batch'}});
+  vm.runInContext(readFileSync(new URL('../js/seasons.js',import.meta.url),'utf8'), context);
   vm.runInContext(readFileSync(new URL('../js/staff-import.js',import.meta.url),'utf8'), context);
   const controller = context.startStaffImport(client, {
     currentSchool: () => ({slug:'marlboro'}), schools: () => schoolList, opponents: () => directory,
