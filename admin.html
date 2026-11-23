@@ -154,10 +154,18 @@
                 <button id="import-template" class="button secondary" type="button">Download template</button>
               </div>
               <p id="import-summary" role="status"></p>
+              <div id="import-result" class="import-result" role="status" tabindex="-1" hidden>
+                <p id="import-result-title" class="import-result-title"></p>
+                <ul id="import-result-list" class="import-result-list"></ul>
+                <div class="actions">
+                  <a id="import-result-public" class="button secondary" target="_blank" rel="noopener" hidden>View public calendar</a>
+                  <button id="import-result-done" class="button secondary" type="button">Import another file</button>
+                </div>
+              </div>
               <ul id="import-file-errors" class="staff-hint" hidden></ul>
               <div class="import-table-wrap">
                 <table id="import-preview" class="import-preview" hidden>
-                  <thead><tr><th>Row</th><th>Status</th><th>Date</th><th>Time</th><th>H/A</th><th>Opponent</th><th>Location</th><th>Problems</th></tr></thead>
+                  <thead><tr><th>Status</th><th>Date</th><th>Time</th><th>H/A</th><th>Opponent and location</th></tr></thead>
                   <tbody></tbody>
                 </table>
               </div>

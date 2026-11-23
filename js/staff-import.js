@@ -30,7 +30,7 @@ function importHeader(row) {
 // If none does, report what the closest row is missing.
 function findImportHeader(rows) {
   let best = { index: 0, header: importHeader(rows[0] ?? []), missing: requiredImportColumns };
-  for (let index = 0; index < Math.min(rows.length, 10); index++) {
+  for (let index = 0; index < Math.min(rows.length, 25); index++) {
     const header = importHeader(rows[index]);
     const missing = requiredImportColumns.filter(name => !header.includes(name));
     if (!missing.length) return { index, header, missing };
@@ -496,6 +496,12 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
   const saveBtn = document.getElementById('import-save');
   const clear = document.getElementById('import-clear');
   const errorList = document.getElementById('import-file-errors');
+  const resultBox = document.getElementById('import-result');
+  const resultTitle = document.getElementById('import-result-title');
+  const resultList = document.getElementById('import-result-list');
+  const resultPublic = document.getElementById('import-result-public');
+  const resultDone = document.getElementById('import-result-done');
+  let lastResult = null;
   let rows = [];
   let fileErrors = [], requestNumber = 0;
   let active = true;
@@ -611,21 +617,69 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
   }
 
   let heldNote = '';
+
+  const plural = (count, one, many) => count + ' ' + (count === 1 ? one : many);
+  const teamLabel = game => [game.gender, game.level, game.sport].filter(Boolean).join(' ') || 'Team not set';
+
+  // What the AD needs after saving: did it work, and can families see it?
+  function importResult(saved, postFailed) {
+    const count = state => rows.filter(row => row.state === state).length;
+    const posted = count('imported'), held = count('held'), failed = count('failed');
+    const skipped = count('duplicate'), unfixed = count('problem');
+    const teams = new Map();
+    for (const row of saved) {
+      const entry = teams.get(teamLabel(row.game)) ?? { imported: 0, held: 0, failed: 0 };
+      entry[row.state] = (entry[row.state] ?? 0) + 1;
+      teams.set(teamLabel(row.game), entry);
+    }
+    const tone = !posted && !held ? 'error' : held || failed || unfixed || postFailed ? 'warning' : 'success';
+    const title = tone === 'error' ? 'Nothing was saved. Check the rows marked Failed or Needs a fix and try again.'
+      : [tone === 'success' && 'Import complete.',
+        plural(posted + held, 'game was', 'games were') + ' saved' + (held ? '.' : ' and posted to the public schedule.'),
+        held && plural(held, 'game is', 'games are') + ' not on the public schedule yet.',
+        failed && plural(failed, 'game', 'games') + ' could not be saved.',
+        unfixed && plural(unfixed, 'row still needs', 'rows still need') + ' a fix.',
+      ].filter(Boolean).join(' ');
+    const lines = [...teams].map(([label, entry]) => label + ': ' + [
+      entry.imported && plural(entry.imported, 'game', 'games') + ' posted on the public calendar',
+      entry.held && plural(entry.held, 'game', 'games') + ' saved, not public yet',
+      entry.failed && plural(entry.failed, 'game', 'games') + ' could not be saved',
+    ].filter(Boolean).join(' · '));
+    if (held) lines.push(heldNote);
+    if (skipped) lines.push(plural(skipped, 'row was', 'rows were') + ' skipped because ' + (skipped === 1 ? 'it was' : 'they were') + ' already on the schedule or repeated in the file.');
+    if (unfixed) lines.push(plural(unfixed, 'row still needs', 'rows still need') + ' a fix and ' + (unfixed === 1 ? 'was' : 'were') + ' not saved. Fix ' + (unfixed === 1 ? 'it' : 'them') + ' below and save again.');
+    const emailFailures = rows.filter(row => row.emailError).length;
+    if (emailFailures) lines.push(plural(emailFailures, 'transportation email was', 'transportation emails were') + ' not sent. Fix the contact or email setup and save those games again.');
+    return { tone, title, lines, posted };
+  }
+
+  function showResult() {
+    resultBox.hidden = !lastResult;
+    if (!lastResult) return;
+    resultBox.className = 'import-result is-' + lastResult.tone;
+    resultTitle.textContent = lastResult.title;
+    resultList.replaceChildren(...lastResult.lines.map(text => {
+      const item = document.createElement('li');
+      item.textContent = text;
+      return item;
+    }));
+    resultPublic.hidden = !lastResult.posted;
+    resultPublic.href = 'school.html?school=' + encodeURIComponent(currentSchool().slug);
+  }
   function renderEditableRow(row, rowIndex) {
     const { game, raw, state } = row;
     const tr = document.createElement('tr');
     tr.className = 'is-' + state;
 
-    // Row number
-    const rowNumTd = document.createElement('td');
-    rowNumTd.textContent = String(row.source.row);
-    tr.append(rowNumTd);
-
-    // Status
+    // Status, with the file line underneath so the AD can find the row in their spreadsheet.
     const statusTd = document.createElement('td');
     const labels = { ready: 'Ready', problem: 'Needs a fix', duplicate: 'Skipped', imported: 'Posted',
       held: 'Saved, not posted', failed: 'Failed' };
-    statusTd.textContent = labels[state];
+    const statusLabel = document.createElement('span');
+    statusLabel.textContent = labels[state];
+    const line = document.createElement('small');
+    line.textContent = 'Line ' + row.source.row;
+    statusTd.append(statusLabel, line);
     tr.append(statusTd);
 
     // Date - editable
@@ -679,10 +733,12 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     haTd.append(haSelect);
     tr.append(haTd);
 
-    // Opponent - editable
-    const oppTd = document.createElement('td');
+    // Opponent and location share one wide cell, stacked, so both names show in full.
+    const gameTd = document.createElement('td');
+    gameTd.className = 'import-game-cell';
     const oppInput = document.createElement('input');
     oppInput.type = 'text';
+    oppInput.setAttribute?.('aria-label', 'Opponent');
     oppInput.value = game.opponent_name || game.opponent_directory_slug || '';
     oppInput.placeholder = 'Opponent';
     if (typeof oppInput.addEventListener === 'function') {
@@ -705,13 +761,11 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
         show();
       });
     }
-    oppTd.append(oppInput);
-    tr.append(oppTd);
+    oppInput.title = oppInput.value;
 
-    // Location - editable
-    const locTd = document.createElement('td');
     const locInput = document.createElement('input');
     locInput.type = 'text';
+    locInput.setAttribute?.('aria-label', 'Location');
     locInput.value = game.location || '';
     locInput.placeholder = 'Location';
     if (typeof locInput.addEventListener === 'function') {
@@ -721,21 +775,30 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
         show();
       });
     }
-    locTd.append(locInput);
-    tr.append(locTd);
+    locInput.title = locInput.value;
+    gameTd.append(oppInput, locInput);
+    // Notes read from the file (like "Senior Night") appear on the public calendar, so show them here too.
+    if (game.notes) {
+      const note = document.createElement('small');
+      note.className = 'import-note';
+      note.textContent = 'Note: ' + game.notes;
+      gameTd.append(note);
+    }
+    tr.append(gameTd);
 
-    // Problems - only show if there are problems
+    // Problems get their own full-width line under the game, so they never squeeze the fields.
     const problemsText = [...row.problems];
     if (row.emailError) {
       problemsText.push('Transportation email not sent: ' + row.emailError);
     }
-    if (problemsText.length > 0) {
-      const problemsTd = document.createElement('td');
-      problemsTd.textContent = problemsText.join('; ');
-      tr.append(problemsTd);
-    }
-
-    return tr;
+    if (!problemsText.length) return [tr];
+    const noteRow = document.createElement('tr');
+    noteRow.className = 'import-problem-row is-' + state;
+    const noteTd = document.createElement('td');
+    noteTd.colSpan = 5;
+    noteTd.textContent = problemsText.join('; ');
+    noteRow.append(noteTd);
+    return [tr, noteRow];
   }
 
   function validateRow(row) {
@@ -770,10 +833,12 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     rows.forEach(row => counts[row.state]++);
     table.hidden = !rows.length;
     clear.hidden = !rows.length && !fileErrors.length;
-    saveBtn.hidden = !rows.length;
+    // Once everything ready is saved, the button goes away; the result box says what happened.
+    saveBtn.hidden = !counts.ready;
     saveBtn.textContent = 'Confirm & Save Schedule';
+    showResult();
     
-    table.tBodies[0].replaceChildren(...rows.map((row, index) => renderEditableRow(row, index)));
+    table.tBodies[0].replaceChildren(...rows.flatMap((row, index) => renderEditableRow(row, index)));
     
     const emailFailures = rows.filter(row => row.emailError);
     if (rows.length) {
@@ -791,6 +856,7 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
 
   function reset() {
     requestNumber++;
+    lastResult = null;
     rows = [];
     fileErrors = [];
     editingState = {};
@@ -818,6 +884,7 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     rows = [];
     fileErrors = [];
     editingState = {};
+    lastResult = null;
     summary.textContent = files.length ? 'Reading files…' : '';
     if (!files.length) return show();
     const selectedTeam = getSelectedTeam();
@@ -891,10 +958,12 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     }
     // Rows stay "Saved, not posted" until the server confirms they are public.
     const saved = ready.filter(row => row.state === 'held');
+    let postFailed = false;
     if (saved.length) {
       summary.textContent = 'Posting ' + saved.length + (saved.length === 1 ? ' game…' : ' games…');
       const result = await post(saved.map(row => row.id));
       if (!active || request !== requestNumber) return;
+      postFailed = !result.ok;
       if (result.ok) saved.forEach(row => { if (!result.heldIds.has(row.id)) row.state = 'imported'; });
       heldNote = !result.ok ? 'Posting didn’t go through. The games are saved. Open Teams and choose Post schedule for each team.'
         : 'Open Teams and choose Post schedule for ' + result.held.join(', ') + '. Those teams have other games that aren’t public, so nothing was posted for them.';
@@ -902,19 +971,23 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     fileInput.disabled = false;
     clear.disabled = false;
     saveBtn.disabled = false;
+    lastResult = importResult(ready, postFailed);
     show();
+    resultBox.scrollIntoView?.({ block: 'nearest' });
+    resultBox.focus?.();
     const imported = ready.filter(row => row.state === 'imported' || row.state === 'held');
     if (imported.length) onImported(imported[0].game.game_date);
   };
 
   clear.onclick = reset;
+  resultDone.onclick = () => { reset(); fileInput.focus?.(); };
 
   return {
     reset,
     stop() {
       active = false;
       requestNumber++;
-      fileInput.onchange = template.onclick = saveBtn.onclick = clear.onclick = null;
+      fileInput.onchange = template.onclick = saveBtn.onclick = clear.onclick = resultDone.onclick = null;
     },
   };
 }
