@@ -1,7 +1,8 @@
 // Copy an existing team's schedule to another team, with bulk editing of time and location.
 function startStaffCopySchedule(client, { currentSchool, teams, onCopied }) {
   const dialog = document.getElementById('copy-schedule-dialog');
-  const closeBtn = dialog?.querySelector('[aria-label="Close"]');
+  const form = dialog?.querySelector('form');
+  const cancelBtn = dialog?.querySelector('[name="copy-cancel"]');
   const sourceTeamSelect = dialog?.querySelector('[name="copy-source-team"]');
   const targetTeamSelect = dialog?.querySelector('[name="copy-target-team"]');
   const timeOptionRadios = dialog?.querySelectorAll('[name="copy-time-option"]');
@@ -21,8 +22,9 @@ function startStaffCopySchedule(client, { currentSchool, teams, onCopied }) {
 
   function populateTeamSelects() {
     const allTeams = teams();
-    sourceTeamSelect.replaceChildren(...allTeams.map(team => new Option(team.label, team.key)));
-    targetTeamSelect.replaceChildren(...allTeams.map(team => new Option(team.label, team.key)));
+    const options = () => [new Option('Select a team', ''), ...allTeams.map(team => new Option(team.label, team.key))];
+    sourceTeamSelect.replaceChildren(...options());
+    targetTeamSelect.replaceChildren(...options());
   }
 
   function updatePreview() {
@@ -100,14 +102,14 @@ function startStaffCopySchedule(client, { currentSchool, teams, onCopied }) {
   }
 
   function timeOptionChanged() {
-    timeOffsetInput.hidden = [...timeOptionRadios].find(r => r.checked)?.value !== 'offset';
-    timeOffsetUnit.hidden = timeOffsetInput.hidden;
-    singleTimeInput.hidden = [...timeOptionRadios].find(r => r.checked)?.value !== 'single';
+    const choice = [...timeOptionRadios].find(r => r.checked)?.value;
+    timeOffsetInput.closest('.copy-option-fields').hidden = choice !== 'offset';
+    singleTimeInput.closest('.copy-option-fields').hidden = choice !== 'single';
     updatePreview();
   }
 
   function locationOptionChanged() {
-    bulkLocationInput.hidden = [...locationOptionRadios].find(r => r.checked)?.value !== 'bulk';
+    bulkLocationInput.closest('.copy-option-fields').hidden = [...locationOptionRadios].find(r => r.checked)?.value !== 'bulk';
     updatePreview();
   }
 
@@ -178,8 +180,9 @@ function startStaffCopySchedule(client, { currentSchool, teams, onCopied }) {
   timeOffsetUnit.onchange = updatePreview;
   singleTimeInput.onchange = updatePreview;
   bulkLocationInput.onchange = updatePreview;
-  confirmBtn.onclick = copy;
-  closeBtn.onclick = () => dialog.close();
+  // Enter in a field submits the form; only copy when the button is enabled.
+  form.onsubmit = event => { event.preventDefault(); if (!confirmBtn.disabled) copy(); };
+  cancelBtn.onclick = () => dialog.close();
 
   return {
     open() {
@@ -205,8 +208,8 @@ function startStaffCopySchedule(client, { currentSchool, teams, onCopied }) {
       timeOffsetUnit.onchange = null;
       singleTimeInput.onchange = null;
       bulkLocationInput.onchange = null;
-      confirmBtn.onclick = null;
-      closeBtn.onclick = null;
+      form.onsubmit = null;
+      cancelBtn.onclick = null;
     },
   };
 }

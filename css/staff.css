@@ -341,10 +341,10 @@
 }
 
 /* Game editor. */
-#game-form { display: grid; gap: 1rem; }
+#game-form, #copy-schedule-form { display: grid; gap: 1rem; }
 #game-form h3 { margin-bottom: 0.25rem; }
-:is(#game-form, #branding-form) fieldset { display: grid; gap: 0.85rem; min-width: 0; margin: 0; padding: 1rem; border: var(--frame); }
-:is(#game-form, #branding-form) legend {
+:is(#game-form, #branding-form, #copy-schedule-form) fieldset { display: grid; gap: 0.85rem; min-width: 0; margin: 0; padding: 1rem; border: var(--frame); }
+:is(#game-form, #branding-form, #copy-schedule-form) legend {
   padding: 0.3rem 0.6rem;
   background: var(--ink);
   color: white;
@@ -353,7 +353,7 @@
   text-transform: uppercase;
   letter-spacing: 0.14em;
 }
-:is(#game-form, #branding-form) fieldset > label, .branding-upload > label, #transportation-contact-form > label {
+:is(#game-form, #branding-form, #copy-schedule-form) fieldset > label, .branding-upload > label, #transportation-contact-form > label {
   display: grid;
   gap: 0.3rem;
   font-size: 0.78rem;
@@ -361,7 +361,7 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
-#game-form .filters label { flex-basis: 8rem; }
+:is(#game-form, #copy-schedule-form) .filters label { flex-basis: 8rem; }
 #game-form .filters .start-time-field {
   display: grid;
   flex: 1 1 14rem;
@@ -473,7 +473,7 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
 #workspace .button.primary { background: var(--school-color); border-color: var(--school-color); color: var(--school-ink); }
 #workspace .button.primary:is(:hover, :focus-visible) { background: var(--ink); border-color: var(--ink); color: white; }
 #workspace .button.secondary:is(:hover, :focus-visible) { background: var(--school-accent); color: var(--accent-ink); }
-#workspace :is(#game-form, #branding-form) legend { background: var(--school-color); color: var(--school-ink); }
+#workspace :is(#game-form, #branding-form, #copy-schedule-form) legend { background: var(--school-color); color: var(--school-ink); }
 #workspace #calendar {
   --fc-button-hover-bg-color: var(--school-accent);
   --fc-today-bg-color: color-mix(in srgb, var(--school-accent) 25%, transparent);
@@ -520,7 +520,7 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
 }
 #link-list .staff-reason { background: var(--school-color); color: var(--school-ink); }
 .staff-attention .staff-empty { display: block; padding: 0.85rem; color: var(--muted); }
-#game-form fieldset > label.staff-check {
+:is(#game-form, #copy-schedule-form) fieldset > label.staff-check {
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -969,21 +969,28 @@ input[type="color"] { padding: 0.25rem; cursor: pointer; }
 /* The game editor is a pop-up over whichever tab is open: a band in the school's color, white sections with
    title bars in the school's second color on a pale steel page, and the save buttons held at the bottom. */
 .game-details.game-editor { --editor-gutter: clamp(1rem, 3vw, 1.25rem); width: min(46rem, calc(100% - 2rem)); padding: 0; overflow: hidden auto; overscroll-behavior: contain; background: var(--paper); }
-.game-editor #game-form { margin: 0; gap: 1rem; }
-.game-editor #game-form > :not(.game-editor-band, .game-editor-foot) { margin-inline: var(--editor-gutter); }
+.game-editor :is(#game-form, #copy-schedule-form) { margin: 0; gap: 1rem; }
+.game-editor :is(#game-form, #copy-schedule-form) > :not(.game-editor-band, .game-editor-foot) { margin-inline: var(--editor-gutter); }
 .game-editor-band { display: grid; gap: 0.35rem; padding: 1rem var(--editor-gutter); background: var(--school-color); color: var(--school-ink); }
-.game-editor #game-form .game-editor-band h3 { margin: 0; color: inherit; font-size: clamp(1.4rem, 3vw, 1.9rem); }
+.game-editor :is(#game-form, #copy-schedule-form) .game-editor-band h3 { margin: 0; color: inherit; font-size: clamp(1.4rem, 3vw, 1.9rem); }
 .game-editor-band .staff-subhead { margin: 0; font-size: clamp(0.85rem, 1.8vw, 1rem); text-transform: uppercase; letter-spacing: 0.1em; }
 .game-editor-band .staff-subhead:empty { display: none; }
-.game-editor #game-form fieldset { padding: 0 1rem 1rem; background: white; }
-#workspace #game-form legend { float: left; margin: 0 -1rem; padding: 0.6rem 1rem; background: var(--school-accent); color: var(--accent-ink); font-size: clamp(0.85rem, 1.8vw, 1.05rem); }
+.game-editor :is(#game-form, #copy-schedule-form) fieldset { padding: 0 1rem 1rem; background: white; }
+#workspace .game-editor :is(#game-form, #copy-schedule-form) legend { float: left; margin: 0 -1rem; padding: 0.6rem 1rem; background: var(--school-accent); color: var(--accent-ink); font-size: clamp(0.85rem, 1.8vw, 1.05rem); }
 .game-editor-foot { position: sticky; bottom: 0; display: grid; gap: 0.6rem; margin: 0 -1px; padding: 1rem var(--editor-gutter); border: var(--frame); border-bottom: 0; background: white; }
 /* On desktop the editor widens so each row holds more fields, and the footer sits on one line, so the whole form fits without scrolling. */
 @media (min-width: 64rem) {
   .game-details.game-editor { width: min(64rem, calc(100% - 2rem)); }
-  .game-editor #game-form { gap: 0.75rem; }
-  .game-editor #game-form fieldset { gap: 0.65rem; }
+  .game-editor :is(#game-form, #copy-schedule-form) { gap: 0.75rem; }
+  .game-editor :is(#game-form, #copy-schedule-form) fieldset { gap: 0.65rem; }
   .game-editor-foot { grid-template-columns: 1fr auto; align-items: center; }
   .game-editor-foot #game-form-status { grid-row: 2; grid-column: 1 / -1; }
   .game-editor-foot .actions { grid-row: 1; grid-column: 2; }
 }
+/* Copy schedule reuses the game editor's look; the fields for a choice sit indented under its radio button. */
+.copy-option-fields { margin-left: 2rem; }
+.copy-schedule-preview-region > div { display: grid; gap: 0.5rem; }
+.copy-schedule-preview-region p { margin: 0; }
+.copy-schedule-preview { display: grid; margin: 0; padding: 0; list-style: none; border: var(--frame); max-height: 16rem; overflow-y: auto; }
+.copy-schedule-preview li { padding: 0.45rem 0.6rem; border-top: 1px solid var(--rule); background: white; }
+.copy-schedule-preview li:first-child { border-top: 0; }
