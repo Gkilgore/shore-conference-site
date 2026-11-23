@@ -73,7 +73,7 @@ test('TBD rows are compared safely with games already saved without a time', asy
   controller.stop();
 });
 
-test('CSV import separates away marker and game format from the opponent', async () => {
+test('CSV import drops schedule-format text from the opponent', async () => {
   const saved = [];
   const {controller, elements} = mountImport([], {
     async rpc(_name, {input}) { saved.push(input); return {data:'saved-game',error:null}; },
@@ -84,7 +84,7 @@ test('CSV import separates away marker and game format from the opponent', async
   await elements.get('import-save').onclick();
   assert.equal(saved.length, 1);
   assert.equal(saved[0].opponent_name, 'Wall');
-  assert.equal(saved[0].notes, 'VS/JV 6 quarters');
+  assert.equal(saved[0].notes, null);
   assert.equal(saved[0].home_away, 'Away');
   controller.stop();
 });

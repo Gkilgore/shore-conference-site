@@ -14,7 +14,7 @@ test('calendar card removes repeated gender and away markers from saved game tex
   assert.equal(parts.matchup, '@ Wall');
 });
 
-test('game details show the opponent once and keep the extra format text as a note', () => {
+test('game details show the opponent once without the imported format text', () => {
   const slots = new Map();
   const element = name => {
     if (!slots.has(name)) slots.set(name, {
@@ -37,5 +37,5 @@ test('game details show the opponent once and keep the extra format text as a no
     extendedProps: { gender: 'Girls', level: 'Varsity', sport: 'Girls Basketball', status: 'Scheduled' } });
   assert.equal(element('.game-card-team').textContent, 'Girls Varsity Basketball');
   assert.equal(element('h2').textContent, '@ Wall');
-  assert.ok(element('dl').children.some(child => child.textContent === 'VS/JV 6 quarters'));
+  assert.ok(!element('dl').children.some(child => child.textContent?.includes('VS/JV 6 quarters')));
 });

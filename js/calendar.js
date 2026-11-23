@@ -31,7 +31,7 @@ function matchupParts(text) {
   const home = matchup.match(/^vs\.?\s+/i);
   if (away) matchup = '@ ' + matchup.slice(away[0].length).replace(/^(?:at|@)\s+/i, '').trim();
   else if (home) matchup = 'vs. ' + matchup.slice(home[0].length).replace(/^vs\.?\s+/i, '').trim();
-  return { matchup, note: format?.[1] ?? '' };
+  return { matchup };
 }
 function splitTeamTitle(title, details = {}) {
   const team = [details.gender, details.level, details.sport].filter(Boolean).join(' ');
@@ -539,9 +539,8 @@ function createGameDetails(calendar, { schoolColors = false, onEdit = null, canE
     if (details.pickup) rows.push(['Pickup', details.pickup]);
     if (bus) rows.push(['Bus', bus.replace(/^Bus /, '')]);
     if (details.earlyDismissal) rows.push(['Early dismissal', details.earlyDismissal]);
-    const savedNotes = details.notes ?? game.notes;
-    const notes = [savedNotes, formatted.note && !savedNotes?.includes(formatted.note) ? formatted.note : '']
-      .filter(Boolean).join(' · ');
+    const notes = (details.notes ?? game.notes ?? '')
+      .replace(/(?:^|\s*·\s*)VS\/JV\s+\d+\s+quarters?\s*$/i, '').trim();
     if (notes) rows.push(['Notes', notes]);
     dialog.querySelector('dl').replaceChildren(...rows.flatMap(([label, value]) => {
       const term = document.createElement('dt');

@@ -87,7 +87,7 @@ function pickValue(value, choices) {
 function importedOpponent(value) {
   const plain = value.trim().replace(/^(?:@|at|vs\.?)\s+/i, '');
   const format = plain.match(/\s*\/\s*(VS\/JV\s+\d+\s+quarters?)\s*$/i);
-  return { name: (format ? plain.slice(0, format.index) : plain).trim(), note: format?.[1] ?? '' };
+  return (format ? plain.slice(0, format.index) : plain).trim();
 }
 
 // Fuzzy match a sport name to known sports, correcting minor spelling errors.
@@ -508,8 +508,7 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
       problems.push('Home or away is missing');
       game.home_away = null;
     }
-    const opponentText = need('opponent', 'Opponent');
-    const { name: opponent, note: opponentNote } = importedOpponent(opponentText);
+    const opponent = importedOpponent(need('opponent', 'Opponent'));
     const listed = opponent && opponents().find(item =>
       [item.name.toLowerCase(), item.slug].includes(opponent.toLowerCase()));
     const member = listed && schools().find(item =>
@@ -529,7 +528,7 @@ function startStaffImport(client, { currentSchool, schools, opponents = () => []
     }
     game.pickup_location = raw.pickup_location || null;
     game.transport_notes = raw.transport_notes || null;
-    game.notes = [raw.notes, opponentNote].filter(Boolean).join(' · ') || null;
+    game.notes = raw.notes || null;
     if ((game.notes ?? '').length > 1000 || (game.transport_notes ?? '').length > 1000) problems.push('Notes are too long');
 
     const key = [game.sport, game.game_date, game.start_time].join('|');
