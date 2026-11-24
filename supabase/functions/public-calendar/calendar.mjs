@@ -105,7 +105,7 @@ export function publicSchedule(schools, games, options, tournamentGames = [], mo
         const away = awayByKey.get(key);
         if (!away || emitted.has(key)) return [];
         emitted.add(key);
-        return [{ ...home, away_id: away.id, status: shared(home.status, away.status), feed_id: [home.id, away.id].sort().join('-'),
+        return [{ ...home, away_id: away.id, matched: true, status: shared(home.status, away.status), feed_id: [home.id, away.id].sort().join('-'),
           revision: home.revision + away.revision,
           updated_at: home.updated_at > away.updated_at ? home.updated_at : away.updated_at }];
       });
@@ -140,9 +140,9 @@ export function publicSchedule(schools, games, options, tournamentGames = [], mo
       sport: team.sport, gender: team.gender, level: team.level, season: team.season,
     };
     if (isConference && game.listed_by) {
-      event.listed_by = { school: game.listed_by, name: directory.get(game.listed_by)?.name ?? '',
-        opponent: directory.get(game.opponent_school_id)?.name ?? opponent };
+      event.listed_by = { school: game.listed_by, name: directory.get(game.listed_by)?.name ?? '' };
     }
+    if (isConference && game.matched) event.matched = true;
     if (!isConference) {
       const bus = Array.isArray(game.transportation) ? game.transportation[0] : game.transportation;
       if (bus) {
@@ -208,8 +208,7 @@ export function buildCalendar(schedule) {
   // Moved-game notes are for the website; a subscribed calendar simply sees the game's event move.
   for (const game of schedule.events.filter(event => !event.moved_to)) {
     const description = [game.notes];
-    if (game.listed_by) description.push('Listed by ' + game.listed_by.name + '. ' + game.listed_by.opponent +
-      ' doesn\u2019t use the conference scheduling site, so this game isn\u2019t confirmed by both schools.');
+    if (game.listed_by) description.push('Listed by ' + game.listed_by.name + '.');
     if (game.moved_from) description.push('Originally ' + game.moved_from.text + '.');
     if (schedule.scope === 'school' && game.transportation) {
       const bus = game.transportation;

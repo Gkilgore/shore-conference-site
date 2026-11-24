@@ -633,11 +633,9 @@ textarea { display: block; resize: vertical; }
 #calendar .game-moved { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
 .status-key .is-moved::before { background: white; }
 .status-key .is-note::before { display: none; }
-/* Conference calendar: a game listed by one school (its opponent isn't on the site) carries a small white "Listed" tag. */
-#calendar .game-head .game-listed { flex: none; padding: 0 0.3rem; background: white; color: var(--ink); font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
-#calendar .game-head .game-school + .game-listed + .game-time { margin-left: auto; }
+/* Conference calendar: a quiet "Listed by" line in List rows, and the game's source under the pop-up details. */
 #calendar .game-listed-line { display: block; color: var(--muted); font-size: 0.85rem; font-weight: 600; }
-.status-key .is-listed::before { content: 'Listed'; width: auto; aspect-ratio: auto; padding: 0 0.3rem; background: white; border: 1px solid var(--steel-dark); font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
+.game-card-source { margin: 0; color: var(--muted); font-size: 0.88rem; }
 #calendar .fc-more-link {
   display: inline-block;
   margin: 0.15rem 0.2rem;

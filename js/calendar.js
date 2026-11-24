@@ -368,14 +368,6 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
         school.className = 'game-school';
         school.textContent = square.school;
         if (school.textContent) top.append(school);
-        // Entered by one school only: its opponent isn't on the platform (see the pop-up for the full note).
-        if (event.extendedProps.listed_by) {
-          const listed = document.createElement('span');
-          listed.className = 'game-listed';
-          listed.textContent = 'Listed';
-          listed.title = 'Listed by ' + event.extendedProps.listed_by.name;
-          top.append(listed);
-        }
         // Top right: the time, or the status word in its place for a postponed or canceled game. The yellow
         // or red fill shows the status too; the word is for anyone who can't tell the colors apart.
         const status = event.extendedProps.status || event.status;
@@ -537,6 +529,7 @@ function createGameDetails(calendar, { schoolColors = false, onEdit = null, canE
     </div>
     <div class="game-card-body">
       <dl></dl>
+      <p class="game-card-source" hidden></p>
       <div class="actions">
         <a class="button secondary" data-directions target="_blank" rel="noopener">Directions<span class="visually-hidden"> (opens in a new tab)</span></a>
         <a class="button secondary" data-tournament-bracket hidden>View tournament bracket</a>
@@ -596,9 +589,11 @@ function createGameDetails(calendar, { schoolColors = false, onEdit = null, canE
     const notes = (details.notes ?? game.notes ?? '')
       .replace(/(?:^|\s*·\s*)VS\/JV\s+\d+\s+quarters?\s*$/i, '').trim();
     if (notes) rows.push(['Notes', notes]);
-    // A one-school listing on the conference calendar says who entered it and why it isn't confirmed.
-    if (details.listed_by) rows.push(['Listed by', details.listed_by.name + '. ' + details.listed_by.opponent +
-      ' doesn’t use the conference scheduling site, so this game isn’t confirmed by both schools.']);
+    // Conference calendar: a quiet line on where the game came from, without the behind-the-scenes detail.
+    const source = dialog.querySelector('.game-card-source');
+    source.textContent = details.listed_by ? 'Listed by ' + details.listed_by.name
+      : details.matched ? 'Matched. Appears on both schools’ schedules.' : '';
+    source.hidden = !source.textContent;
     dialog.querySelector('dl').replaceChildren(...rows.flatMap(([label, value]) => {
       const term = document.createElement('dt');
       const description = document.createElement('dd');

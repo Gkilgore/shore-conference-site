@@ -203,10 +203,11 @@ test('a game against a conference school that is not on the platform is listed b
   const events = project([home], { scope: 'conference' }, optedOut).events;
   assert.equal(events.length, 1);
   assert.equal(events[0].title, 'Girls Varsity Soccer · Colts Neck at Marlboro');
-  assert.deepEqual(events[0].listed_by, { school: 'marlboro', name: 'Marlboro', opponent: 'Colts Neck' });
+  assert.deepEqual(events[0].listed_by, { school: 'marlboro', name: 'Marlboro' });
+  assert.equal(events[0].matched, undefined);
   assert.deepEqual(events[0].schools, ['marlboro', 'colts-neck']);
   assert.match(buildCalendar(project([home], { scope: 'conference' }, optedOut)).replace(/\r\n /g, ''),
-    /Listed by Marlboro\. Colts Neck doesn’t use the conference scheduling site/);
+    /DESCRIPTION:Arrive early\.\\nListed by Marlboro\./);
 });
 
 test('an away listing is written from the home school side and keeps the posting school\'s location', () => {
@@ -224,6 +225,8 @@ test('schools on the platform still need both entries, and older data without th
   assert.equal(project([home], { scope: 'conference' }, onPlatform).events.length, 0);
   const [matched] = project([home, away], { scope: 'conference' }, onPlatform).events;
   assert.equal(matched.listed_by, undefined);
+  assert.equal(matched.matched, true);
+  assert.equal(project([home]).events[0].matched, undefined);
 });
 
 test('one-school listings need a posted schedule, a conference opponent and a start time', () => {

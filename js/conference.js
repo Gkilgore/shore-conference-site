@@ -21,7 +21,7 @@ function conferenceEvents(games) {
         status: game.status, classNames: game.status === 'Scheduled' ? [] : ['is-' + game.status.toLowerCase()],
         start: game.game_date + 'T' + game.start_time, location: game.location, schools: [home, away],
         sport: game.sport, gender: game.gender, season: game.season, level: game.level,
-        listed_by: { school: game.school, name: directory[game.school].name, opponent: directory[game.opponent_school_id].name },
+        listed_by: { school: game.school, name: directory[game.school].name },
       };
     });
 
@@ -43,6 +43,7 @@ function conferenceEvents(games) {
       start: game.game_date + 'T' + game.start_time,
       location: game.location,
       schools: [game.school, game.opponent_school_id],
+      matched: true,
       sport: game.sport,
       gender: game.gender,
       season: game.season,
