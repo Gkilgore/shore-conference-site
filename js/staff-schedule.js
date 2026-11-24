@@ -119,9 +119,13 @@ function startStaffSchedule(client, invite) {
   const copySchedule = startStaffCopySchedule(client, {
     currentSchool,
     teams: () => teams.all(),
+    games: () => allGames,
     homeVenues: () => venues.homeNames(),
-    onCopied: (copied, failed) => {
-      feedback(copied + ' game' + (copied === 1 ? '' : 's') + ' copied' + (failed ? '. ' + failed + ' failed.' : '.'));
+    post: ids => publication.post(ids),
+    onCopied: (copied, failed, posted) => {
+      feedback(copied + ' game' + (copied === 1 ? '' : 's') + ' copied' + (failed ? '. ' + failed + ' failed.' : '.') +
+        (posted && !posted.ok ? ' They are saved but not posted. Open Teams and choose Post schedule.'
+          : posted?.held?.length ? ' Open Teams and choose Post schedule for ' + posted.held.join(', ') + '.' : ''));
       loadGames();
       teams.render();
     },
