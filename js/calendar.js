@@ -341,6 +341,14 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
         title.prepend(when, ' · ');
       }
       if (listParts?.team) title.prepend(cardTeamLine(listParts.team));
+      // Conference List rows: a quiet line on where the game came from, the same words as the pop-up.
+      if (inList && (event.extendedProps.listed_by || event.extendedProps.matched)) {
+        const source = document.createElement('span');
+        source.className = 'game-listed-line';
+        source.textContent = event.extendedProps.listed_by ? 'Listed by ' + event.extendedProps.listed_by.name
+          : 'Matched. Appears on both schools’ schedules.';
+        title.append(source);
+      }
       if (displayedTime && (!inList || event.allDay)) {
         const time = document.createElement('span');
         time.className = 'game-time';
@@ -523,6 +531,7 @@ function createGameDetails(calendar, { schoolColors = false, onEdit = null, canE
     </div>
     <div class="game-card-body">
       <dl></dl>
+      <p class="game-card-source" hidden></p>
       <div class="actions">
         <a class="button secondary" data-directions target="_blank" rel="noopener">Directions<span class="visually-hidden"> (opens in a new tab)</span></a>
         <a class="button secondary" data-tournament-bracket hidden>View tournament bracket</a>
@@ -582,6 +591,11 @@ function createGameDetails(calendar, { schoolColors = false, onEdit = null, canE
     const notes = (details.notes ?? game.notes ?? '')
       .replace(/(?:^|\s*·\s*)VS\/JV\s+\d+\s+quarters?\s*$/i, '').trim();
     if (notes) rows.push(['Notes', notes]);
+    // Conference calendar: a quiet line on where the game came from, without the behind-the-scenes detail.
+    const source = dialog.querySelector('.game-card-source');
+    source.textContent = details.listed_by ? 'Listed by ' + details.listed_by.name
+      : details.matched ? 'Matched. Appears on both schools’ schedules.' : '';
+    source.hidden = !source.textContent;
     dialog.querySelector('dl').replaceChildren(...rows.flatMap(([label, value]) => {
       const term = document.createElement('dt');
       const description = document.createElement('dd');

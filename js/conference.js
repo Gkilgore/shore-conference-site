@@ -8,7 +8,24 @@ function conferenceEvents(games) {
     game.school !== game.opponent_school_id
   );
 
-  return scheduled.filter(home => home.home_away === 'Home').flatMap(game => {
+  // A sample school's game against a conference school outside the sample set (not on the platform) is listed
+  // by itself, like the calendar function does for schools without an AD account.
+  const directory = typeof shoreSchools !== 'undefined' ? shoreSchools : sampleSchools;
+  const listed = games.filter(game => Object.hasOwn(sampleSchools, game.school) && game.opponent_school_id &&
+    !Object.hasOwn(sampleSchools, game.opponent_school_id) && Object.hasOwn(directory, game.opponent_school_id))
+    .map(game => {
+      const [home, away] = game.home_away === 'Home' ? [game.school, game.opponent_school_id] : [game.opponent_school_id, game.school];
+      return {
+        title: teamLabel(game) + ' · ' + directory[away].name + ' at ' + directory[home].name +
+          (game.status === 'Scheduled' ? '' : ' · ' + game.status),
+        status: game.status, classNames: game.status === 'Scheduled' ? [] : ['is-' + game.status.toLowerCase()],
+        start: game.game_date + 'T' + game.start_time, location: game.location, schools: [home, away],
+        sport: game.sport, gender: game.gender, season: game.season, level: game.level,
+        listed_by: { school: game.school, name: directory[game.school].name },
+      };
+    });
+
+  return listed.concat(scheduled.filter(home => home.home_away === 'Home').flatMap(game => {
     const away = scheduled.find(away =>
       away.home_away === 'Away' && away.school === game.opponent_school_id &&
       away.opponent_school_id === game.school &&
@@ -26,12 +43,13 @@ function conferenceEvents(games) {
       start: game.game_date + 'T' + game.start_time,
       location: game.location,
       schools: [game.school, game.opponent_school_id],
+      matched: true,
       sport: game.sport,
       gender: game.gender,
       season: game.season,
       level: game.level,
     }];
-  });
+  }));
 }
 
 // Each school's saved main color, so a conference game shows in its home school's color.

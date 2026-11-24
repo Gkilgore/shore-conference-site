@@ -633,6 +633,9 @@ textarea { display: block; resize: vertical; }
 #calendar .game-moved { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
 .status-key .is-moved::before { background: white; }
 .status-key .is-note::before { display: none; }
+/* Conference calendar: a quiet "Listed by" line in List rows, and the game's source under the pop-up details. */
+#calendar .game-listed-line { display: block; color: var(--muted); font-size: 0.85rem; font-weight: 600; }
+.game-card-source { margin: 0; color: var(--muted); font-size: 0.88rem; }
 #calendar .fc-more-link {
   display: inline-block;
   margin: 0.15rem 0.2rem;

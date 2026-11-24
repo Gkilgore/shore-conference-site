@@ -105,27 +105,44 @@ export function publicSchedule(schools, games, options, tournamentGames = [], mo
         const away = awayByKey.get(key);
         if (!away || emitted.has(key)) return [];
         emitted.add(key);
-        return [{ ...home, away_id: away.id, status: shared(home.status, away.status), feed_id: [home.id, away.id].sort().join('-'),
+        return [{ ...home, away_id: away.id, matched: true, status: shared(home.status, away.status), feed_id: [home.id, away.id].sort().join('-'),
           revision: home.revision + away.revision,
           updated_at: home.updated_at > away.updated_at ? home.updated_at : away.updated_at }];
       });
+    // One school's listing: the opponent is a conference member that isn't on the platform (no AD account), so
+    // its side can never be entered. The posting school's game shows alone, marked as listed by that school.
+    // When the opponent joins, its schools row says so and the game goes back to two-school matching.
+    const offPlatform = slug => directory.get(slug)?.on_platform === false;
+    for (const game of [...members].sort((a, b) => a.id.localeCompare(b.id))) {
+      const key = matchKey(game);
+      if (!offPlatform(game.opponent_school_id) || offPlatform(game.school_id) || emitted.has(key)) continue;
+      emitted.add(key);
+      selected.push({ ...game, listed_by: game.school_id, feed_id: game.id });
+    }
   } else selected = publicGames.filter(game => game.school_id === options.school);
 
   const events = selected.flatMap(game => {
     const team = game.teams;
     const opponent = directory.get(game.opponent_school_id)?.name ?? game.opponent_name ?? 'Opponent';
     const teamName = [team.gender, team.level, team.sport].join(' ');
+    // Conference games are written from the home school's side. A one-school listing may be the away entry.
+    const [homeSlug, awaySlug] = isConference && game.listed_by && game.home_away === 'Away'
+      ? [game.opponent_school_id, game.school_id] : [game.school_id, game.opponent_school_id];
     const title = isConference
-      ? teamName + ' \u00b7 ' + opponent + ' at ' + directory.get(game.school_id).name
+      ? teamName + ' \u00b7 ' + (directory.get(awaySlug)?.name ?? opponent) + ' at ' + directory.get(homeSlug).name
       : teamName + (game.home_away === 'Home' ? ' vs. ' : ' at ') + opponent;
     const event = {
       id: game.feed_id ?? game.id, revision: game.revision, updated_at: game.updated_at,
       title: title + (game.status === 'Scheduled' ? '' : ' \u00b7 ' + game.status),
       start: game.start_time ? game.game_date + 'T' + game.start_time : game.game_date, location: game.location,
       status: game.status, notes: game.notes ?? '', school: game.school_id, home_away: game.home_away,
-      schools: [game.school_id, game.opponent_school_id].filter(Boolean),
+      schools: (isConference ? [homeSlug, awaySlug] : [game.school_id, game.opponent_school_id]).filter(Boolean),
       sport: team.sport, gender: team.gender, level: team.level, season: team.season,
     };
+    if (isConference && game.listed_by) {
+      event.listed_by = { school: game.listed_by, name: directory.get(game.listed_by)?.name ?? '' };
+    }
+    if (isConference && game.matched) event.matched = true;
     if (!isConference) {
       const bus = Array.isArray(game.transportation) ? game.transportation[0] : game.transportation;
       if (bus) {
@@ -191,6 +208,7 @@ export function buildCalendar(schedule) {
   // Moved-game notes are for the website; a subscribed calendar simply sees the game's event move.
   for (const game of schedule.events.filter(event => !event.moved_to)) {
     const description = [game.notes];
+    if (game.listed_by) description.push('Listed by ' + game.listed_by.name + '.');
     if (game.moved_from) description.push('Originally ' + game.moved_from.text + '.');
     if (schedule.scope === 'school' && game.transportation) {
       const bus = game.transportation;

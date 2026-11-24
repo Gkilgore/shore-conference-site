@@ -36,6 +36,8 @@ When an AD saves a scheduled game with a bus departure time, the school transpor
 
 A game goes on the public conference calendar only when both schools are conference members, both have published it, and all of these match: sport, gender and level; date; start time; location; home and away mirrored; each school lists the other as its opponent. Games between any two schools with active AD access can match on their own schedules, but nonmember games never appear on the conference calendar. A school without an AD invitation is not a match identity. Transportation is ignored for matching.
 
+**One-school listings.** Some conference schools may not use the platform. When a member school posts a game against a conference member with no AD account, that game appears on the conference calendar by itself, marked "Listed by" the posting school, with a note that the other school doesn't use the site. It still needs a posted schedule and a start time. Once the other school has an AD account, its games go back to normal two-school matching.
+
 If a published update stops matching, the game comes off the conference calendar until both published entries agree again. A matched game that either school publishes as postponed or canceled stays on the conference calendar with that status, so visitors can see what changed (Greg's November 9 update). Saving or importing a game publishes it immediately; deleting a game removes its public copy immediately. Public matching is checked against the saved public copies on each calendar/feed read.
 
 **AD status line.** Each game against an active platform school shows its status in the AD's admin screen:
