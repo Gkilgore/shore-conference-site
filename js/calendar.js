@@ -341,11 +341,13 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
         title.prepend(when, ' · ');
       }
       if (listParts?.team) title.prepend(cardTeamLine(listParts.team));
-      if (inList && event.extendedProps.listed_by) {
-        const listed = document.createElement('span');
-        listed.className = 'game-listed-line';
-        listed.textContent = 'Listed by ' + event.extendedProps.listed_by.name;
-        title.append(listed);
+      // Conference List rows: a quiet line on where the game came from, the same words as the pop-up.
+      if (inList && (event.extendedProps.listed_by || event.extendedProps.matched)) {
+        const source = document.createElement('span');
+        source.className = 'game-listed-line';
+        source.textContent = event.extendedProps.listed_by ? 'Listed by ' + event.extendedProps.listed_by.name
+          : 'Matched. Appears on both schools’ schedules.';
+        title.append(source);
       }
       if (displayedTime && (!inList || event.allDay)) {
         const time = document.createElement('span');
