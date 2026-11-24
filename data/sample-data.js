@@ -31,6 +31,12 @@ function sampleEntry({ school, opponent, homeAway, day, time, status = 'Schedule
   };
 }
 
+// A game against a conference school that isn't on the platform (not one of the sample schools), so only one
+// side is ever entered. The conference calendar lists it by itself, marked "Listed".
+function sampleListed({ opponent, ...game }) {
+  return { ...sampleEntry({ ...game, opponent }), opponent_school_id: opponent, opponent_name: null };
+}
+
 // Both schools' entries for one game. awayChanges makes the away entry differ, so it doesn't link.
 function sampleMatch({ home, away, homeNotes = null, awayBus = null, awayChanges = {}, ...game }) {
   return [
@@ -92,4 +98,9 @@ const sampleGames = [
   // Winter season.
   ...sampleMatch({ home: 'colts-neck', away: 'marlboro', sport: 'Basketball', gender: 'Boys', level: 'Varsity', season: 'Winter',
     day: 34, time: '19:00', location: 'Colts Neck Gym', awayBus: sampleBus('17:45', 'Front loop', '21:30') }),
+  // Listed by one school: Red Bank Regional and Middletown South aren't on the platform.
+  sampleListed({ school: 'shore-regional', opponent: 'red-bank-regional', homeAway: 'Home', sport: 'Soccer', gender: 'Boys',
+    level: 'Varsity', season: 'Fall', day: 4, time: '16:00', location: 'Shore Regional Turf Field' }),
+  sampleListed({ school: 'marlboro', opponent: 'middletown-south', homeAway: 'Away', sport: 'Field Hockey', gender: 'Girls',
+    level: 'Varsity', season: 'Fall', day: 6, time: '15:45', location: 'Middletown South Field' }),
 ];

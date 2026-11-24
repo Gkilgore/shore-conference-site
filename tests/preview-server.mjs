@@ -13,7 +13,9 @@ vm.runInContext(await readFile(resolve(root, 'data/sample-data.js'), 'utf8'), sa
 vm.runInContext(await readFile(resolve(root, 'data/school-directory.js'), 'utf8'), sandbox);
 const data = vm.runInContext('({ schools: shoreSchools, games: sampleGames })', sandbox);
 const schools = Object.entries(data.schools).map(([slug, school]) => ({ slug, name: school.name,
-  is_conference_member: true, schedule_published: ['colts-neck', 'marlboro'].includes(slug) }));
+  is_conference_member: true, schedule_published: ['colts-neck', 'marlboro'].includes(slug),
+  // The three sample schools are on the platform; the rest stand in for schools that opted out.
+  on_platform: ['colts-neck', 'marlboro', 'shore-regional'].includes(slug) }));
 const games = data.games.map((game, index) => ({ ...game, id: 'preview-' + index,
   school_id: game.school, updated_at: '2026-11-06T12:00:00Z', revision: 1,
   teams: { sport: game.sport, gender: game.gender, level: game.level, season: game.season } }));

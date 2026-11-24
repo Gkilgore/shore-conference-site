@@ -341,6 +341,12 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
         title.prepend(when, ' · ');
       }
       if (listParts?.team) title.prepend(cardTeamLine(listParts.team));
+      if (inList && event.extendedProps.listed_by) {
+        const listed = document.createElement('span');
+        listed.className = 'game-listed-line';
+        listed.textContent = 'Listed by ' + event.extendedProps.listed_by.name;
+        title.append(listed);
+      }
       if (displayedTime && (!inList || event.allDay)) {
         const time = document.createElement('span');
         time.className = 'game-time';
@@ -362,6 +368,14 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
         school.className = 'game-school';
         school.textContent = square.school;
         if (school.textContent) top.append(school);
+        // Entered by one school only: its opponent isn't on the platform (see the pop-up for the full note).
+        if (event.extendedProps.listed_by) {
+          const listed = document.createElement('span');
+          listed.className = 'game-listed';
+          listed.textContent = 'Listed';
+          listed.title = 'Listed by ' + event.extendedProps.listed_by.name;
+          top.append(listed);
+        }
         // Top right: the time, or the status word in its place for a postponed or canceled game. The yellow
         // or red fill shows the status too; the word is for anyone who can't tell the colors apart.
         const status = event.extendedProps.status || event.status;
@@ -582,6 +596,9 @@ function createGameDetails(calendar, { schoolColors = false, onEdit = null, canE
     const notes = (details.notes ?? game.notes ?? '')
       .replace(/(?:^|\s*·\s*)VS\/JV\s+\d+\s+quarters?\s*$/i, '').trim();
     if (notes) rows.push(['Notes', notes]);
+    // A one-school listing on the conference calendar says who entered it and why it isn't confirmed.
+    if (details.listed_by) rows.push(['Listed by', details.listed_by.name + '. ' + details.listed_by.opponent +
+      ' doesn’t use the conference scheduling site, so this game isn’t confirmed by both schools.']);
     dialog.querySelector('dl').replaceChildren(...rows.flatMap(([label, value]) => {
       const term = document.createElement('dt');
       const description = document.createElement('dd');
