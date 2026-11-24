@@ -27,7 +27,7 @@ function descendants(element) {
   return element.children.flatMap(child => child instanceof Element ? [child, ...descendants(child)] : []);
 }
 
-function mount({ records = [], games = [] } = {}) {
+function mount({ records = [], games = [], groups = [] } = {}) {
   const elements = new Map();
   const document = {
     getElementById(id) {
@@ -78,11 +78,12 @@ function mount({ records = [], games = [] } = {}) {
     },
   };
   const context = vm.createContext({ document });
+  vm.runInContext(readFileSync(new URL('../js/publication-review.js', import.meta.url), 'utf8'), context);
   vm.runInContext(readFileSync(new URL('../js/staff-teams.js', import.meta.url), 'utf8'), context);
   const controller = context.startStaffTeams(client, {
     currentSchool: () => ({ slug: 'marlboro' }),
     games: () => games,
-    groups: () => [],
+    groups: () => groups,
     states: () => ({ map: new Map() }),
     links: () => new Map(),
     coaches: () => null,
@@ -183,4 +184,22 @@ test('AD must confirm removing an unused team and cannot remove one with games',
   withGames.document.getElementById('team-list').children[1].children[0].onclick();
   assert.equal(findButton(withGames.document.getElementById('team-detail'), 'Remove team').disabled, true);
   assert.equal(withGames.writes.length, 0);
+});
+
+test('a team schedule is always in date order, then start time', async () => {
+  const team = { id: 't1', school_id: 'marlboro', sport: 'Soccer', gender: 'Girls', level: 'Varsity', season: 'Fall' };
+  const game = (id, game_date, start_time) => ({ id, team_id: 't1', game_date, start_time, teams: team });
+  const games = [game('c', '2026-10-02', '16:00:00'), game('a', '2026-09-05', '10:00:00'),
+    game('d', '2026-10-02', null), game('b', '2026-10-02', '09:30:00')];
+  const order = list => list.map(item => item.id).join(',');
+  // Teams built from the saved games.
+  const fromGames = mount({ records: [team], games });
+  await fromGames.controller.load();
+  assert.equal(order(fromGames.controller.all()[0].games), 'a,b,c,d');
+  // Teams built from posting records, whose entries come in any order.
+  const groups = [{ team_id: 't1', season_year: 2026, sport: 'Soccer', gender: 'Girls', level: 'Varsity', season: 'Fall',
+    games: ['d', 'c', 'b', 'a'].map(id => ({ id, draft: {} })) }];
+  const fromGroups = mount({ records: [team], games, groups });
+  await fromGroups.controller.load();
+  assert.equal(order(fromGroups.controller.all()[0].games), 'a,b,c,d');
 });

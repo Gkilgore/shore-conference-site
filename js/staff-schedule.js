@@ -184,6 +184,7 @@ function startStaffSchedule(client, invite) {
   let stopFollowingView = () => {};
   let schools = [];
   let allGames = [];
+  let showEarlier = false;
   let activeGame = null;
   let loadNumber = 0;
   let stopped = false;
@@ -494,12 +495,7 @@ function startStaffSchedule(client, invite) {
     status.textContent = data.length
       ? data.length + (data.length === 1 ? ' saved game.' : ' saved games.') + (canEdit ? ' Select a game to edit it.' : '')
       : 'No games saved for this school.' + (canEdit ? ' Open Schedule to add the first one.' : '');
-    if (newSchool && data.length) {
-      const today = new Date();
-      const dateKey = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') +
-        '-' + String(today.getDate()).padStart(2, '0');
-      focusDate = (data.find(game => game.game_date >= dateKey) ?? data.at(-1)).game_date;
-    }
+    // Opening a school's schedule always lands on today; saving a game still shows that game's date.
     if (savedId) transportation.setPreview(data.find(game => game.id === savedId));
     const visible = visibleGames();
     showCount(visible);
@@ -628,7 +624,7 @@ function startStaffSchedule(client, invite) {
       calendar = new FullCalendar.Calendar(calendarTarget, {
         initialView: preferredCalendarView(),
         headerToolbar: {
-          start: 'title', center: 'dayGridMonth,listMonth,listDay filtersToggle', end: 'prev,next',
+          start: 'title', center: 'dayGridMonth,listMonth,listDay filtersToggle', end: 'today prev,next',
         },
         customButtons: { filtersToggle: { text: 'Filters', click: () => filtersToggle.click() } },
         views: {
@@ -642,7 +638,9 @@ function startStaffSchedule(client, invite) {
         navLinkDayClick: 'listDay',
         eventInteractive: true,
         noEventsText: 'No saved games in this view.',
+        buttonText: { today: 'Today' },
         datesSet({ view }) {
+          showEarlier = false;
           const usesScheduleTable = view.type === 'listMonth' || view.type === 'listDay';
           calendarTarget.classList.toggle('staff-table-mode', usesScheduleTable);
           scheduleList.hidden = !usesScheduleTable;
@@ -699,10 +697,23 @@ function startStaffSchedule(client, invite) {
     if (!view || (view.type !== 'listMonth' && view.type !== 'listDay')) return;
     const startDate = dateKey(view.activeStart);
     const endDate = dateKey(view.activeEnd);
-    const games = calendarGames.filter(game => game.game_date >= startDate && game.game_date < endDate);
+    const inRange = calendarGames.filter(game => game.game_date >= startDate && game.game_date < endDate);
+    // This month's list starts at today; earlier games wait behind a button.
+    const today = dateKey(new Date());
+    const earlier = view.type === 'listMonth' && startDate <= today && today < endDate && !showEarlier
+      ? inRange.filter(game => game.game_date < today) : [];
+    const games = inRange.filter(game => !earlier.includes(game));
     const agenda = document.createElement('div');
     agenda.className = 'staff-schedule-agenda';
     agenda.setAttribute('aria-label', 'Games by date');
+    if (earlier.length) {
+      const more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'button secondary list-earlier';
+      more.textContent = 'Show ' + earlier.length + ' earlier ' + (earlier.length === 1 ? 'game' : 'games') + ' this month';
+      more.onclick = () => { showEarlier = true; renderScheduleList(); };
+      agenda.append(more);
+    }
     if (!games.length) {
       const empty = document.createElement('p');
       empty.className = 'schedule-agenda-empty';
