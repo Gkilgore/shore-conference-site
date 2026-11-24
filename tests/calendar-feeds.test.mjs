@@ -81,11 +81,17 @@ test('unpublished school returns an empty calendar without leaking game or bus f
   assert.doesNotMatch(buildCalendar(result), /BEGIN:VEVENT|Arrive early|School lot/);
 });
 
+test('conference matching ignores the away school\'s location and shows the home school\'s', () => {
+  const events = project([home, { ...away, location: 'Marlboro HS turf field' }], { scope: 'conference' }).events;
+  assert.equal(events.length, 1);
+  assert.equal(events[0].location, home.location);
+});
+
 test('conference requires two published members and exact mirrored entries, and keeps changed games', () => {
   const opts = { scope: 'conference' };
   assert.equal(project([home, away], opts).events.length, 1);
   for (const change of [
-    { start_time: '16:00:00' }, { location: 'Another field' }, { game_date: '2026-11-10' },
+    { start_time: '16:00:00' }, { game_date: '2026-11-10' },
     { home_away: 'Home' },
     { opponent_school_id: 'shore-regional' }, { teams: { ...away.teams, gender: 'Boys' } },
     { teams: { ...away.teams, level: 'JV' } }, { teams: { ...away.teams, sport: 'Tennis' } },

@@ -19,11 +19,14 @@ export function parseOptions(url) {
   return options;
 }
 
+// Two entries are the same conference game when the schools, home and away, date, start time, sport, gender and
+// level agree. Location is not compared: the home school's location is the one shown, so the away school's
+// wording ("Main Gym" vs "Shore Regional Main Gym") never keeps a game off the calendar.
 function matchKey(game) {
   if (!game.start_time) return null;
   const home = game.home_away === 'Home';
   return JSON.stringify([home ? game.school_id : game.opponent_school_id,
-    home ? game.opponent_school_id : game.school_id, game.game_date, game.start_time, game.location,
+    home ? game.opponent_school_id : game.school_id, game.game_date, game.start_time,
     game.teams.sport, game.teams.gender, game.teams.level]);
 }
 

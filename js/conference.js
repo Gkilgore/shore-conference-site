@@ -1,6 +1,7 @@
 // Loads published matched games; the matching helper also supports explicit sample previews.
 function conferenceEvents(games) {
-  // Same rules as the plan's match check: both schools entered it and every detail agrees.
+  // Same rules as the plan's match check: both schools entered it and every detail agrees, except location:
+  // the home school's location is the one shown.
   // A postponed or canceled game stays listed with that status.
   const scheduled = games.filter(game =>
     Object.hasOwn(sampleSchools, game.school) &&
@@ -13,8 +14,7 @@ function conferenceEvents(games) {
       away.home_away === 'Away' && away.school === game.opponent_school_id &&
       away.opponent_school_id === game.school &&
       away.sport === game.sport && away.gender === game.gender && away.level === game.level &&
-      away.game_date === game.game_date && away.start_time === game.start_time &&
-      away.location === game.location);
+      away.game_date === game.game_date && away.start_time === game.start_time);
     if (!away) return [];
     const statuses = [game.status, away.status];
     const status = statuses.includes('Canceled') ? 'Canceled' : statuses.includes('Postponed') ? 'Postponed' : 'Scheduled';
