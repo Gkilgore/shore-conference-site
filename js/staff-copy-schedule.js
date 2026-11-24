@@ -1,5 +1,6 @@
 // Copy an existing team's schedule to another team, shifting times and dates, switching home and away, or changing the home facility.
-function startStaffCopySchedule(client, { currentSchool, teams, homeVenues = () => [], onCopied }) {
+function startStaffCopySchedule(client, { currentSchool, teams, games = () => [], homeVenues = () => [],
+  post = async () => ({ ok: true, held: [], heldIds: new Set() }), onCopied }) {
   const dialog = document.getElementById('copy-schedule-dialog');
   if (!dialog) return { open: () => {}, stop: () => {} };
 
@@ -116,7 +117,7 @@ function startStaffCopySchedule(client, { currentSchool, teams, homeVenues = () 
   function updatePreview() {
     sourceTeam = teams().find(team => team.key === sourceTeamSelect.value);
     targetTeam = teams().find(team => team.key === targetTeamSelect.value);
-    gamesToCopy = sourceTeam?.games ?? [];
+    gamesToCopy = sourceTeam ? sourceGames(sourceTeam) : [];
     confirmBtn.disabled = true;
 
     if (!sourceTeam || !targetTeam) { previewContainer.textContent = 'Select both a source and target team.'; return; }
@@ -150,31 +151,60 @@ function startStaffCopySchedule(client, { currentSchool, teams, homeVenues = () 
     confirmBtn.disabled = false;
   }
 
+  // A school year starts July 1. Fall and winter are named by the year they start in, spring by the year it is played.
+  function seasonYear(season, date) {
+    const [year, month] = date.split('-').map(Number);
+    const start = month >= 7 ? year : year - 1;
+    return season === 'Spring' ? start + 1 : start;
+  }
+
+  // Every saved game on the source team, posted or not, for one season: the team's posted season when the
+  // team list knows it, otherwise the latest season with games. A team keeps its record across years.
+  function sourceGames(team) {
+    const all = games().filter(game => game.team_id === team.id && game.game_date);
+    const year = team.group?.season_year ?? Math.max(...all.map(game => seasonYear(team.season, game.game_date)));
+    return all.filter(game => seasonYear(team.season, game.game_date) === year)
+      .sort((a, b) => (a.game_date + (a.start_time ?? '')).localeCompare(b.game_date + (b.start_time ?? '')));
+  }
+
   async function copy() {
     if (!sourceTeam || !targetTeam || sourceTeam.key === targetTeam.key) return;
     confirmBtn.disabled = true;
     confirmBtn.textContent = 'Copying...';
     const choice = settings();
     const copied = [];
-    let failed = 0;
+    const errors = [];
 
     for (const game of gamesToCopy) {
+      // The save finds the team by sport, gender, level and season (it ignores team_id), so send the target's.
       const { data, error } = await client.rpc('save_staff_game', { input: {
         school_id: currentSchool().slug,
         team_id: targetTeam.id,
+        sport: targetTeam.sport, gender: targetTeam.gender, level: targetTeam.level, season: targetTeam.season,
         opponent_school_id: game.opponent_school_id || null,
+        opponent_directory_slug: game.opponent_directory_slug || null,
         opponent_name: game.opponent_name || null,
         status: 'Scheduled',
         notes: game.notes || null,
         ...adjust(game, choice),
       } });
-      if (error) failed++;
+      if (error) errors.push(error.message || 'Could not be saved.');
       else copied.push(data);
     }
+    // Saving posts each game when the database supports it; posting again here covers older setups.
+    const posted = copied.length ? await post(copied) : { ok: true, held: [] };
 
     confirmBtn.textContent = 'Copy schedule';
+    if (errors.length) {
+      // Keep the box open so a failure is seen, with the reason the database gave.
+      previewContainer.textContent = (copied.length ? copied.length + ' copied. ' : '') + errors.length +
+        (errors.length === 1 ? ' game' : ' games') + ' could not be copied: ' + [...new Set(errors)].join(' ');
+      confirmBtn.disabled = false;
+      if (copied.length && onCopied) onCopied(copied.length, errors.length, posted);
+      return;
+    }
     dialog.close();
-    if (onCopied) onCopied(copied.length, failed);
+    if (onCopied) onCopied(copied.length, 0, posted);
   }
 
   // Enter in a field submits the form; only copy when the button is enabled.
