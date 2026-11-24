@@ -654,6 +654,8 @@ textarea { display: block; resize: vertical; }
 #calendar .fc-list-event-time { font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; vertical-align: middle; }
 #calendar .fc-list-event-time .game-status { display: block; width: max-content; margin: 0.3rem auto 0; padding: 0 0.3rem; border: 1px solid currentColor; font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
 #calendar .fc-list-event-graphic { display: none; }
+/* List view of this month: earlier games wait behind this button above the list. */
+#calendar .list-earlier, .staff-schedule-agenda .list-earlier { display: block; width: 100%; margin: 0 0 0.5rem; }
 .game { overflow-wrap: anywhere; white-space: normal; }
 .game-title { font-weight: 700; }
 /* Team line above the matchup in list rows and Next games. */

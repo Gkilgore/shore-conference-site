@@ -206,12 +206,14 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
     headerToolbar: {
       start: 'title',
       center: 'dayGridMonth,timeGridWeek,listMonth,listDay filtersToggle',
-      end: 'prev,next',
+      end: 'today prev,next',
     },
+    buttonText: { today: 'Today' },
     customButtons: {
       filtersToggle: { text: 'Filters', click: () => { filters.classList.toggle('is-open'); syncFiltersButton(); } },
     },
-    datesSet: () => syncFiltersButton(),
+    datesSet: () => { showEarlier = false; syncFiltersButton(); setTimeout(tuckEarlierDays); },
+    eventsSet: () => setTimeout(tuckEarlierDays),
     views: {
       dayGridMonth: { buttonText: 'Month', dayMaxEvents: 2 },
       timeGridWeek: { buttonText: 'Week', eventMaxStack: 2 },
@@ -461,6 +463,33 @@ function renderCalendar(events, { schoolSlug = null } = {}) {
     calendar.gotoDate(detail.date);
     calendar.refetchEvents();
   });
+  // List view of this month starts at today: earlier days are hidden behind a button at the top, so the
+  // games that matter now are first. The arrows still go back a month.
+  let showEarlier = false;
+  function tuckEarlierDays() {
+    target.querySelector('.list-earlier')?.remove();
+    const view = calendar.view;
+    const table = target.querySelector('.fc-list-table');
+    if (view.type !== 'listMonth' || !table) return;
+    const today = new Date();
+    const todayKey = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' +
+      String(today.getDate()).padStart(2, '0');
+    const inMonth = view.activeStart <= today && today < view.activeEnd;
+    let past = false;
+    let hidden = 0;
+    for (const row of table.querySelectorAll('tbody tr')) {
+      if (row.classList.contains('fc-list-day')) past = inMonth && !showEarlier && row.dataset.date < todayKey;
+      row.hidden = past;
+      if (past && row.classList.contains('fc-list-event')) hidden++;
+    }
+    if (!hidden) return;
+    const more = document.createElement('button');
+    more.type = 'button';
+    more.className = 'button secondary list-earlier';
+    more.textContent = 'Show ' + hidden + ' earlier ' + (hidden === 1 ? 'game' : 'games') + ' this month';
+    more.onclick = () => { showEarlier = true; tuckEarlierDays(); };
+    table.before(more);
+  }
   calendar.render();
   followPreferredView(calendar);
 }

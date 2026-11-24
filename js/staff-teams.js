@@ -121,7 +121,14 @@ function startStaffTeams(client, { currentSchool, games, groups, states, links, 
     }
     return sort([...derived.values()]);
   }
+  // A team's schedule always reads in date order, then start time (TBD last on its day).
+  function byDate(first, second) {
+    return (first.game_date ?? '').localeCompare(second.game_date ?? '') ||
+      (first.start_time ?? '99').localeCompare(second.start_time ?? '99');
+  }
+
   function sort(items) {
+    for (const team of items) team.games?.sort(byDate);
     const levels = ['Varsity', 'JV', 'Freshman'];
     return items.sort((a, b) => seasons.indexOf(a.season) - seasons.indexOf(b.season) || a.sport.localeCompare(b.sport) ||
       a.gender.localeCompare(b.gender) || levels.indexOf(a.level) - levels.indexOf(b.level) || a.key.localeCompare(b.key));
